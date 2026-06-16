@@ -1,0 +1,37 @@
+.example-card {
+  margin: 10px;
+  background-color: white;
+}
+
+.example-header-image {
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.row mat-form-field {
+  width: 100%;
+}
+
+.button-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px 20px;
+  background-color: #f1f5f9;
+  border-top: 1px solid #e2e8f0;
+  border-radius: 0 0 4px 4px;
+}
+
+.form-button {
+  min-width: 120px;
+}

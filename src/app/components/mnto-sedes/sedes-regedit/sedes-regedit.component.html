@@ -1,0 +1,90 @@
+<form class="container-cuerpo" [formGroup]="formulario" #formDirective="ngForm">
+     <mat-card class="example-card" appearance="outlined"></mat-card>
+     <mat-card-header>
+        <div mat-card-avatar class="example-header-image"></div>
+        <mat-card-title>{{data.Title}} </mat-card-title>
+        <!-- <mat-card-subtitle>Fecha Emisión: {{ data.Datos.fecha_Emisor | date: 'dd/MM/yyyy HH:mm' }}</mat-card-subtitle>  -->
+    </mat-card-header>  
+    
+    <mat-card-content>
+
+        <div class="row" *ngIf="data?.Accion !== 'I'">
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Codigo</mat-label>
+                <input matInput formControlName="ctrol_codigo">
+            </mat-form-field>              
+        </div>       
+         
+        <div class="row">
+
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Organización (*)</mat-label>
+                <input matInput formControlName="ctrol_organizacion" >
+            </mat-form-field>            
+
+        </div>        
+
+        <div class="row">
+
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Denominación (*)</mat-label>
+                <input matInput formControlName="ctrol_denominacion" placeholder="Ingrese denominacion" >
+            </mat-form-field>                     
+
+        </div>      
+
+        <div class="row">
+
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Acrónimo</mat-label>
+                <input matInput formControlName="ctrol_acronimo" placeholder="Ingrese acrónimo" >
+            </mat-form-field>   
+
+        </div>
+
+        <div class="row">
+
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Dirección</mat-label>
+                <input matInput formControlName="ctrol_direccion" placeholder="Ingrese dirección" >
+            </mat-form-field>                    
+
+        </div>   
+
+        <div class="row">
+
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Localidad</mat-label>
+                <input matInput formControlName="ctrol_localidad" placeholder="Ingrese localidad" >
+            </mat-form-field>         
+            
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Provincia</mat-label>
+                <input matInput formControlName="ctrol_provincia" placeholder="Ingrese provincia" >
+            </mat-form-field>                
+
+        </div>      
+        
+        <div class="row">
+
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>País</mat-label>
+                <input matInput formControlName="ctrol_pais" placeholder="Ingrese pais" >
+            </mat-form-field>              
+
+        </div> 
+
+    </mat-card-content>
+</form>
+
+<div class="button-row"> 
+    <!-- [disabled]="data.Datos.cod_Estado_Memo !== '04' && bEdita" -->
+    <button mat-flat-button color="primary" class="form-button" (click)="onSave()" > 
+        <mat-icon>save</mat-icon> Grabar
+    </button>
+
+    <button mat-flat-button color="warn" mat-dialog-close class="form-button" (click)="onClose()" >
+        <mat-icon>close</mat-icon> Salir
+    </button>
+    
+</div>  

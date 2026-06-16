@@ -1,0 +1,33 @@
+/* ===== TOOLBAR ===== */
+
+.toolbar{
+  display:flex;
+  justify-content:space-between;
+  background:#0f172a;
+  color:white;
+  padding:10px 20px;
+  max-height: 50px;
+  border-radius: 8px; /* esquinas redondeadas */
+}
+
+
+.left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.icono{
+  color:#38bdf8;
+}
+
+.titulo{
+  font-size:18px;
+  font-weight:600;
+}
+
+.right{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}

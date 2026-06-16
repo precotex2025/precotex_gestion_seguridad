@@ -1,0 +1,100 @@
+<mat-sidenav-container class="container">
+
+  <!-- SIDENAV -->
+  <mat-sidenav #sidenav mode="side" opened class="sidenav">
+
+    <h3 class="logo">SecureNorm</h3>
+
+    <mat-nav-list>
+
+      <!-- MENU 1 -->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-icon>folder</mat-icon>
+          <span style="margin-left:8px;">Organización</span>
+        </mat-expansion-panel-header>
+
+        <a mat-list-item routerLink="/principal/normas">
+          Normas
+        </a>
+
+        <a mat-list-item routerLink="/principal/organizacion">
+          Organización
+        </a>
+
+      </mat-expansion-panel>     
+      
+      <!-- MENU 2 -->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-icon>diversity_3</mat-icon>
+          <span style="margin-left:8px;">Personas</span>
+        </mat-expansion-panel-header>
+
+        <a mat-list-item routerLink="/principal/puestos">
+          Puestos
+        </a>
+
+        <a mat-list-item routerLink="/principal/usuariosPersonas">
+          Usuarios / Personas
+        </a>
+
+        <a mat-list-item routerLink="/principal/documentacionPersonas">
+          Documentación Personas
+        </a>        
+
+      </mat-expansion-panel>
+
+      <!-- MENU 3 -->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-icon>folder</mat-icon>
+          <span style="margin-left:8px;">Documentos</span>
+        </mat-expansion-panel-header>
+
+        <a mat-list-item routerLink="/principal/documentosControlados">
+          Docs. Controlados
+        </a>
+
+        <a mat-list-item routerLink="/submenu4">
+          Docs. no Controlados
+        </a>    
+
+      </mat-expansion-panel>       
+      
+      <!-- <a mat-list-item routerLink="/principal">
+        <mat-icon>home</mat-icon>
+        Principal
+      </a>
+
+      <a mat-list-item routerLink="/normas">
+        <mat-icon>description</mat-icon>
+        Normas
+      </a> -->
+
+    </mat-nav-list>
+
+  </mat-sidenav>
+
+  <!-- CONTENIDO -->
+  <mat-sidenav-content>
+
+    <!-- TOOLBAR -->
+    <mat-toolbar color="primary" class="mix-toolbar">
+
+      <button mat-icon-button (click)="sidenav.toggle()">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      Sistema de Normas
+
+    </mat-toolbar>
+
+    <!-- PAGINAS -->
+    <div class="contenido">
+      <router-outlet></router-outlet>
+    </div>
+
+  </mat-sidenav-content>
+
+</mat-sidenav-container>

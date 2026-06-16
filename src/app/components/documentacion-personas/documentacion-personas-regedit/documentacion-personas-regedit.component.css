@@ -1,0 +1,214 @@
+.example-card {
+  margin: 10px;
+  background-color: white;
+}
+
+.example-header-image {
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.row mat-form-field {
+  width: 100%;
+}
+
+.options-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bold-label {
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.radio-group-vertical mat-radio-button {
+  margin-right: 15px;
+}
+
+/* Destinatarios Section */
+.destinatarios-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  margin-top: 10px;
+}
+
+.section-title {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 16px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 8px;
+}
+
+.destinatarios-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 15px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.dest-columna {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+}
+
+.col-header {
+  background: #f1f5f9;
+  padding: 8px 10px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #334155;
+  border-bottom: 1px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 6px 6px 0 0;
+}
+
+.number-badge {
+  background: #3f51b5;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+.col-body {
+  padding: 10px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-col {
+  gap: 10px;
+}
+
+.list-col {
+  padding: 0;
+  background: white;
+}
+
+.dest-list {
+  height: 200px;
+  overflow-y: auto;
+}
+
+.small-field {
+  width: 100%;
+  display: block;
+}
+
+::ng-deep .small-field .mat-mdc-form-field-infix {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+  min-height: 40px !important;
+}
+
+.btn-transfer {
+  width: 32px;
+  height: 32px;
+  background-color: #d8e2fb;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: #0f4082;
+  transition: background-color 0.2s;
+}
+
+.btn-transfer:hover {
+  background-color: #c0cff0;
+}
+
+.btn-transfer mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+::ng-deep .small-field .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+.btn-buscar-dest {
+  width: 100%;
+  background: white;
+  border: 1px solid #94a3b8;
+  color: #334155;
+  font-weight: 500;
+}
+
+.transfer-buttons {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* File upload */
+.file-upload-row {
+  background: #f8fafc;
+  padding: 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.file-input {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  border: 1px dashed #cbd5e1;
+  background: white;
+  border-radius: 4px;
+}
+
+.button-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px 20px;
+  background-color: #f1f5f9;
+  border-top: 1px solid #e2e8f0;
+  border-radius: 0 0 4px 4px;
+}
+
+.form-button {
+  min-width: 120px;
+}

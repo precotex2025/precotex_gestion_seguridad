@@ -1,0 +1,134 @@
+<form class="container-cuerpo" [formGroup]="formulario" #formDirective="ngForm">
+    <mat-card class="example-card" appearance="outlined">
+        <mat-card-header>
+            <div mat-card-avatar class="example-header-image">
+                <mat-icon style="font-size: 40px; color: #1e293b; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center;">work</mat-icon>
+            </div>
+            <mat-card-title>{{data.Title}}</mat-card-title>
+            <mat-card-subtitle>Paso 1. Datos básicos del puesto</mat-card-subtitle> 
+        </mat-card-header>   
+        
+        <mat-card-content style="padding-top: 20px;">
+
+        <!-- <div class="row" *ngIf="data?.Accion !== 'I'">
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Codigo</mat-label>
+                <input matInput formControlName="ctrol_codigo">
+            </mat-form-field>              
+        </div>    -->
+        
+        <div class="row">
+
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Organización (*):</mat-label>
+
+                <mat-select formControlName="ctrol_organizacion" (selectionChange)="onChangeOrga($event)">
+                    <mat-option *ngFor="let orga of lstOrganizacion" [value]="orga.codigo">
+                    {{ orga.descripcion }}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>                
+
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Sede (*):</mat-label>
+
+                <mat-select formControlName="ctrol_sede">
+                    <mat-option *ngFor="let sede of lstSedes" [value]="sede.codigo">
+                    {{ sede.descripcion }}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>                 
+
+        </div>
+
+        <div class="row">
+
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Denominación del Puesto (*):</mat-label>
+                <input matInput formControlName="ctrol_denominacion" placeholder="Ingrese denominación" >
+            </mat-form-field>    
+            
+            <mat-form-field appearance="outline" style="flex: 1;">
+                 <mat-label>Nivel de Riesgo:</mat-label>
+
+                <mat-select formControlName="ctrol_nivel">
+                    <mat-option *ngFor="let nivel of lstNivelRiesgo" [value]="nivel.codigo">
+                    {{ nivel.descripcion }}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>                
+
+        </div>
+
+        <div class="row">
+
+            <mat-label>¿Requiere Validación Periódica? <span style="color:red">*</span></mat-label>
+            <mat-radio-group formControlName="ctrol_requiereValidacion">
+                <mat-radio-button [value]="true">Sí</mat-radio-button>
+                <mat-radio-button [value]="false">No</mat-radio-button>
+            </mat-radio-group>
+      
+        </div>
+
+        <div class="row">
+
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Descripción del Puesto</mat-label>
+                <textarea matInput formControlName="ctrol_descripcion" rows="4"></textarea>
+            </mat-form-field>              
+
+        </div>     
+        
+        <div class="row">
+
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Funciones y Responsabilidades</mat-label>
+                <textarea matInput formControlName="ctrol_funciones" rows="4"></textarea>
+            </mat-form-field>              
+
+        </div>     
+
+        <div class="row">
+
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Requisitos del Puesto</mat-label>
+                <textarea matInput formControlName="ctrol_requisitos" rows="4"></textarea>
+            </mat-form-field>              
+
+        </div>          
+        
+        <div class="row">
+
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Otros detalles y características del puesto</mat-label>
+                <textarea matInput formControlName="ctrol_otros" rows="4"></textarea>
+            </mat-form-field>              
+
+        </div>         
+        
+        <div class="row">
+
+            <mat-label>Características visibles para el puesto <span style="color:red">*</span></mat-label>
+            <mat-radio-group formControlName="ctrol_caracteristicasVisibles">
+                <mat-radio-button [value]="true">Sí</mat-radio-button>
+                <mat-radio-button [value]="false">No</mat-radio-button>
+            </mat-radio-group>
+      
+        </div>        
+        
+        
+
+    </mat-card-content>    
+
+    <mat-card-actions class="button-row"> 
+        <button mat-flat-button color="primary" class="form-button" (click)="onSave()" > 
+            <mat-icon>save</mat-icon> Grabar
+        </button>
+
+        <button mat-flat-button color="warn" mat-dialog-close class="form-button" (click)="onClose()" >
+            <mat-icon>close</mat-icon> Salir
+        </button>
+    </mat-card-actions>  
+    
+    </mat-card>
+</form>

@@ -1,0 +1,158 @@
+.contenedor {
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.filtros-card {
+  margin: 20px 0;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.acciones-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.filtros-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+
+/* Make fields narrower without changing height */
+::ng-deep .filtros-grid .mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  .filtros-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .filtros-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .filtros-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.botones-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.botones-derecha {
+  display: flex;
+  gap: 10px;
+}
+
+/* Base button style for rounded pill shapes */
+.botones-row button {
+  border-radius: 20px !important;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 40px;
+  padding: 0 16px;
+}
+
+.botones-row mat-icon {
+  margin-right: 4px;
+}
+
+.BtnFiltrar {
+  background-color: #1e293b !important;
+  color: white !important;
+}
+
+.BtnCrear {
+  background-color: #3f51b5 !important;
+  color: white !important;
+}
+
+.BtnExportar {
+  background-color: #FFAB00 !important;
+  color: white !important;
+}
+
+.BtnImportar {
+  background-color: #2e7d32 !important;
+  color: white !important;
+}
+
+/* CARDS INDICATORS */
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 15px;
+}
+
+@media (max-width: 992px) {
+  .cards-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .cards-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.status-card {
+  background: white;
+  border: 1.5px solid #1e293b;
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+  box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.status-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px -3px rgb(0 0 0 / 0.1);
+}
+
+.card-number {
+  font-size: 26px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1;
+}
+
+.card-divider {
+  width: 60%;
+  height: 1px;
+  background-color: #1e293b;
+  opacity: 0.25;
+  margin: 8px 0;
+}
+
+.card-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}

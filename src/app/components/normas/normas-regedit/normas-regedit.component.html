@@ -1,0 +1,54 @@
+<form class="container-cuerpo" [formGroup]="formulario" #formDirective="ngForm">
+    <mat-card class="example-card" appearance="outlined"></mat-card>
+    <mat-card-header>
+        <div mat-card-avatar class="example-header-image"></div>
+        <mat-card-title>{{data.Title}} </mat-card-title>
+        <!-- <mat-card-subtitle>Fecha Emisión: {{ data.Datos.fecha_Emisor | date: 'dd/MM/yyyy HH:mm' }}</mat-card-subtitle>  -->
+    </mat-card-header>   
+    
+    <mat-card-content>
+        
+        <div class="row" *ngIf="data?.Accion !== 'I'">
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Codigo</mat-label>
+                <input matInput formControlName="ctrol_codigo">
+            </mat-form-field>              
+        </div>
+
+        <div class="row">
+
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Denominación de la Norma / Objetivo  (*)</mat-label>
+                <input matInput formControlName="ctrol_denominacion" placeholder="Ingrese Codigo Norma" >
+            </mat-form-field>            
+
+        </div>
+
+        <div class="row">
+
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Descripción breve</mat-label>
+                <input matInput formControlName="ctrol_descripcion" placeholder="Nombres y apellidos" >
+            </mat-form-field>            
+
+        </div>        
+
+
+
+    </mat-card-content>
+</form>
+
+    <div class="button-row"> 
+        <!-- [disabled]="data.Datos.cod_Estado_Memo !== '04' && bEdita" -->
+        <button mat-flat-button color="primary" class="form-button" (click)="onSave()" > 
+            <mat-icon>save</mat-icon> Grabar
+        </button>
+
+        <button mat-flat-button color="warn" mat-dialog-close class="form-button" (click)="onClose()" >
+            <mat-icon>close</mat-icon> Salir
+        </button>
+        
+    </div>   
+
+
+

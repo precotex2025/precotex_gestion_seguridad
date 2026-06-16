@@ -1,0 +1,264 @@
+<app-bread-crumb
+  titulo="Biblioteca - Documentación Personas"
+  icon="description"
+>
+</app-bread-crumb>
+
+<div class="contenedor">
+    <form class="container-cuerpo" [formGroup]="formulario" #formDirective="ngForm">
+        
+        <h3 style="margin-bottom: 5px; font-weight: 600; color: #333;">Opciones de Búsqueda</h3>
+        
+        <mat-card class="filtros-card">
+            <div class="acciones-container">
+
+                <!-- FILTROS GRID -->
+                <div class="filtros-grid">
+
+                    <!-- Documento -->
+                    <mat-form-field appearance="outline">
+                        <mat-label>Documento</mat-label>
+                        <input matInput formControlName="ctrol_documento" placeholder="Buscar documento...">
+                    </mat-form-field>
+
+                    <!-- Puesto -->
+                    <mat-form-field appearance="outline">
+                        <mat-label>Puesto</mat-label>
+                        <mat-select formControlName="ctrol_puesto">
+                            <mat-option *ngFor="let puesto of lstPuestos" [value]="puesto.codigo">
+                                {{ puesto.descripcion }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <!-- Usuario -->
+                    <mat-form-field appearance="outline">
+                        <mat-label>Usuario</mat-label>
+                        <mat-select formControlName="ctrol_usuario">
+                            <mat-option *ngFor="let usuario of lstUsuarios" [value]="usuario.codigo">
+                                {{ usuario.descripcion }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <!-- Alta a partir de (Datepicker) -->
+                    <mat-form-field appearance="outline">
+                        <mat-label>Alta a partir de</mat-label>
+                        <input matInput [matDatepicker]="pickerDesde" formControlName="ctrol_alta_desde" placeholder="dd/mm/aaaa">
+                        <mat-datepicker-toggle matSuffix [for]="pickerDesde"></mat-datepicker-toggle>
+                        <mat-datepicker #pickerDesde></mat-datepicker>
+                    </mat-form-field>
+
+                    <!-- Hasta (Datepicker) -->
+                    <mat-form-field appearance="outline">
+                        <mat-label>Hasta</mat-label>
+                        <input matInput [matDatepicker]="pickerHasta" formControlName="ctrol_alta_hasta" placeholder="dd/mm/aaaa">
+                        <mat-datepicker-toggle matSuffix [for]="pickerHasta"></mat-datepicker-toggle>
+                        <mat-datepicker #pickerHasta></mat-datepicker>
+                    </mat-form-field>
+
+                    <!-- Tipo -->
+                    <mat-form-field appearance="outline">
+                        <mat-label>Tipo</mat-label>
+                        <mat-select formControlName="ctrol_tipo">
+                            <mat-option *ngFor="let tipo of lstTipos" [value]="tipo.codigo">
+                                {{ tipo.descripcion }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <!-- Organización -->
+                    <mat-form-field appearance="outline">
+                        <mat-label>Organización</mat-label>
+                        <mat-select formControlName="ctrol_organizacion" (selectionChange)="onChangeOrga($event)">
+                            <mat-option *ngFor="let orga of lstOrganizacion" [value]="orga.codigo">
+                                {{ orga.descripcion }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <!-- Sede -->
+                    <mat-form-field appearance="outline">
+                        <mat-label>Sede</mat-label>
+                        <mat-select formControlName="ctrol_sede">
+                            <mat-option *ngFor="let sede of lstSedes" [value]="sede.codigo">
+                                {{ sede.descripcion }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <!-- Estado del Documento -->
+                    <mat-form-field appearance="outline">
+                        <mat-label>Estado del Documento</mat-label>
+                        <mat-select formControlName="ctrol_estado_documento">
+                            <mat-option *ngFor="let est of lstEstadosDoc" [value]="est.codigo">
+                                {{ est.descripcion }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <!-- Estado de la Revisión -->
+                    <mat-form-field appearance="outline">
+                        <mat-label>Estado de la Revisión</mat-label>
+                        <mat-select formControlName="ctrol_estado_revision">
+                            <mat-option *ngFor="let rev of lstEstadosRev" [value]="rev.codigo">
+                                {{ rev.descripcion }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+
+
+                </div>
+                
+                <!-- BOTONES ROW -->
+                <div class="botones-row">
+                    <div class="botones-izquierda">
+                        <button type="button" class="BtnFiltrar" mat-flat-button (click)="onBuscar()">
+                            Buscar
+                        </button>
+                    </div>
+
+                    <div class="botones-derecha">
+                        <button type="button" class="BtnCrear" mat-flat-button>
+                            <mat-icon>create_new_folder</mat-icon> Nuevo Documento
+                        </button>
+
+                        <button type="button" class="BtnExportar" mat-flat-button>
+                            <mat-icon>download</mat-icon> Exportar a Excel
+                        </button>
+
+                        <button type="button" class="BtnCargaMasiva" mat-flat-button>
+                            <mat-icon>calendar_month</mat-icon> Carga Masiva de Documentos
+                        </button>
+
+                        <button type="button" class="BtnPlanesGestion" mat-flat-button>
+                            <mat-icon>calendar_month</mat-icon> Planes de Gestión Documental
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </mat-card>
+
+        <!-- CARDS INDICATORS -->
+        <div class="cards-container">
+            <!-- Pendientes de Validación -->
+            <div class="status-card">
+                <div class="card-number">{{ countPendientesValidacion }}</div>
+                <div class="card-divider"></div>
+                <div class="card-label">Pendientes de Validación</div>
+            </div>
+
+            <!-- Documentos Vencidos -->
+            <div class="status-card">
+                <div class="card-number">{{ countDocumentosVencidos }}</div>
+                <div class="card-divider"></div>
+                <div class="card-label">Documentos Vencidos</div>
+            </div>
+
+            <!-- Pendientes de Aceptación -->
+            <div class="status-card">
+                <div class="card-number">{{ countPendientesAceptacion }}</div>
+                <div class="card-divider"></div>
+                <div class="card-label">Pendientes de Aceptación</div>
+            </div>
+
+            <!-- Pendientes de Recepción -->
+            <div class="status-card">
+                <div class="card-number">{{ countPendientesRecepcion }}</div>
+                <div class="card-divider"></div>
+                <div class="card-label">Pendientes de Recepción</div>
+            </div>
+        </div>
+
+        <!-- TABLA DE DATOS -->
+        <table mat-table [dataSource]="dataSource" matSort class="tabla-wrapper" style="margin-top: 20px; width: 100%;">
+
+            <!-- Datos -->
+            <ng-container matColumnDef="datos">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Datos</th>
+                <td mat-cell *matCellDef="let row">{{row.datos}}</td>
+            </ng-container>     
+
+            <!-- Alerta Vencimiento -->
+            <ng-container matColumnDef="alerta_vencimiento">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Alerta Vencimiento</th>
+                <td mat-cell *matCellDef="let row">{{row.alerta_vencimiento}}</td>
+            </ng-container>              
+
+            <!-- Persona -->
+            <ng-container matColumnDef="persona">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Persona</th>
+                <td mat-cell *matCellDef="let row">{{row.persona}}</td>
+            </ng-container>             
+            
+            <!-- Tipo -->
+            <ng-container matColumnDef="tipo">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo</th>
+                <td mat-cell *matCellDef="let row">{{row.tipo}}</td>
+            </ng-container>              
+            
+            <!-- Nombre del Documento -->
+            <ng-container matColumnDef="nombre_documento">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Nombre del Documento</th>
+                <td mat-cell *matCellDef="let row">{{row.nombre_documento}}</td>
+            </ng-container>   
+            
+            <!-- Requiere Validación -->
+            <ng-container matColumnDef="requiere_validacion">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Requiere Validación</th>
+                <td mat-cell *matCellDef="let row">{{row.requiere_validacion}}</td>
+            </ng-container>     
+
+            <!-- Fecha Requerimiento -->
+            <ng-container matColumnDef="fecha_requerimiento">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Requerimiento</th>
+                <td mat-cell *matCellDef="let row">{{row.fecha_requerimiento}}</td>
+            </ng-container>     
+
+            <!-- Clasificación -->
+            <ng-container matColumnDef="clasificacion">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Clasificación</th>
+                <td mat-cell *matCellDef="let row">{{row.clasificacion}}</td>
+            </ng-container>     
+
+            <!-- Estado Solicitud -->
+            <ng-container matColumnDef="estado_solicitud">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado Solicitud</th>
+                <td mat-cell *matCellDef="let row">{{row.estado_solicitud}}</td>
+            </ng-container>     
+
+            <!-- Próximo Requerimiento -->
+            <ng-container matColumnDef="proximo_requerimiento">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Próximo Requerimiento</th>
+                <td mat-cell *matCellDef="let row">{{row.proximo_requerimiento}}</td>
+            </ng-container>     
+
+            <!-- Acciones -->
+            <ng-container matColumnDef="acciones">
+                <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                <td mat-cell *matCellDef="let e">
+
+                <button mat-icon-button color="primary" (click)="onEditar(e)" title="Editar">
+                    <mat-icon>edit</mat-icon>
+                </button>
+
+                <button mat-icon-button color="warn" (click)="onEliminar(e)" title="Eliminar">
+                    <mat-icon>delete</mat-icon>
+                </button>
+
+                </td>
+            </ng-container>    
+            
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>                  
+                    
+        </table>
+
+    </form>
+</div>
+
+<ngx-spinner bdColor="rgba(51, 51, 51, 0.8)" size="default" type="ball-spin">
+    <p style="color: white; text-align: center; ">Cargando... </p>
+</ngx-spinner>

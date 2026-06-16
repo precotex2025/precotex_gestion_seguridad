@@ -1,0 +1,100 @@
+<app-bread-crumb
+  titulo="Biblioteca - Documentos Controlados"
+  icon="gavel"
+  >
+</app-bread-crumb>
+
+<div class="contenedor">
+    <form class="container-cuerpo" [formGroup]="formulario" #formDirective="ngForm">
+        <mat-card class="filtros-card">
+            <div class="acciones-container">
+
+                <!-- FILTROS -->
+                <div class="filtros">
+                    
+                    <mat-form-field appearance="outline" class="small-field" style="flex: 1;">
+                        <mat-label>Organización </mat-label>
+                        <mat-select formControlName="ctrol_organizacion" (selectionChange)="onChangeOrga($event)">
+                            <mat-option *ngFor="let orga of lstOrganizacion" [value]="orga.codigo">
+                            {{ orga.descripcion }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field> 
+
+                    <mat-form-field appearance="outline" style="flex: 1;">
+                        <mat-label>Sede </mat-label>
+                        <mat-select formControlName="ctrol_sede" >
+                            <mat-option *ngFor="let sede of lstSedes" [value]="sede.codigo">
+                            {{ sede.descripcion }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>           
+                    
+                    <mat-form-field appearance="outline" style="flex: 1;">
+                        <mat-label>Puestos </mat-label>
+                        <mat-select formControlName="ctrol_puesto" >
+                            <mat-option *ngFor="let sede of lstSedes" [value]="sede.codigo">
+                            {{ sede.descripcion }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>            
+                    
+                    <mat-form-field appearance="outline" style="flex: 1;">
+                        <mat-label>Procesos </mat-label>
+                        <mat-select formControlName="ctrol_proceso" >
+                            <mat-option *ngFor="let sede of lstSedes" [value]="sede.codigo">
+                            {{ sede.descripcion }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field> 
+                          
+                                     
+                    
+                    <mat-form-field appearance="outline" style="flex: 1;">
+                        <mat-label>Norma </mat-label>
+                        <mat-select formControlName="ctrol_organizacion" (selectionChange)="onChangeOrga($event)">
+                            <mat-option *ngFor="let orga of lstOrganizacion" [value]="orga.codigo">
+                            {{ orga.descripcion }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <!--Fila 2-->
+                    <mat-form-field appearance="outline" style="flex: 1;">
+                        <mat-label>Estado </mat-label>
+                        <mat-select formControlName="ctrol_organizacion" (selectionChange)="onChangeOrga($event)">
+                            <mat-option *ngFor="let orga of lstOrganizacion" [value]="orga.codigo">
+                            {{ orga.descripcion }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>     
+                    
+                    <mat-form-field appearance="outline" class="buscador">
+                        <mat-label>Código</mat-label>
+                        <input matInput placeholder="Busque por código.">
+                        <mat-icon matSuffix>search</mat-icon>
+                    </mat-form-field>        
+                    
+                    <mat-form-field appearance="outline" class="buscador">
+                        <mat-label>Nombre Documento</mat-label>
+                        <input matInput placeholder="Busque por nombre de documento.">
+                        <mat-icon matSuffix>search</mat-icon>
+                    </mat-form-field>     
+                    
+                    <button type="button" class="BtnBuscar" mat-flat-button (click)="onBuscar()">
+                        <mat-icon aria-label="create_new_folder">search
+                        </mat-icon> Buscar
+                    </button>   
+
+                    <button type="button" class="BtnCrear" mat-flat-button (click)="onAgregar()">
+                        <mat-icon aria-label="create_new_folder">create_new_folder
+                        </mat-icon> Agregar
+                    </button>                       
+
+                </div>
+
+            </div>
+        </mat-card>
+
+    </form>
+</div>

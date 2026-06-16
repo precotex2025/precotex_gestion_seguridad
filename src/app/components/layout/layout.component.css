@@ -1,0 +1,17 @@
+.container {
+  height: 100vh;
+}
+
+.sidenav {
+  width: 250px;
+}
+
+.contenido {
+  padding: 20px;
+}
+
+
+.mix-toolbar {
+  margin-top: 0px !important;
+  margin-bottom: -30px !important;
+}

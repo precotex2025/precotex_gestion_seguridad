@@ -1,0 +1,181 @@
+<form class="container-cuerpo" [formGroup]="formulario" #formDirective="ngForm">
+    <mat-card class="example-card" appearance="outlined">
+        <mat-card-header>
+            <div mat-card-avatar class="example-header-image">
+                <mat-icon style="font-size: 40px; color: #1e293b; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center;">description</mat-icon>
+            </div>
+            <mat-card-title>{{data.Title}}</mat-card-title>
+            <mat-card-subtitle>Complete los campos para registrar el documento y enviarlo a los usuarios.</mat-card-subtitle> 
+        </mat-card-header>   
+        
+        <mat-card-content style="padding-top: 20px;">
+
+            <!-- Denominación -->
+            <div class="row" style="width: 100%; display: flex; margin-bottom: 15px;">
+                <mat-form-field appearance="outline" style="flex: 1; width: 100%;">
+                    <mat-label>Denominación del Documento (*):</mat-label>
+                    <input matInput formControlName="ctrol_denominacion" placeholder="Ingrese denominación" >
+                </mat-form-field>    
+            </div>
+
+            <!-- Sección de Destinatarios -->
+            <div class="destinatarios-section">
+                <h4 class="section-title">Selecciona destinatario/s del documento (*)</h4>
+                <div class="destinatarios-grid">
+                    
+                    <!-- Columna 1: Buscador -->
+                    <div class="dest-columna" style="display: flex; flex-direction: column;">
+                        <div class="col-header"><span class="number-badge">1</span> Busca Destinatarios</div>
+                        <div class="col-body search-col" style="display: flex; flex-direction: column; gap: 10px; padding: 10px;">
+                            <mat-form-field appearance="outline" style="width: 100%;">
+                                <mat-label>Búsqueda por Persona</mat-label>
+                                <input matInput formControlName="ctrol_busqueda_persona">
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" style="width: 100%;">
+                                <mat-label>Persona/s de una Sede</mat-label>
+                                <mat-select formControlName="ctrol_busqueda_sede">
+                                    <mat-option *ngFor="let sede of lstSedes" [value]="sede.codigo">{{sede.descripcion}}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" style="width: 100%;">
+                                <mat-label>Persona/s por Puesto</mat-label>
+                                <mat-select formControlName="ctrol_busqueda_puesto">
+                                    <mat-option *ngFor="let puesto of lstPuestos" [value]="puesto.codigo">{{puesto.descripcion}}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
+                            <button mat-stroked-button type="button" class="btn-buscar-dest" style="width: 100%;" (click)="onBuscarDestinatarios()">
+                                <mat-icon>search</mat-icon> Buscar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Columna 2: Resultados Disponibles -->
+                    <div class="dest-columna">
+                        <div class="col-header"><span class="number-badge">2</span> Selecciona Destinatarios</div>
+                        <div class="col-body list-col">
+                            <mat-selection-list formControlName="ctrol_destinatarios_disponibles" class="dest-list">
+                                <mat-list-option *ngFor="let persona of lstPersonasDisponibles" [value]="persona">
+                                    {{persona.nombre}}
+                                </mat-list-option>
+                            </mat-selection-list>
+                        </div>
+                    </div>
+
+                    <!-- Columna 3: Seleccionados -->
+                    <div class="dest-columna">
+                        <div class="col-header"><span class="number-badge">3</span> Destinatarios Seleccionados</div>
+                        <div class="col-body list-col">
+                            <mat-selection-list formControlName="ctrol_destinatarios_seleccionados" class="dest-list">
+                                <mat-list-option *ngFor="let persona of lstPersonasSeleccionadas" [value]="persona">
+                                    {{persona.nombre}}
+                                </mat-list-option>
+                            </mat-selection-list>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Tipo -->
+            <div class="row" style="margin-top: 15px; width: 100%; display: flex;">
+                <mat-form-field appearance="outline" style="flex: 1; width: 100%;">
+                    <mat-label>Tipo (*):</mat-label>
+                    <mat-select formControlName="ctrol_tipo">
+                        <mat-option *ngFor="let tipo of lstTipos" [value]="tipo.codigo">{{tipo.descripcion}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+
+            <!-- Acciones Radios -->
+            <div class="row options-row" style="width: 100%; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <mat-label class="bold-label">¿Facilitar / Solicitar / Guardar Documento? (*)</mat-label>
+                    <mat-radio-group formControlName="ctrol_accion_doc" class="radio-group-vertical">
+                        <div style="display: flex; gap: 15px; margin-top: 10px;">
+                            <mat-radio-button value="ENTREGAR">A Entregar</mat-radio-button>
+                            <mat-radio-button value="SOLICITAR">A Solicitar</mat-radio-button>
+                            <mat-radio-button value="GUARDAR">Guardar el documento</mat-radio-button>
+                        </div>
+                    </mat-radio-group>
+                </div>
+            </div>
+
+            <div class="row options-row" style="width: 100%; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <mat-radio-group formControlName="ctrol_disponible_mis_doc" class="radio-group-vertical">
+                        <div style="display: flex; gap: 15px; margin-top: 10px;">
+                            <mat-radio-button [value]="true">Disponible en 'Mis Documentos' del usuario</mat-radio-button>
+                            <mat-radio-button [value]="false">No disponible en 'Mis Documentos' del usuario</mat-radio-button>
+                        </div>
+                    </mat-radio-group>
+                </div>
+            </div>
+
+            <!-- Textareas -->
+            <div class="row" style="width: 100%; display: flex; margin-bottom: 15px;">
+                <mat-form-field appearance="outline" style="flex: 1; width: 100%;">
+                    <mat-label>Descripción / comentarios sobre el documento</mat-label>
+                    <textarea matInput formControlName="ctrol_descripcion" rows="3"></textarea>
+                </mat-form-field>              
+            </div>     
+            
+            <div class="row" style="width: 100%; display: flex; margin-bottom: 15px;">
+                <mat-form-field appearance="outline" style="flex: 1; width: 100%;">
+                    <mat-label>Características del documento</mat-label>
+                    <textarea matInput formControlName="ctrol_caracteristicas" rows="3"></textarea>
+                </mat-form-field>              
+            </div>     
+
+            <!-- Confirmaciones Radios -->
+            <div class="row options-row" style="width: 100%; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <mat-label class="bold-label">¿Requiere confirmación de lectura?</mat-label>
+                    <mat-radio-group formControlName="ctrol_req_confirmacion">
+                        <mat-radio-button [value]="false" style="margin-right: 15px;">Sin Confirmación</mat-radio-button>
+                        <mat-radio-button [value]="true">Con Confirmación</mat-radio-button>
+                    </mat-radio-group>
+                </div>
+            </div>
+
+            <div class="row options-row" style="width: 100%; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <mat-label class="bold-label">¿Requiere aceptación/rechazo por parte del Usuario?</mat-label>
+                    <mat-radio-group formControlName="ctrol_req_aceptacion">
+                        <mat-radio-button [value]="false" style="margin-right: 15px;">No</mat-radio-button>
+                        <mat-radio-button [value]="true">Sí</mat-radio-button>
+                    </mat-radio-group>
+                </div>
+            </div>
+
+            <!-- Subida de Archivo -->
+            <div class="row file-upload-row" style="width: 100%; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <mat-label class="bold-label" style="display: block; margin-bottom: 8px;">Documento/s</mat-label>
+                    <input type="file" class="file-input" (change)="onArchivoSeleccionado($event)" />
+                </div>
+            </div>
+
+            <!-- Texto Comunicación -->
+            <div class="row" style="width: 100%; display: flex; margin-bottom: 15px;">
+                <mat-form-field appearance="outline" style="flex: 1; width: 100%;">
+                    <mat-label>Texto para la Comunicación</mat-label>
+                    <textarea matInput formControlName="ctrol_texto_comunicacion" rows="4"></textarea>
+                </mat-form-field>              
+            </div>         
+
+        </mat-card-content>    
+
+        <div class="button-row"> 
+            <button mat-flat-button color="primary" class="form-button" (click)="onSave()" > 
+                <mat-icon>save</mat-icon> Grabar Documento
+            </button>
+
+            <button mat-flat-button color="warn" class="form-button" (click)="onClose()" >
+                <mat-icon>close</mat-icon> Salir
+            </button>
+        </div>  
+    </mat-card>
+</form>
