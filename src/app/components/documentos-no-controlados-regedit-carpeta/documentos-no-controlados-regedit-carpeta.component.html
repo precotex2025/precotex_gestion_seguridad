@@ -1,0 +1,156 @@
+<form class="container-cuerpo" [formGroup]="formulario" #formDirective="ngForm">
+    <mat-card class="example-card" appearance="outlined" style="margin: 0; border: none;">
+        
+        <div style="padding: 20px 20px 0 20px; display: flex; align-items: center; gap: 15px;">
+            <div style="background-color: #1a2332; width: 48px; height: 48px; border-radius: 8px; display: flex; justify-content: center; align-items: center;">
+                <mat-icon style="color: white; font-size: 28px; width: 28px; height: 28px;">create_new_folder</mat-icon>
+            </div>
+            <div>
+                <h2 style="margin: 0; font-size: 22px; font-weight: 500; color: #000;">Registra nueva carpeta</h2>
+                <p style="margin: 0; font-size: 14px; color: #333; margin-top: 2px;">Complete los campos para registrar la nueva carpeta.</p>
+            </div>
+        </div>
+
+        <mat-card-content style="padding-top: 10px;">
+
+            <!-- Fila 1: Denominación y Subcarpeta -->
+            <div class="row" style="width: 100%; display: flex; margin-bottom: 15px; gap: 15px;">
+                <div style="flex: 1;">
+                    <div style="background-color: #e2e2e2; padding: 8px; color: black; font-weight: bold; margin-bottom: 5px;">Denominación (*)</div>
+                    <mat-form-field appearance="outline" style="width: 100%;">
+                        <input matInput formControlName="ctrol_denominacion">
+                    </mat-form-field>
+                </div>
+                <div style="flex: 1;">
+                    <div style="background-color: #e2e2e2; padding: 8px; color: black; font-weight: bold; margin-bottom: 5px;">Subcarpeta en (*)</div>
+                    <mat-form-field appearance="outline" style="width: 100%;">
+                        <mat-select formControlName="ctrol_subcarpeta">
+                            <mat-option value="Nueva carpeta raiz en la biblioteca">Nueva carpeta raiz en la biblioteca</mat-option>
+                            <mat-option value="4. Contexto de la Organización">4. Contexto de la Organización</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <!-- Fila 2: Permisos por defecto -->
+            <div class="row" style="width: 100%; margin-bottom: 15px;">
+                <div style="background-color: #e2e2e2; padding: 8px; color: black; font-weight: bold; margin-bottom: 5px;">Permisos por defecto</div>
+                
+                <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd; text-align: center; font-size: 12px;">
+                    <thead>
+                        <tr>
+                            <th style="background-color: #1a2332; color: white; padding: 10px; width: 40%; text-align: left;">Permisos por defecto (*)</th>
+                            <th style="background-color: #1a2332; color: white; padding: 10px;">Lectura</th>
+                            <th style="background-color: #1a2332; color: white; padding: 10px;">Edición</th>
+                            <th style="background-color: #1a2332; color: white; padding: 10px;">Revisión</th>
+                            <th style="background-color: #1a2332; color: white; padding: 10px;">Aprobación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left; font-size: 11px;">(*) Permisos otorgados a cualquier puesto recien creado</td>
+                            <td style="padding: 10px; border: 1px solid #ddd;">
+                                <mat-radio-group formControlName="def_lectura"><mat-radio-button value="No" style="margin-right: 10px;">No</mat-radio-button><mat-radio-button value="Si">Si</mat-radio-button></mat-radio-group>
+                            </td>
+                            <td style="padding: 10px; border: 1px solid #ddd;">
+                                <mat-radio-group formControlName="def_edicion"><mat-radio-button value="No" style="margin-right: 10px;">No</mat-radio-button><mat-radio-button value="Si">Si</mat-radio-button></mat-radio-group>
+                            </td>
+                            <td style="padding: 10px; border: 1px solid #ddd;">
+                                <mat-radio-group formControlName="def_revision"><mat-radio-button value="No" style="margin-right: 10px;">No</mat-radio-button><mat-radio-button value="Si">Si</mat-radio-button></mat-radio-group>
+                            </td>
+                            <td style="padding: 10px; border: 1px solid #ddd;">
+                                <mat-radio-group formControlName="def_aprobacion"><mat-radio-button value="No" style="margin-right: 10px;">No</mat-radio-button><mat-radio-button value="Si">Si</mat-radio-button></mat-radio-group>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Fila 3: Asignar permisos -->
+            <div class="row" style="width: 100%; margin-bottom: 15px;">
+                <div style="background-color: #e2e2e2; padding: 8px; color: black; font-weight: bold; margin-bottom: 5px;">Asignar permisos de la carpeta a los puestos ya existentes</div>
+                
+                <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd; text-align: center; font-size: 12px;">
+                    <!-- PRECOTEX -->
+                    <thead>
+                        <tr>
+                            <th colspan="5" style="background-color: #1a2332; color: white; padding: 8px; text-align: left;">PRECOTEX</th>
+                        </tr>
+                        <tr>
+                            <th style="background-color: #1a2332; color: white; padding: 8px; width: 40%; text-align: left;">PRECOTEX:</th>
+                            <th style="background-color: #1a2332; color: white; padding: 8px;"><mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">arrow_circle_down</mat-icon> Lectura <mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">arrow_circle_down</mat-icon></th>
+                            <th style="background-color: #1a2332; color: white; padding: 8px;"><mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">arrow_circle_down</mat-icon> Edición <mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">arrow_circle_down</mat-icon></th>
+                            <th style="background-color: #1a2332; color: white; padding: 8px;"><mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">arrow_circle_down</mat-icon> Revisión <mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">arrow_circle_down</mat-icon></th>
+                            <th style="background-color: #1a2332; color: white; padding: 8px;"><mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">arrow_circle_down</mat-icon> Aprobación <mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">arrow_circle_down</mat-icon></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let puesto of lstPuestosPrecotex; let i = index">
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: left; font-weight: bold;">{{puesto}}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9;">
+                                <mat-radio-group [formControlName]="'precotex_lec_' + i"><mat-radio-button value="No" style="margin-right: 10px;">No</mat-radio-button><mat-radio-button value="Si">Si</mat-radio-button></mat-radio-group>
+                            </td>
+                            <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9;">
+                                <mat-radio-group [formControlName]="'precotex_edi_' + i"><mat-radio-button value="No" style="margin-right: 10px;">No</mat-radio-button><mat-radio-button value="Si">Si</mat-radio-button></mat-radio-group>
+                            </td>
+                            <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9;">
+                                <mat-radio-group [formControlName]="'precotex_rev_' + i"><mat-radio-button value="No" style="margin-right: 10px;">No</mat-radio-button><mat-radio-button value="Si">Si</mat-radio-button></mat-radio-group>
+                            </td>
+                            <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9;">
+                                <mat-radio-group [formControlName]="'precotex_apr_' + i"><mat-radio-button value="No" style="margin-right: 10px;">No</mat-radio-button><mat-radio-button value="Si">Si</mat-radio-button></mat-radio-group>
+                            </td>
+                        </tr>
+                    </tbody>
+
+                    <!-- Santa Maria -->
+                    <thead>
+                        <tr>
+                            <th style="background-color: #1a2332; color: white; padding: 8px; width: 40%; text-align: left;">Santa Maria:</th>
+                            <th style="background-color: #1a2332; color: white; padding: 8px;"><mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">arrow_circle_down</mat-icon> Lectura <mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">arrow_circle_down</mat-icon></th>
+                            <th style="background-color: #1a2332; color: white; padding: 8px;"><mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">arrow_circle_down</mat-icon> Edición <mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">arrow_circle_down</mat-icon></th>
+                            <th style="background-color: #1a2332; color: white; padding: 8px;"><mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">arrow_circle_down</mat-icon> Revisión <mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">arrow_circle_down</mat-icon></th>
+                            <th style="background-color: #1a2332; color: white; padding: 8px;"><mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">arrow_circle_down</mat-icon> Aprobación <mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">arrow_circle_down</mat-icon></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let puesto of lstPuestosSantaMaria; let i = index">
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: left; font-weight: bold;">{{puesto}}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9;">
+                                <mat-radio-group [formControlName]="'stamaria_lec_' + i"><mat-radio-button value="No" style="margin-right: 10px;">No</mat-radio-button><mat-radio-button value="Si">Si</mat-radio-button></mat-radio-group>
+                            </td>
+                            <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9;">
+                                <mat-radio-group [formControlName]="'stamaria_edi_' + i"><mat-radio-button value="No" style="margin-right: 10px;">No</mat-radio-button><mat-radio-button value="Si">Si</mat-radio-button></mat-radio-group>
+                            </td>
+                            <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9;">
+                                <mat-radio-group [formControlName]="'stamaria_rev_' + i"><mat-radio-button value="No" style="margin-right: 10px;">No</mat-radio-button><mat-radio-button value="Si">Si</mat-radio-button></mat-radio-group>
+                            </td>
+                            <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9;">
+                                <mat-radio-group [formControlName]="'stamaria_apr_' + i"><mat-radio-button value="No" style="margin-right: 10px;">No</mat-radio-button><mat-radio-button value="Si">Si</mat-radio-button></mat-radio-group>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Fila 4: Notas -->
+            <div class="row" style="width: 100%; display: flex; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <div style="background-color: #e2e2e2; padding: 8px; color: black; font-weight: bold; margin-bottom: 5px;">Notas</div>
+                    <mat-form-field appearance="outline" style="width: 100%;">
+                        <textarea matInput formControlName="ctrol_notas" rows="4"></textarea>
+                    </mat-form-field>
+                </div>
+            </div>
+
+        </mat-card-content>    
+
+        <div class="button-row" style="background-color: white; border: none; margin-top: 10px; padding-left: 15px; margin-bottom: 20px;"> 
+            <button mat-flat-button style="background-color: black; color: white; margin-right: 10px;" (click)="onSave()"> 
+                Crear Carpeta
+            </button>
+            <button mat-flat-button style="background-color: black; color: white;" (click)="onClose()">
+                Cancelar y volver
+            </button>
+        </div>  
+    </mat-card>
+</form>

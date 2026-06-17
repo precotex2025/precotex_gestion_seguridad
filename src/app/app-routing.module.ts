@@ -11,6 +11,7 @@ import { PuestosComponent } from './components/puestos/puestos.component';
 import { DocumentosControladosComponent } from './components/documentos-controlados/documentos-controlados.component';
 import { UsuariosPersonasComponent } from './components/usuarios-personas/usuarios-personas.component';
 import { DocumentacionPersonasComponent } from './components/documentacion-personas/documentacion-personas.component';
+import { DocumentosNoControladosComponent } from './components/documentos-no-controlados/documentos-no-controlados.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch:'full' },
@@ -24,6 +25,7 @@ const routes: Routes = [
       { path: "organizacion", component: OrganizacionComponent },
       { path: "puestos", component: PuestosComponent },
       { path: "documentosControlados", component: DocumentosControladosComponent },
+      { path: "documentosNoControlados", component: DocumentosNoControladosComponent },
       { path: "mntoSedes/:codigoOrganizacion"    , component: MntoSedesComponent },
       { path: "mntoProcesos/:codigoOrganizacion"    , component: MntoProcesosComponent },
       { path: "usuariosPersonas", component: UsuariosPersonasComponent },

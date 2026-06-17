@@ -23,7 +23,7 @@ import { MatRadioModule} from '@angular/material/radio';
 
 import { NormasComponent } from './components/normas/normas.component';
 import { NormasRegeditComponent } from './components/normas/normas-regedit/normas-regedit.component';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 
 import { MatButtonModule } from '@angular/material/button';
@@ -50,6 +50,9 @@ import { DocumentacionPersonasComponent } from './components/documentacion-perso
 import { DocumentacionPersonasRegeditComponent } from './components/documentacion-personas/documentacion-personas-regedit/documentacion-personas-regedit.component';
 
 
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { DocumentosNoControladosRegeditCarpetaComponent } from './components/documentos-no-controlados-regedit-carpeta/documentos-no-controlados-regedit-carpeta.component';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -71,7 +74,8 @@ import { DocumentacionPersonasRegeditComponent } from './components/documentacio
     DocumentosControladosRegeditComponent,
     UsuariosPersonasComponent,
     DocumentacionPersonasComponent,
-    DocumentacionPersonasRegeditComponent
+    DocumentacionPersonasRegeditComponent,
+    DocumentosNoControladosRegeditCarpetaComponent
   ],
   imports: [
     BrowserModule     ,
@@ -84,6 +88,7 @@ import { DocumentacionPersonasRegeditComponent } from './components/documentacio
     MatToolbarModule,
     MatCardModule,
     BrowserAnimationsModule,
+    FormsModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatSidenavModule,
@@ -94,6 +99,7 @@ import { DocumentacionPersonasRegeditComponent } from './components/documentacio
     MatDatepickerModule,
     MatDialogModule,
     MatSortModule,
+    MatCheckboxModule,
     CommonModule,
     ToastrModule.forRoot()
   ],
@@ -104,3 +110,4 @@ import { DocumentacionPersonasRegeditComponent } from './components/documentacio
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+

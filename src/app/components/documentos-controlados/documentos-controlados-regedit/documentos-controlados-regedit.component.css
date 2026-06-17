@@ -1,0 +1,93 @@
+.example-card {
+  margin: 10px;
+  background-color: white;
+}
+
+.example-header-image {
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.row mat-form-field {
+  width: 100%;
+}
+
+.options-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bold-label {
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.radio-group-horizontal {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+/* Checkbox group */
+.checkbox-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* File upload */
+.file-upload-row {
+  background: #f8fafc;
+  padding: 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.file-input {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  border: 1px dashed #cbd5e1;
+  background: white;
+  border-radius: 4px;
+}
+
+.button-row {
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 15px 20px;
+  background-color: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  border-radius: 0 0 4px 4px;
+}
+
+.form-button {
+  min-width: 120px;
+}
+
+.btn-volver {
+  background-color: black;
+  color: white;
+  margin-bottom: 15px;
+}
