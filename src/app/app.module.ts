@@ -23,7 +23,7 @@ import { MatRadioModule} from '@angular/material/radio';
 
 import { NormasComponent } from './components/normas/normas.component';
 import { NormasRegeditComponent } from './components/normas/normas-regedit/normas-regedit.component';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 
 import { MatButtonModule } from '@angular/material/button';
@@ -51,6 +51,9 @@ import { DocumentacionPersonasRegeditComponent } from './components/documentacio
 import { PrincipalComponent } from './components/principal/principal.component';
 
 
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { DocumentosNoControladosRegeditCarpetaComponent } from './components/documentos-no-controlados-regedit-carpeta/documentos-no-controlados-regedit-carpeta.component';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -73,7 +76,8 @@ import { PrincipalComponent } from './components/principal/principal.component';
     UsuariosPersonasComponent,
     DocumentacionPersonasComponent,
     DocumentacionPersonasRegeditComponent,
-    PrincipalComponent
+    PrincipalComponent,
+    DocumentosNoControladosRegeditCarpetaComponent
   ],
   imports: [
     BrowserModule     ,
@@ -86,6 +90,7 @@ import { PrincipalComponent } from './components/principal/principal.component';
     MatToolbarModule,
     MatCardModule,
     BrowserAnimationsModule,
+    FormsModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatSidenavModule,
@@ -96,6 +101,7 @@ import { PrincipalComponent } from './components/principal/principal.component';
     MatDatepickerModule,
     MatDialogModule,
     MatSortModule,
+    MatCheckboxModule,
     CommonModule,
     ToastrModule.forRoot()
   ],
@@ -106,3 +112,4 @@ import { PrincipalComponent } from './components/principal/principal.component';
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+

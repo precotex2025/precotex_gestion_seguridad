@@ -33,12 +33,11 @@
   margin: 20px 0;
   padding: 15px;
   background:white;
-  height: 10%;
+  height: auto;
   margin-top: -5px;
   padding-top: 1px;
-  padding-bottom: 1px;
+  padding-bottom: 15px;
 }
-
 
 .acciones-container {
   display: flex;
@@ -46,6 +45,31 @@
   align-items: center;
   margin: 20px 0;
   gap: 15px;
+}
+
+/* Estilos para las filas agrupadoras (carpetas) */
+::ng-deep .carpeta-group-row {
+    background-color: #2b2b2b !important;
+    height: 48px !important;
+}
+
+::ng-deep .carpeta-group-row td.mat-cell {
+    border-bottom: none !important;
+    padding: 0 !important;
+}
+
+::ng-deep .carpeta-header-row {
+    display: flex;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    padding: 0 24px;
+    height: 100%;
+    cursor: pointer;
+}
+
+::ng-deep .carpeta-header-row:hover {
+    background-color: #3f3f3f;
 }
 
 
@@ -83,4 +107,31 @@
 .filtro{
   width:300px;
   margin-bottom:15px;
+}
+
+.botones-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.botones-derecha {
+  display: flex;
+  gap: 10px;
+}
+
+.botones-row button {
+  border-radius: 20px !important;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 40px;
+  padding: 0 16px;
+}
+
+.BtnExportarPdf, .BtnExportarExcel {
+  background-color: #b90000 !important;
+  color: white !important;
 }

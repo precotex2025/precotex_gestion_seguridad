@@ -82,19 +82,139 @@
                     </mat-form-field>     
                     
                     <button type="button" class="BtnBuscar" mat-flat-button (click)="onBuscar()">
-                        <mat-icon aria-label="create_new_folder">search
-                        </mat-icon> Buscar
+                        <mat-icon>search</mat-icon> Buscar
                     </button>   
 
                     <button type="button" class="BtnCrear" mat-flat-button (click)="onAgregar()">
-                        <mat-icon aria-label="create_new_folder">create_new_folder
-                        </mat-icon> Agregar
+                        <mat-icon>create_new_folder</mat-icon> Nuevo Documento
                     </button>                       
 
+                    <!-- Fila 3: Espacio vacío para saltar 3 columnas -->
+                    <div style="grid-column: span 3;"></div>
+
+                    <button type="button" color="warn" mat-flat-button style="background-color: #b90000; color: white; margin-top: -20px;">
+                        <mat-icon>picture_as_pdf</mat-icon> Exportar Informe en PDF
+                    </button>
+
+                    <button type="button" color="warn" mat-flat-button style="background-color: #b90000; color: white; margin-top: -20px;">
+                        <mat-icon>description</mat-icon> Exportar Informe en EXCEL
+                    </button>
                 </div>
 
             </div>
         </mat-card>
+
+        <!-- TABLA CON FILAS AGRUPADORAS -->
+        <table mat-table [dataSource]="dataSource" matSort class="tabla-wrapper" style="margin-top: 20px; width: 100%;">
+
+            <!-- Código -->
+            <ng-container matColumnDef="codigo">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Cód.</th>
+                <td mat-cell *matCellDef="let row">{{row.codigo}}</td>
+            </ng-container>     
+
+            <!-- Ver./Ed. -->
+            <ng-container matColumnDef="ver_ed">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Ver./Ed.</th>
+                <td mat-cell *matCellDef="let row">{{row.ver_ed}}</td>
+            </ng-container>              
+
+            <!-- Nombre -->
+            <ng-container matColumnDef="nombre">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Nombre</th>
+                <td mat-cell *matCellDef="let row">{{row.nombre}}</td>
+            </ng-container>             
+            
+            <!-- Estado -->
+            <ng-container matColumnDef="estado">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
+                <td mat-cell *matCellDef="let row">{{row.estado}}</td>
+            </ng-container>              
+            
+            <!-- Vence -->
+            <ng-container matColumnDef="vence">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Vence</th>
+                <td mat-cell *matCellDef="let row">{{row.vence}}</td>
+            </ng-container>   
+            
+            <!-- Tiempo conserv. -->
+            <ng-container matColumnDef="tiempo_conserv">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Tiempo<br>conserv.</th>
+                <td mat-cell *matCellDef="let row">{{row.tiempo_conserv}}</td>
+            </ng-container>     
+
+            <!-- Acciones -->
+            <ng-container matColumnDef="acciones">
+                <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                <td mat-cell *matCellDef="let e">
+                    <button mat-icon-button color="primary" title="Editar">
+                        <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" title="Eliminar">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </td>
+            </ng-container>    
+
+            <!-- Registro Doc-asociados -->
+            <ng-container matColumnDef="registro_doc_asociados">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Registro Doc-<br>asociados</th>
+                <td mat-cell *matCellDef="let row">{{row.registro_doc_asociados}}</td>
+            </ng-container>     
+
+            <!-- Registro Infinity asociados -->
+            <ng-container matColumnDef="registro_infinity_asociados">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Registro Infinity<br>asociados</th>
+                <td mat-cell *matCellDef="let row">{{row.registro_infinity_asociados}}</td>
+            </ng-container>     
+
+            <!-- Elaborado Por -->
+            <ng-container matColumnDef="elaborado_por">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Elaborado Por</th>
+                <td mat-cell *matCellDef="let row">{{row.elaborado_por}}</td>
+            </ng-container>     
+
+            <!-- Revisado Por -->
+            <ng-container matColumnDef="revisado_por">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Revisado Por</th>
+                <td mat-cell *matCellDef="let row">{{row.revisado_por}}</td>
+            </ng-container>     
+
+            <!-- Aprobado Por -->
+            <ng-container matColumnDef="aprobado_por">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Aprobado Por</th>
+                <td mat-cell *matCellDef="let row">{{row.aprobado_por}}</td>
+            </ng-container>    
+
+            <!-- Fila Agrupadora (Carpeta) -->
+            <ng-container matColumnDef="groupHeader">
+                <td mat-cell colspan="12" *matCellDef="let group">
+                    <div class="carpeta-header-row" (click)="toggleGroup(group)">
+                        <mat-icon style="margin-right: 10px;">{{ group.expanded ? 'folder_open' : 'folder' }}</mat-icon> 
+                        <span style="flex: 1; font-weight: bold; font-size: 14px;">{{ group.nombre }}</span>
+                        
+                        <!-- Input de archivo oculto -->
+                        <input type="file" #fileInput style="display: none" (change)="onArchivoImportado($event)">
+                        
+                        <button mat-icon-button (click)="$event.stopPropagation(); fileInput.click()" style="margin-left: 15px; color: white;" title="Importar documentos">
+                            <mat-icon>add_circle</mat-icon>
+                        </button>
+                        <button mat-icon-button (click)="$event.stopPropagation();" style="color: white;" title="Usuarios asignados">
+                            <mat-icon>groups</mat-icon>
+                        </button>
+                    </div>
+                </td>
+            </ng-container>
+            
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+
+            <!-- Definición de fila agrupadora -->
+            <tr mat-row *matRowDef="let row; columns: ['groupHeader']; when: isGroup" class="carpeta-group-row"></tr>
+
+            <!-- Definición de fila de datos normal -->
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" [style.display]="isGroupExpanded(row) ? '' : 'none'"></tr>                  
+                    
+        </table>
 
     </form>
 </div>

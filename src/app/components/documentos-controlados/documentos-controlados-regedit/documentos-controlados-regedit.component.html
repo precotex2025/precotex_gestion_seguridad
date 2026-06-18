@@ -1,1 +1,154 @@
-<p>documentos-controlados-regedit works!</p>
+<form class="container-cuerpo" [formGroup]="formulario" #formDirective="ngForm">
+    <mat-card class="example-card" appearance="outlined" style="margin: 0; border: none;">
+        
+        <div style="padding: 20px 20px 0 20px; display: flex; align-items: center; gap: 15px;">
+            <div style="background-color: #1a2332; width: 48px; height: 48px; border-radius: 8px; display: flex; justify-content: center; align-items: center;">
+                <mat-icon style="color: white; font-size: 28px; width: 28px; height: 28px;">description</mat-icon>
+            </div>
+            <div>
+                <h2 style="margin: 0; font-size: 22px; font-weight: 500; color: #000;">Registra nuevo Documento Controlado</h2>
+                <p style="margin: 0; font-size: 14px; color: #333; margin-top: 2px;">Complete los campos para registrar el documento controlado.</p>
+            </div>
+        </div>
+
+        <mat-card-content style="padding-top: 10px;">
+
+            <!-- Fila 1: Denominación y Carpeta -->
+            <div class="row" style="width: 100%; display: flex; margin-bottom: 15px; gap: 15px;">
+                <div style="flex: 1;">
+                    <div style="background-color: #e2e2e2; padding: 8px; color: black; font-weight: bold; margin-bottom: 5px;">Denominación (*)</div>
+                    <mat-form-field appearance="outline" style="width: 100%;">
+                        <input matInput formControlName="ctrol_denominacion">
+                    </mat-form-field>
+                </div>
+                <div style="flex: 1;">
+                    <div style="background-color: #e2e2e2; padding: 8px; color: black; font-weight: bold; margin-bottom: 5px;">Carpeta (*)</div>
+                    <mat-form-field appearance="outline" style="width: 100%;">
+                        <mat-select formControlName="ctrol_carpeta">
+                            <mat-option value="ACABADO">ACABADO</mat-option>
+                            <mat-option value="CORTE">CORTE</mat-option>
+                            <mat-option value="COSTURA">COSTURA</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <!-- Fila 2: Código y Versión -->
+            <div class="row" style="width: 100%; display: flex; margin-bottom: 15px; gap: 15px;">
+                <div style="flex: 1;">
+                    <div style="background-color: #e2e2e2; padding: 8px; color: black; font-weight: bold; margin-bottom: 5px;">Código</div>
+                    <mat-form-field appearance="outline" style="width: 100%;">
+                        <input matInput formControlName="ctrol_codigo">
+                    </mat-form-field>
+                </div>
+                <div style="flex: 1;">
+                    <div style="background-color: #e2e2e2; padding: 8px; color: black; font-weight: bold; margin-bottom: 5px;">Versión</div>
+                    <mat-form-field appearance="outline" style="width: 100%;">
+                        <input matInput formControlName="ctrol_version">
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <!-- Fila 3: Tiempo de conservación -->
+            <div class="row" style="width: 100%; display: flex; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <div style="background-color: #e2e2e2; padding: 8px; color: black; font-weight: bold; margin-bottom: 5px;">Tiempo de conservación (*)</div>
+                    <mat-form-field appearance="outline" style="width: 100%;">
+                        <mat-select formControlName="ctrol_tiempo_conservacion">
+                            <mat-option value="1 año">1 año</mat-option>
+                            <mat-option value="3 años">3 años</mat-option>
+                            <mat-option value="5 años">5 años</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <!-- Fila 4: Normas -->
+            <div class="row" style="width: 100%; display: flex; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <div style="background-color: #e2e2e2; padding: 8px; color: black; font-weight: bold; margin-bottom: 5px;">Norma/s (*)</div>
+                    <div style="border: 1px solid #e0e0e0; padding: 10px; border-radius: 4px;" class="checkbox-group">
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <mat-checkbox formControlName="chk_iso_14001">ISO 14001:2015</mat-checkbox>
+                            <mat-checkbox formControlName="chk_iso_9001">ISO 9001:2015</mat-checkbox>
+                            <mat-checkbox formControlName="chk_otra">Otra</mat-checkbox>
+                            <mat-checkbox formControlName="chk_wrap">WRAP</mat-checkbox>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <mat-checkbox formControlName="chk_iso_45001">ISO 45001:2018</mat-checkbox>
+                            <mat-checkbox formControlName="chk_ley_28783">Ley N° 28783</mat-checkbox>
+                            <mat-checkbox formControlName="chk_wca">WCA</mat-checkbox>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fila 5: Archivo y Descripción -->
+            <div class="row" style="width: 100%; display: flex; margin-bottom: 15px; gap: 15px;">
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 15px;">
+                    <div>
+                        <div style="background-color: #e2e2e2; padding: 8px; color: black; font-weight: bold; margin-bottom: 5px;">Archivo (*)</div>
+                        <div style="border: 1px solid #e0e0e0; padding: 10px; border-radius: 4px;">
+                            <input type="file" (change)="onArchivoSeleccionado($event)" style="margin-bottom: 5px;">
+                            <div style="font-size: 11px; color: #666;">Tamaño de archivo máximo: 20 MB</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="background-color: #e2e2e2; padding: 8px; color: black; font-weight: bold; margin-bottom: 5px;">Permitir la descarga del documento</div>
+                        <mat-form-field appearance="outline" style="width: 100%;">
+                            <mat-select formControlName="ctrol_descarga_permitida">
+                                <mat-option value="Descarga permitida">Descarga permitida</mat-option>
+                                <mat-option value="Descarga no permitida">Descarga no permitida</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                        <div style="font-size: 11px; color: #666; margin-top: -15px; margin-bottom: 15px;">
+                            * La visualización sin descarga solo será posible para los tipos de archivos siguientes: DOCX, DOC, PDF, JPG, JPEG, GIF, PNG, HTML, HTM, TXT, XLS, XLSX.
+                        </div>
+                    </div>
+                </div>
+                <div style="flex: 1;">
+                    <div style="background-color: #e2e2e2; padding: 8px; color: black; font-weight: bold; margin-bottom: 5px;">Descripción</div>
+                    <mat-form-field appearance="outline" style="width: 100%;">
+                        <textarea matInput formControlName="ctrol_descripcion" rows="6"></textarea>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <!-- Fila 6: Registros Asociados -->
+            <div class="row" style="width: 100%; display: flex; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <div style="background-color: #e2e2e2; padding: 8px; color: black; font-weight: bold; margin-bottom: 5px;">Registros asociados</div>
+                    <div style="border: 1px solid #e0e0e0; padding: 10px; border-radius: 4px;">
+                        <mat-radio-group formControlName="ctrol_registros_asociados">
+                            <mat-radio-button value="No" style="margin-right: 20px;">No</mat-radio-button>
+                            <mat-radio-button value="Si">Sí</mat-radio-button>
+                        </mat-radio-group>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fila 7: Documento controlado / Requiere revisión -->
+            <div class="row" style="width: 100%; display: flex; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <div style="background-color: #e2e2e2; padding: 8px; color: black; font-weight: bold; margin-bottom: 5px;">Documento controlado / Requiere revisión</div>
+                    <div style="border: 1px solid #e0e0e0; padding: 10px; border-radius: 4px;">
+                        <mat-radio-group formControlName="ctrol_requiere_revision">
+                            <mat-radio-button value="No" style="margin-right: 20px;">No</mat-radio-button>
+                            <mat-radio-button value="Si">Sí</mat-radio-button>
+                        </mat-radio-group>
+                    </div>
+                </div>
+            </div>
+
+        </mat-card-content>    
+
+        <div class="button-row" style="background-color: white; border: none; margin-top: 10px; padding-left: 15px;"> 
+            <button mat-flat-button color="warn" style="background-color: black; color: white;" class="form-button" (click)="onSave()"> 
+                Guardar y cerrar
+            </button>
+            <button mat-flat-button color="warn" style="background-color: black; color: white;" class="form-button" (click)="onClose()">
+                Cancelar y volver
+            </button>
+        </div>  
+    </mat-card>
+</form>

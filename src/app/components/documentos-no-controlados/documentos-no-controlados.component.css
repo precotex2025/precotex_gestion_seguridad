@@ -1,0 +1,137 @@
+/* ===== TOOLBAR ===== */
+
+.toolbar{
+  display:flex;
+  justify-content:space-between;
+  background:#0f172a;
+  color:white;
+  padding:10px 20px;
+}
+
+.left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.icono{
+  color:#38bdf8;
+}
+
+.titulo{
+  font-size:18px;
+  font-weight:600;
+}
+
+.right{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.filtros-card {
+  margin: 20px 0;
+  padding: 15px;
+  background:white;
+  height: auto;
+  margin-top: -5px;
+  padding-top: 1px;
+  padding-bottom: 15px;
+}
+
+.acciones-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+  gap: 15px;
+}
+
+/* Estilos para las filas agrupadoras (carpetas) */
+::ng-deep .carpeta-group-row {
+    background-color: #2b2b2b !important;
+    height: 48px !important;
+}
+
+::ng-deep .carpeta-group-row td.mat-cell {
+    border-bottom: none !important;
+    padding: 0 !important;
+}
+
+::ng-deep .carpeta-header-row {
+    display: flex;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    padding: 0 24px;
+    height: 100%;
+    cursor: pointer;
+}
+
+::ng-deep .carpeta-header-row:hover {
+    background-color: #3f3f3f;
+}
+
+
+.buscador{
+  background:white;
+  border-radius:8px;
+  width:250px;
+}
+
+.filtros{
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 4 columnas */
+  gap: 10px;
+  row-gap: normal;
+}
+
+.botones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap; /* evita que bajen de línea */
+}
+
+.botones button {
+  width: auto;        /* tamaño natural */
+  min-width: unset;   /* evita tamaño mínimo de Material */
+  white-space: nowrap; /* evita salto de texto */
+}
+
+.contenedor{
+  padding:20px;
+  border-radius:12px;
+}
+
+.filtro{
+  width:300px;
+  margin-bottom:15px;
+}
+
+.botones-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.botones-derecha {
+  display: flex;
+  gap: 10px;
+}
+
+.botones-row button {
+  border-radius: 20px !important;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 40px;
+  padding: 0 16px;
+}
+
+.BtnExportarPdf, .BtnExportarExcel {
+  background-color: #b90000 !important;
+  color: white !important;
+}
