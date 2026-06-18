@@ -48,6 +48,7 @@ import { DocumentosControladosRegeditComponent } from './components/documentos-c
 import { UsuariosPersonasComponent } from './components/usuarios-personas/usuarios-personas.component';
 import { DocumentacionPersonasComponent } from './components/documentacion-personas/documentacion-personas.component';
 import { DocumentacionPersonasRegeditComponent } from './components/documentacion-personas/documentacion-personas-regedit/documentacion-personas-regedit.component';
+import { PrincipalComponent } from './components/principal/principal.component';
 
 
 @NgModule({
@@ -71,7 +72,8 @@ import { DocumentacionPersonasRegeditComponent } from './components/documentacio
     DocumentosControladosRegeditComponent,
     UsuariosPersonasComponent,
     DocumentacionPersonasComponent,
-    DocumentacionPersonasRegeditComponent
+    DocumentacionPersonasRegeditComponent,
+    PrincipalComponent
   ],
   imports: [
     BrowserModule     ,

@@ -11,15 +11,17 @@ import { PuestosComponent } from './components/puestos/puestos.component';
 import { DocumentosControladosComponent } from './components/documentos-controlados/documentos-controlados.component';
 import { UsuariosPersonasComponent } from './components/usuarios-personas/usuarios-personas.component';
 import { DocumentacionPersonasComponent } from './components/documentacion-personas/documentacion-personas.component';
+import { PrincipalComponent } from './components/principal/principal.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch:'full' },
   // { path: "root",   component: AppComponent },
   { path: "login", component: LoginComponent }, 
-
   //Layout Principal pes
   {
-    path: "principal", component : LayoutComponent, children: [
+    path: "principal", component : LayoutComponent, 
+    children: [
+      { path: "", component: PrincipalComponent }, 
       { path: "normas"      , component: NormasComponent },
       { path: "organizacion", component: OrganizacionComponent },
       { path: "puestos", component: PuestosComponent },
