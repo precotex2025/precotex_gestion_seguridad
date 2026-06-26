@@ -1,0 +1,128 @@
+<!-- MODO LISTADO -->
+<div *ngIf="!modoEdicion" class="form-content">
+  
+  <form [formGroup]="formulario" (ngSubmit)="onFiltrar()" class="form-content" style="gap: 0;">
+    <!-- Opciones de Filtrado Card -->
+    <mat-card class="filtros-card">
+      <mat-card-subtitle class="card-title">Opciones de Filtrado (Planes)</mat-card-subtitle>
+      
+      <div class="planes-filtros-grid">
+        
+        <!-- Búsqueda Libre -->
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Búsqueda Libre</mat-label>
+          <input matInput formControlName="ctrol_busqueda" placeholder="Buscar por denominación, tipo o frecuencia...">
+        </mat-form-field>
+
+        <!-- Tipo -->
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Tipo</mat-label>
+          <mat-select formControlName="ctrol_tipo">
+            <mat-option value="">Todos los Tipos</mat-option>
+            <mat-option *ngFor="let t of lstTipos" [value]="t.codigo">{{ t.descripcion }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Frecuencia -->
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Frecuencia</mat-label>
+          <mat-select formControlName="ctrol_frecuencia">
+            <mat-option value="">Todas las Frecuencias</mat-option>
+            <mat-option *ngFor="let f of lstFrecuencias" [value]="f.codigo">{{ f.descripcion }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Action buttons aligned right next to filters -->
+        <div class="planes-actions-group">
+          <button type="submit" class="BtnFiltrar" mat-flat-button>
+            Filtrar
+          </button>
+          <button type="button" class="BtnVolver" mat-flat-button (click)="onVolver()">
+            <mat-icon>arrow_back</mat-icon> Volver
+          </button>
+        </div>
+        
+      </div>
+    </mat-card>
+  </form>
+
+  <!-- Button to add new plan -->
+  <div class="table-actions-row">
+    <button type="button" class="BtnCrearPlan" mat-flat-button (click)="onNuevoPlan()">
+      <mat-icon>add</mat-icon> Nuevo Plan
+    </button>
+  </div>
+
+  <!-- Tabla de resultados de los planes -->
+  <table mat-table [dataSource]="dataSourceMedicion" matSort class="tabla-wrapper">
+
+    <!-- Ver / Gestionar (Acciones Agrupadas) -->
+    <ng-container matColumnDef="gestionar">
+      <th mat-header-cell *matHeaderCellDef style="text-align: center; width: 300px;">Ver / Gestionar</th>
+      <td mat-cell *matCellDef="let row" style="text-align: center;">
+        <div class="action-buttons-cell">
+          <button type="button" mat-flat-button class="btn-action-gestionar" (click)="onVerMediciones(row)" title="Gestionar plan">
+            <mat-icon>calendar_month</mat-icon> Gestionar
+          </button>
+          <button type="button" mat-flat-button class="btn-action-editar" (click)="onEditar(row)" title="Editar plan">
+            <mat-icon>edit</mat-icon> Editar
+          </button>
+          <button type="button" mat-flat-button class="btn-action-eliminar" (click)="onEliminar(row)" title="Eliminar plan">
+            <mat-icon>delete</mat-icon> Eliminar
+          </button>
+          <button type="button" mat-flat-button class="btn-action-ficha" (click)="onVerDetalle(row)" title="Ver ficha">
+            <mat-icon>description</mat-icon> Ficha
+          </button>
+        </div>
+      </td>
+    </ng-container>
+
+
+
+    <!-- Fecha Alta -->
+    <ng-container matColumnDef="fechaAlta">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Alta</th>
+      <td mat-cell *matCellDef="let row">{{row.fechaAlta}}</td>
+    </ng-container>
+
+    <!-- Denominación -->
+    <ng-container matColumnDef="denominacion">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Denominación</th>
+      <td mat-cell *matCellDef="let row">{{row.denominacion}}</td>
+    </ng-container>
+
+    <!-- Tipo -->
+    <ng-container matColumnDef="tipo">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo</th>
+      <td mat-cell *matCellDef="let row">{{row.tipo}}</td>
+    </ng-container>
+
+    <!-- Frecuencia -->
+    <ng-container matColumnDef="frecuencia">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Frecuencia</th>
+      <td mat-cell *matCellDef="let row">{{row.frecuencia}}</td>
+    </ng-container>
+
+    <!-- Usuarios -->
+    <ng-container matColumnDef="usuarios">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Usuarios</th>
+      <td mat-cell *matCellDef="let row" class="usuarios-cell">
+        <span class="user-count">{{row.usuarios}}</span>
+        <mat-icon class="user-icon">person</mat-icon>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+  </table>
+
+  <!-- Paginación estilo listado del sistema -->
+  <div class="paginacion-wrapper">
+    <span class="paginacion-btn">Anterior</span>
+    <span class="paginacion-numero active">1</span>
+    <span class="paginacion-btn">Siguiente</span>
+  </div>
+
+</div>
+

@@ -1,0 +1,94 @@
+<div class="modal-container">
+  <!-- Cabecera -->
+  <div class="header-section">
+    <h1 class="main-title">Revisión de Alta de Usuarios en el Sistema</h1>
+  </div>
+
+  <!-- Botones de Acción Superiores -->
+  <div class="action-row">
+    <button type="button" class="btn-cerrar" (click)="onCerrar()">
+      <mat-icon>reply</mat-icon>
+      Cerrar Ventana
+    </button>
+    
+    <button type="button" class="btn-revision-realizada" (click)="onRealizarRevision()">
+      Revisión Realizada
+    </button>
+  </div>
+
+  <!-- Tabla de Usuarios -->
+  <div class="table-scroll-container">
+    <table class="revision-table">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Puesto</th>
+          <th>Estado</th>
+          <th>Alta en Sistema</th>
+          <th>Baja en Sistema</th>
+          <th>Último Acceso</th>
+          <th>Desactivar</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of usuarios" [class.marked-deactivated]="user.desactivar">
+          <!-- Usuario -->
+          <td>
+            <span class="user-text" *ngIf="user.usuario">{{ user.usuario }}</span>
+            <span class="empty-field" *ngIf="!user.usuario">&nbsp;</span>
+          </td>
+          
+          <!-- Puesto -->
+          <td>
+            <span [class.puesto-sin-asignar]="user.puesto === 'PUESTO SIN ASIGNAR'">
+              {{ user.puesto || '&nbsp;' }}
+            </span>
+          </td>
+          
+          <!-- Estado -->
+          <td>
+            <span [class]="user.estado === 'Activo' ? 'status-activo' : 'status-desactivado'">
+              {{ user.estado }}
+            </span>
+          </td>
+          
+          <!-- Alta en Sistema -->
+          <td>
+            <span>{{ user.alta || '&nbsp;' }}</span>
+          </td>
+          
+          <!-- Baja en Sistema -->
+          <td>
+            <span>{{ user.baja || '&nbsp;' }}</span>
+          </td>
+          
+          <!-- Último Acceso -->
+          <td>
+            <span>{{ user.ultimoAcceso || '&nbsp;' }}</span>
+          </td>
+          
+          <!-- Desactivar Checkbox -->
+          <td class="center-align">
+            <span *ngIf="user.estado === 'Activo'" class="checkbox-container" (click)="toggleDesactivar(user)">
+              <mat-checkbox 
+                [checked]="user.desactivar" 
+                (change)="user.desactivar = $event.checked"
+                color="primary"
+                (click)="$event.stopPropagation()">
+                Desactivar
+              </mat-checkbox>
+            </span>
+            <span *ngIf="user.estado !== 'Activo'">&nbsp;</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Botones de Acción Inferiores -->
+  <div class="bottom-action-row">
+    <button type="button" class="btn-revision-realizada" (click)="onRealizarRevision()">
+      Revisión Realizada
+    </button>
+  </div>
+</div>

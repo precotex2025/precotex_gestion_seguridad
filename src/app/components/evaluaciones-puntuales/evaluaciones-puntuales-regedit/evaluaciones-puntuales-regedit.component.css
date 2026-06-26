@@ -1,0 +1,358 @@
+.dialog-container {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.banner-header {
+  background-color: #1e293b !important;
+  color: white !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  padding: 0 20px !important;
+}
+
+.banner-header .titulo {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.form-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 72vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.form-section-header {
+  background-color: #f1f5f9;
+  border-top: 2px solid #c00000;
+  border-bottom: 1px solid #cbd5e1;
+  color: #c00000;
+  font-weight: bold;
+  font-size: 13px;
+  padding: 8px 12px;
+  margin-top: 15px;
+  margin-bottom: 8px;
+  border-radius: 2px;
+}
+
+.input-plan {
+  width: 100%;
+  height: 38px;
+  padding: 0 10px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 13.5px;
+  box-sizing: border-box;
+  margin-bottom: 5px;
+}
+
+.input-plan:focus {
+  outline: none;
+  border-color: #3f51b5;
+}
+
+::ng-deep .compact-datepicker .mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
+
+.compact-datepicker {
+  width: 100%;
+}
+
+.select-plan {
+  width: 100%;
+  height: 36px;
+  padding: 0 8px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 13px;
+  background-color: white;
+  box-sizing: border-box;
+}
+
+.select-plan:focus {
+  outline: none;
+  border-color: #3f51b5;
+}
+
+/* Grilla de Personal y Filtros */
+.personal-seccion-grid {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.filtros-container {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.filtros-label {
+  font-weight: bold;
+  font-size: 12.5px;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+}
+
+.filtro-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filtro-item label {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.BtnFiltrar {
+  background-color: #c00000 !important;
+  color: white !important;
+  font-weight: bold !important;
+  margin-top: 10px;
+  height: 36px !important;
+  border-radius: 4px !important;
+}
+
+/* Transfer List (Dual Listbox) */
+.transfer-list-container {
+  display: grid;
+  grid-template-columns: 1fr 55px 1fr;
+  gap: 10px;
+  align-items: center;
+  height: 100%;
+}
+
+.listbox-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+}
+
+.listbox-header {
+  font-size: 12px;
+  font-weight: bold;
+  color: #475569;
+  padding-left: 2px;
+}
+
+.native-listbox {
+  width: 100%;
+  height: 280px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 6px;
+  font-size: 13px;
+  color: #334155;
+  background-color: white;
+  box-sizing: border-box;
+}
+
+.native-listbox:focus {
+  outline: none;
+  border-color: #3f51b5;
+}
+
+.native-listbox option {
+  padding: 6px 8px;
+  border-bottom: 1px solid #f1f5f9;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.native-listbox option:hover {
+  background-color: #f1f5f9;
+}
+
+.native-listbox option:checked {
+  background-color: #3f51b5 !important;
+  color: white !important;
+}
+
+.transfer-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-transfer {
+  background-color: #1e293b !important;
+  color: white !important;
+  width: 36px !important;
+  height: 36px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+}
+
+.btn-transfer mat-icon {
+  margin: 0 !important;
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+}/* Documentos y Cuestionarios */
+.documentos-cuestionarios-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.subseccion-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.subseccion-titulo {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.red-table-wrapper {
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.red-table-header {
+  background-color: #c00000;
+  color: white;
+  padding: 6px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 38px;
+  box-sizing: border-box;
+}
+
+.red-table-header .header-title {
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.btn-solicitar {
+  background-color: #c00000;
+  color: white;
+  border: 1px solid white;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  height: 26px;
+  padding: 0 10px;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-solicitar:hover {
+  background-color: white;
+  color: #c00000;
+}
+
+.red-table-body {
+  background-color: #f8fafc;
+  min-height: 40px;
+  display: flex;
+  flex-direction: column;
+}
+
+.red-table-empty {
+  padding: 12px;
+  font-size: 12px;
+  color: #64748b;
+  text-align: left;
+}
+
+.red-table-row {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #334155;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: white;
+}
+
+.red-table-row:last-child {
+  border-bottom: none;
+}
+
+/* Carta de Comunicación */
+.carta-comunicacion-container {
+  margin-top: 5px;
+  margin-bottom: 10px;
+}
+
+.btn-carta-editar {
+  background-color: #c00000 !important;
+  color: white !important;
+  font-weight: bold !important;
+  height: 38px !important;
+  border-radius: 4px !important;
+}
+
+/* Acciones Inferiores */
+.dialog-actions-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 12px 20px;
+  border-top: 1px solid #e2e8f0;
+  gap: 10px;
+  min-height: 60px;
+}
+
+.BtnGuardarYEnviar {
+  background-color: #c00000 !important;
+  color: white !important;
+  font-weight: bold;
+  height: 40px !important;
+}
+
+.BtnCancelarPlan {
+  background-color: #757575 !important;
+  color: white !important;
+  font-weight: bold;
+  height: 40px !important;
+}
+@media (max-width: 768px) {
+  .personal-seccion-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .transfer-list-container {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .transfer-buttons {
+    flex-direction: row;
+    margin: 10px 0;
+    gap: 20px;
+  }
+}

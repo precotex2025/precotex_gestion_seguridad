@@ -90,11 +90,12 @@
 
 /* Header */
 .mat-header-row{
-  background:#1e293b;
+  background:transparent;
+  border-bottom: 1.5px solid #cbd5e1;
 }
 
 .mat-header-cell{
-  color:white;
+  color:#334155 !important;
   font-weight:600;
 }
 

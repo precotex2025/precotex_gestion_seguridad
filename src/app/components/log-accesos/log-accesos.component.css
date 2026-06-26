@@ -1,0 +1,205 @@
+.contenedor {
+  padding: 24px;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  color: #333;
+}
+
+/* Opciones de Filtrado */
+.filtros-container {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 16px 20px;
+  background-color: #fafafa;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.legend-title {
+  font-weight: bold;
+  font-size: 13.5px;
+  color: #444;
+  padding: 0 8px;
+}
+
+.filtros-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+.filtro-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.filtro-campo label {
+  font-size: 11.5px;
+  font-weight: bold;
+  color: #666;
+}
+
+/* Select */
+.select-wrapper select {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  color: #333;
+  outline: none;
+  height: 32px;
+}
+
+/* Date input */
+.date-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.date-input-wrapper input {
+  width: 100%;
+  padding: 6px 10px;
+  padding-right: 32px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+  height: 32px;
+  box-sizing: border-box;
+}
+
+.calendar-icon {
+  position: absolute;
+  right: 8px;
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  color: #777;
+  pointer-events: none;
+}
+
+/* Botón Filtrar */
+.btn-filtrar-container {
+  display: flex;
+  align-items: center;
+}
+
+.btn-filtrar {
+  background-color: #c00000;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0 20px;
+  height: 32px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-filtrar:hover {
+  background-color: #a00000;
+}
+
+/* Contador */
+.contador-registros {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+/* Tabla de Resultados */
+.table-container {
+  background: white;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  border: 1px solid #ddd;
+  margin-bottom: 24px;
+  padding: 4px;
+  background-color: #e5e5e5;
+}
+
+.logs-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 6px 6px;
+}
+
+.logs-table th {
+  background-color: #c00000;
+  color: white;
+  font-weight: bold;
+  font-size: 13px;
+  padding: 10px 12px;
+  text-align: left;
+  border-radius: 2px;
+}
+
+.logs-table td {
+  background-color: #f7f7f7;
+  color: #333;
+  font-size: 12.5px;
+  padding: 10px 12px;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+
+.logs-table tr:hover td {
+  background-color: #f0f0f0;
+}
+
+.col-fecha {
+  font-family: monospace, Courier, sans-serif;
+  color: #555;
+  font-weight: 500;
+}
+
+.col-usuario {
+  font-weight: bold;
+}
+
+.col-puesto {
+  color: #555;
+}
+
+/* Paginación */
+.paginacion-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 15px;
+}
+
+.page-btn {
+  background-color: #c00000;
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  transition: background-color 0.2s;
+}
+
+.page-btn:hover {
+  background-color: #a00000;
+}
+
+.page-active {
+  background-color: #666666 !important;
+  color: white;
+  cursor: default;
+}

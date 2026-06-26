@@ -1,0 +1,263 @@
+.dialog-container {
+  padding: 15px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.banner-header {
+  background: #0f172a !important;
+  color: white !important;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
+
+.titulo {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-section-header {
+  background-color: #e6e6e6;
+  border: 1px solid #000000;
+  color: #000000;
+  font-weight: bold; 
+  font-size: 13.5px;
+  padding: 6px 12px;
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+
+.input-plan, .select-plan {
+  width: 100%;
+  height: 38px;
+  border: 1px solid #000000;
+  border-radius: 4px;
+  padding: 0 10px;
+  font-size: 13.5px;
+  box-sizing: border-box;
+  outline: none;
+  background-color: white;
+}
+
+.input-plan:focus, .select-plan:focus {
+  border-color: #000000;
+  box-shadow: 0 0 0 2px rgba(192, 0, 0, 0.1);
+}
+
+.textarea-plan {
+  width: 100%;
+  border: 1px solid #000000;
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 13.5px;
+  resize: vertical;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.textarea-plan:focus {
+  border-color: #000000;
+  box-shadow: 0 0 0 2px rgba(192, 0, 0, 0.1);
+}
+
+/* Material Select specific compactness */
+.compact-select {
+  margin-bottom: -15px;
+}
+
+::ng-deep .compact-select .mat-mdc-form-field-flex {
+  height: 38px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  align-items: center !important;
+}
+
+::ng-deep .compact-select .mat-mdc-form-field-infix {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+  min-height: unset !important;
+}
+
+::ng-deep .compact-select .mat-mdc-text-field-wrapper {
+  background-color: white !important;
+  border: 1px solid #000000 !important;
+  border-radius: 4px !important;
+}
+
+::ng-deep .compact-select .mat-mdc-form-field-focus-indicator {
+  display: none !important;
+}
+
+::ng-deep .compact-select .mdc-notched-outline {
+  display: none !important;
+}
+
+::ng-deep .compact-select .mat-mdc-select-trigger {
+  font-size: 13.5px;
+}
+
+::ng-deep .compact-select .mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
+
+.radio-group-container {
+  padding: 4px 12px;
+}
+
+::ng-deep .radio-group-container .mat-mdc-radio-button {
+  margin-right: 25px;
+}
+
+/* Custom Mat Radio Colors matching the corporate red */
+::ng-deep .radio-group-container .mdc-radio__background::before {
+  background-color: #000000 !important;
+}
+
+::ng-deep .radio-group-container .mat-mdc-radio-button.mat-accent {
+  --mdc-radio-selected-focus-icon-color: #000000;
+  --mdc-radio-selected-hover-icon-color: #000000;
+  --mdc-radio-selected-icon-color: #000000;
+  --mdc-radio-selected-pressed-icon-color: #000000;
+}
+
+.dialog-actions-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: flex-start;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 15px;
+}
+
+.BtnGuardarPlan {
+  background-color: #c00000 !important;
+  color: white !important;
+  font-weight: bold;
+  height: 38px !important;
+  padding: 0 20px !important;
+  border-radius: 4px;
+}
+
+.BtnCancelarPlan {
+  background-color: #757575 !important;
+  color: white !important;
+  font-weight: bold;
+  height: 38px !important;
+  padding: 0 20px !important;
+  border-radius: 4px;
+}
+
+/* Documentos y Cuestionarios */
+.documentos-cuestionarios-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.subseccion-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.subseccion-titulo {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.red-table-wrapper {
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.red-table-header {
+  background-color: #c00000;
+  color: white;
+  padding: 6px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 38px;
+  box-sizing: border-box;
+}
+
+.red-table-header .header-title {
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.btn-solicitar {
+  background-color: #c00000;
+  color: white;
+  border: 1px solid white;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  height: 26px;
+  padding: 0 10px;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-solicitar:hover {
+  background-color: white;
+  color: #c00000;
+}
+
+.red-table-body {
+  background-color: #f8fafc;
+  min-height: 40px;
+  display: flex;
+  flex-direction: column;
+}
+
+.red-table-empty {
+  padding: 12px;
+  font-size: 12px;
+  color: #64748b;
+  text-align: left;
+}
+
+.red-table-row {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #334155;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: white;
+}
+
+.red-table-row:last-child {
+  border-bottom: none;
+}
+
+/* Carta de Comunicación */
+.carta-comunicacion-container {
+  margin-top: 5px;
+  margin-bottom: 10px;
+}
+
+.btn-carta-editar {
+  background-color: #c00000 !important;
+  color: white !important;
+  font-weight: bold !important;
+  height: 38px !important;
+  border-radius: 4px !important;
+}

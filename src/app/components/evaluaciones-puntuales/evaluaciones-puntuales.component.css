@@ -1,0 +1,174 @@
+.contenedor {
+  padding: 20px;
+}
+
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.acciones-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.acciones-row button {
+  border-radius: 20px !important;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 40px;
+  padding: 0 16px;
+}
+
+.BtnCrear {
+  background-color: #3f51b5 !important;
+  color: white !important;
+}
+
+.BtnHistorico {
+  background-color: #1e293b !important;
+  color: white !important;
+}
+
+/* Table Style */
+.tabla-wrapper {
+  border-collapse: collapse;
+  width: 100%;
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+::ng-deep .tabla-wrapper th {
+  background-color: transparent !important;
+  color: #334155 !important;
+  font-weight: 600 !important;
+  font-size: 13.5px;
+  height: 44px;
+  text-align: left;
+  padding: 0 15px;
+  border-bottom: 1.5px solid #cbd5e1 !important;
+}
+
+::ng-deep .tabla-wrapper td {
+  font-size: 13.5px;
+  color: #334155;
+  height: 48px;
+  padding: 0 15px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+::ng-deep .tabla-wrapper tr:hover {
+  background-color: #f8fafc;
+}
+
+.eval-title-cell {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+/* Badges */
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 4px;
+  text-align: center;
+  min-width: 60px;
+}
+
+.status-success {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Actions cell buttons */
+.btn-action-info {
+  background-color: #3f51b5 !important;
+  color: white !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  height: 32px !important;
+  padding: 0 10px !important;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-action-stats {
+  background-color: #1e293b !important;
+  color: white !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  height: 32px !important;
+  padding: 0 10px !important;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-action-ok {
+  background-color: #2e7d32 !important;
+  color: white !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  height: 32px !important;
+  padding: 0 10px !important;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-action-cancel {
+  background-color: #c00000 !important;
+  color: white !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  height: 32px !important;
+  padding: 0 10px !important;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-action-info mat-icon,
+.btn-action-stats mat-icon,
+.btn-action-ok mat-icon,
+.btn-action-cancel mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  margin: 0 !important;
+}
+
+.action-buttons-cell {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 600px) {
+  .acciones-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .acciones-row button {
+    width: 100%;
+  }
+}

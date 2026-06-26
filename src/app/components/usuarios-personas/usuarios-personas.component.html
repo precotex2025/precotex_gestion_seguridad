@@ -73,13 +73,13 @@
                 <div class="botones-row">
                     <div class="botones-izquierda">
                         <button type="button" class="BtnFiltrar" mat-flat-button (click)="onBuscar()">
-                            <mat-icon>filter_alt</mat-icon> Filtrar
+                            <mat-icon>search</mat-icon> Buscar
                         </button>
                     </div>
 
                     <div class="botones-derecha">
                         <button type="button" class="BtnCrear" mat-flat-button (click)="onAgregar()">
-                            <mat-icon>person_add</mat-icon> Agregar
+                            <mat-icon>person_add</mat-icon> Nuevo Usuario/Persona
                         </button>    
 
                         <button type="button" class="BtnExportar" mat-flat-button (click)="onExportar()">
@@ -97,49 +97,89 @@
         <!-- TABLA -->
         <table mat-table [dataSource]="dataSource" matSort class="tabla-wrapper">
 
-            <!-- Código -->
-            <ng-container matColumnDef="codigo">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Código</th>
-                <td mat-cell *matCellDef="let row">{{row.codigo_Persona}}</td>
-            </ng-container>     
+            <!-- Activo -->
+            <ng-container matColumnDef="activo">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Activo</th>
+                <td mat-cell *matCellDef="let row">
+                    <span [ngClass]="(row.flg_Activo === 'True' || row.flg_Activo === '1') ? 'activo' : 'inactivo'">
+                        {{ (row.flg_Activo === 'True' || row.flg_Activo === '1') ? 'Activo' : 'Inactivo' }}
+                    </span>
+                </td>
+            </ng-container> 
 
-
-
-            <!-- Organización -->
-            <ng-container matColumnDef="organizacion">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Organización</th>
-                <td mat-cell *matCellDef="let row">{{row.organizacion}}</td>
+            <!-- NOMBRE -->
+            <ng-container matColumnDef="nombre">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Nombre</th>
+                <td mat-cell *matCellDef="let row">{{row.nombre}}</td>
             </ng-container>             
             
-            <!-- Sede -->
-            <ng-container matColumnDef="sede">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Sede</th>
-                <td mat-cell *matCellDef="let row">{{row.sede}}</td>
+            <!-- Apellidos -->
+            <ng-container matColumnDef="apellidos">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Apellidos</th>
+                <td mat-cell *matCellDef="let row">{{row.apellidos}}</td>
             </ng-container>              
             
-            <!-- Puesto -->
-            <ng-container matColumnDef="puesto">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Puesto</th>
-                <td mat-cell *matCellDef="let row">{{row.puesto}}</td>
+            <!-- EMAIL -->
+            <ng-container matColumnDef="email">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
+                <td mat-cell *matCellDef="let row">{{row.email}}</td>
             </ng-container>              
 
-            <!-- Nivel Riesgo -->
-            <ng-container matColumnDef="nivel">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Nivel Riesgo</th>
-                <td mat-cell *matCellDef="let row">{{row.nivelRiesgo}}</td>
+            <!-- TELEFONO -->
+            <ng-container matColumnDef="teléfono">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Teléfono</th>
+                <td mat-cell *matCellDef="let row">{{row.telefono}}</td>
             </ng-container>   
             
-            <!-- Estado -->
-            <ng-container matColumnDef="estado">
-                <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <!-- SEDE -->
+            <ng-container matColumnDef="sede">
+                <th mat-header-cell *matHeaderCellDef>Sede</th>
                 <td mat-cell *matCellDef="let row">
-                    <span [ngClass]="row.flg_Activo === 'True' ? 'activo' : 'inactivo'">
-                        {{row.flg_Activo === "True" ? 'Activo' : 'Inactivo'}}
-                    </span>
+                    {{row.sede}}
                 </td>
             </ng-container>     
             
-            <!-- Acciones -->
+            <!-- PUESTO -->
+            <ng-container matColumnDef="puesto">
+                <th mat-header-cell *matHeaderCellDef>Puesto</th>
+                <td mat-cell *matCellDef="let row">
+                    {{row.puesto}}
+                </td>
+            </ng-container>     
+            
+            <!-- PROXIMA -->
+            <ng-container matColumnDef="proxima">
+                <th mat-header-cell *matHeaderCellDef>Proxima</th>
+                <td mat-cell *matCellDef="let row">
+                    {{row.proxima}}
+                </td>
+            </ng-container>     
+            
+            <!-- ESTADO EVALUCIÓN -->
+            <ng-container matColumnDef="estado_evaluacion">
+                <th mat-header-cell *matHeaderCellDef>Estado Evaluación</th>
+                <td mat-cell *matCellDef="let row">
+                    <span [ngClass]="row.estado_evaluacion === 'True' ? 'activo' : 'inactivo'">
+                        {{row.estado_evaluacion === "True" ? 'Activo' : 'Inactivo'}}
+                    </span>
+                </td>
+            </ng-container>
+
+            <!-- PROXIMA EVALUACION PLANIFICADA -->
+            <ng-container matColumnDef="prox-evalución-plant">
+                <th mat-header-cell *matHeaderCellDef>PROXIMA EVALUACION PLANIFICADA</th>
+                <td mat-cell *matCellDef="let row">
+                    {{row.proxima_evaluacion_plan}}
+                </td>
+            </ng-container>
+
+            <!-- ACCIONES EVALUCIÓN ACTUAL -->
+            <ng-container matColumnDef="acc-evaluación-act">
+                <th mat-header-cell *matHeaderCellDef>ACCIONES EVALUACIÓN ACTUAL</th>
+                <td mat-cell *matCellDef="let row"></td>
+            </ng-container>
+            
+            <!-- ACCIONES -->
             <ng-container matColumnDef="acciones">
                 <th mat-header-cell *matHeaderCellDef>Acciones</th>
                 <td mat-cell *matCellDef="let e">

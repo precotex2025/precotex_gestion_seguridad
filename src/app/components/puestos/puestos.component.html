@@ -12,7 +12,7 @@
                 <!-- FILTROS -->
                 <div class="filtros">
 
-                    <mat-form-field appearance="outline" style="flex: 1;">
+                    <mat-form-field appearance="outline" class="filtro-select">
                         <mat-label>Organización </mat-label>
                         <mat-select formControlName="ctrol_organizacion" (selectionChange)="onChangeOrga($event)">
                             <mat-option *ngFor="let orga of lstOrganizacion" [value]="orga.codigo">
@@ -21,7 +21,7 @@
                         </mat-select>
                     </mat-form-field>   
                      
-                    <mat-form-field appearance="outline" style="flex: 1;">
+                    <mat-form-field appearance="outline" class="filtro-select">
                         <mat-label>Sede </mat-label>
                         <mat-select formControlName="ctrol_sede" >
                             <mat-option *ngFor="let sede of lstSedes" [value]="sede.codigo">
@@ -30,7 +30,7 @@
                         </mat-select>
                     </mat-form-field>                   
 
-                    <mat-form-field appearance="outline" style="flex: 1;">
+                    <mat-form-field appearance="outline" class="filtro-select">
                         <mat-label>Nivel de Riesgo</mat-label>
                         <mat-select formControlName="ctrol_nivel">
                             <mat-option *ngFor="let nivel of lstNivelRiesgo" [value]="nivel.codigo">
@@ -70,61 +70,78 @@
 
         <table mat-table [dataSource]="dataSource" matSort class="tabla-wrapper">
 
-            <!-- Código -->
-            <ng-container matColumnDef="codigo">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Código</th>
-                <td mat-cell *matCellDef="let row">{{row.codigo_Puesto}}</td>
+            <!-- FICHA DESCRIPCIóN -->
+            <ng-container matColumnDef="ficha_descrip">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Ficha Descripción</th>
+                <td mat-cell *matCellDef="let row">
+                    <button type="button" mat-icon-button color="primary" (click)="onVerFicha(row)" title="Ver Ficha">
+                        <mat-icon>description</mat-icon>
+                    </button>
+                </td>
             </ng-container>     
 
-            <!-- Puesto -->
-            <ng-container matColumnDef="denominacion">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Puesto</th>
-                <td mat-cell *matCellDef="let row">{{row.denominacion}}</td>
+            <!-- HISTORICO DE REVISION -->
+            <ng-container matColumnDef="his_de_revi">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Histórico de Revisión</th>
+                <td mat-cell *matCellDef="let row">{{row.his_de_revi}}</td>
             </ng-container>              
 
-            <!-- Organización -->
-            <ng-container matColumnDef="organizacion">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Organización</th>
-                <td mat-cell *matCellDef="let row">{{row.organizacion}}</td>
+            <!-- ES ADMIN -->
+            <ng-container matColumnDef="es_admin">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>¿Es Admin?</th>
+                <td mat-cell *matCellDef="let row">{{row.es_admin}}</td>
             </ng-container>             
             
             <!-- Sede -->
+            <ng-container matColumnDef="n_user_activ">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>N° Usuarios Activos</th>
+                <td mat-cell *matCellDef="let row">
+                    <span class="user-count-link" (click)="onVerUsuarios(row)">{{row.n_user_activ}}</span>
+                </td>
+            </ng-container>              
+            
+            <!-- Puesto -->
+            <ng-container matColumnDef="puesto">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Puesto</th>
+                <td mat-cell *matCellDef="let row">{{row.puesto}}</td>
+            </ng-container>   
+            
+            <!-- organización -->
+            <ng-container matColumnDef="organización">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Organización</th>
+                <td mat-cell *matCellDef="let row">{{row.organizacion}}</td>
+            </ng-container>     
+            
+            <!-- SEDE -->
             <ng-container matColumnDef="sede">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Sede</th>
                 <td mat-cell *matCellDef="let row">{{row.sede}}</td>
-            </ng-container>              
-            
+            </ng-container>
+
             <!-- Nivel Riesgo -->
-            <ng-container matColumnDef="nivel">
+            <ng-container matColumnDef="nivel_riesgo">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Nivel Riesgo</th>
                 <td mat-cell *matCellDef="let row">{{row.nivelRiesgo}}</td>
-            </ng-container>   
-            
-            <!-- Estado -->
-            <ng-container matColumnDef="estado">
-                <th mat-header-cell *matHeaderCellDef>Estado</th>
-                <td mat-cell *matCellDef="let row">
-                <span [ngClass]="row.flg_Activo === 'True' ? 'activo' : 'inactivo'">
-                    {{row.flg_Activo === "True" ? 'Activo' : 'Inactivo'}}
-                </span>
-                </td>
-            </ng-container>     
-            
-            <!-- Acciones -->
+            </ng-container>
+
+            <!-- CON DOCUMENTOS FACILITADOS/SOLICITADOS/CUESTIONARIOS -->
+            <ng-container matColumnDef="con_doc_fal">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Documentos Facilitados/Solicitados/Cuestionarios</th>
+                <td mat-cell *matCellDef="let row">{{row.con_doc_fal}}</td>
+            </ng-container>  
+
+            <!-- ACCIONES -->
             <ng-container matColumnDef="acciones">
-                <th mat-header-cell *matHeaderCellDef>Acciones</th>
-                <td mat-cell *matCellDef="let e">
-
-                <button mat-icon-button color="primary" (click)="onEditar(e)">
-                    <mat-icon>edit</mat-icon>
-                </button>
-
-                <button mat-icon-button color="warn" (click)="onEliminar(e)">
-                    <mat-icon>delete</mat-icon>
-                </button>
-
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Acciones</th>
+                <td mat-cell *matCellDef="let row">
+                    <button mat-icon-button color="primary" (click)="onEditar(row)">
+                        <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="onEliminar(row)">
+                        <mat-icon>delete</mat-icon>
+                    </button>
                 </td>
-            </ng-container>    
+            </ng-container>  
             
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>                  

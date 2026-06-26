@@ -1,0 +1,161 @@
+<app-bread-crumb
+  [titulo]="'Documentos'"
+  [titulo2]="'Registros Pendientes'"
+></app-bread-crumb>
+
+<div class="contenedor">
+  <mat-card class="filtros-card busqueda-detallada-container">
+    <mat-card-subtitle style="padding: 15px 20px 0 20px; font-weight: bold; color: #555;">Búsqueda Detallada</mat-card-subtitle>
+    
+    <div style="padding: 10px 20px 20px 20px; display: flex; flex-direction: column; gap: 15px;">
+        <div class="filtros" style="display: grid; grid-template-columns: 1fr 1fr 1fr; column-gap: 15px; row-gap: 10px; width: 100%;">
+            
+            <!-- Fila 1 -->
+            <mat-form-field appearance="outline" style="width: 100%;">
+                <mat-label>Nombre del registro</mat-label>
+                <input matInput>
+            </mat-form-field> 
+
+            <mat-form-field appearance="outline" style="width: 100%;">
+                <mat-label>Fecha de carga planificada</mat-label>
+                <mat-date-range-input [rangePicker]="picker">
+                  <input matStartDate placeholder="Desde">
+                  <input matEndDate placeholder="Hasta">
+                </mat-date-range-input>
+                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-date-range-picker #picker></mat-date-range-picker>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" style="width: 100%;">
+                <mat-label>Número de resultados</mat-label>
+                <mat-select value="50">
+                    <mat-option value="50">50</mat-option>
+                    <mat-option value="100">100</mat-option>
+                </mat-select>
+            </mat-form-field> 
+
+            <!-- Fila 2 -->
+            <mat-form-field appearance="outline" style="width: 100%;">
+                <mat-label>Puesto responsable de carga</mat-label>
+                <mat-select>
+                    <mat-option value="cualquiera">Cualquiera</mat-option>
+                </mat-select>
+            </mat-form-field> 
+
+            <mat-form-field appearance="outline" style="width: 100%;">
+                <mat-label>Puesto responsable del seguimiento</mat-label>
+                <mat-select>
+                    <mat-option value="cualquiera">Cualquiera</mat-option>
+                </mat-select>
+            </mat-form-field> 
+
+            <!-- Botón Buscar en la tercera columna de la fila 2 -->
+            <div style="display: flex; justify-content: center; align-items: center;">
+                <button type="button" mat-flat-button style="background-color: #005CBB; color: white; padding: 5px 20px;">
+                    Buscar <mat-icon style="margin-left: 5px;">search</mat-icon> 
+                </button> 
+            </div>
+
+            <!-- Fila 3 -->
+            <mat-form-field appearance="outline" style="width: 100%;">
+                <mat-label>Proceso</mat-label>
+                <mat-select>
+                    <mat-option value="cualquiera">Cualquiera</mat-option>
+                </mat-select>
+            </mat-form-field> 
+
+            <mat-form-field appearance="outline" style="width: 100%;">
+                <mat-label>Documento Origen</mat-label>
+                <mat-select>
+                    <mat-option value="cualquiera">Cualquiera</mat-option>
+                </mat-select>
+            </mat-form-field> 
+            
+            <!-- Celda vacía para completar el grid si se desea -->
+            <div></div> 
+
+        </div>
+    </div>
+  </mat-card>
+
+  <!-- SECCIÓN VISUALIZAR -->
+  <div class="visualizar-container">
+    <div class="visualizar-header">
+      Visualizar
+    </div>
+    <div class="visualizar-opciones">
+      <mat-checkbox>Registros pendientes (0)</mat-checkbox>
+      <mat-checkbox>Proximos registros (0)</mat-checkbox>
+      <mat-checkbox>Historico (0)</mat-checkbox>
+    </div>
+  </div>
+
+    <!-- SECCIÓN REGISTROS PENDIENTES -->
+  <div class="visualizar-container">
+    <div class="visualizar-header">
+      Registros Pendientes
+    </div>
+    <table mat-table [dataSource]="dataSource" matSort class="tabla-wrapper">
+
+            <!-- Código -->
+            <ng-container matColumnDef="codigo">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Código</th>
+                <td mat-cell *matCellDef="let row">{{row.codigo_Puesto}}</td>
+            </ng-container>     
+
+            <!-- Puesto -->
+            <ng-container matColumnDef="denominacion">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Puesto</th>
+                <td mat-cell *matCellDef="let row">{{row.denominacion}}</td>
+            </ng-container>              
+
+            <!-- Organización -->
+            <ng-container matColumnDef="organizacion">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Organización</th>
+                <td mat-cell *matCellDef="let row">{{row.organizacion}}</td>
+            </ng-container>             
+            
+            <!-- Sede -->
+            <ng-container matColumnDef="sede">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Sede</th>
+                <td mat-cell *matCellDef="let row">{{row.sede}}</td>
+            </ng-container>              
+            
+            <!-- Nivel Riesgo -->
+            <ng-container matColumnDef="nivel">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Nivel Riesgo</th>
+                <td mat-cell *matCellDef="let row">{{row.nivelRiesgo}}</td>
+            </ng-container>   
+            
+            <!-- Estado -->
+            <ng-container matColumnDef="estado">
+                <th mat-header-cell *matHeaderCellDef>Estado</th>
+                <td mat-cell *matCellDef="let row">
+                <span [ngClass]="row.flg_Activo === 'True' ? 'activo' : 'inactivo'">
+                    {{row.flg_Activo === "True" ? 'Activo' : 'Inactivo'}}
+                </span>
+                </td>
+            </ng-container>     
+            
+            <!-- Acciones -->
+            <ng-container matColumnDef="acciones">
+                <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                <td mat-cell *matCellDef="let e">
+
+                <button mat-icon-button color="primary" (click)="onEditar(e)">
+                    <mat-icon>edit</mat-icon>
+                </button>
+
+                <button mat-icon-button color="warn" (click)="onEliminar(e)">
+                    <mat-icon>delete</mat-icon>
+                </button>
+
+                </td>
+            </ng-container>    
+            
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>                  
+                    
+        </table>
+  </div>
+  

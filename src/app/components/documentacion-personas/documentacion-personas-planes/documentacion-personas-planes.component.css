@@ -1,0 +1,348 @@
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.filtros-card {
+  padding: 15px;
+  background: white;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  border-radius: 8px;
+}
+
+.card-title {
+  font-weight: bold;
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 15px;
+  padding-left: 5px;
+}
+
+/* Grid layout with 4 columns: 3 for filters, 1 for action buttons */
+.planes-filtros-grid {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1.2fr 130px;
+  gap: 10px;
+  align-items: center;
+}
+
+::ng-deep .planes-filtros-grid .mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+/* Action buttons in grid cell (stacked vertically on desktop) */
+.planes-actions-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.BtnFiltrar {
+  background-color: #0284c7 !important;
+  color: white !important;
+  font-weight: bold;
+  height: 38px !important;
+  width: 100%;
+  border-radius: 4px;
+}
+
+.BtnVolver {
+  background-color: #000000 !important;
+  color: white !important;
+  font-weight: bold;
+  height: 38px !important;
+  width: 100%;
+  border-radius: 4px;
+}
+
+@media (max-width: 992px) {
+  .planes-filtros-grid {
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 12px;
+  }
+  .planes-actions-group {
+    grid-column: span 3;
+    flex-direction: row !important;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  .planes-actions-group button {
+    width: auto !important;
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .planes-filtros-grid {
+    grid-template-columns: 1fr;
+  }
+  .planes-actions-group {
+    grid-column: span 1;
+    flex-direction: column !important;
+    gap: 8px;
+  }
+  .planes-actions-group button {
+    width: 100% !important;
+  }
+}
+
+/* Table styling */
+.tabla-wrapper {
+  border-collapse: collapse;
+  width: 100%;
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 4px;
+}
+
+::ng-deep .tabla-wrapper th {
+  background-color: transparent !important;
+  color: #334155 !important;
+  font-weight: 600 !important;
+  font-size: 13px;
+  height: 44px;
+  text-align: left;
+  padding: 0 12px;
+  border-bottom: 1.5px solid #cbd5e1 !important;
+}
+
+::ng-deep .tabla-wrapper td {
+  font-size: 13px;
+  color: #334155;
+  height: 42px;
+  padding: 0 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+::ng-deep .tabla-wrapper tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Agrupación de botones de acción */
+.action-buttons-cell {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 4px 0;
+}
+
+/* Botones de acción planos con texto */
+.btn-action-gestionar {
+  background-color: #3f51b5 !important;
+  color: white !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.btn-action-editar {
+  background-color: #1e293b !important;
+  color: white !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.btn-action-eliminar {
+  background-color: #c00000 !important;
+  color: white !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.btn-action-ficha {
+  background-color: #2e7d32 !important;
+  color: white !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.btn-action-gestionar mat-icon,
+.btn-action-editar mat-icon,
+.btn-action-eliminar mat-icon,
+.btn-action-ficha mat-icon {
+  font-size: 15px !important;
+  width: 15px !important;
+  height: 15px !important;
+  margin: 0 !important;
+}
+
+/* User cell styling */
+.usuarios-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #334155;
+  font-weight: bold;
+}
+
+.user-count {
+  font-size: 13px;
+}
+
+.user-icon {
+  color: #334155;
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
+
+/* Paginacion Wrapper Style */
+.paginacion-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 15px;
+  margin-top: 15px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.paginacion-btn {
+  cursor: pointer;
+  user-select: none;
+}
+
+.paginacion-btn:hover {
+  color: #1e293b;
+}
+
+.paginacion-numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: white;
+  color: #334155;
+  font-weight: 500;
+}
+
+.paginacion-numero.active {
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+/* Edit form layout styling */
+.form-section-header {
+  background-color: #e6e6e6;
+  border: 1px solid #000000;
+  color: #000000;
+  font-weight: bold;
+  font-size: 13.5px;
+  padding: 8px 12px;
+  margin-top: 15px;
+  margin-bottom: 8px;
+}
+
+.textarea-plan {
+  width: 100%;
+  min-height: 80px;
+  border: 1px solid #000000;
+  border-radius: 4px;
+  padding: 10px;
+  font-family: inherit;
+  font-size: 13.5px;
+  resize: vertical;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.textarea-plan:focus {
+  border-color: #000000;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+.radio-group-container {
+  padding: 5px 12px;
+}
+
+::ng-deep .radio-group-container .mat-mdc-radio-button {
+  margin-right: 25px;
+}
+
+/* Custom Mat Radio Colors matching the corporate red */
+::ng-deep .radio-group-container .mdc-radio__background::before {
+  background-color: #000000 !important;
+}
+
+::ng-deep .radio-group-container .mat-mdc-radio-button.mat-accent {
+  --mdc-radio-selected-focus-icon-color: #000000;
+  --mdc-radio-selected-hover-icon-color: #000000;
+  --mdc-radio-selected-icon-color: #000000;
+  --mdc-radio-selected-pressed-icon-color: #000000;
+}
+
+.edicion-actions-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.BtnGuardarPlan {
+  background-color: #000000 !important;
+  color: white !important;
+  font-weight: bold;
+  height: 40px !important;
+  padding: 0 20px !important;
+  border-radius: 4px;
+}
+
+.BtnCancelarPlan {
+  background-color: #000000 !important;
+  color: white !important;
+  font-weight: bold;
+  height: 40px !important;
+  padding: 0 20px !important;
+  border-radius: 4px;
+}
+
+.table-actions-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.BtnCrearPlan {
+  background-color: #3f51b5 !important;
+  color: white !important;
+  font-weight: bold;
+  height: 38px !important;
+  border-radius: 4px;
+}

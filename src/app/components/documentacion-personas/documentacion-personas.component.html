@@ -1,11 +1,12 @@
 <app-bread-crumb
   titulo="Biblioteca - Documentación Personas"
+  [titulo2]="mostrarPlanes ? 'Biblioteca - Planes de Gestión Documental' : ''"
   icon="description"
 >
 </app-bread-crumb>
 
 <div class="contenedor">
-    <form class="container-cuerpo" [formGroup]="formulario" #formDirective="ngForm">
+    <form class="container-cuerpo" [formGroup]="formulario" #formDirective="ngForm" *ngIf="!mostrarPlanes">
         
         <h3 style="margin-bottom: 5px; font-weight: 600; color: #333;">Opciones de Búsqueda</h3>
         
@@ -132,7 +133,7 @@
                             <mat-icon>calendar_month</mat-icon> Carga Masiva de Documentos
                         </button>
 
-                        <button type="button" class="BtnPlanesGestion" mat-flat-button>
+                        <button type="button" class="BtnPlanesGestion" mat-flat-button (click)="onPlanesGestion()">
                             <mat-icon>calendar_month</mat-icon> Planes de Gestión Documental
                         </button>
                     </div>
@@ -257,6 +258,9 @@
         </table>
 
     </form>
+
+    <!-- PLANES DE GESTIÓN DOCUMENTAL (Vista Inline) -->
+    <app-documentacion-personas-planes *ngIf="mostrarPlanes" (onBack)="mostrarPlanes = false"></app-documentacion-personas-planes>
 </div>
 
 <ngx-spinner bdColor="rgba(51, 51, 51, 0.8)" size="default" type="ball-spin">

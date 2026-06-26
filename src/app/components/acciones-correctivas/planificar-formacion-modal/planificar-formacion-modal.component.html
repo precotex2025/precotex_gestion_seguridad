@@ -1,0 +1,316 @@
+<div class="dialog-container">
+  
+  <mat-toolbar class="banner-header">
+    <span class="titulo">Planificar Nueva Formación</span>
+    <span class="flex-spacer"></span>
+    <button type="button" class="btn-close-header" (click)="onCancelar()" title="Cerrar">
+      <mat-icon>close</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <form [formGroup]="formulario" (ngSubmit)="onGuardar()">
+    
+    <mat-dialog-content class="form-content">
+      
+      <!-- 1. Tipo de Acción Formativa -->
+      <div class="form-section-header">Tipo de Acción Formativa</div>
+      <div class="radio-row">
+        <label class="radio-label">
+          <input type="radio" name="tipoAccion" [(ngModel)]="tipoAccion" [ngModelOptions]="{standalone: true}" value="nueva">
+          Nueva acción formativa
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="tipoAccion" [(ngModel)]="tipoAccion" [ngModelOptions]="{standalone: true}" value="catalogo">
+          Acción formativa del catálogo del Campus Formativo
+        </label>
+      </div>
+
+      <!-- 2. Acción Formativa (*) y Metodología (*) -->
+      <div class="grid-2-cols">
+        <div class="form-section-item">
+          <div class="form-section-header">Acción Formativa (*):</div>
+          <input type="text" formControlName="accionFormativa" class="full-width-input" placeholder="Nombre de la acción formativa">
+        </div>
+        <div class="form-section-item">
+          <div class="form-section-header">Metodología (*):</div>
+          <select formControlName="metodologia" class="full-width-input">
+            <option value="Selecciona">Selecciona</option>
+            <option *ngFor="let met of metodologiasOptions" [value]="met">{{ met }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 3. Puesto / Persona responsable de la formación -->
+      <div class="form-section-header">Puesto / Persona responsable de la formación:</div>
+      <div class="radio-row">
+        <label class="radio-label">
+          <input type="radio" name="responsableTipo" [(ngModel)]="responsableTipo" [ngModelOptions]="{standalone: true}" value="yo">
+          Yo mismo
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="responsableTipo" [(ngModel)]="responsableTipo" [ngModelOptions]="{standalone: true}" value="usuario">
+          Usuario
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="responsableTipo" [(ngModel)]="responsableTipo" [ngModelOptions]="{standalone: true}" value="puesto">
+          Puesto
+        </label>
+      </div>
+
+      <!-- 4. Tipo de Formación (*) y Estado (*) -->
+      <div class="grid-2-cols">
+        <div class="form-section-item">
+          <div class="form-section-header">Tipo de Formación (*):</div>
+          <select formControlName="tipoFormacion" class="full-width-input">
+            <option value="Selecciona">Selecciona</option>
+            <option *ngFor="let tf of tiposFormacionOptions" [value]="tf">{{ tf }}</option>
+          </select>
+        </div>
+        <div class="form-section-item">
+          <div class="form-section-header">Estado (*):</div>
+          <select formControlName="estado" class="full-width-input">
+            <option *ngFor="let est of estadosOptions" [value]="est">{{ est }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 5. Objetivos de la Formación -->
+      <div class="form-section-header">Objetivos de la Formación</div>
+      <div class="rich-textarea-container">
+        <div class="rich-toolbar">
+          <button type="button" title="Copy"><mat-icon>content_copy</mat-icon></button>
+          <button type="button" title="Undo"><mat-icon>undo</mat-icon></button>
+          <button type="button" title="Redo"><mat-icon>redo</mat-icon></button>
+          <div class="toolbar-separator"></div>
+          <button type="button" class="bold" title="Bold"><mat-icon>format_bold</mat-icon></button>
+          <button type="button" class="italic" title="Italic"><mat-icon>format_italic</mat-icon></button>
+          <button type="button" class="underline" title="Underline"><mat-icon>format_underlined</mat-icon></button>
+          <div class="toolbar-separator"></div>
+          <button type="button" title="Align Left"><mat-icon>format_align_left</mat-icon></button>
+          <button type="button" title="Align Center"><mat-icon>format_align_center</mat-icon></button>
+          <button type="button" title="Align Right"><mat-icon>format_align_right</mat-icon></button>
+          <div class="toolbar-separator"></div>
+          <button type="button" title="Bullet List"><mat-icon>format_list_bulleted</mat-icon></button>
+          <button type="button" title="Numbered List"><mat-icon>format_list_numbered</mat-icon></button>
+          <div class="toolbar-separator"></div>
+          <button type="button" title="Decrease Indent"><mat-icon>format_indent_decrease</mat-icon></button>
+          <button type="button" title="Increase Indent"><mat-icon>format_indent_increase</mat-icon></button>
+          <div class="toolbar-separator"></div>
+          <button type="button" title="Text Color"><mat-icon>format_color_text</mat-icon></button>
+          <button type="button" title="Table"><mat-icon>table_chart</mat-icon></button>
+        </div>
+        <textarea formControlName="objetivos" rows="4" placeholder="Escriba los objetivos aquí..."></textarea>
+      </div>
+
+      <!-- 6. Destinatarios de la Formación -->
+      <div class="form-section-header">Destinatarios de la Formación</div>
+      <div class="rich-textarea-container">
+        <div class="rich-toolbar">
+          <button type="button" title="Copy"><mat-icon>content_copy</mat-icon></button>
+          <button type="button" title="Undo"><mat-icon>undo</mat-icon></button>
+          <button type="button" title="Redo"><mat-icon>redo</mat-icon></button>
+          <div class="toolbar-separator"></div>
+          <button type="button" class="bold" title="Bold"><mat-icon>format_bold</mat-icon></button>
+          <button type="button" class="italic" title="Italic"><mat-icon>format_italic</mat-icon></button>
+          <button type="button" class="underline" title="Underline"><mat-icon>format_underlined</mat-icon></button>
+          <div class="toolbar-separator"></div>
+          <button type="button" title="Align Left"><mat-icon>format_align_left</mat-icon></button>
+          <button type="button" title="Align Center"><mat-icon>format_align_center</mat-icon></button>
+          <button type="button" title="Align Right"><mat-icon>format_align_right</mat-icon></button>
+          <div class="toolbar-separator"></div>
+          <button type="button" title="Bullet List"><mat-icon>format_list_bulleted</mat-icon></button>
+          <button type="button" title="Numbered List"><mat-icon>format_list_numbered</mat-icon></button>
+        </div>
+        <textarea formControlName="destinatarios" rows="4" placeholder="Escriba los destinatarios aquí..."></textarea>
+      </div>
+
+      <!-- 7. Actividades a Realizar -->
+      <div class="form-section-header">Actividades a Realizar</div>
+      <div class="rich-textarea-container">
+        <div class="rich-toolbar">
+          <button type="button" title="Copy"><mat-icon>content_copy</mat-icon></button>
+          <button type="button" title="Undo"><mat-icon>undo</mat-icon></button>
+          <button type="button" title="Redo"><mat-icon>redo</mat-icon></button>
+          <div class="toolbar-separator"></div>
+          <button type="button" class="bold" title="Bold"><mat-icon>format_bold</mat-icon></button>
+          <button type="button" class="italic" title="Italic"><mat-icon>format_italic</mat-icon></button>
+          <button type="button" class="underline" title="Underline"><mat-icon>format_underlined</mat-icon></button>
+        </div>
+        <textarea formControlName="actividades" rows="4" placeholder="Describa las actividades aquí..."></textarea>
+      </div>
+
+      <!-- 8. Formador/es -->
+      <div class="form-section-header">Formador/es</div>
+      <div class="rich-textarea-container">
+        <div class="rich-toolbar">
+          <button type="button" title="Copy"><mat-icon>content_copy</mat-icon></button>
+          <button type="button" title="Undo"><mat-icon>undo</mat-icon></button>
+          <button type="button" title="Redo"><mat-icon>redo</mat-icon></button>
+          <div class="toolbar-separator"></div>
+          <button type="button" class="bold" title="Bold"><mat-icon>format_bold</mat-icon></button>
+          <button type="button" class="italic" title="Italic"><mat-icon>format_italic</mat-icon></button>
+        </div>
+        <textarea formControlName="formadores" rows="4" placeholder="Escriba el nombre de los formadores aquí..."></textarea>
+      </div>
+
+      <!-- 9. Duración Prevista -->
+      <div class="form-section-header">Duración Prevista:</div>
+      <input type="text" formControlName="duracionPrevista" class="single-width-input" placeholder="Ej. 10 horas">
+
+      <!-- 10. Fecha/s de Impartición -->
+      <div class="form-section-header">Fecha/s de Impartición</div>
+      <div class="radio-row">
+        <label class="radio-label">
+          <input type="radio" name="fechaImparticionTipo" [(ngModel)]="fechaImparticionTipo" [ngModelOptions]="{standalone: true}" value="fechas">
+          Fecha/s de Impartición
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="fechaImparticionTipo" [(ngModel)]="fechaImparticionTipo" [ngModelOptions]="{standalone: true}" value="rango">
+          Rango de Fechas
+        </label>
+      </div>
+      <div class="calendar-section">
+        <label class="calendar-title-label">Seleccione días / fechas de impartición (*):</label>
+        
+        <div class="custom-datepicker-container">
+          <input type="text" readonly 
+                 [value]="fechaImparticionTexto" 
+                 (click)="toggleCalendario()" 
+                 class="custom-datepicker-input">
+          
+          <!-- Popup Calendar -->
+          <div class="custom-datepicker-popup" *ngIf="mostrarCalendarioPopup">
+            <!-- Header -->
+            <div class="datepicker-popup-header">
+              <button type="button" class="btn-nav" (click)="prevMonth()">
+                <mat-icon>chevron_left</mat-icon>
+              </button>
+              <span class="month-title">{{ monthNames[currentMonth] }} {{ currentYear }}</span>
+              <button type="button" class="btn-nav" (click)="nextMonth()">
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </div>
+
+            <!-- Weekdays Header -->
+            <div class="datepicker-popup-weekdays">
+              <div>Su</div>
+              <div>Mo</div>
+              <div>Tu</div>
+              <div>We</div>
+              <div>Th</div>
+              <div>Fr</div>
+              <div>Sa</div>
+            </div>
+
+            <!-- Days Grid -->
+            <div class="datepicker-popup-days">
+              <div *ngFor="let day of daysGrid" 
+                   class="day-cell" 
+                   [class.empty]="!day"
+                   [class.selected]="day === selectedDay"
+                   (click)="selectDia(day)">
+                {{ day }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 11. Sede/s de Impartición -->
+      <div class="form-section-header">Sede/s de Impartición:</div>
+      <div class="transfer-list-container">
+        <!-- Lista de Disponibles -->
+        <div class="transfer-list-box">
+          <div class="transfer-box-title">Sedes Disponibles</div>
+          <div class="transfer-box-content">
+            <div *ngFor="let sede of sedesDisponibles" 
+                 class="transfer-item" 
+                 [class.selected]="selectedDisponible === sede"
+                 (click)="selectDisponible(sede)">
+              {{ sede }}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Botones de Transferencia -->
+        <div class="transfer-buttons">
+          <button type="button" class="btn-transfer" (click)="transferRight()" [disabled]="!selectedDisponible">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+          <button type="button" class="btn-transfer" (click)="transferLeft()" [disabled]="!selectedSeleccionada">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+        </div>
+        
+        <!-- Lista de Seleccionadas -->
+        <div class="transfer-list-box">
+          <div class="transfer-box-title">Sedes Seleccionadas</div>
+          <div class="transfer-box-content">
+            <div *ngFor="let sede of sedesSeleccionadas" 
+                 class="transfer-item" 
+                 [class.selected]="selectedSeleccionada === sede"
+                 (click)="selectSeleccionada(sede)">
+              {{ sede }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 12. Duración Real (Horas) y Número de Asistentes -->
+      <div class="grid-2-cols">
+        <div class="form-section-item">
+          <div class="form-section-header">Duración Real (Horas):</div>
+          <input type="text" formControlName="duracionReal" class="full-width-input" placeholder="Ej. 10">
+        </div>
+        <div class="form-section-item">
+          <div class="form-section-header">Número de Asistentes:</div>
+          <input type="text" formControlName="numeroAsistentes" class="full-width-input" placeholder="Ej. 15">
+        </div>
+      </div>
+
+      <!-- 13. Observaciones -->
+      <div class="form-section-header">Observaciones</div>
+      <div class="rich-textarea-container">
+        <div class="rich-toolbar">
+          <button type="button" title="Copy"><mat-icon>content_copy</mat-icon></button>
+          <button type="button" title="Undo"><mat-icon>undo</mat-icon></button>
+          <button type="button" title="Redo"><mat-icon>redo</mat-icon></button>
+          <div class="toolbar-separator"></div>
+          <button type="button" class="bold" title="Bold"><mat-icon>format_bold</mat-icon></button>
+          <button type="button" class="italic" title="Italic"><mat-icon>format_italic</mat-icon></button>
+        </div>
+        <textarea formControlName="observaciones" rows="4" placeholder="Escriba las observaciones aquí..."></textarea>
+      </div>
+
+      <!-- 14. Temario -->
+      <div class="form-section-header">Temario</div>
+      <div class="rich-textarea-container">
+        <div class="rich-toolbar">
+          <button type="button" title="Copy"><mat-icon>content_copy</mat-icon></button>
+          <button type="button" title="Undo"><mat-icon>undo</mat-icon></button>
+          <button type="button" title="Redo"><mat-icon>redo</mat-icon></button>
+          <div class="toolbar-separator"></div>
+          <button type="button" class="bold" title="Bold"><mat-icon>format_bold</mat-icon></button>
+        </div>
+        <textarea formControlName="temario" rows="4" placeholder="Escriba el temario del curso aquí..."></textarea>
+      </div>
+
+      <!-- 15. Documentos Adjuntos -->
+      <div class="form-section-header">Documentos Adjuntos a la Acción Formativa (Máx. 10)</div>
+      <div class="file-upload-row">
+        <input type="file" multiple class="file-input">
+      </div>
+
+    </mat-dialog-content>
+
+    <mat-dialog-actions class="dialog-actions-row">
+      <button type="submit" class="BtnGuardarPlan" mat-flat-button>
+        Guardar Acción Formativa
+      </button>
+      <button type="button" class="BtnCancelarPlan" mat-flat-button (click)="onCancelar()">
+        Cancelar
+      </button>
+    </mat-dialog-actions>
+    
+  </form>
+</div>

@@ -1,0 +1,46 @@
+<div class="ficha-container">
+  <div class="ficha-header">
+    <span>Ficha Descripción del Puesto</span>
+    <button mat-icon-button class="close-btn" (click)="onClose()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="ficha-content">
+    <!-- Puesto -->
+    <div class="ficha-row">
+      <div class="ficha-band">Puesto</div>
+      <div class="ficha-value">{{ puesto?.puesto || puesto?.denominacion || 'No especificado' }}</div>
+    </div>
+
+    <!-- Nivel de Riesgo -->
+    <div class="ficha-row">
+      <div class="ficha-band">Nivel de Riesgo</div>
+      <div class="ficha-value">{{ puesto?.nivelRiesgo || puesto?.codigo_Nivel_Riesgo || 'No evaluado' }}</div>
+    </div>
+
+    <!-- Descripción del Puesto -->
+    <div class="ficha-row">
+      <div class="ficha-band">Descripción del Puesto</div>
+      <div class="ficha-value" [innerHTML]="puesto?.puesto_Descripcion || puesto?.descripcion || 'No especificado'"></div>
+    </div>
+
+    <!-- Funciones y Responsabilidades -->
+    <div class="ficha-row">
+      <div class="ficha-band">Funciones y Responsabilidades</div>
+      <div class="ficha-value" [innerHTML]="puesto?.puesto_Funciones || puesto?.funciones || 'No especificado'"></div>
+    </div>
+
+    <!-- Requisitos del Puesto -->
+    <div class="ficha-row">
+      <div class="ficha-band">Requisitos del Puesto</div>
+      <div class="ficha-value" [innerHTML]="puesto?.puesto_Requisitos || puesto?.requisitos || 'No especificado'"></div>
+    </div>
+
+    <!-- Otros detalles y características del puesto -->
+    <div class="ficha-row">
+      <div class="ficha-band">Otros detalles y características del puesto</div>
+      <div class="ficha-value" [innerHTML]="puesto?.puesto_Caracteristicas || puesto?.otros || 'No especificado'"></div>
+    </div>
+  </div>
+</div>

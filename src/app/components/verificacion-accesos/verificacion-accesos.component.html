@@ -1,0 +1,69 @@
+<div class="contenedor">
+
+  <!-- Botón superior -->
+  <div class="top-row">
+    <button type="button" class="btn-nueva-revision" (click)="onNuevaRevision()">
+      <mat-icon>supervised_user_circle</mat-icon>
+      Nueva Revisión de Usuarios
+      <mat-icon class="external-icon">open_in_new</mat-icon>
+    </button>
+  </div>
+
+  <!-- Título principal -->
+  <h2 class="subtitulo">Últimas verificaciones realizadas</h2>
+
+  <!-- Toggle para simular error -->
+  <div class="toggle-container">
+    <mat-checkbox [(ngModel)]="mostrarErrorPHP" color="warn">
+      Simular error original de PHP (Fatal error)
+    </mat-checkbox>
+  </div>
+
+  <!-- PHP Fatal Error box -->
+  <div class="php-error-box" *ngIf="mostrarErrorPHP" ngNonBindable>
+    <strong>Fatal error:</strong> Uncaught TypeError: sizeof(): Argument #1 ($value) must be of type Countable|array, null given in /usr/home/sofidya/www/verificacion-accesos.php:56 Stack trace: #0 &#123;main&#125; thrown in <strong>/usr/home/sofidya/www/verificacion-accesos.php</strong> on line <strong>56</strong>
+  </div>
+
+  <!-- Grid Table -->
+  <div class="table-container">
+    <table mat-table [dataSource]="dataSource" class="tabla-wrapper">
+
+      <!-- Fecha / Hora -->
+      <ng-container matColumnDef="fechaHora">
+        <th mat-header-cell *matHeaderCellDef>Fecha / Hora</th>
+        <td mat-cell *matCellDef="let row" style="font-weight: 500;">{{ row.fechaHora }}</td>
+      </ng-container>
+
+      <!-- Responsable Verificación -->
+      <ng-container matColumnDef="responsable">
+        <th mat-header-cell *matHeaderCellDef>Responsable Verificación</th>
+        <td mat-cell *matCellDef="let row">{{ row.responsable }}</td>
+      </ng-container>
+
+      <!-- Usuarios Inactivos -->
+      <ng-container matColumnDef="usuariosInactivos">
+        <th mat-header-cell *matHeaderCellDef style="text-align: center; width: 180px;">Usuarios Inactivos</th>
+        <td mat-cell *matCellDef="let row" style="text-align: center;">
+          <span [class]="row.usuariosInactivos > 0 ? 'badge-inactivos-warn' : 'badge-inactivos-ok'">
+            {{ row.usuariosInactivos }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Acciones -->
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef style="text-align: center; width: 100px;">Acciones</th>
+        <td mat-cell *matCellDef="let row" style="text-align: center;">
+          <button type="button" class="btn-delete" (click)="onEliminar(row)" title="Eliminar Registro">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
+
+    </table>
+  </div>
+
+</div>

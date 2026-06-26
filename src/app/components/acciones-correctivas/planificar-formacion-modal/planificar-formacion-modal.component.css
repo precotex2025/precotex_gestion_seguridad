@@ -1,0 +1,445 @@
+.dialog-container {
+  display: flex;
+  flex-direction: column;
+  max-height: 95vh;
+  width: 100%;
+  min-width: 1100px;
+  box-sizing: border-box;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+@media (max-width: 1200px) {
+  .dialog-container {
+    min-width: 900px;
+  }
+}
+@media (max-width: 992px) {
+  .dialog-container {
+    min-width: 100%;
+  }
+}
+
+/* Header */
+.banner-header {
+  background-color: #c00000 !important;
+  color: white !important;
+  height: 48px !important;
+  display: flex;
+  align-items: center;
+  padding: 0 16px !important;
+  font-size: 15px !important;
+  font-weight: bold;
+}
+
+.titulo {
+  font-size: 15px;
+}
+
+.flex-spacer {
+  flex: 1 1 auto;
+}
+
+.btn-close-header {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.btn-close-header mat-icon {
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* Body / Scrollable Content */
+.form-content {
+  padding: 20px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 78vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  background-color: #fbfbfb;
+}
+
+/* Headers de sección */
+.form-section-header {
+  background-color: #f1f1f1;
+  color: #c00000;
+  font-weight: bold;
+  font-size: 13.5px;
+  padding: 8px 12px;
+  margin-top: 15px;
+  margin-bottom: 5px;
+  border-left: 4px solid #c00000;
+  box-sizing: border-box;
+}
+
+/* Radios y Checkboxes */
+.radio-row {
+  display: flex;
+  gap: 20px;
+  padding: 8px 12px;
+  flex-wrap: wrap;
+}
+
+.radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #333;
+}
+
+.radio-label input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #c00000;
+}
+
+/* Grillas */
+.grid-2-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.form-section-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.full-width-input,
+.single-width-input {
+  height: 34px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0 10px;
+  font-size: 13px;
+  background-color: white;
+  box-sizing: border-box;
+  outline: none;
+  margin-top: 6px;
+}
+
+.full-width-input:focus,
+.single-width-input:focus {
+  border-color: #c00000;
+}
+
+.single-width-input {
+  width: 300px;
+}
+
+/* Editor de Texto enriquecido (Mock) */
+.rich-textarea-container {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: white;
+  margin-top: 6px;
+}
+
+.rich-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+  align-items: center;
+}
+
+.rich-toolbar button {
+  background: none;
+  border: 1px solid transparent;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #444;
+}
+
+.rich-toolbar button:hover {
+  background-color: #e0e0e0;
+  border-color: #ccc;
+}
+
+.rich-toolbar button mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 18px;
+  background-color: #ccc;
+  margin: 0 4px;
+}
+
+.rich-textarea-container textarea {
+  width: 100%;
+  border: none;
+  padding: 10px;
+  font-size: 13px;
+  box-sizing: border-box;
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* Custom Datepicker */
+.calendar-section {
+  padding: 8px 12px;
+}
+
+.calendar-title-label {
+  font-size: 12.5px;
+  font-weight: bold;
+  color: #c00000;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.custom-datepicker-container {
+  position: relative;
+  width: 350px;
+}
+
+.custom-datepicker-input {
+  width: 100%;
+  height: 34px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0 10px;
+  font-size: 13px;
+  box-sizing: border-box;
+  outline: none;
+  cursor: pointer;
+  background-color: white;
+}
+
+.custom-datepicker-input:focus {
+  border-color: #c00000;
+}
+
+.custom-datepicker-popup {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  width: 280px;
+  background-color: white;
+  border: 1px solid #888;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  overflow: hidden;
+  font-family: inherit;
+}
+
+.datepicker-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+}
+
+.datepicker-popup-header .month-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: #333;
+}
+
+.datepicker-popup-header .btn-nav {
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: none;
+  transition: opacity 0.2s;
+}
+
+.datepicker-popup-header .btn-nav:hover {
+  opacity: 0.8;
+}
+
+.datepicker-popup-header .btn-nav mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.datepicker-popup-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background-color: #c00000;
+  color: white;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 6px 0;
+}
+
+.datepicker-popup-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-top: 1px solid #ddd;
+  border-left: 1px solid #ddd;
+}
+
+.day-cell {
+  text-align: center;
+  padding: 8px 0;
+  font-size: 12px;
+  border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+  background-color: white;
+  user-select: none;
+}
+
+.day-cell:hover:not(.empty) {
+  background-color: #eee;
+}
+
+.day-cell.empty {
+  cursor: default;
+  background-color: #fafafa;
+}
+
+.day-cell.selected {
+  background-color: #fff176 !important; /* Yellow highlight */
+  color: black !important;
+  font-weight: bold;
+}
+
+/* Transfer List (Sedes) */
+.transfer-list-container {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  padding: 10px 12px;
+}
+
+.transfer-list-box {
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  height: 180px;
+}
+
+.transfer-box-title {
+  background-color: #f5f5f5;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  border-bottom: 1px solid #ddd;
+}
+
+.transfer-box-content {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.transfer-item {
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.transfer-item:hover {
+  background-color: #f5f5f5;
+}
+
+.transfer-item.selected {
+  background-color: #ffebee;
+  color: #c00000;
+  font-weight: bold;
+}
+
+.transfer-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-transfer {
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-transfer:hover:not([disabled]) {
+  background-color: #e0e0e0;
+}
+
+.btn-transfer[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-transfer mat-icon {
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+  color: #333;
+}
+
+/* Adjuntar archivos */
+.file-upload-row {
+  padding: 8px 12px;
+}
+
+.file-input {
+  font-size: 13px;
+}
+
+/* Acciones del Dialog */
+.dialog-actions-row {
+  background-color: #f5f5f5;
+  padding: 12px 20px !important;
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+  border-top: 1px solid #ddd;
+  margin: 0 !important;
+}
+
+.BtnGuardarPlan {
+  background-color: #c00000 !important;
+  color: white !important;
+  font-weight: bold !important;
+}
+
+.BtnCancelarPlan {
+  background-color: #7f7f7f !important;
+  color: white !important;
+  font-weight: bold !important;
+}

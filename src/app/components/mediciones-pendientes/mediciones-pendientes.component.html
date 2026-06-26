@@ -1,0 +1,58 @@
+<app-bread-crumb
+  [titulo]="'Objetivos'"
+  [titulo2]="'Mediciones Pendientes'"
+></app-bread-crumb>
+
+<div class="contenedor">
+  <!-- Tabla de Resultados -->
+  <div class="table-container">
+    <table class="mediciones-table">
+      <thead>
+        <tr>
+          <th>Objetivo</th>
+          <th style="width: 100px; text-align: center;">Medir</th>
+          <th style="width: 80px; text-align: center;">Detalle</th>
+          <th>Fecha Programada Medición</th>
+          <th>Frecuencia</th>
+          <th>Responsable Medición</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of mediciones">
+          <td class="col-objetivo">{{ row.objetivo }}</td>
+          <td style="text-align: center; vertical-align: middle;">
+            <div *ngIf="!row.editando" style="display: flex; justify-content: center; align-items: center;">
+              <button type="button" class="btn-icon" (click)="row.editando = true" title="Medir">
+                <mat-icon class="icon-ruler">straighten</mat-icon>
+              </button>
+            </div>
+            <div *ngIf="row.editando" class="edit-inline-container">
+              <input type="text" [(ngModel)]="row.nuevoValor" class="inline-input" placeholder="Valor %" (keyup.enter)="guardarMedicion(row)">
+              <div class="edit-actions">
+                <button type="button" class="btn-action btn-check" (click)="guardarMedicion(row)"><mat-icon>check</mat-icon></button>
+                <button type="button" class="btn-action btn-close" (click)="row.editando = false"><mat-icon>close</mat-icon></button>
+              </div>
+            </div>
+          </td>
+          <td style="text-align: center; vertical-align: middle;">
+            <div style="display: flex; justify-content: center; align-items: center;">
+              <button type="button" class="btn-icon" (click)="onVerDetalle(row)" title="Detalle">
+                <mat-icon class="icon-info">info</mat-icon>
+              </button>
+            </div>
+          </td>
+          <td class="col-fecha">{{ row.fechaProgramada }}</td>
+          <td class="col-frecuencia">{{ row.frecuencia }}</td>
+          <td class="col-responsable">{{ row.responsable }}</td>
+        </tr>
+        
+        <!-- Mensaje de no registros -->
+        <tr *ngIf="mediciones.length === 0">
+          <td colspan="6" class="no-records-cell">
+            No se han encontrado Mediciones Pendientes
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

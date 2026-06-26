@@ -1,0 +1,158 @@
+<div class="dialog-container">
+  <mat-toolbar class="banner-header">
+    <span class="titulo">{{ data && data.Accion === 'U' ? 'Editar Evaluación Puntual' : 'Nueva Evaluación Puntual' }}</span>
+  </mat-toolbar>
+
+  <form [formGroup]="formulario" (ngSubmit)="onGuardar()">
+
+    <mat-dialog-content class="form-content">
+
+      <!-- Título de la Evaluación -->
+      <div class="form-section-header">Título de la Evaluación (*)</div>
+      <input type="text" formControlName="ctrol_titulo" class="input-plan" placeholder="Ingrese el título de la evaluación...">
+      <mat-error *ngIf="formulario.get('ctrol_titulo')?.touched && formulario.get('ctrol_titulo')?.invalid" style="font-size: 11.5px; padding-left: 5px; color: #c00000; font-weight: bold;">
+        El título de la evaluación es obligatorio.
+      </mat-error>
+
+      <!-- Fecha Límite de cumplimentación -->
+      <div class="form-section-header">Fecha Límite de cumplimentación (Opcional)</div>
+      <mat-form-field appearance="outline" class="w-100 compact-datepicker">
+        <mat-label>dd/mm/aaaa</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="ctrol_fecha_limite">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+
+      <!-- Personal asignado a la evaluación -->
+      <div class="form-section-header">Personal asignado a la evaluación (*)</div>
+
+      <div class="personal-seccion-grid">
+        <!-- Filtros -->
+        <div class="filtros-container">
+          <div class="filtros-label">FILTROS:</div>
+          <div class="filtro-item">
+            <label>Puesto</label>
+            <select formControlName="ctrol_puesto" class="select-plan">
+              <option *ngFor="let p of lstPuestos" [value]="p.codigo">{{ p.descripcion }}</option>
+            </select>
+          </div>
+          <div class="filtro-item">
+            <label>País</label>
+            <select formControlName="ctrol_pais" class="select-plan">
+              <option *ngFor="let c of lstPaises" [value]="c.codigo">{{ c.descripcion }}</option>
+            </select>
+          </div>
+          <div class="filtro-item">
+            <label>Organización</label>
+            <select formControlName="ctrol_organizacion" class="select-plan">
+              <option *ngFor="let o of lstOrganizaciones" [value]="o.codigo">{{ o.descripcion }}</option>
+            </select>
+          </div>
+          <div class="filtro-item">
+            <label>Sede</label>
+            <select formControlName="ctrol_sede" class="select-plan">
+              <option *ngFor="let s of lstSedes" [value]="s.codigo">{{ s.descripcion }}</option>
+            </select>
+          </div>
+          <button type="button" class="BtnFiltrar" mat-flat-button (click)="onFiltrar()">Filtrar</button>
+        </div>
+
+        <!-- Transfer List -->
+        <div class="transfer-list-container">
+          <div class="listbox-box">
+            <div class="listbox-header">Personal Disponible ({{ leftPersonas.length }})</div>
+            <select multiple class="native-listbox" (change)="onSelectLeftChange($event)">
+              <option *ngFor="let p of leftPersonas" [value]="p.id">{{ p.nombre }}</option>
+            </select>
+          </div>
+          <div class="transfer-buttons">
+            <button type="button" class="btn-transfer" mat-mini-fab (click)="onMoveRight()" title="Asignar">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+            <button type="button" class="btn-transfer" mat-mini-fab (click)="onMoveLeft()" title="Desasignar">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+          </div>
+          <div class="listbox-box">
+            <div class="listbox-header">Personal Asignado ({{ rightPersonas.length }})</div>
+            <select multiple class="native-listbox" (change)="onSelectRightChange($event)">
+              <option *ngFor="let p of rightPersonas" [value]="p.id">{{ p.nombre }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección Documentos / Cuestionarios -->
+      <div class="form-section-header">Documentos / Cuestionarios a facilitar por el Personal</div>
+
+      <div class="documentos-cuestionarios-container">
+
+        <!-- A -->
+        <div class="subseccion-container">
+          <div class="subseccion-titulo">A.- Documentos / Información PUNTUAL a facilitar por el Personal</div>
+          <div class="red-table-wrapper">
+            <div class="red-table-header">
+              <span class="header-title">Documentos / Información</span>
+              <button type="button" class="btn-solicitar" (click)="onSolicitarA()">Solicitar Puntualmente</button>
+            </div>
+            <div class="red-table-body">
+              <div *ngIf="lstDocumentosA.length === 0" class="red-table-empty">No se han encontrado documentos</div>
+              <div *ngFor="let doc of lstDocumentosA" class="red-table-row">{{ doc }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- B -->
+        <div class="subseccion-container">
+          <div class="subseccion-titulo">B.- Documentos facilitados por la Organización, que debe aceptar el Personal</div>
+          <div class="red-table-wrapper">
+            <div class="red-table-header">
+              <span class="header-title">Documentos / Información</span>
+              <button type="button" class="btn-solicitar" (click)="onSolicitarB()">Solicitar Puntualmente</button>
+            </div>
+            <div class="red-table-body">
+              <div *ngIf="lstDocumentosB.length === 0" class="red-table-empty">No se han encontrado documentos</div>
+              <div *ngFor="let doc of lstDocumentosB" class="red-table-row">{{ doc }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- C -->
+        <div class="subseccion-container">
+          <div class="subseccion-titulo">C.- Cuestionarios a cumplimentar por el Personal</div>
+          <div class="red-table-wrapper">
+            <div class="red-table-header">
+              <span class="header-title">Cuestionario</span>
+              <button type="button" class="btn-solicitar" (click)="onSolicitarC()">Solicitar Puntualmente</button>
+            </div>
+            <div class="red-table-body">
+              <div *ngIf="lstCuestionariosC.length === 0" class="red-table-empty">No se han encontrado Cuestionarios</div>
+              <div *ngFor="let q of lstCuestionariosC" class="red-table-row">{{ q }}</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Carta de Comunicación -->
+      <div class="form-section-header">Carta de Comunicación (*)</div>
+      <div class="carta-comunicacion-container">
+        <button type="button" class="btn-carta-editar" mat-flat-button (click)="onVerEditarCarta()">
+          Ver/Editar Carta de Comunicación
+        </button>
+      </div>
+
+    </mat-dialog-content>
+
+    <!-- Botones -->
+    <mat-dialog-actions class="dialog-actions-row">
+      <button type="submit" class="BtnGuardarYEnviar" mat-flat-button>
+        Guardar y Enviar
+      </button>
+      <button type="button" class="BtnCancelarPlan" mat-flat-button (click)="onCancelar()">
+        Cancelar
+      </button>
+    </mat-dialog-actions>
+
+  </form>
+</div>

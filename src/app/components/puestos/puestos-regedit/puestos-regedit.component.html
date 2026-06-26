@@ -1,134 +1,367 @@
-<form class="container-cuerpo" [formGroup]="formulario" #formDirective="ngForm">
-    <mat-card class="example-card" appearance="outlined">
-        <mat-card-header>
-            <div mat-card-avatar class="example-header-image">
-                <mat-icon style="font-size: 40px; color: #1e293b; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center;">work</mat-icon>
-            </div>
-            <mat-card-title>{{data.Title}}</mat-card-title>
-            <mat-card-subtitle>Paso 1. Datos básicos del puesto</mat-card-subtitle> 
-        </mat-card-header>   
-        
-        <mat-card-content style="padding-top: 20px;">
+<div class="dialog-container">
+  <!-- Cabecera con pestañas (Wizard Step Header) -->
+  <div class="tabs-header">
+    <div class="tab-item" [class.active-tab]="activeTab === 'datos'" [class.inactive-tab]="activeTab !== 'datos'" (click)="activeTab = 'datos'">
+      <mat-icon>storage</mat-icon>
+      <span>Datos Básicos</span>
+      <div class="arrow-right" *ngIf="activeTab === 'datos'"></div>
+    </div>
+    <div class="tab-item" [class.active-tab]="activeTab === 'procesos'" [class.inactive-tab]="activeTab !== 'procesos'" (click)="activeTab = 'procesos'">
+      <mat-icon>settings</mat-icon>
+      <span>Proceso/s del Puesto</span>
+      <div class="arrow-right" *ngIf="activeTab === 'procesos'"></div>
+    </div>
+    <div class="tab-item" [class.active-tab]="activeTab === 'permisos'" [class.inactive-tab]="activeTab !== 'permisos'" (click)="activeTab = 'permisos'">
+      <mat-icon>vpn_key</mat-icon>
+      <span>Permisos de Acceso</span>
+      <div class="arrow-right" *ngIf="activeTab === 'permisos'"></div>
+    </div>
+    <div class="tab-item" [class.active-tab]="activeTab === 'documentos'" [class.inactive-tab]="activeTab !== 'documentos'" (click)="activeTab = 'documentos'">
+      <mat-icon>description</mat-icon>
+      <span>Documentos Requeridos</span>
+      <div class="arrow-right" *ngIf="activeTab === 'documentos'"></div>
+    </div>
+  </div>
 
-        <!-- <div class="row" *ngIf="data?.Accion !== 'I'">
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Codigo</mat-label>
-                <input matInput formControlName="ctrol_codigo">
-            </mat-form-field>              
-        </div>    -->
-        
-        <div class="row">
-
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Organización (*):</mat-label>
-
-                <mat-select formControlName="ctrol_organizacion" (selectionChange)="onChangeOrga($event)">
-                    <mat-option *ngFor="let orga of lstOrganizacion" [value]="orga.codigo">
-                    {{ orga.descripcion }}
-                    </mat-option>
-                </mat-select>
-            </mat-form-field>                
-
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Sede (*):</mat-label>
-
-                <mat-select formControlName="ctrol_sede">
-                    <mat-option *ngFor="let sede of lstSedes" [value]="sede.codigo">
-                    {{ sede.descripcion }}
-                    </mat-option>
-                </mat-select>
-            </mat-form-field>                 
-
-        </div>
-
-        <div class="row">
-
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Denominación del Puesto (*):</mat-label>
-                <input matInput formControlName="ctrol_denominacion" placeholder="Ingrese denominación" >
-            </mat-form-field>    
-            
-            <mat-form-field appearance="outline" style="flex: 1;">
-                 <mat-label>Nivel de Riesgo:</mat-label>
-
-                <mat-select formControlName="ctrol_nivel">
-                    <mat-option *ngFor="let nivel of lstNivelRiesgo" [value]="nivel.codigo">
-                    {{ nivel.descripcion }}
-                    </mat-option>
-                </mat-select>
-            </mat-form-field>                
-
-        </div>
-
-        <div class="row">
-
-            <mat-label>¿Requiere Validación Periódica? <span style="color:red">*</span></mat-label>
-            <mat-radio-group formControlName="ctrol_requiereValidacion">
-                <mat-radio-button [value]="true">Sí</mat-radio-button>
-                <mat-radio-button [value]="false">No</mat-radio-button>
-            </mat-radio-group>
-      
-        </div>
-
-        <div class="row">
-
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Descripción del Puesto</mat-label>
-                <textarea matInput formControlName="ctrol_descripcion" rows="4"></textarea>
-            </mat-form-field>              
-
-        </div>     
-        
-        <div class="row">
-
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Funciones y Responsabilidades</mat-label>
-                <textarea matInput formControlName="ctrol_funciones" rows="4"></textarea>
-            </mat-form-field>              
-
-        </div>     
-
-        <div class="row">
-
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Requisitos del Puesto</mat-label>
-                <textarea matInput formControlName="ctrol_requisitos" rows="4"></textarea>
-            </mat-form-field>              
-
-        </div>          
-        
-        <div class="row">
-
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Otros detalles y características del puesto</mat-label>
-                <textarea matInput formControlName="ctrol_otros" rows="4"></textarea>
-            </mat-form-field>              
-
-        </div>         
-        
-        <div class="row">
-
-            <mat-label>Características visibles para el puesto <span style="color:red">*</span></mat-label>
-            <mat-radio-group formControlName="ctrol_caracteristicasVisibles">
-                <mat-radio-button [value]="true">Sí</mat-radio-button>
-                <mat-radio-button [value]="false">No</mat-radio-button>
-            </mat-radio-group>
-      
-        </div>        
-        
-        
-
-    </mat-card-content>    
-
-    <mat-card-actions class="button-row"> 
-        <button mat-flat-button color="primary" class="form-button" (click)="onSave()" > 
-            <mat-icon>save</mat-icon> Grabar
-        </button>
-
-        <button mat-flat-button color="warn" mat-dialog-close class="form-button" (click)="onClose()" >
-            <mat-icon>close</mat-icon> Salir
-        </button>
-    </mat-card-actions>  
+  <form [formGroup]="formulario" class="form-content">
     
-    </mat-card>
-</form>
+    <!-- PESTAÑA 1: DATOS BÁSICOS -->
+    <div *ngIf="activeTab === 'datos'" class="tab-pane">
+      <h2 class="title-puestos">Datos básicos del puesto</h2>
+      
+      <!-- Denominación del Puesto -->
+      <div class="form-row">
+        <div class="field-label-puestos">Denominación del Puesto (*):</div>
+        <input class="input-puestos" formControlName="ctrol_denominacion" placeholder="Jefe de SSOMA">
+      </div>
+
+      <!-- Nivel de Riesgo y Sedes -->
+      <div class="form-row flex-row gap-20">
+        <div class="flex-1">
+          <div class="field-label-puestos">Nivel de Riesgo (*):</div>
+          <select class="select-puestos" formControlName="ctrol_nivel">
+            <option value="" disabled selected>Selecciona</option>
+            <option *ngFor="let nivel of lstNivelRiesgo" [value]="nivel.codigo">{{ nivel.descripcion }}</option>
+          </select>
+        </div>
+        <div class="flex-1">
+          <div class="field-label-puestos">Sede/s (*):</div>
+          <div class="sede-checkboxes-container">
+            <div *ngFor="let sede of lstSedes" class="sede-checkbox-item">
+              <input type="checkbox" 
+                     [id]="'sede_' + sede.codigo" 
+                     [checked]="formulario.get('ctrol_sede')?.value === sede.codigo"
+                     (change)="onSedeChange(sede.codigo)">
+              <label [for]="'sede_' + sede.codigo">{{ sede.descripcion }}</label>
+            </div>
+            <div *ngIf="lstSedes.length === 0" class="no-sedes-text">
+              No hay sedes disponibles. Seleccione una Organización.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Descripción del Puesto (Rich Text) -->
+      <div class="form-row">
+        <div class="field-label-puestos">Descripción del Puesto</div>
+        <div class="helper-text-editor">Formato de imagen permitido: .jpg. Ancho máximo recomendado: 710px. Los nombres de imagen no pueden contener caracteres especiales (Error 400)</div>
+        <div class="rich-editor-container">
+          <div class="editor-toolbar">
+            <mat-icon>undo</mat-icon>
+            <mat-icon>redo</mat-icon>
+            <div class="editor-separator"></div>
+            <mat-icon class="bold-text">format_bold</mat-icon>
+            <mat-icon>format_italic</mat-icon>
+            <mat-icon>format_underlined</mat-icon>
+            <div class="editor-separator"></div>
+            <mat-icon>format_align_left</mat-icon>
+            <mat-icon>format_align_center</mat-icon>
+            <mat-icon>format_align_right</mat-icon>
+            <mat-icon>format_align_justify</mat-icon>
+            <div class="editor-separator"></div>
+            <mat-icon>format_list_bulleted</mat-icon>
+            <mat-icon>format_list_numbered</mat-icon>
+            <div class="editor-separator"></div>
+            <mat-icon>image</mat-icon>
+            <mat-icon>format_indent_decrease</mat-icon>
+            <mat-icon>format_indent_increase</mat-icon>
+            <div class="editor-separator"></div>
+            <mat-icon>format_clear</mat-icon>
+            <mat-icon>table_chart</mat-icon>
+          </div>
+          <textarea class="editor-textarea" formControlName="ctrol_descripcion" rows="6" placeholder="FUNCIONES"></textarea>
+        </div>
+      </div>
+
+      <!-- Características visibles para el puesto -->
+      <div class="form-row">
+        <div class="field-label-puestos">Características visibles para el puesto</div>
+        <div class="radio-group-puestos">
+          <label class="custom-radio-label">
+            <input type="radio" [value]="true" formControlName="ctrol_caracteristicasVisibles"> Si
+          </label>
+          <label class="custom-radio-label" style="margin-left: 20px;">
+            <input type="radio" [value]="false" formControlName="ctrol_caracteristicasVisibles"> No
+          </label>
+        </div>
+      </div>
+
+      <!-- Editar los datos con Revisión -->
+      <div class="form-row">
+        <div class="field-label-puestos">Editar los datos con Revisión</div>
+        <div class="revision-checkboxes-container">
+          <label class="custom-checkbox-label">
+            <input type="checkbox" 
+                   [checked]="!formulario.get('ctrol_requiereValidacion')?.value"
+                   (change)="formulario.get('ctrol_requiereValidacion')?.setValue(false)"> 
+            No requiere revisión controlada
+          </label>
+          <label class="custom-checkbox-label" style="margin-left: 30px;">
+            <input type="checkbox" 
+                   [checked]="formulario.get('ctrol_requiereValidacion')?.value"
+                   (change)="formulario.get('ctrol_requiereValidacion')?.setValue(true)"> 
+            Requiere revisión controlada
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 2: PROCESOS -->
+    <div *ngIf="activeTab === 'procesos'" class="tab-pane">
+      <div class="success-alert-banner">
+        <mat-icon>check_circle</mat-icon>
+        <span>Datos básicos cumplimentados.</span>
+      </div>
+
+      <button type="button" class="BtnVolver" (click)="onClose()">
+        Volver a la Gestión de Puestos
+      </button>
+
+      <h2 class="title-puestos">Selecciona el/los proceso/s en los que interviene o es responsable (*)</h2>
+      <div class="sede-subtitle">{{ getSelectedSedeName() }}</div>
+
+      <div class="process-links-container">
+        <span class="process-link" (click)="setAllProcesosSeleccion('sin')">Sin Intervención</span>
+        <span class="process-link-separator">|</span>
+        <span class="process-link" (click)="setAllProcesosSeleccion('interviene')">Interviene en Todos</span>
+        <span class="process-link-separator">|</span>
+        <span class="process-link" (click)="setAllProcesosSeleccion('responsable')">Es Responsable en Todos</span>
+      </div>
+
+      <div class="table-container">
+        <table class="procesos-table">
+          <thead>
+            <tr>
+              <th>Denominación</th>
+              <th>Tipo</th>
+              <th class="center-align">Sin intervención</th>
+              <th class="center-align">¿Interviene?</th>
+              <th class="center-align">¿Es Responsable?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let proc of lstProcesosPuesto">
+              <td>{{ proc.denominacion }}</td>
+              <td>{{ proc.tipo }}</td>
+              <td class="center-align">
+                <input type="radio" [name]="'proc_' + proc.id" value="sin" [(ngModel)]="proc.seleccion" [ngModelOptions]="{standalone: true}">
+              </td>
+              <td class="center-align">
+                <input type="radio" [name]="'proc_' + proc.id" value="interviene" [(ngModel)]="proc.seleccion" [ngModelOptions]="{standalone: true}">
+              </td>
+              <td class="center-align">
+                <input type="radio" [name]="'proc_' + proc.id" value="responsable" [(ngModel)]="proc.seleccion" [ngModelOptions]="{standalone: true}">
+              </td>
+            </tr>
+            <tr *ngIf="lstProcesosPuesto.length === 0">
+              <td colspan="5" class="empty-table">No se han encontrado Procesos en la Sede seleccionada</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 3: PERMISOS DE ACCESO -->
+    <div *ngIf="activeTab === 'permisos'" class="tab-pane">
+      <h2 class="title-puestos">Configuración de Permisos de Acceso</h2>
+      
+      <div *ngFor="let sec of lstSeccionesPermisos" class="permission-section">
+        <div class="permission-header">
+          <span class="section-title-text">{{ sec.titulo }}</span>
+          
+          <div *ngIf="!sec.esDocumentos" class="section-links">
+            <span class="link-item" (click)="marcarTodosSeccion(sec, 'edicion')">Marcar Todos Edición</span>
+            <span class="link-separator">|</span>
+            <span class="link-item" (click)="marcarTodosSeccion(sec, 'lectura')">Marcar Todos Lectura</span>
+            <span class="link-separator">|</span>
+            <span class="link-item" (click)="marcarTodosSeccion(sec, 'ninguno')">Desmarcar Todos</span>
+          </div>
+
+          <div *ngIf="sec.esDocumentos" class="section-links">
+            <span class="link-item" (click)="marcarTodosSeccion(sec, 'admin')">Marcar Todos Administración / Edición</span>
+            <span class="link-separator">|</span>
+            <span class="link-item" (click)="marcarTodosSeccion(sec, 'asignados')">Marcar Todos Solo Asignados</span>
+          </div>
+        </div>
+
+        <div class="table-container" style="margin-top: 0; margin-bottom: 20px;">
+          <table class="procesos-table">
+            <thead>
+              <tr>
+                <th class="center-align" style="width: 120px;">
+                  {{ sec.esDocumentos ? 'Acceso únicamente documentos asignados' : 'Ninguno' }}
+                </th>
+                <th class="center-align" style="width: 120px;">
+                  {{ sec.esDocumentos ? 'Administración / Edición' : 'Edición' }}
+                </th>
+                <th *ngIf="!sec.esDocumentos" class="center-align" style="width: 120px;">Lectura</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of sec.items">
+                <!-- Standard Section Option -->
+                <ng-container *ngIf="!sec.esDocumentos">
+                  <td class="center-align">
+                    <input type="radio" [name]="item.id" value="ninguno" [(ngModel)]="item.seleccion" [ngModelOptions]="{standalone: true}">
+                  </td>
+                  <td class="center-align">
+                    <input type="radio" [name]="item.id" value="edicion" [(ngModel)]="item.seleccion" [ngModelOptions]="{standalone: true}">
+                  </td>
+                  <td class="center-align">
+                    <input type="radio" [name]="item.id" value="lectura" [(ngModel)]="item.seleccion" [ngModelOptions]="{standalone: true}">
+                  </td>
+                </ng-container>
+
+                <!-- Documentos Section Option -->
+                <ng-container *ngIf="sec.esDocumentos">
+                  <td class="center-align">
+                    <input type="radio" [name]="item.id" value="asignados" [(ngModel)]="item.seleccion" [ngModelOptions]="{standalone: true}">
+                  </td>
+                  <td class="center-align">
+                    <input type="radio" [name]="item.id" value="admin" [(ngModel)]="item.seleccion" [ngModelOptions]="{standalone: true}">
+                  </td>
+                </ng-container>
+
+                <!-- Label -->
+                <td [class.red-permission-text]="item.colorRojo">{{ item.nombre }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 4: DOCUMENTOS REQUERIDOS -->
+    <div *ngIf="activeTab === 'documentos'" class="tab-pane">
+      
+      <!-- Info Alert Banner -->
+      <div class="info-alert-banner">
+        <mat-icon>info</mat-icon>
+        <span>Se recuerda que los cambios que se realicen, solo afectarán a los usuarios creados a partir de este momento. No incluye a los usuarios ya dados de alta previamente en el puesto.</span>
+      </div>
+
+      <!-- Sección A -->
+      <div class="document-section">
+        <div class="field-label-puestos">A.- Documentos / Información a facilitar por el Puesto</div>
+        <div class="table-container" style="margin-top: 0; margin-bottom: 20px;">
+          <table class="procesos-table">
+            <thead>
+              <tr>
+                <th>Documentos / Información</th>
+                <th class="center-align" style="width: 150px;">Nuevos Usuarios</th>
+                <th class="center-align" style="width: 150px;">Semestral</th>
+                <th class="center-align" style="width: 150px;">Anual</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="4" class="empty-table" style="text-align: left; padding-left: 15px;">No se han encontrado documentos</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sección B -->
+      <div class="document-section">
+        <div class="field-label-puestos">B.- Documentos facilitados que debe aceptar el usuario del puesto</div>
+        <div class="table-container" style="margin-top: 0; margin-bottom: 20px;">
+          <table class="procesos-table">
+            <thead>
+              <tr>
+                <th>Documentos / Información</th>
+                <th class="center-align" style="width: 150px;">Nuevos Usuarios</th>
+                <th class="center-align" style="width: 150px;">Semestral</th>
+                <th class="center-align" style="width: 150px;">Anual</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="4" class="empty-table" style="text-align: left; padding-left: 15px;">No se han encontrado documentos</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sección C -->
+      <div class="document-section">
+        <div class="field-label-puestos">C.- Cuestionarios al Puesto</div>
+        <div class="table-container" style="margin-top: 0; margin-bottom: 20px;">
+          <table class="procesos-table">
+            <thead>
+              <tr>
+                <th>Cuestionario</th>
+                <th class="center-align" style="width: 150px;">Nuevos Usuarios</th>
+                <th class="center-align" style="width: 150px;">Semestral</th>
+                <th class="center-align" style="width: 150px;">Anual</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="4" class="empty-table" style="text-align: left; padding-left: 15px;">No se han encontrado documentos</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sección D -->
+      <div class="document-section">
+        <div class="field-label-puestos">D.- Verificaciones de Diligencias Adicionales a realizar</div>
+        <div class="table-container" style="margin-top: 0; margin-bottom: 20px;">
+          <table class="procesos-table">
+            <thead>
+              <tr>
+                <th>Documentos / Información</th>
+                <th class="center-align" style="width: 150px;">Nuevos Usuarios</th>
+                <th class="center-align" style="width: 150px;">Semestral</th>
+                <th class="center-align" style="width: 150px;">Anual</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="4" class="empty-table" style="text-align: left; padding-left: 15px;">No se han encontrado documentos</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Botones del Wizard -->
+    <div class="wizard-actions-row">
+      <button type="button" class="BtnGuardarContinuar" (click)="onGuardarYContinuar()">
+        <mat-icon>{{ activeTab === 'documentos' ? 'save' : 'arrow_forward' }}</mat-icon>
+        {{ activeTab === 'documentos' ? 'Guardar Puesto' : 'Guardar y Continuar' }}
+      </button>
+      <button type="button" class="BtnSalir" (click)="onClose()">
+        <mat-icon>close</mat-icon>
+        Salir
+      </button>
+    </div>
+
+  </form>
+</div>

@@ -1,0 +1,203 @@
+<div class="contenedor">
+
+  <!-- Header Buttons Row (Top) -->
+  <div class="top-buttons-row">
+    <button type="button" class="btn-planificar" (click)="onPlanificarNuevaFormacion()">
+      <mat-icon>add_circle</mat-icon>
+      Planificar Nueva Formación
+    </button>
+    <button type="button" class="btn-exportar-pdf" (click)="onExportarPDF()">
+      <mat-icon>picture_as_pdf</mat-icon>
+      Plan Formación (PDF)
+    </button>
+    <button type="button" class="btn-exportar-excel" (click)="onExportarExcel()">
+      <mat-icon>description</mat-icon>
+      Plan Formación (Excel)
+    </button>
+  </div>
+
+  <!-- Search Group -->
+  <fieldset class="search-fieldset">
+    <legend class="search-legend">Búsqueda de Acciones Formativas</legend>
+    <div class="search-grid">
+      
+      <!-- Fila 1: Texto Libre (2 columnas), Valoración Eficacia (1 col), Año (1 col) -->
+      <div class="search-row-3">
+        <div class="search-field">
+          <label for="textoLibre">Texto Libre</label>
+          <input id="textoLibre" type="text" [(ngModel)]="filtroTextoLibre" placeholder="">
+        </div>
+        <div class="search-field">
+          <label for="valoracionEficacia">Valoración Eficacia</label>
+          <select id="valoracionEficacia" [(ngModel)]="filtroValoracionEficacia">
+            <option value="Selecciona">Selecciona</option>
+            <option *ngFor="let val of valoracionesOptions" [value]="val">{{ val }}</option>
+          </select>
+        </div>
+        <div class="search-field">
+          <label for="ano">Año</label>
+          <select id="ano" [(ngModel)]="filtroAno">
+            <option value="Selecciona">Selecciona</option>
+            <option *ngFor="let a of anosOptions" [value]="a">{{ a }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Fila 2: Metodología, Tipo -->
+      <div class="search-row-2">
+        <div class="search-field">
+          <label for="metodologia">Metodología</label>
+          <select id="metodologia" [(ngModel)]="filtroMetodologia">
+            <option value="Selecciona">Selecciona</option>
+            <option *ngFor="let met of metodologiasOptions" [value]="met">{{ met }}</option>
+          </select>
+        </div>
+        <div class="search-field">
+          <label for="tipo">Tipo</label>
+          <select id="tipo" [(ngModel)]="filtroTipo">
+            <option value="Selecciona">Selecciona</option>
+            <option *ngFor="let t of tiposOptions" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Fila 3: Estado, Sede -->
+      <div class="search-row-2">
+        <div class="search-field">
+          <label for="estado">Estado</label>
+          <select id="estado" [(ngModel)]="filtroEstado">
+            <option value="Selecciona">Selecciona</option>
+            <option *ngFor="let est of estadosOptions" [value]="est">{{ est }}</option>
+          </select>
+        </div>
+        <div class="search-field">
+          <label for="sede">Sede</label>
+          <select id="sede" [(ngModel)]="filtroSede">
+            <option value="Selecciona">Selecciona</option>
+            <option *ngFor="let s of sedesOptions" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Fila 4: Persona Responsable, Puesto Responsable -->
+      <div class="search-row-2">
+        <div class="search-field">
+          <label for="personaResponsable">Persona Responsable</label>
+          <select id="personaResponsable" [(ngModel)]="filtroPersonaResponsable">
+            <option value="Selecciona">Selecciona</option>
+            <option *ngFor="let pers of personasOptions" [value]="pers">{{ pers }}</option>
+          </select>
+        </div>
+        <div class="search-field">
+          <label for="puestoResponsable">Puesto Responsable</label>
+          <select id="puestoResponsable" [(ngModel)]="filtroPuestoResponsable">
+            <option value="Selecciona">Selecciona</option>
+            <option *ngFor="let puesto of puestosOptions" [value]="puesto">{{ puesto }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Fila 5: Botón Filtrar -->
+      <div class="search-button-row">
+        <button type="button" class="btn-filtrar" (click)="onFiltrar()">Filtrar</button>
+      </div>
+
+    </div>
+  </fieldset>
+
+  <!-- Table -->
+  <div class="table-container">
+    <table mat-table [dataSource]="dataSource" matSort class="tabla-wrapper">
+
+      <!-- Acciones -->
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef style="width: 130px; text-align: center;">Acciones</th>
+        <td mat-cell *matCellDef="let row" style="text-align: center;">
+          <div class="action-buttons-cell">
+            <button type="button" class="btn-edit" (click)="onEditar(row)" title="Editar">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button type="button" class="btn-delete" (click)="onEliminar(row)" title="Eliminar">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Código -->
+      <ng-container matColumnDef="codigo">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Código</th>
+        <td mat-cell *matCellDef="let row" style="font-weight: 500;">{{ row.codigo }}</td>
+      </ng-container>
+
+      <!-- Descripción / Texto Libre -->
+      <ng-container matColumnDef="textoLibre">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Descripción / Texto Libre</th>
+        <td mat-cell *matCellDef="let row" class="denominacion-cell">{{ row.textoLibre }}</td>
+      </ng-container>
+
+      <!-- Año -->
+      <ng-container matColumnDef="ano">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Año</th>
+        <td mat-cell *matCellDef="let row">{{ row.ano }}</td>
+      </ng-container>
+
+      <!-- Tipo -->
+      <ng-container matColumnDef="tipo">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo</th>
+        <td mat-cell *matCellDef="let row">{{ row.tipo }}</td>
+      </ng-container>
+
+      <!-- Metodología -->
+      <ng-container matColumnDef="metodologia">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Metodología</th>
+        <td mat-cell *matCellDef="let row">{{ row.metodologia }}</td>
+      </ng-container>
+
+      <!-- Estado -->
+      <ng-container matColumnDef="estado">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
+        <td mat-cell *matCellDef="let row">
+          <span [class]="getEstadoClass(row.estado)" class="estado-badge">{{ row.estado }}</span>
+        </td>
+      </ng-container>
+
+      <!-- Sede -->
+      <ng-container matColumnDef="sede">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Sede</th>
+        <td mat-cell *matCellDef="let row">{{ row.sede }}</td>
+      </ng-container>
+
+      <!-- Responsable -->
+      <ng-container matColumnDef="personaResponsable">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Responsable</th>
+        <td mat-cell *matCellDef="let row">
+          <span style="font-weight: 500;">{{ row.personaResponsable }}</span>
+          <br>
+          <small style="color: #666;">{{ row.puestoResponsable }}</small>
+        </td>
+      </ng-container>
+
+      <!-- Valoración Eficacia -->
+      <ng-container matColumnDef="valoracionEficacia">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Valoración Eficacia</th>
+        <td mat-cell *matCellDef="let row">
+          <span [class]="getEficaciaClass(row.valoracionEficacia)" class="eficacia-badge">
+            {{ row.valoracionEficacia }}
+          </span>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
+
+    </table>
+
+    <!-- Empty state -->
+    <div *ngIf="dataSource.data.length === 0" class="empty-state">
+      <mat-icon>assignment_late</mat-icon>
+      <p>No se encontraron acciones formativas o correctivas.</p>
+    </div>
+  </div>
+
+</div>

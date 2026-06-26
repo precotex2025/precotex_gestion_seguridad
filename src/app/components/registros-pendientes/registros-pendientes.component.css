@@ -1,0 +1,68 @@
+.filtros-card {
+  margin: 20px 0;
+  padding: 15px;
+  background:white;
+  height: auto;
+  margin-top: -5px;
+  padding-top: 1px;
+  padding-bottom: 15px;
+}
+
+.contenedor {
+  padding: 20px;
+  border-radius: 12px;
+}
+
+/* Eliminar el espacio extra en la parte inferior de los mat-form-field */
+::ng-deep .filtros mat-form-field .mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
+
+/* Reducir el gap vertical en el grid */
+.filtros {
+  row-gap: 15px !important;
+}
+
+/* Sección Visualizar */
+.visualizar-container {
+  margin-top: 20px;
+  background-color: white;
+  width: 100%; /* Opcional, según la imagen parece no ocupar todo el ancho */
+  min-width: 1000px;
+}
+
+.visualizar-header {
+  background-color: #e6e6e6; /* Fondo gris claro */
+  color: #000000; /* Texto rojo */
+  font-size: 16px;
+  font-weight: 500;
+  padding: 8px 15px;
+  border-bottom: 2px solid #000000; /* Borde rojo inferior */
+}
+
+.visualizar-opciones {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 30px;
+  align-items: center;
+}
+
+.tabla-wrapper {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.activo {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+.inactivo {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+}

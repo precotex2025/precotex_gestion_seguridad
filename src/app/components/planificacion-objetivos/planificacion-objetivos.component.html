@@ -1,0 +1,1009 @@
+<app-bread-crumb
+  [titulo]="'Objetivos'"
+  [titulo2]="mostrarGestionTareas ? 'Planificación Objetivos - Gestión de Tareas' : (mostrarMediciones ? 'Planificación Objetivos - Mediciones del Objetivo' : (mostrarDetalle ? 'Planificación Objetivos - Detalle del Objetivo' : (mostrarMedicion ? 'Planificación Objetivos - Medición de Objetivos' : 'Planificación Objetivos')))"
+></app-bread-crumb>
+
+<div class="contenedor">
+  
+  <!-- VISTA 1: PLANIFICACIÓN DE OBJETIVOS -->
+  <form class="container-cuerpo" [formGroup]="formulario" (ngSubmit)="onBuscar()" *ngIf="!mostrarMedicion && !mostrarDetalle && !mostrarMediciones && !mostrarGestionTareas">
+    <mat-card class="filtros-card">
+      <mat-card-subtitle class="card-title">Opciones de Filtrado</mat-card-subtitle>
+      
+      <div class="acciones-container">
+        <!-- Fila 1 -->
+        <div class="filtros-row-1">
+          <mat-form-field appearance="outline" class="filtro-campo flex-1">
+            <mat-label>Objetivo</mat-label>
+            <input matInput formControlName="ctrol_objetivo">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filtro-campo flex-1">
+            <mat-label>Tipo de Objetivo</mat-label>
+            <mat-select formControlName="ctrol_tipo_objetivo">
+              <mat-option value="">Selecciona</mat-option>
+              <mat-option value="1">Estratégico</mat-option>
+              <mat-option value="2">Operativo</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filtro-campo flex-1">
+            <mat-label>Frecuencia Medición</mat-label>
+            <mat-select formControlName="ctrol_frecuencia">
+              <mat-option value="">Selecciona</mat-option>
+              <mat-option value="mensual">Mensual</mat-option>
+              <mat-option value="trimestral">Trimestral</mat-option>
+              <mat-option value="anual">Anual</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Fila 2 -->
+        <div class="filtros-row-2">
+          <mat-form-field appearance="outline" class="filtro-fecha">
+            <mat-label>Inicio de Medición</mat-label>
+            <input matInput [matDatepicker]="pickerInicio" formControlName="ctrol_inicio">
+            <mat-datepicker-toggle matIconSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+            <mat-datepicker #pickerInicio></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filtro-fecha">
+            <mat-label>Fin de Medición</mat-label>
+            <input matInput [matDatepicker]="pickerFin" formControlName="ctrol_fin">
+            <mat-datepicker-toggle matIconSuffix [for]="pickerFin"></mat-datepicker-toggle>
+            <mat-datepicker #pickerFin></mat-datepicker>
+          </mat-form-field>
+
+          <!-- Botones -->
+          <button type="button" class="BtnBuscar" mat-flat-button (click)="onBuscar()">
+            <mat-icon>search</mat-icon> Buscar
+          </button>
+
+          <button type="button" class="BtnCrear" mat-flat-button (click)="onAgregar()">
+            <mat-icon>create_new_folder</mat-icon> Nuevo Objetivo
+          </button>
+          
+          <button type="button" class="BtnMedicDeobj" mat-flat-button (click)="onMedicDeobj()">
+            <mat-icon>insert_chart</mat-icon> Medición de Objetivos
+          </button>  
+        </div>
+      </div>
+    </mat-card>
+
+    <!-- Tabla Planificación -->
+    <table mat-table [dataSource]="dataSource" matSort class="tabla-wrapper" style="margin-top: 20px; width: 100%;">
+
+      <!-- Ver / Gestionar (Acciones Agrupadas) -->
+      <ng-container matColumnDef="desactivar">
+        <th mat-header-cell *matHeaderCellDef style="text-align: center; width: 200px;">Ver / Gestionar</th>
+        <td mat-cell *matCellDef="let row" style="text-align: center;">
+          <div class="action-buttons-cell">
+            <button type="button" mat-flat-button class="btn-action-edit" (click)="onEdit(row)" title="Editar objetivo">
+              <mat-icon>edit</mat-icon> Editar
+            </button>
+            <button type="button" mat-flat-button class="btn-action-del" (click)="onDelete(row)" title="Desactivar objetivo">
+              <mat-icon>delete</mat-icon> Desactivar
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Columna editar oculta (requerida por displayedColumns en TS) -->
+      <ng-container matColumnDef="editar"><th mat-header-cell *matHeaderCellDef></th><td mat-cell *matCellDef="let row"></td></ng-container>
+
+      <!-- Objetivo -->
+      <ng-container matColumnDef="objetivo">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Objetivo</th>
+        <td mat-cell *matCellDef="let row">{{row.objetivo}}</td>
+      </ng-container>
+
+      <!-- Req. Medición / Seg. Perió. -->
+      <ng-container matColumnDef="req_medic/seg-perió">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Req. Medición / Seg. Periódico</th>
+        <td mat-cell *matCellDef="let row">{{row.reqMedicionSegPeriodico}}</td>
+      </ng-container>
+
+      <!-- Frecuencia -->
+      <ng-container matColumnDef="frecuencia">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Frecuencia Medición</th>
+        <td mat-cell *matCellDef="let row">{{row.frecuencia}}</td>
+      </ng-container>
+
+      <!-- Cumplimiento -->
+      <ng-container matColumnDef="cum-obj">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>¿Cumplimiento Objetivo en mediciones parciales?</th>
+        <td mat-cell *matCellDef="let row">{{row.cumplimiento}}</td>
+      </ng-container>
+
+      <!-- Norma -->
+      <ng-container matColumnDef="norma">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Normas</th>
+        <td mat-cell *matCellDef="let row">{{row.norma}}</td>
+      </ng-container>
+
+      <!-- Tipo de Objetivo -->
+      <ng-container matColumnDef="tipo-objetivo">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo de Objetivo</th>
+        <td mat-cell *matCellDef="let row">{{row.tipoObjetivo}}</td>
+      </ng-container>
+
+      <!-- Valores -->
+      <ng-container matColumnDef="valores">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Valores</th>
+        <td mat-cell *matCellDef="let row">{{row.valores}}</td>
+      </ng-container>
+
+      <!-- Inicio -->
+      <ng-container matColumnDef="inicio">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Inicio</th>
+        <td mat-cell *matCellDef="let row">{{row.fechaInicio}}</td>
+      </ng-container>
+
+      <!-- Fin -->
+      <ng-container matColumnDef="fin">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Fin</th>
+        <td mat-cell *matCellDef="let row">{{row.fechaFin}}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>                  
+              
+    </table>
+  </form>
+
+
+  <!-- VISTA 2: MEDICIÓN DE OBJETIVOS (14 FILTROS) -->
+  <form class="container-cuerpo" [formGroup]="formularioMedicion" (ngSubmit)="onFiltrarMedicion()" *ngIf="mostrarMedicion && !mostrarDetalle && !mostrarMediciones && !mostrarGestionTareas">
+    <mat-card class="filtros-card">
+      <mat-card-subtitle class="card-title">Opciones de Filtrado (Medición)</mat-card-subtitle>
+      
+      <!-- Grid de Filtros de 3 Columnas -->
+      <div class="filtros-medicion-grid">
+        
+        <!-- Fila 1 -->
+        <div class="filtro-col">
+          <div class="input-label">Mes</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_mes">
+              <mat-option *ngFor="let mes of lstMeses" [value]="mes.codigo">
+                {{ mes.descripcion }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col">
+          <div class="input-label">Año</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_anio">
+              <mat-option *ngFor="let anio of lstAnios" [value]="anio.codigo">
+                {{ anio.descripcion }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col">
+          <div class="input-label">Frecuencia Medición</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_frecuencia" placeholder="Cualquier Frecuencia">
+              <mat-option value="">Cualquier Frecuencia</mat-option>
+              <mat-option value="mensual">Mensual</mat-option>
+              <mat-option value="trimestral">Trimestral</mat-option>
+              <mat-option value="anual">Anual</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Fila 2 -->
+        <div class="filtro-col">
+          <div class="input-label">Tipo Objetivo</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_tipo_objetivo" placeholder="Cualquier Tipo">
+              <mat-option value="">Cualquier Tipo</mat-option>
+              <mat-option value="1">Estratégico</mat-option>
+              <mat-option value="2">Operativo</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col">
+          <div class="input-label">Inicio de Medición</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <input matInput [matDatepicker]="pickerInicioMed" formControlName="ctrol_fecha_inicio" placeholder="yyyy-mm-dd">
+            <mat-datepicker-toggle matIconSuffix [for]="pickerInicioMed"></mat-datepicker-toggle>
+            <mat-datepicker #pickerInicioMed></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col">
+          <div class="input-label">Fin de Medición</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <input matInput [matDatepicker]="pickerFinMed" formControlName="ctrol_fecha_fin" placeholder="yyyy-mm-dd">
+            <mat-datepicker-toggle matIconSuffix [for]="pickerFinMed"></mat-datepicker-toggle>
+            <mat-datepicker #pickerFinMed></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <!-- Fila 3 -->
+        <div class="filtro-col">
+          <div class="input-label">Organización</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_organizacion" placeholder="Selecciona">
+              <mat-option value="">Selecciona</mat-option>
+              <mat-option *ngFor="let org of lstOrganizaciones" [value]="org.codigo">
+                {{ org.descripcion }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col">
+          <div class="input-label">Sede</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_sede" placeholder="Selecciona">
+              <mat-option value="">Selecciona</mat-option>
+              <mat-option *ngFor="let sede of lstSedes" [value]="sede.codigo">
+                {{ sede.descripcion }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col">
+          <div class="input-label">Puesto Responsable</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_puesto_responsable" placeholder="Selecciona">
+              <mat-option value="">Selecciona</mat-option>
+              <mat-option value="supervisor">Supervisor de SST</mat-option>
+              <mat-option value="comite">Comité de SST</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Fila 4 -->
+        <div class="filtro-col">
+          <div class="input-label">Proceso / Departamento / Activo</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_proceso" placeholder="Selecciona Organiz./Sede">
+              <mat-option value="">Selecciona Organiz./Sede</mat-option>
+              <mat-option value="sst">Proceso de SST</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col">
+          <div class="input-label">Subproceso</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_subproceso" placeholder="Selecciona Proceso">
+              <mat-option value="">Selecciona Proceso</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col">
+          <div class="input-label">Subproceso Nivel 2</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_subproceso_n2" placeholder="Selecciona SubProceso">
+              <mat-option value="">Selecciona SubProceso</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Fila 5 -->
+        <div class="filtro-col">
+          <div class="input-label">Norma</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_norma" placeholder="Cualquier Norma">
+              <mat-option value="">Cualquier Norma</mat-option>
+              <mat-option value="14001">ISO 14001</mat-option>
+              <mat-option value="9001">ISO 9001</mat-option>
+              <mat-option value="45001">ISO 45001</mat-option>
+              <mat-option value="29783">Ley Nº 29783</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col">
+          <div class="input-label">Resultado</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_resultado" placeholder="Cualquier Estado">
+              <mat-option value="">Cualquier Estado</mat-option>
+              <mat-option value="cumplido">Cumplido</mat-option>
+              <mat-option value="no_cumplido">No Cumplido</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col alignment-self-end buttons-medicion-row">
+          <button type="submit" class="BtnFiltrarMed" mat-flat-button>
+            Filtrar
+          </button>
+          <button type="button" class="BtnVolverMed" mat-flat-button (click)="onVolver()">
+            <mat-icon>arrow_back</mat-icon> Volver
+          </button>
+        </div>
+
+      </div>
+    </mat-card>
+
+    <!-- Tabla Medición de Objetivos -->
+    <div class="tabla-medicion-scroll-container" style="margin-top: 20px; overflow-x: auto;">
+      <table mat-table [dataSource]="dataSourceMedicion" matSort class="tabla-wrapper tabla-medicion" style="width: max-content; min-width: 100%;">
+
+        <!-- Objetivo -->
+        <ng-container matColumnDef="objetivo">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Objetivo</th>
+          <td mat-cell *matCellDef="let row">{{row.objetivo}}</td>
+        </ng-container>
+
+        <!-- Detalle -->
+        <ng-container matColumnDef="detalle">
+          <th mat-header-cell *matHeaderCellDef>Detalle</th>
+          <td mat-cell *matCellDef="let row">
+            <button mat-icon-button color="primary" type="button" matTooltip="Ver detalle" (click)="onVerDetalle(row)">
+              <mat-icon>visibility</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Ficha -->
+        <ng-container matColumnDef="ficha">
+          <th mat-header-cell *matHeaderCellDef>Ficha</th>
+          <td mat-cell *matCellDef="let row">
+            <button mat-icon-button color="primary" type="button" matTooltip="Ver ficha">
+              <mat-icon>description</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Mediciones -->
+        <ng-container matColumnDef="mediciones">
+          <th mat-header-cell *matHeaderCellDef>Mediciones</th>
+          <td mat-cell *matCellDef="let row">
+            <button mat-icon-button color="primary" type="button" matTooltip="Mediciones" (click)="onVerMediciones(row)">
+              <mat-icon>bar_chart</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Gestión de Tareas -->
+        <ng-container matColumnDef="gestion-tareas">
+          <th mat-header-cell *matHeaderCellDef>Gestión de Tareas</th>
+          <td mat-cell *matCellDef="let row">
+            <button mat-icon-button color="primary" type="button" matTooltip="Gestión de tareas" (click)="onVerGestionTareas(row)">
+              <mat-icon>assignment</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Tipo Objetivo -->
+        <ng-container matColumnDef="tipo-objetivo">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo Objetivo</th>
+          <td mat-cell *matCellDef="let row">{{row.tipoObjetivo}}</td>
+        </ng-container>
+
+        <!-- Responsable Medición -->
+        <ng-container matColumnDef="resp-medicion">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Responsable Medición</th>
+          <td mat-cell *matCellDef="let row">{{row.respMedicion}}</td>
+        </ng-container>
+
+        <!-- Responsable Seguimiento -->
+        <ng-container matColumnDef="resp-seguimiento">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Responsable Seguimiento</th>
+          <td mat-cell *matCellDef="let row">{{row.respSeguimiento}}</td>
+        </ng-container>
+
+        <!-- Norma/s -->
+        <ng-container matColumnDef="normas">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Norma/s</th>
+          <td mat-cell *matCellDef="let row">{{row.normas}}</td>
+        </ng-container>
+
+        <!-- Proceso/s -->
+        <ng-container matColumnDef="procesos">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Proceso/s</th>
+          <td mat-cell *matCellDef="let row">{{row.procesos}}</td>
+        </ng-container>
+
+        <!-- Fecha Inicio -->
+        <ng-container matColumnDef="fecha-inicio">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Inicio</th>
+          <td mat-cell *matCellDef="let row">{{row.fechaInicio}}</td>
+        </ng-container>
+
+        <!-- Fecha Fin -->
+        <ng-container matColumnDef="fecha-fin">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Fin</th>
+          <td mat-cell *matCellDef="let row">{{row.fechaFin}}</td>
+        </ng-container>
+
+        <!-- Frecuencia Medición -->
+        <ng-container matColumnDef="frecuencia-medicion">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Frecuencia Medición</th>
+          <td mat-cell *matCellDef="let row">{{row.frecuenciaMedicion}}</td>
+        </ng-container>
+
+        <!-- Columnas de Meses (Ene - Dic) -->
+        <ng-container matColumnDef="ene">
+          <th mat-header-cell *matHeaderCellDef class="mes-header">Ene <button mat-icon-button class="mes-add-btn" type="button"><mat-icon>add_circle_outline</mat-icon></button></th>
+          <td mat-cell *matCellDef="let row" class="mes-cell">{{row.ene}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="feb">
+          <th mat-header-cell *matHeaderCellDef class="mes-header">Feb <button mat-icon-button class="mes-add-btn" type="button"><mat-icon>add_circle_outline</mat-icon></button></th>
+          <td mat-cell *matCellDef="let row" class="mes-cell">{{row.feb}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="mar">
+          <th mat-header-cell *matHeaderCellDef class="mes-header">Mar <button mat-icon-button class="mes-add-btn" type="button"><mat-icon>add_circle_outline</mat-icon></button></th>
+          <td mat-cell *matCellDef="let row" class="mes-cell">{{row.mar}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="abr">
+          <th mat-header-cell *matHeaderCellDef class="mes-header">Abr <button mat-icon-button class="mes-add-btn" type="button"><mat-icon>add_circle_outline</mat-icon></button></th>
+          <td mat-cell *matCellDef="let row" class="mes-cell">{{row.abr}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="may">
+          <th mat-header-cell *matHeaderCellDef class="mes-header">May <button mat-icon-button class="mes-add-btn" type="button"><mat-icon>add_circle_outline</mat-icon></button></th>
+          <td mat-cell *matCellDef="let row" class="mes-cell">{{row.may}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="jun">
+          <th mat-header-cell *matHeaderCellDef class="mes-header">Jun <button mat-icon-button class="mes-add-btn" type="button"><mat-icon>add_circle_outline</mat-icon></button></th>
+          <td mat-cell *matCellDef="let row" class="mes-cell">{{row.jun}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="jul">
+          <th mat-header-cell *matHeaderCellDef class="mes-header">Jul <button mat-icon-button class="mes-add-btn" type="button"><mat-icon>add_circle_outline</mat-icon></button></th>
+          <td mat-cell *matCellDef="let row" class="mes-cell">{{row.jul}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="ago">
+          <th mat-header-cell *matHeaderCellDef class="mes-header">Ago <button mat-icon-button class="mes-add-btn" type="button"><mat-icon>add_circle_outline</mat-icon></button></th>
+          <td mat-cell *matCellDef="let row" class="mes-cell">{{row.ago}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="sep">
+          <th mat-header-cell *matHeaderCellDef class="mes-header">Sep <button mat-icon-button class="mes-add-btn" type="button"><mat-icon>add_circle_outline</mat-icon></button></th>
+          <td mat-cell *matCellDef="let row" class="mes-cell">{{row.sep}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="oct">
+          <th mat-header-cell *matHeaderCellDef class="mes-header">Oct <button mat-icon-button class="mes-add-btn" type="button"><mat-icon>add_circle_outline</mat-icon></button></th>
+          <td mat-cell *matCellDef="let row" class="mes-cell">{{row.oct}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="nov">
+          <th mat-header-cell *matHeaderCellDef class="mes-header">Nov <button mat-icon-button class="mes-add-btn" type="button"><mat-icon>add_circle_outline</mat-icon></button></th>
+          <td mat-cell *matCellDef="let row" class="mes-cell">{{row.nov}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="dic">
+          <th mat-header-cell *matHeaderCellDef class="mes-header">Dic <button mat-icon-button class="mes-add-btn" type="button"><mat-icon>add_circle_outline</mat-icon></button></th>
+          <td mat-cell *matCellDef="let row" class="mes-cell">{{row.dic}}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumnsMedicion"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumnsMedicion;"></tr>
+
+      </table>
+    </div>
+  </form>
+  <!-- VISTA 3: DETALLE DEL OBJETIVO -->
+  <div class="container-cuerpo" *ngIf="mostrarDetalle && detalleObjetivo && !mostrarMediciones && !mostrarGestionTareas">
+
+    <!-- Encabezado del Detalle -->
+    <div class="detalle-header">
+      <h1 class="detalle-titulo">
+        Detalle del Objetivo: {{ detalleObjetivo.objetivo }}/ Indicador: {{ detalleObjetivo.indicador }}
+      </h1>
+    </div>
+
+    <!-- Botón Cerrar y Volver -->
+    <div class="detalle-volver-container">
+      <button type="button" class="BtnVolverDetalle" mat-flat-button (click)="onVolverDesdeDetalle()">
+        <mat-icon>undo</mat-icon> Cerrar y Volver a la Gestión de Objetivos
+      </button>
+    </div>
+
+    <!-- Datos del Objetivo -->
+    <div class="detalle-seccion">
+      <div class="detalle-seccion-header">Datos del Objetivo</div>
+      <div class="detalle-seccion-body">
+        <div class="detalle-campo">
+          <span class="detalle-campo-barra"></span>
+          <span class="detalle-label">Denominación del Objetivo:</span>
+          <span class="detalle-valor">{{ detalleObjetivo.objetivo }}/ Indicador: {{ detalleObjetivo.indicador }}</span>
+        </div>
+        <div class="detalle-campo">
+          <span class="detalle-campo-barra"></span>
+          <span class="detalle-label">Tipo de Objetivo:</span>
+          <span class="detalle-valor">{{ detalleObjetivo.tipoObjetivo }}</span>
+        </div>
+        <div class="detalle-campo">
+          <span class="detalle-campo-barra"></span>
+          <span class="detalle-label">Fuente de Datos:</span>
+        </div>
+        <div class="detalle-valor-bloque">{{ detalleObjetivo.fuenteDatos }}</div>
+        <div class="detalle-campo">
+          <span class="detalle-campo-barra"></span>
+          <span class="detalle-label">Requiere Mediciones / Seguimiento Periódico:</span>
+          <span class="detalle-valor">{{ detalleObjetivo.reqMedicionPeriodica }}</span>
+        </div>
+        <div class="detalle-campo">
+          <span class="detalle-campo-barra"></span>
+          <span class="detalle-label">Frecuencia de Seguimiento:</span>
+          <span class="detalle-valor">{{ detalleObjetivo.frecuenciaSeguimiento }}</span>
+          &nbsp;&nbsp;
+          <span class="detalle-label">¿En las mediciones parciales se requiere cumplir el objetivo?:</span>
+          <span class="detalle-valor">{{ detalleObjetivo.cumplimientoParcial }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Norma/s Implicadas -->
+    <div class="detalle-seccion">
+      <div class="detalle-seccion-header">Norma/s Implicadas</div>
+      <div class="detalle-seccion-body">
+        <div *ngFor="let norma of detalleObjetivo.normasImplicadas" class="detalle-lista-item">
+          - {{ norma }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Proceso/s -->
+    <div class="detalle-seccion">
+      <div class="detalle-seccion-header">Proceso/s</div>
+      <div class="detalle-seccion-body">
+        <div *ngFor="let proc of detalleObjetivo.procesosLista" class="detalle-lista-item">
+          - {{ proc }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Recursos Requeridos -->
+    <div class="detalle-seccion">
+      <div class="detalle-seccion-header">Recursos Requeridos</div>
+      <div class="detalle-seccion-body">
+        <ul class="detalle-recursos-lista">
+          <li *ngFor="let recurso of detalleObjetivo.recursosRequeridos">{{ recurso }}</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Responsable/s -->
+    <div class="detalle-seccion">
+      <div class="detalle-seccion-header">Responsable/s</div>
+      <div class="detalle-seccion-body">
+        <div class="detalle-campo">
+          <span class="detalle-campo-barra"></span>
+          <span class="detalle-label">Usuario Responsable de Seguimiento:</span>
+          <span class="detalle-valor">{{ detalleObjetivo.respSeguimiento }}</span>
+        </div>
+        <div class="detalle-campo">
+          <span class="detalle-campo-barra"></span>
+          <span class="detalle-label">Usuario Responsable de la Medición:</span>
+          <span class="detalle-valor">{{ detalleObjetivo.respMedicion }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acciones / Tareas Planificadas -->
+    <div class="detalle-seccion">
+      <div class="detalle-seccion-header">Acciones / Tareas Planificadas:</div>
+      <div class="detalle-seccion-body">
+        <table class="detalle-tareas-tabla">
+          <thead>
+            <tr>
+              <th>Tarea</th>
+              <th>Responsable</th>
+              <th>Fecha Inicio</th>
+              <th>Fecha Fin</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let tarea of detalleObjetivo.tareasPlanes">
+              <td>{{ tarea.tarea }}</td>
+              <td>
+                <div><mat-icon class="tarea-icono">person</mat-icon> {{ tarea.responsable }}</div>
+                <div><mat-icon class="tarea-icono">people</mat-icon> {{ tarea.cargo }}</div>
+              </td>
+              <td>{{ tarea.fechaInicio }}</td>
+              <td>{{ tarea.fechaFin }}</td>
+              <td>{{ tarea.estado }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- VISTA 4: MEDICIONES DEL OBJETIVO -->
+  <div class="container-cuerpo" *ngIf="mostrarMediciones && medicionesObjetivo && !mostrarGestionTareas">
+
+    <!-- Botones superiores -->
+    <div class="med-botones-top">
+      <button type="button" class="BtnVolverMediciones" mat-flat-button (click)="onVolverDesdeMediciones()">
+        <mat-icon>undo</mat-icon> Volver a la Gestión de Objetivos
+      </button>
+      <button type="button" class="BtnExportarExcel" mat-flat-button>
+        <mat-icon>file_download</mat-icon> Exportar Mediciones a Excel
+      </button>
+    </div>
+
+    <!-- Header rojo con Objetivo e Indicador -->
+    <div class="med-header">
+      <p class="med-header-text">
+        <strong>Objetivo:</strong> {{ medicionesObjetivo.objetivo }}/ <strong>Indicador:</strong> {{ medicionesObjetivo.indicador }}
+      </p>
+    </div>
+
+    <!-- Panel de Información -->
+    <div class="med-info-panel">
+      <div class="med-info-campo"><strong>Tipo de Objetivo:</strong> {{ medicionesObjetivo.tipoObjetivoCorto }}</div>
+      <div class="med-info-campo"><strong>Fecha Inicio:</strong> {{ medicionesObjetivo.fechaInicioMed }}</div>
+      <div class="med-info-campo"><strong>Fecha Finalización:</strong> {{ medicionesObjetivo.fechaFinMed }}</div>
+      <div class="med-info-campo"><strong>¿Requiere mediciones / seguimiento periódico?:</strong> {{ medicionesObjetivo.reqMedicionPeriodica }}</div>
+      <div class="med-info-campo"><strong>Frecuencia de medición:</strong> {{ medicionesObjetivo.frecuenciaMed }}</div>
+      <div class="med-info-campo"><strong>¿En las mediciones parciales se requiere cumplir el objetivo?:</strong> {{ medicionesObjetivo.cumplimientoParcialMed }}</div>
+      <div class="med-info-campo"><strong>Número de mediciones realizadas:</strong> {{ medicionesObjetivo.numMedRealizadas }}</div>
+      <div class="med-info-campo"><strong>Número de mediciones totales a realizar:</strong> {{ medicionesObjetivo.numMedTotales }}</div>
+      <div class="med-info-campo"><strong>Pendientes de realización:</strong> {{ medicionesObjetivo.pendientes }}</div>
+      <div class="med-info-campo"><strong>Valor Mínimo Esperado:</strong> {{ medicionesObjetivo.valorMinEsperado }}</div>
+      <div class="med-info-campo"><strong>Valor Máximo Esperado:</strong> {{ medicionesObjetivo.valorMaxEsperado }}</div>
+    </div>
+
+    <!-- Resultados + Gráfico -->
+    <div class="med-graficos-row">
+      <!-- Resultados de los Objetivos -->
+      <div class="med-graficos-izq">
+        <div class="med-seccion-header-rojo">Resultados de los Objetivos</div>
+        <div class="med-graficos-pies">
+          <!-- Pie 1: Estado de Medición -->
+          <div class="med-pie-container">
+            <div class="med-pie-titulo">Estado de Medición del Objetivo</div>
+            <div class="med-pie-chart" [style.background]="'conic-gradient(#4caf50 0% ' + medicionesObjetivo.pctRealizadas + '%, #9c27b0 ' + medicionesObjetivo.pctRealizadas + '% 100%)'">
+            </div>
+            <div class="med-pie-leyenda">
+              <div class="med-leyenda-item">
+                <span class="med-leyenda-color" style="background:#4caf50;"></span>
+                Mediciones Realizadas ({{ medicionesObjetivo.pctRealizadas }}%)
+              </div>
+              <div class="med-leyenda-item">
+                <span class="med-leyenda-color" style="background:#9c27b0;"></span>
+                Pendientes de Realización ({{ medicionesObjetivo.pctPendientes }}%)
+              </div>
+            </div>
+          </div>
+          <!-- Pie 2: Resultado de las Mediciones -->
+          <div class="med-pie-container">
+            <div class="med-pie-titulo">Resultado de las Mediciones</div>
+            <div class="med-pie-chart" [style.background]="'conic-gradient(#4caf50 0% ' + medicionesObjetivo.pctDentroRango + '%, #f44336 ' + medicionesObjetivo.pctDentroRango + '% 100%)'">
+            </div>
+            <div class="med-pie-leyenda">
+              <div class="med-leyenda-item">
+                <span class="med-leyenda-color" style="background:#4caf50;"></span>
+                Medición dentro del rango esperado ({{ medicionesObjetivo.pctDentroRango }}%)
+              </div>
+              <div class="med-leyenda-item">
+                <span class="med-leyenda-color" style="background:#f44336;"></span>
+                Medición fuera del rango ({{ medicionesObjetivo.pctFueraRango }}%)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráfico de Tendencia -->
+      <div class="med-graficos-der">
+        <div class="med-seccion-header-rojo">Gráfico del Análisis de Tendencia</div>
+        <div class="med-tendencia-chart-area">
+          <div class="med-chart-titulo">Análisis de Tendencia del Objetivo</div>
+          <div class="med-chart-leyenda-top">
+            <span class="med-leyenda-item"><span class="med-leyenda-color" style="background:#2196f3;"></span> Mes</span>
+            <span class="med-leyenda-item"><span class="med-leyenda-color" style="background:#9c27b0;"></span> Acumulado</span>
+            <span class="med-leyenda-item"><span class="med-leyenda-color" style="background:#4caf50;"></span> Meta Mínima</span>
+          </div>
+          <div class="med-chart-placeholder">
+            <div class="med-chart-bars">
+              <div *ngFor="let dato of medicionesObjetivo.datosTendencia" class="med-chart-bar-group">
+                <div class="med-chart-bar med-bar-mes" [style.height.px]="(dato.valor - 90) * 15"></div>
+                <div class="med-chart-bar med-bar-acum" [style.height.px]="(dato.acumulado - 90) * 15"></div>
+                <div class="med-chart-bar med-bar-meta" [style.height.px]="(dato.metaMinima - 90) * 15"></div>
+                <div class="med-chart-bar-label">{{ dato.mes.split(' ')[0] }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Datos del análisis de tendencia -->
+    <div class="med-seccion">
+      <div class="med-seccion-header-rojo">Datos del análisis de tendencia</div>
+      <div class="med-tabla-scroll">
+        <table class="med-tabla-tendencia">
+          <thead>
+            <tr>
+              <th></th>
+              <th *ngFor="let dato of medicionesObjetivo.datosTendencia">{{ dato.mes }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="med-fila-label">Mes</td>
+              <td *ngFor="let dato of medicionesObjetivo.datosTendencia">{{ dato.valor | number:'1.2-2' }} porcentaje</td>
+            </tr>
+            <tr>
+              <td class="med-fila-label">Media Acumulada</td>
+              <td *ngFor="let dato of medicionesObjetivo.datosTendencia">{{ dato.acumulado | number:'1.2-2' }} porcentaje</td>
+            </tr>
+            <tr>
+              <td class="med-fila-label">Meta Mínima</td>
+              <td *ngFor="let dato of medicionesObjetivo.datosTendencia">{{ dato.metaMinima | number:'1.2-2' }} porcentaje</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Datos de las mediciones -->
+    <div class="med-seccion">
+      <div class="med-seccion-header-rojo">Datos de las mediciones</div>
+      <table class="med-tabla-mediciones">
+        <thead>
+          <tr>
+            <th>Mes / Año</th>
+            <th>Fecha Real de introducción de datos</th>
+            <th>Valor</th>
+            <th>Unidad</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let med of medicionesObjetivo.datosMediciones">
+            <td class="med-mes-link">{{ med.mesAnio }}</td>
+            <td>{{ med.fechaReal }}</td>
+            <td>{{ med.valor }}</td>
+            <td>{{ med.unidad }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- VISTA 5: GESTIÓN DE TAREAS -->
+  <div class="container-cuerpo" *ngIf="mostrarGestionTareas && gestionTareasObjetivo">
+    
+    <!-- Botones superiores -->
+    <div class="med-botones-top">
+      <button type="button" class="BtnVolverGestionTareas" mat-flat-button (click)="onVolverDesdeGestionTareas()">
+        <mat-icon>undo</mat-icon> Volver a la Medición de Objetivos
+      </button>
+      <button type="button" class="BtnExportarPlanificacion" mat-flat-button (click)="onExportarPlanificacion()">
+        <mat-icon>grid_on</mat-icon> Exportar Planificación Tareas
+      </button>
+      <button type="button" class="BtnNuevaAccionTarea" mat-flat-button (click)="onNuevaAccionTarea()">
+        <mat-icon>build</mat-icon> Nueva Acción / Tarea a Planificar
+      </button>
+    </div>
+
+    <!-- Header Rojo (Texto en Rojo) -->
+    <div class="gestion-tareas-header">
+      <h2>Objetivo: {{ gestionTareasObjetivo.objetivo }}/ Indicador: {{ gestionTareasObjetivo.indicador }}</h2>
+    </div>
+
+    <!-- Card de Filtros -->
+    <form [formGroup]="formularioGestionTareas" (ngSubmit)="onFiltrarTareas()">
+      <mat-card class="filtros-card">
+        <mat-card-subtitle class="card-title">Opciones de Filtrado (Tareas)</mat-card-subtitle>
+        
+        <div class="filtros-tareas-grid">
+          
+          <!-- Fila 1 -->
+          <div class="filtro-col">
+            <div class="input-label">Denominación Tarea</div>
+            <mat-form-field appearance="outline" class="w-100 compact-field">
+              <input matInput formControlName="ctrol_denominacion_tarea">
+            </mat-form-field>
+          </div>
+
+          <div class="filtro-col">
+            <div class="input-label">Estado Realización</div>
+            <mat-form-field appearance="outline" class="w-100 compact-field">
+              <mat-select formControlName="ctrol_estado_realizacion">
+                <mat-option *ngFor="let estado of lstEstadosRealizacion" [value]="estado.codigo">
+                  {{ estado.descripcion }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="filtro-col">
+            <div class="input-label">Fecha Inicio mayor que:</div>
+            <mat-form-field appearance="outline" class="w-100 compact-field">
+              <input matInput [matDatepicker]="pickerInicioMayor" formControlName="ctrol_fecha_inicio_mayor" placeholder="dd/mm/aaaa">
+              <mat-datepicker-toggle matIconSuffix [for]="pickerInicioMayor"></mat-datepicker-toggle>
+              <mat-datepicker #pickerInicioMayor></mat-datepicker>
+            </mat-form-field>
+          </div>
+
+          <div class="filtro-col">
+            <div class="input-label">Fecha Fin menor que:</div>
+            <mat-form-field appearance="outline" class="w-100 compact-field">
+              <input matInput [matDatepicker]="pickerFinMenor" formControlName="ctrol_fecha_fin_menor" placeholder="dd/mm/aaaa">
+              <mat-datepicker-toggle matIconSuffix [for]="pickerFinMenor"></mat-datepicker-toggle>
+              <mat-datepicker #pickerFinMenor></mat-datepicker>
+            </mat-form-field>
+          </div>
+
+          <!-- Fila 2 -->
+          <div class="filtro-col">
+            <div class="input-label">Año</div>
+            <mat-form-field appearance="outline" class="w-100 compact-field">
+              <mat-select formControlName="ctrol_anio">
+                <mat-option *ngFor="let anio of lstAnios" [value]="anio.codigo">
+                  {{ anio.descripcion }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="filtro-col">
+            <div class="input-label">Persona Responsable</div>
+            <mat-form-field appearance="outline" class="w-100 compact-field">
+              <mat-select formControlName="ctrol_persona_responsable">
+                <mat-option *ngFor="let pers of lstPersonasResponsables" [value]="pers.codigo">
+                  {{ pers.descripcion }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="filtro-col">
+            <div class="input-label">Puesto Responsable</div>
+            <mat-form-field appearance="outline" class="w-100 compact-field">
+              <mat-select formControlName="ctrol_puesto_responsable">
+                <mat-option *ngFor="let puesto of lstPuestosResponsables" [value]="puesto.codigo">
+                  {{ puesto.descripcion }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="filtro-col alignment-self-end" style="padding-bottom: 4px; display: flex; justify-content: flex-end;">
+            <button type="submit" class="BtnFiltrarTareas" mat-flat-button>
+              Filtrar Tareas
+            </button>
+          </div>
+
+        </div>
+      </mat-card>
+    </form>
+
+    <!-- Datos del Objetivo -->
+    <div class="gestion-tareas-seccion-titulo">Datos del Objetivo</div>
+    <div class="gestion-tareas-tabla-container">
+      <table class="gestion-tareas-tabla">
+        <thead>
+          <tr>
+            <th>Objetivo</th>
+            <th>Tipo Objetivo</th>
+            <th>Responsable Medición</th>
+            <th>Fecha Inicio</th>
+            <th>Fecha Fin</th>
+            <th>Frecuencia Medición</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="col-objetivo">{{ gestionTareasObjetivo.objetivo }}/ Indicador: {{ gestionTareasObjetivo.indicador }}</td>
+            <td>{{ gestionTareasObjetivo.tipoObjetivoCorto || 'Valor Numérico' }}</td>
+            <td>Usuario: {{ gestionTareasObjetivo.respMedicion }}</td>
+            <td>{{ gestionTareasObjetivo.fechaInicio }}</td>
+            <td>{{ gestionTareasObjetivo.fechaFin }}</td>
+            <td>{{ gestionTareasObjetivo.frecuenciaMedicion }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tareas Planificadas del Objetivo -->
+    <div class="gestion-tareas-seccion-titulo" style="margin-top: 30px;">Acciones / Tareas Planificadas</div>
+    <div class="gestion-tareas-tabla-container">
+      <table class="gestion-tareas-tabla table-tareas-mensuales">
+        <thead>
+          <tr style="background-color: #000000;">
+            <th style="width: 50px; text-align: center;">Editar</th>
+            <th style="width: 50px; text-align: center;">Eliminar</th>
+            <th>Tarea</th>
+            <th style="width: 60px; text-align: center;">Informe</th>
+            <th>Responsable</th>
+            <th>Fecha Inicio</th>
+            <th>Fecha Fin</th>
+            <th>Estado</th>
+            <th class="col-mes-hdr">Ene</th>
+            <th class="col-mes-hdr">Feb</th>
+            <th class="col-mes-hdr">Mar</th>
+            <th class="col-mes-hdr">Abr</th>
+            <th class="col-mes-hdr">May</th>
+            <th class="col-mes-hdr">Jun</th>
+            <th class="col-mes-hdr">Jul</th>
+            <th class="col-mes-hdr">Ago</th>
+            <th class="col-mes-hdr">Sep</th>
+            <th class="col-mes-hdr">Oct</th>
+            <th class="col-mes-hdr">Nov</th>
+            <th class="col-mes-hdr">Dic</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="filteredTareas.length === 0">
+            <td colspan="20" style="text-align: center; color: #777; padding: 20px;">
+              No se encontraron tareas con los filtros aplicados.
+            </td>
+          </tr>
+          <tr *ngFor="let tarea of filteredTareas">
+            <td style="text-align: center;">
+              <button mat-icon-button type="button" style="color: #000000; width: 32px; height: 32px; line-height: 32px;" (click)="onEditTarea(tarea)">
+                <mat-icon style="font-size: 20px; width: 20px; height: 20px;">edit</mat-icon>
+              </button>
+            </td>
+            <td style="text-align: center;">
+              <button mat-icon-button type="button" style="color: #000000; width: 32px; height: 32px; line-height: 32px;" (click)="onDeleteTarea(tarea)">
+                <mat-icon style="font-size: 20px; width: 20px; height: 20px;">delete</mat-icon>
+              </button>
+            </td>
+            <td>{{ tarea.tarea }}</td>
+            <td style="text-align: center;">
+              <button mat-icon-button type="button" class="pdf-btn" (click)="onDescargarInforme(tarea)">
+                <mat-icon style="color: white; font-size: 16px; width: 16px; height: 16px;">picture_as_pdf</mat-icon>
+              </button>
+            </td>
+            <td>
+              <div style="display: flex; flex-direction: column; gap: 2px; font-size: 11px;">
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <mat-icon class="tarea-icono" style="font-size: 13px; width: 13px; height: 13px; margin-right: 0; color: #333;">person</mat-icon>
+                  <span style="font-weight: 500; color: #333;">{{ tarea.responsable }}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px; color: #666;">
+                  <mat-icon class="tarea-icono" style="font-size: 13px; width: 13px; height: 13px; margin-right: 0; color: #666;">people</mat-icon>
+                  <span>{{ tarea.cargo }}</span>
+                </div>
+              </div>
+            </td>
+            <td>{{ tarea.fechaInicio }}</td>
+            <td>{{ tarea.fechaFin }}</td>
+            <td>{{ tarea.estado }}</td>
+            <!-- Columnas de meses con fondo naranja, la última tiene el icono -->
+            <td class="celda-mes-naranja"></td>
+            <td class="celda-mes-naranja"></td>
+            <td class="celda-mes-naranja"></td>
+            <td class="celda-mes-naranja"></td>
+            <td class="celda-mes-naranja"></td>
+            <td class="celda-mes-naranja"></td>
+            <td class="celda-mes-naranja"></td>
+            <td class="celda-mes-naranja"></td>
+            <td class="celda-mes-naranja"></td>
+            <td class="celda-mes-naranja"></td>
+            <td class="celda-mes-naranja"></td>
+            <td class="celda-mes-naranja" style="text-align: center;">
+              <button mat-icon-button type="button" style="color: white; width: 28px; height: 28px; line-height: 28px;" matTooltip="Ver detalle mensual">
+                <mat-icon style="font-size: 16px; width: 16px; height: 16px;">format_list_bulleted</mat-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+</div>
+
+<ngx-spinner bdColor="rgba(51, 51, 51, 0.8)" size="default" type="ball-spin">
+</ngx-spinner>

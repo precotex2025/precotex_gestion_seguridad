@@ -3,12 +3,14 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
+import { MatDialog } from '@angular/material/dialog';
 import Swal from 'sweetalert2';
 
 import { OrganizacionService } from '../../services/organizacion.service';
 import { SedesService } from '../../services/sedes.service';
 import { PuestosService } from '../../services/puestos.service';
 import { MaeTabService } from '../../services/mae-tab.service';
+import { UsuariosPersonasRegeditComponent } from './usuarios-personas-regedit/usuarios-personas-regedit.component';
 
 interface combo {
   codigo: string;
@@ -29,18 +31,68 @@ export class UsuariosPersonasComponent implements OnInit {
   lstNivelRiesgo: combo[] = [];
 
   displayedColumns: string[] = [
-    'codigo',
-    'puesto',
-    'organizacion',
-    'sede',
-    'nivel',
-    'estado',
+    'activo'                ,
+    'nombre'                ,
+    'apellidos'             ,
+    'email'                 ,
+    'teléfono'              ,
+    'sede'                  ,
+    'puesto'                ,
+    'proxima'               ,
+    'estado_evaluacion'     ,
+    'prox-evalución-plant'  ,
+    'acc-evaluación-act' ,
     'acciones'
   ];
   dataSource = new MatTableDataSource<any>();
 
-  // Mock data representing database rows (initially empty)
-  mockPersonas: any[] = [];
+  // Mock data representing database rows (populated with two test records by default)
+  mockPersonas: any[] = [
+    {
+      codigo_Persona: 'P001',
+      nombre: 'Luis',
+      apellidos: 'Aldana',
+      nombreCompleto: 'Luis Aldana',
+      email: 'laldana@precotex.com.pe',
+      telefono: '987654321',
+      codigo_Organizacion: '01',
+      organizacion: 'Precotex S.A.C.',
+      codigo_Sede: '01',
+      sede: 'Sede Central - Ate',
+      codigo_Puesto: '01',
+      puesto: 'Jefe de Seguridad y Salud Ocupacional',
+      codigo_Nivel_Riesgo: 'ALTO',
+      nivelRiesgo: 'ALTO',
+      flg_Activo: 'True',
+      es_admin: 'Sí',
+      proxima: '24/12/2026',
+      estado_evaluacion: 'True',
+      proxima_evaluacion_plan: '24/06/2027',
+      permisos: {}
+    },
+    {
+      codigo_Persona: 'P002',
+      nombre: 'Sayda',
+      apellidos: 'Huaranga',
+      nombreCompleto: 'Sayda Huaranga',
+      email: 'shuaranga@precotex.com.pe',
+      telefono: '912345678',
+      codigo_Organizacion: '01',
+      organizacion: 'Precotex S.A.C.',
+      codigo_Sede: '02',
+      sede: 'Sede Planta - Lurin',
+      codigo_Puesto: '02',
+      puesto: 'Supervisor de SST',
+      codigo_Nivel_Riesgo: 'MEDIO',
+      nivelRiesgo: 'MEDIO',
+      flg_Activo: 'True',
+      es_admin: 'No',
+      proxima: '15/10/2026',
+      estado_evaluacion: 'True',
+      proxima_evaluacion_plan: '15/04/2027',
+      permisos: {}
+    }
+  ];
 
   constructor(
     private formBuilder: FormBuilder,
@@ -49,7 +101,8 @@ export class UsuariosPersonasComponent implements OnInit {
     private serviceSede: SedesService,
     private servicePuesto: PuestosService,
     private serviceMaeTab: MaeTabService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -181,20 +234,52 @@ export class UsuariosPersonasComponent implements OnInit {
   }
 
   onAgregar() {
-    Swal.fire({
-      title: 'Registrar nueva persona',
-      text: 'Función de registro para personas y usuarios.',
-      icon: 'info',
-      confirmButtonText: 'Entendido'
+    const sOrgaNizacion = this.formulario.get('ctrol_organizacion')?.value || '';
+    let dialogRef = this.dialog.open(UsuariosPersonasRegeditComponent, {
+      width: '75vw',
+      height: '90vh',
+      maxWidth: '100vw',
+      maxHeight: '100vh',
+      disableClose: true,
+      data: {
+        Title: 'Registrar nuevo usuario/persona',
+        Accion: 'I',
+        Datos: {
+          codigo_Organizacion: sOrgaNizacion
+        }
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.mockPersonas.push(result);
+        this.onListado();
+      }
     });
   }
 
   onEditar(item: any) {
-    Swal.fire({
-      title: 'Editar persona',
-      text: `Editando datos de: ${item.nombreCompleto}`,
-      icon: 'info',
-      confirmButtonText: 'Entendido'
+    let dialogRef = this.dialog.open(UsuariosPersonasRegeditComponent, {
+      width: '75vw',
+      height: '90vh',
+      maxWidth: '100vw',
+      maxHeight: '100vh',
+      disableClose: true,
+      data: {
+        Title: 'Editar usuario/persona',
+        Accion: 'U',
+        Datos: item
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        const index = this.mockPersonas.findIndex(p => p.codigo_Persona === item.codigo_Persona);
+        if (index !== -1) {
+          this.mockPersonas[index] = result;
+        }
+        this.onListado();
+      }
     });
   }
 

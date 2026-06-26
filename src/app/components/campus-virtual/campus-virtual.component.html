@@ -1,0 +1,342 @@
+<div class="contenedor">
+
+  <!-- ==================== VISTA 1: CATÁLOGO FORMATIVO ==================== -->
+  <div *ngIf="currentTab === 'catalogo'">
+    <!-- Header Buttons Row (Top) -->
+    <div class="top-buttons-row">
+      <button type="button" class="btn-catalogo-red" (click)="setTab('contratadas')">
+        <mat-icon class="btn-icon">school</mat-icon>
+        Acciones Formativas Contratadas
+      </button>
+      <!-- Note: "Catálogo Formativo" button is omitted here as per user request (pero en la primera imagen no agregues Catalogo Formativo) -->
+      <button type="button" class="btn-catalogo-red" (click)="onExportarCatalog()">
+        <mat-icon class="btn-icon">feed</mat-icon>
+        Exportar Listado
+      </button>
+    </div>
+
+    <!-- Search Group -->
+    <fieldset class="search-fieldset">
+      <legend class="search-legend">Búsqueda de Acciones Formativas</legend>
+      <div class="search-row">
+        <div class="search-field flex-2">
+          <label for="denominacionCatalog">Búsqueda por denominación</label>
+          <input id="denominacionCatalog" type="text" [(ngModel)]="filtroCatalogDenominacion" placeholder="">
+        </div>
+        <div class="search-field flex-1">
+          <label for="precioDesde">Precio desde</label>
+          <input id="precioDesde" type="text" [(ngModel)]="filtroCatalogPrecioDesde" placeholder="">
+        </div>
+        <div class="search-field flex-1">
+          <label for="precioHasta">Precio hasta</label>
+          <input id="precioHasta" type="text" [(ngModel)]="filtroCatalogPrecioHasta" placeholder="">
+        </div>
+        <div class="search-field flex-1">
+          <label for="categoriaCatalog">Categoria</label>
+          <select id="categoriaCatalog" [(ngModel)]="filtroCatalogCategoria">
+            <option value="">Selecciona</option>
+            <option *ngFor="let cat of categoriasCatalog" [value]="cat">{{ cat }}</option>
+          </select>
+        </div>
+        <div class="search-button-container">
+          <button type="button" class="btn-buscar-cursos" (click)="onBuscarCatalog()">Buscar Cursos</button>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Info text above table -->
+    <div class="table-info-row">
+      <span class="info-text">25% de descuento por compra Online sobre el precio oficial.</span>
+    </div>
+
+    <!-- Catalog Table -->
+    <div class="table-container">
+      <table mat-table [dataSource]="dataSourceCatalog" matSort class="tabla-wrapper">
+
+        <!-- Id interno -->
+        <ng-container matColumnDef="idInterno">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Id interno</th>
+          <td mat-cell *matCellDef="let row">{{ row.idInterno }}</td>
+        </ng-container>
+
+        <!-- Categoria -->
+        <ng-container matColumnDef="categoria">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Categoria</th>
+          <td mat-cell *matCellDef="let row">{{ row.categoria }}</td>
+        </ng-container>
+
+        <!-- Abreviatura -->
+        <ng-container matColumnDef="abreviatura">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Abreviatura</th>
+          <td mat-cell *matCellDef="let row">{{ row.abreviatura }}</td>
+        </ng-container>
+
+        <!-- Denominación -->
+        <ng-container matColumnDef="denominacion">
+          <th mat-header-cell *matHeaderCellDef>Denominación</th>
+          <td mat-cell *matCellDef="let row" class="denominacion-cell">{{ row.denominacion }}</td>
+        </ng-container>
+
+        <!-- Precio (€ / US$) -->
+        <ng-container matColumnDef="precio">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Precio (€ / US$)</th>
+          <td mat-cell *matCellDef="let row" style="font-weight: 500;">
+            {{ row.precio | number:'1.2-2' }} €
+          </td>
+        </ng-container>
+
+        <!-- Más Info -->
+        <ng-container matColumnDef="masInfo">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Más Info</th>
+          <td mat-cell *matCellDef="let row" style="text-align: center;">
+            <button type="button" class="btn-table-info" (click)="onVerCursoCatalog(row)" title="Ver Información">
+              <mat-icon>info</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Inscripción -->
+        <ng-container matColumnDef="inscripcion">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Inscripción</th>
+          <td mat-cell *matCellDef="let row" style="text-align: center;">
+            <button type="button" class="btn-table-inscribir" [class.inscrito]="row.inscrito" (click)="onInscribirCatalog(row)">
+              {{ row.inscrito ? 'Inscrito' : 'Inscribirse' }}
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumnsCatalog"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumnsCatalog;" class="table-row"></tr>
+
+      </table>
+
+      <!-- Empty state -->
+      <div *ngIf="dataSourceCatalog.data.length === 0" class="empty-state">
+        <mat-icon>school</mat-icon>
+        <p>No se encontraron cursos en el catálogo.</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==================== VISTA 2: ACCIONES FORMATIVAS CONTRATADAS ==================== -->
+  <div *ngIf="currentTab === 'contratadas'">
+    <!-- Header Buttons Row (Top) -->
+    <div class="top-buttons-row">
+      <button type="button" class="btn-acciones-contratadas" (click)="setTab('contratadas')">
+        <mat-icon class="btn-icon">school</mat-icon>
+        Acciones Formativas Contratadas
+      </button>
+      <button type="button" class="btn-catalogo-formativo" (click)="setTab('catalogo')">
+        <mat-icon class="btn-icon">menu_book</mat-icon>
+        Catálogo Formativo
+      </button>
+    </div>
+
+    <!-- Title -->
+    <h2 class="listado-titulo">Listado de Acciones Formativas</h2>
+
+    <!-- Search Group -->
+    <fieldset class="search-fieldset">
+      <legend class="search-legend">Búsqueda de Acciones Formativas</legend>
+      <div class="search-row">
+        <div class="search-field">
+          <label for="denominacionAccion">Denominación del Curso</label>
+          <select id="denominacionAccion" [(ngModel)]="filtroAccionDenominacion">
+            <option value="Cualquier curso">Cualquier curso</option>
+            <option *ngFor="let curso of cursosOptions" [value]="curso">{{ curso }}</option>
+          </select>
+        </div>
+        <div class="search-field">
+          <label for="usuario">Usuario</label>
+          <select id="usuario" [(ngModel)]="filtroAccionUsuario">
+            <option value="Todos los Usuarios">Todos los Usuarios</option>
+            <option *ngFor="let usr of usuariosOptions" [value]="usr">{{ usr }}</option>
+          </select>
+        </div>
+        <div class="search-field">
+          <label for="puesto">Puesto</label>
+          <select id="puesto" [(ngModel)]="filtroAccionPuesto">
+            <option value="Cualquier Puesto">Cualquier Puesto</option>
+            <option *ngFor="let puesto of puestosOptions" [value]="puesto">{{ puesto }}</option>
+          </select>
+        </div>
+        <div class="search-field">
+          <label for="organizacion">Organización</label>
+          <select id="organizacion" [(ngModel)]="filtroAccionOrganizacion">
+            <option value="Selecciona">Selecciona</option>
+            <option *ngFor="let org of organizacionesOptions" [value]="org">{{ org }}</option>
+          </select>
+        </div>
+        <div class="search-field">
+          <label for="sede">Sede</label>
+          <select id="sede" [(ngModel)]="filtroAccionSede">
+            <option value="Selecciona">Selecciona</option>
+            <option *ngFor="let sede of sedesOptions" [value]="sede">{{ sede }}</option>
+          </select>
+        </div>
+        <div class="search-field">
+          <label for="estado">Estado</label>
+          <select id="estado" [(ngModel)]="filtroAccionEstado">
+            <option value="Matrícula Activa">Matrícula Activa</option>
+            <option *ngFor="let est of estadosOptions" [value]="est">{{ est }}</option>
+          </select>
+        </div>
+        <div class="search-button-container">
+          <button type="button" class="btn-filtrar" (click)="onFiltrarAcciones()">Filtrar</button>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Yellow alert box (Warning) -->
+    <div class="warning-box">
+      <mat-icon class="warning-icon">info</mat-icon>
+      <div class="warning-content">
+        <p class="warning-main-text">
+          Los diplomas no son generados directamente una vez finalizada la acción formativa. El sistema los genera automáticamente en un plazo máximo de 10 días.
+        </p>
+        <p class="warning-sub-text">
+          Para la obtención de los correspondientes certificados que acrediten la finalización de las distintas acciones formativas se requiere unos mínimos de porcentaje de avance en los correspondientes curso:
+        </p>
+        <ul class="warning-list">
+          <li>- Porcentaje requerido de visualización de vídeos >= 90%</li>
+          <li>- Porcentaje de visualización del contenido del curso >= 33%</li>
+          <li>- Porcentaje de exámenes realizados = 100%</li>
+          <li>- Nota mínima en el examen final = 6 sobre 10</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Acciones Table -->
+    <div class="table-container">
+      <table mat-table [dataSource]="dataSourceAcciones" matSort class="tabla-wrapper">
+
+        <!-- Acceso al Campus -->
+        <ng-container matColumnDef="accesoCampus">
+          <th mat-header-cell *matHeaderCellDef>Acceso al Campus</th>
+          <td mat-cell *matCellDef="let row" style="text-align: center;">
+            <button type="button" class="btn-table-action btn-red" (click)="onAccesoCampus(row)" title="Acceso al Campus">
+              Acceso al Campus
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Verificar Conexión al Campus -->
+        <ng-container matColumnDef="verificarConexion">
+          <th mat-header-cell *matHeaderCellDef>Verificar Conexión al Campus</th>
+          <td mat-cell *matCellDef="let row" style="text-align: center;">
+            <button type="button" class="btn-table-action btn-red" (click)="onVerificarConexion(row)" title="Verificar Conexión al Campus">
+              Verificar Conexión al Campus
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Eliminar Matriculación -->
+        <ng-container matColumnDef="eliminarMatriculacion">
+          <th mat-header-cell *matHeaderCellDef>Eliminar Matriculación</th>
+          <td mat-cell *matCellDef="let row" style="text-align: center;">
+            <button type="button" class="btn-table-action btn-red" (click)="onEliminarMatriculacion(row)" title="Eliminar Matriculación">
+              Eliminar Matriculación
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Estado -->
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
+          <td mat-cell *matCellDef="let row" style="font-weight: 500;">
+            {{ row.estado }}
+          </td>
+        </ng-container>
+
+        <!-- Alumno -->
+        <ng-container matColumnDef="alumno">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Alumno</th>
+          <td mat-cell *matCellDef="let row">
+            {{ row.alumno }}
+          </td>
+        </ng-container>
+
+        <!-- Acción Formativa -->
+        <ng-container matColumnDef="accionFormativa">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Acción Formativa</th>
+          <td mat-cell *matCellDef="let row" class="denominacion-cell">
+            {{ row.accionFormativa }}
+          </td>
+        </ng-container>
+
+        <!-- Código -->
+        <ng-container matColumnDef="codigo">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Código</th>
+          <td mat-cell *matCellDef="let row">
+            {{ row.codigo }}
+          </td>
+        </ng-container>
+
+        <!-- Fecha Inicio -->
+        <ng-container matColumnDef="fechaInicio">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Inicio</th>
+          <td mat-cell *matCellDef="let row">
+            {{ row.fechaInicio }}
+          </td>
+        </ng-container>
+
+        <!-- Duración -->
+        <ng-container matColumnDef="duracion">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Duración</th>
+          <td mat-cell *matCellDef="let row">
+            {{ row.duracion }}
+          </td>
+        </ng-container>
+
+        <!-- Fecha Fin Máxima -->
+        <ng-container matColumnDef="fechaFinMaxima">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Fin Máxima</th>
+          <td mat-cell *matCellDef="let row">
+            {{ row.fechaFinMaxima }}
+          </td>
+        </ng-container>
+
+        <!-- Informe Actividad -->
+        <ng-container matColumnDef="informeActividad">
+          <th mat-header-cell *matHeaderCellDef>Informe Actividad</th>
+          <td mat-cell *matCellDef="let row" style="text-align: center;">
+            <button type="button" class="btn-table-action btn-red" (click)="onInformeActividad(row)" title="Informe Actividad">
+              Informe Actividad
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Ver / Descargar Diploma -->
+        <ng-container matColumnDef="descargarDiploma">
+          <th mat-header-cell *matHeaderCellDef>Ver / Descargar Diploma</th>
+          <td mat-cell *matCellDef="let row" style="text-align: center;">
+            <button type="button" class="btn-table-action btn-red" (click)="onDescargarDiploma(row)" title="Ver / Descargar Diploma" [disabled]="!row.finalizado">
+              Ver / Descargar Diploma
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Más Info Acc. Formativa -->
+        <ng-container matColumnDef="masInfo">
+          <th mat-header-cell *matHeaderCellDef>Más Info Acc. Formativa</th>
+          <td mat-cell *matCellDef="let row" style="text-align: center;">
+            <button type="button" class="btn-table-action btn-red" (click)="onMasInfoAcc(row)" title="Más Info Acc. Formativa">
+              Más Info Acc. Formativa
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumnsAcciones"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumnsAcciones;" class="table-row"></tr>
+
+      </table>
+
+      <!-- Empty state -->
+      <div *ngIf="dataSourceAcciones.data.length === 0" class="empty-state">
+        <p>No se han encontrado acciones formativas.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
