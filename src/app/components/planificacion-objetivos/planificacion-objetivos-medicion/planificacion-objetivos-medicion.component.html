@@ -1,0 +1,275 @@
+<div class="dialog-container">
+  <!-- Banner superior que imita el diseño principal (segunda imagen) -->
+  <mat-toolbar class="banner-header">
+    <div class="left">
+      <mat-icon class="icono">track_changes</mat-icon>
+      <span class="titulo">Objetivos</span>
+    </div>
+    <div class="right">
+      <span class="titulo">Planificación Objetivos - Medición de Objetivos</span>
+    </div>
+  </mat-toolbar>
+
+  <form [formGroup]="formulario" (ngSubmit)="onFiltrar()" class="form-content">
+    
+    <mat-card class="filtros-card">
+      <mat-card-subtitle class="card-title">Opciones de Filtrado</mat-card-subtitle>
+      
+      <!-- Grid de Filtros de 3 Columnas (Fila por fila) -->
+      <div class="filtros-grid">
+        
+        <!-- Fila 1 -->
+        <div class="filtro-col">
+          <div class="input-label">Mes</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_mes">
+              <mat-option *ngFor="let mes of lstMeses" [value]="mes.codigo">
+                {{ mes.descripcion }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col">
+          <div class="input-label">Año</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_anio">
+              <mat-option *ngFor="let anio of lstAnios" [value]="anio.codigo">
+                {{ anio.descripcion }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col">
+          <div class="input-label">Frecuencia Medición</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_frecuencia" placeholder="Cualquier Frecuencia">
+              <mat-option value="">Cualquier Frecuencia</mat-option>
+              <mat-option value="mensual">Mensual</mat-option>
+              <mat-option value="trimestral">Trimestral</mat-option>
+              <mat-option value="anual">Anual</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Fila 2 -->
+        <div class="filtro-col">
+          <div class="input-label">Tipo Objetivo</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_tipo_objetivo" placeholder="Cualquier Tipo">
+              <mat-option value="">Cualquier Tipo</mat-option>
+              <mat-option value="1">Estratégico</mat-option>
+              <mat-option value="2">Operativo</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col">
+          <div class="input-label">Inicio de Medición</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <input matInput [matDatepicker]="pickerInicio" formControlName="ctrol_fecha_inicio" placeholder="yyyy-mm-dd">
+            <mat-datepicker-toggle matSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+            <mat-datepicker #pickerInicio></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col">
+          <div class="input-label">Fin de Medición</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <input matInput [matDatepicker]="pickerFin" formControlName="ctrol_fecha_fin" placeholder="yyyy-mm-dd">
+            <mat-datepicker-toggle matSuffix [for]="pickerFin"></mat-datepicker-toggle>
+            <mat-datepicker #pickerFin></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <!-- Fila 3 -->
+        <div class="filtro-col">
+          <div class="input-label">Organización</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_organizacion" placeholder="Selecciona">
+              <mat-option value="">Selecciona</mat-option>
+              <mat-option *ngFor="let org of lstOrganizaciones" [value]="org.codigo">
+                {{ org.descripcion }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col">
+          <div class="input-label">Sede</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_sede" placeholder="Selecciona">
+              <mat-option value="">Selecciona</mat-option>
+              <mat-option *ngFor="let sede of lstSedes" [value]="sede.codigo">
+                {{ sede.descripcion }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col">
+          <div class="input-label">Puesto Responsable</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_puesto_responsable" placeholder="Selecciona">
+              <mat-option value="">Selecciona</mat-option>
+              <mat-option value="supervisor">Supervisor de SST</mat-option>
+              <mat-option value="comite">Comité de SST</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Fila 4 -->
+        <div class="filtro-col">
+          <div class="input-label">Proceso / Departamento / Activo</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_proceso" placeholder="Selecciona Organiz./Sede">
+              <mat-option value="">Selecciona Organiz./Sede</mat-option>
+              <mat-option value="sst">Proceso de SST</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col">
+          <div class="input-label">Subproceso</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_subproceso" placeholder="Selecciona Proceso">
+              <mat-option value="">Selecciona Proceso</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col">
+          <div class="input-label">Subproceso Nivel 2</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_subproceso_n2" placeholder="Selecciona SubProceso">
+              <mat-option value="">Selecciona SubProceso</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Fila 5 -->
+        <div class="filtro-col">
+          <div class="input-label">Norma</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_norma" placeholder="Cualquier Norma">
+              <mat-option value="">Cualquier Norma</mat-option>
+              <mat-option value="14001">ISO 14001</mat-option>
+              <mat-option value="9001">ISO 9001</mat-option>
+              <mat-option value="45001">ISO 45001</mat-option>
+              <mat-option value="29783">Ley Nº 29783</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col">
+          <div class="input-label">Resultado</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_resultado" placeholder="Cualquier Estado">
+              <mat-option value="">Cualquier Estado</mat-option>
+              <mat-option value="cumplido">Cumplido</mat-option>
+              <mat-option value="no_cumplido">No Cumplido</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-col alignment-self-end" style="padding-bottom: 4px;">
+          <button type="submit" class="BtnFiltrar" mat-flat-button>
+            Filtrar
+          </button>
+        </div>
+
+      </div>
+    </mat-card>
+
+    <!-- Tabla de resultados -->
+    <table mat-table [dataSource]="dataSource" matSort class="tabla-wrapper" style="margin-top: 15px; width: 100%;">
+
+      <!-- Desactivar -->
+      <ng-container matColumnDef="desactivar">
+        <th mat-header-cell *matHeaderCellDef>Desactivar</th>
+        <td mat-cell *matCellDef="let row">
+          <button mat-icon-button color="warn" type="button" (click)="onDelete(row)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <!-- Editar -->
+      <ng-container matColumnDef="editar">
+        <th mat-header-cell *matHeaderCellDef>Editar</th>
+        <td mat-cell *matCellDef="let row">
+          <button mat-icon-button color="primary" type="button" (click)="onEdit(row)">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <!-- Objetivo -->
+      <ng-container matColumnDef="objetivo">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Objetivo</th>
+        <td mat-cell *matCellDef="let row">{{row.objetivo}}</td>
+      </ng-container>
+
+      <!-- Req. Medición / Seg. Perió. -->
+      <ng-container matColumnDef="req_medic_seg_perio">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Req. Medición / Seg. Periódico</th>
+        <td mat-cell *matCellDef="let row">{{row.reqMedicionSegPeriodico}}</td>
+      </ng-container>
+
+      <!-- Frecuencia -->
+      <ng-container matColumnDef="frecuencia">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Frecuencia Medición</th>
+        <td mat-cell *matCellDef="let row">{{row.frecuencia}}</td>
+      </ng-container>
+
+      <!-- Cumplimiento -->
+      <ng-container matColumnDef="cum-obj">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>¿Cumplimiento Objetivo en mediciones parciales?</th>
+        <td mat-cell *matCellDef="let row">{{row.cumplimiento}}</td>
+      </ng-container>
+
+      <!-- Norma -->
+      <ng-container matColumnDef="norma">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Normas</th>
+        <td mat-cell *matCellDef="let row">{{row.norma}}</td>
+      </ng-container>
+
+      <!-- Tipo de Objetivo -->
+      <ng-container matColumnDef="tipo-objetivo">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo de Objetivo</th>
+        <td mat-cell *matCellDef="let row">{{row.tipoObjetivo}}</td>
+      </ng-container>
+
+      <!-- Valores -->
+      <ng-container matColumnDef="valores">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Valores</th>
+        <td mat-cell *matCellDef="let row">{{row.valores}}</td>
+      </ng-container>
+
+      <!-- Inicio -->
+      <ng-container matColumnDef="inicio">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Inicio</th>
+        <td mat-cell *matCellDef="let row">{{row.fechaInicio}}</td>
+      </ng-container>
+
+      <!-- Fin -->
+      <ng-container matColumnDef="fin">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Fin</th>
+        <td mat-cell *matCellDef="let row">{{row.fechaFin}}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>                  
+              
+    </table>
+
+    <!-- Botón de Salida -->
+    <div class="dialog-actions">
+      <button mat-flat-button color="warn" class="BtnSalir" type="button" (click)="onClose()">
+        <mat-icon>close</mat-icon> Salir
+      </button>
+    </div>
+
+  </form>
+</div>

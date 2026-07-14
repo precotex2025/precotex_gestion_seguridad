@@ -6,6 +6,8 @@ import { MaeTabService } from '../../services/mae-tab.service';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { PuestosRegeditComponent } from './puestos-regedit/puestos-regedit.component';
+import { PuestosFichaComponent } from './puestos-ficha/puestos-ficha.component';
+import { PuestosUsuariosComponent } from './puestos-usuarios/puestos-usuarios.component';
 import { MatTableDataSource } from '@angular/material/table';
 import { PuestosService } from '../../services/puestos.service';
 import Swal from 'sweetalert2';
@@ -41,12 +43,15 @@ constructor(
 ){}
 
 displayedColumns: string[] = [
-  'codigo'      ,
-  'denominacion',
-  'organizacion',
-  'sede'       ,
-  'nivel'    ,
-  'estado'      ,
+  'ficha_descrip'      ,
+  'his_de_revi'      ,
+  'es_admin'      ,
+  'n_user_activ'       ,
+  'puesto'              ,
+  'organización'             ,
+  'sede'    ,
+  'nivel_riesgo'     ,
+  'con_doc_fal'   ,
   'acciones'
   ];  
   dataSource = new MatTableDataSource<any>();  
@@ -81,20 +86,20 @@ onListado(){
           this.SpinnerService.hide();
         }
         else{
-          //this.dataListadoMemorandums = [];
-          this.dataSource.data = [];            
+          this.dataSource.data = this.getMockPuestos();            
           this.SpinnerService.hide();
         };
       }else{
-        //this.dataListadoMemorandums = [];
-        this.dataSource.data = [];
+        this.dataSource.data = this.getMockPuestos();
+        this.SpinnerService.hide();
       }
     },  
     error: (error) => {
+      this.dataSource.data = this.getMockPuestos();
       this.SpinnerService.hide();
-      console.log(error.error.message, 'Cerrar', {
-      timeOut: 2500,
-        });
+      console.log(error.error?.message || 'Error', 'Cerrar', {
+        timeOut: 2500,
+      });
     }          
   });  
 }
@@ -192,8 +197,9 @@ onChangeOrga(event: any){
 }
 
 onAgregar(){
+    const sOrgaNizacion  = String(this.formulario.get('ctrol_organizacion')?.value)||'';    
     let dialogRef = this.dialog.open(PuestosRegeditComponent, {
-    width: '55vw',   // viewport width
+    width: '75vw',   // viewport width
     height: '90vh',  // viewport height
     maxWidth: '100vw',
     maxHeight: '100vh',
@@ -202,7 +208,9 @@ onAgregar(){
       data: {
          Title  : "Registra nuevo puesto",
          Accion : "I",
-         Datos  : null
+         Datos  : {
+           codigo_Organizacion: sOrgaNizacion
+         }
       }
     });
     dialogRef.afterClosed().subscribe(() => {
@@ -221,7 +229,7 @@ onImportar(){
 onEditar(item: any){
 
     let dialogRef = this.dialog.open(PuestosRegeditComponent, {
-    width: '55vw',   // viewport width
+    width: '75vw',   // viewport width
     height: '90vh',  // viewport height
     maxWidth: '100vw',
     maxHeight: '100vh',
@@ -236,6 +244,26 @@ onEditar(item: any){
     dialogRef.afterClosed().subscribe(() => {
       this.onListado();
     });  
+}
+
+onVerFicha(item: any){
+    let dialogRef = this.dialog.open(PuestosFichaComponent, {
+      width: '600px',
+      disableClose: false,
+      data: {
+         Puesto: item
+      }
+    });
+}
+
+onVerUsuarios(item: any){
+    let dialogRef = this.dialog.open(PuestosUsuariosComponent, {
+      width: '450px',
+      disableClose: false,
+      data: {
+         Puesto: item
+      }
+    });
 }
 
 onEliminar(item: any){
@@ -308,6 +336,34 @@ onEliminar(item: any){
     });  
 }
 
+  getMockPuestos() {
+    return [
+      {
+        ficha_descrip: 'Ficha Puesto 001',
+        his_de_revi: 'Rev. 0',
+        es_admin: 'Sí',
+        n_user_activ: '4',
+        puesto: 'Jefe de Seguridad y Salud Ocupacional',
+        organizacion: 'Precotex S.A.C.',
+        sede: 'Sede Central - Ate',
+        nivelRiesgo: 'Alto',
+        con_doc_fal: 'Sí (Documentos Pendientes)',
+        flg_Activo: 'True'
+      },
+      {
+        ficha_descrip: 'Ficha Puesto 002',
+        his_de_revi: 'Rev. 1',
+        es_admin: 'No',
+        n_user_activ: '8',
+        puesto: 'Supervisor de SST',
+        organizacion: 'Precotex S.A.C.',
+        sede: 'Sede Planta - Lurin',
+        nivelRiesgo: 'Medio',
+        con_doc_fal: 'No',
+        flg_Activo: 'True'
+      }
+    ];
+  }
 }
 
 

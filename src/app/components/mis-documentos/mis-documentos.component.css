@@ -1,0 +1,285 @@
+/* ===================================================================
+   Mis Documentos — Estilos Rediseñados Premium
+   =================================================================== */
+
+.contenedor {
+  padding: 24px;
+  animation: fadeIn 0.4s var(--sn-ease) both;
+}
+
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Buscador Fieldset (Rediseñado como Tarjeta Moderna) */
+.search-fieldset {
+  border: 1px solid var(--sn-slate-200) !important;
+  border-radius: var(--sn-radius-lg) !important;
+  padding: 24px !important;
+  margin-bottom: 24px;
+  background-color: var(--sn-surface-card) !important;
+  box-shadow: var(--sn-shadow-md) !important;
+  transition: all 0.3s var(--sn-ease);
+}
+
+.search-fieldset:hover {
+  box-shadow: var(--sn-shadow-lg) !important;
+  border-color: var(--sn-slate-300) !important;
+}
+
+.search-legend {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--sn-slate-900) !important;
+  padding: 0 10px !important;
+}
+
+/* Grid de Filtros (5 inputs + grupo de botones) */
+.filtros-grid {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1.2fr 1.2fr 1.5fr 120px;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.search-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.search-field label {
+  font-size: 12px;
+  color: var(--sn-slate-600);
+  font-weight: 500;
+}
+
+.search-field input,
+.search-field select {
+  height: 42px;
+  border: 1px solid var(--sn-slate-200);
+  border-radius: var(--sn-radius-md);
+  padding: 0 14px;
+  font-size: 14px;
+  color: var(--sn-slate-800);
+  background-color: var(--sn-slate-50);
+  box-sizing: border-box;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s var(--sn-ease), background-color 0.2s var(--sn-ease);
+}
+
+.search-field input:focus,
+.search-field select:focus {
+  border-color: #b91c1c; /* Rojo Precotex */
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
+}
+
+.botones-grupo {
+  display: flex;
+  height: 42px;
+}
+
+/* Botón Buscar en Rojo Precotex */
+.BtnBuscar {
+  background-color: #b91c1c !important;
+  color: white !important;
+  font-weight: 500 !important;
+  height: 40px !important;
+  width: 100% !important;
+  border-radius: var(--sn-radius-md) !important;
+  box-shadow: 0 2px 4px rgba(185, 28, 28, 0.15) !important;
+  transition: all 0.2s var(--sn-ease) !important;
+}
+
+.BtnBuscar:hover {
+  background-color: #991b1b !important;
+  box-shadow: 0 4px 12px rgba(185, 28, 28, 0.25) !important;
+}
+
+.BtnBuscar:active {
+  transform: scale(0.97) !important;
+}
+
+/* Tabla de Resultados Premium */
+.tabla-wrapper {
+  width: 100%;
+  background: var(--sn-surface-card) !important;
+  border-radius: var(--sn-radius-lg) !important;
+  border: 1px solid var(--sn-slate-200) !important;
+  box-shadow: var(--sn-shadow-md) !important;
+  overflow: hidden !important;
+  margin-top: 10px;
+  transition: box-shadow 0.3s var(--sn-ease);
+}
+
+.tabla-wrapper:hover {
+  box-shadow: var(--sn-shadow-lg) !important;
+}
+
+/* Cabeceras de Tabla */
+::ng-deep .tabla-wrapper th {
+  background-color: var(--sn-slate-50) !important;
+  color: var(--sn-slate-600) !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  height: 48px !important;
+  padding: 0 16px !important;
+  border-bottom: 1.5px solid var(--sn-slate-200) !important;
+}
+
+/* Celdas de Tabla */
+::ng-deep .tabla-wrapper td {
+  font-size: 14px !important;
+  color: var(--sn-slate-800) !important;
+  height: 52px !important;
+  padding: 0 16px !important;
+  border-bottom: 1px solid var(--sn-slate-100) !important;
+}
+
+/* Filas con hover suave */
+::ng-deep .tabla-wrapper tr.mat-row {
+  transition: background-color 0.2s var(--sn-ease) !important;
+}
+
+::ng-deep .tabla-wrapper tr.mat-row:hover {
+  background-color: var(--sn-slate-50) !important;
+}
+
+.doc-title-cell {
+  font-weight: 500;
+  color: var(--sn-slate-900) !important;
+}
+
+/* Formateo de Celdas */
+.col-tabular {
+  font-variant-numeric: tabular-nums !important;
+  font-family: var(--sn-font-family) !important;
+  font-weight: 500 !important;
+}
+
+/* Badges de Estado (Pills Pastel Suaves) */
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  border-radius: var(--sn-radius-sm) !important;
+  letter-spacing: 0.015em !important;
+  box-shadow: var(--sn-shadow-xs) !important;
+}
+
+.status-pending {
+  background-color: var(--sn-warning-50) !important;
+  color: var(--sn-warning-600) !important;
+  border: 1px solid rgba(217, 119, 6, 0.15) !important;
+}
+
+.status-success {
+  background-color: var(--sn-success-50) !important;
+  color: var(--sn-success-700) !important;
+  border: 1px solid rgba(4, 120, 87, 0.15) !important;
+}
+
+.status-error {
+  background-color: var(--sn-danger-50) !important;
+  color: var(--sn-danger-600) !important;
+  border: 1px solid rgba(225, 29, 72, 0.15) !important;
+}
+
+/* Celda de Acciones */
+.action-buttons-cell {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Botones de Acción (Confirmar, Aceptar, Rechazar) en formato Outlined */
+.btn-action-ok,
+.btn-action-cancel {
+  background-color: var(--sn-surface-card) !important;
+  color: var(--sn-slate-600) !important;
+  border: 1px solid var(--sn-slate-200) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  height: 32px !important;
+  padding: 0 12px !important;
+  border-radius: var(--sn-radius-sm) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  box-shadow: var(--sn-shadow-xs) !important;
+  transition: all 0.2s var(--sn-ease) !important;
+}
+
+.btn-action-ok:active,
+.btn-action-cancel:active {
+  transform: scale(0.96) !important;
+}
+
+/* Hovers semánticos sutiles */
+.btn-action-ok:hover {
+  border-color: var(--sn-success-300) !important;
+  color: var(--sn-success-700) !important;
+  background-color: var(--sn-success-50) !important;
+  box-shadow: var(--sn-shadow-sm) !important;
+}
+
+.btn-action-cancel:hover {
+  border-color: var(--sn-danger-300) !important;
+  color: var(--sn-danger-600) !important;
+  background-color: var(--sn-danger-50) !important;
+  box-shadow: var(--sn-shadow-sm) !important;
+}
+
+.btn-action-ok mat-icon,
+.btn-action-cancel mat-icon {
+  font-size: 15px !important;
+  width: 15px !important;
+  height: 15px !important;
+  margin: 0 !important;
+}
+
+.action-completed-text {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+/* Media Queries Responsivas */
+@media (max-width: 1200px) {
+  .filtros-grid {
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 12px;
+  }
+  .botones-grupo {
+    grid-column: span 3;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .filtros-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .botones-grupo {
+    grid-column: span 2;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .filtros-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .botones-grupo {
+    grid-column: span 1;
+    width: 100%;
+  }
+}

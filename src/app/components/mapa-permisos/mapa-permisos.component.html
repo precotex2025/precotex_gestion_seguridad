@@ -1,0 +1,78 @@
+<div class="contenedor">
+
+  <div class="split-layout">
+    
+    <!-- Columna Izquierda (Puestos) -->
+    <div class="col-puestos">
+      <div class="header-rojo">Puesto</div>
+      
+      <div class="puestos-lista">
+        <div 
+          *ngFor="let p of puestos" 
+          [class]="p.nombre === selectedPuesto.nombre ? 'puesto-item active-puesto' : 'puesto-item'"
+          (click)="onSelectPuesto(p)">
+          {{ p.nombre }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna Derecha (Permisos) -->
+    <div class="col-permisos">
+      <div class="header-rojo">Permisos</div>
+
+      <div class="permisos-contenido" *ngIf="selectedPuesto">
+        
+        <!-- Sección AUDITORIAS -->
+        <div class="seccion-permiso">
+          <h3 class="seccion-titulo">AUDITORÍAS</h3>
+          
+          <div class="table-container">
+            <table class="permisos-table">
+              <thead>
+                <tr>
+                  <th>Permiso</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of selectedPuesto.auditorias">
+                  <td>{{ item.permiso }}</td>
+                  <td [class]="item.estado === 'Permiso de Escritura' ? 'estado-escritura' : 'estado-lectura'">
+                    {{ item.estado }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sección AYUDA -->
+        <div class="seccion-permiso">
+          <h3 class="seccion-titulo">AYUDA</h3>
+          
+          <div class="table-container">
+            <table class="permisos-table">
+              <thead>
+                <tr>
+                  <th>Permiso</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of selectedPuesto.ayuda">
+                  <td>{{ item.permiso }}</td>
+                  <td [class]="item.estado === 'Permiso de Escritura' ? 'estado-escritura' : 'estado-lectura'">
+                    {{ item.estado }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>

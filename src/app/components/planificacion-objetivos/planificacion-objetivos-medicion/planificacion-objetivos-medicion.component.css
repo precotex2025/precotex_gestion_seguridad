@@ -1,0 +1,117 @@
+.dialog-container {
+  padding: 10px;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: #f8fafc;
+}
+
+.banner-header {
+  display: flex;
+  justify-content: space-between;
+  background: #0f172a !important;
+  color: white !important;
+  padding: 10px 20px;
+  max-height: 50px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icono {
+  color: #38bdf8;
+}
+
+.titulo {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.filtros-card {
+  padding: 15px;
+  background: white;
+  margin-bottom: 10px;
+}
+
+.card-title {
+  font-weight: bold;
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 15px;
+  padding-left: 5px;
+}
+
+/* Grid layout with 3 equal columns */
+.filtros-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px 20px;
+}
+
+.filtro-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-label {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 13px;
+  margin-bottom: 4px;
+  padding-left: 2px;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.alignment-self-end {
+  align-self: flex-end;
+}
+
+/* Red Filter button style from screenshot */
+.BtnFiltrar {
+  background-color: #c00000 !important;
+  color: white !important;
+  font-weight: bold;
+  height: 40px;
+  width: 100%;
+  border-radius: 4px;
+}
+
+/* Table styles */
+.tabla-wrapper {
+  margin-top: 15px;
+  border: 1px solid #cbd5e1;
+  background-color: white;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 15px;
+}
+
+.BtnSalir {
+  background-color: #000000 !important;
+  color: white !important;
+  padding: 0 20px;
+}

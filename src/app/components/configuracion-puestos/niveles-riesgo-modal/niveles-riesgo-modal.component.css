@@ -1,0 +1,130 @@
+.modal-wrapper {
+  background-color: white;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* Cabecera Gris con bordes Rojos */
+.modal-header {
+  background-color: #e5e5e5;
+  border-top: 2px solid #c00000;
+  border-bottom: 2px solid #c00000;
+  padding: 10px 16px;
+}
+
+.modal-header h2 {
+  color: #c00000;
+  font-size: 15px;
+  font-weight: bold;
+  margin: 0;
+}
+
+/* Contenido */
+.modal-content {
+  padding: 20px 16px;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.subtitle {
+  font-size: 12.5px;
+  color: #555;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.nivel-descripcion {
+  font-size: 12.5px;
+  color: #444;
+  margin-bottom: 12px;
+}
+
+.nivel-descripcion strong {
+  font-weight: bold;
+  color: #333;
+}
+
+/* Fila de Selección */
+.seleccion-row {
+  display: flex;
+  gap: 40px;
+  margin: 24px 0;
+}
+
+.custom-radio-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.custom-checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #c00000;
+  border-radius: 2px;
+  background-color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: background-color 0.2s;
+}
+
+.custom-checkbox.checked {
+  background-color: #c00000;
+}
+
+.custom-checkbox mat-icon {
+  font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+  color: white;
+  font-weight: bold;
+}
+
+.radio-label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Botonera inferior */
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.btn-guardar {
+  background-color: #c00000;
+  color: white;
+  border: none;
+  border-radius: 2px;
+  padding: 8px 18px;
+  font-size: 12.5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-guardar:hover {
+  background-color: #a00000;
+}
+
+.btn-cancelar {
+  background-color: #888888;
+  color: white;
+  border: none;
+  border-radius: 2px;
+  padding: 8px 18px;
+  font-size: 12.5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-cancelar:hover {
+  background-color: #777777;
+}

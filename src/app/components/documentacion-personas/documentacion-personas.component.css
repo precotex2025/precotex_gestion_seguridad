@@ -1,32 +1,87 @@
+/* ===================================================================
+   Biblioteca - Documentación Personas — Estilos Rediseñados
+   =================================================================== */
+
 .contenedor {
-  padding: 20px;
-  border-radius: 12px;
+  padding: 24px;
+  animation: fadeIn 0.4s var(--sn-ease) both;
 }
 
-.filtros-card {
-  margin: 20px 0;
-  padding: 20px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+/* Buscador Fieldset (Rediseñado como Tarjeta Moderna) */
+.search-fieldset {
+  border: 1px solid var(--sn-slate-200) !important;
+  border-radius: var(--sn-radius-lg) !important;
+  padding: 24px !important;
+  margin-bottom: 24px;
+  background-color: var(--sn-surface-card) !important;
+  box-shadow: var(--sn-shadow-md) !important;
+  transition: all 0.3s var(--sn-ease);
+}
+
+.search-fieldset:hover {
+  box-shadow: var(--sn-shadow-lg) !important;
+  border-color: var(--sn-slate-300) !important;
+}
+
+.search-legend {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--sn-slate-900) !important;
+  padding: 0 10px !important;
 }
 
 .acciones-container {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
 }
 
+/* Grid de Filtros (5 Columnas en Desktop) */
 .filtros-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
+  gap: 12px;
   align-items: center;
 }
 
-/* Make fields narrower without changing height */
-::ng-deep .filtros-grid .mat-mdc-form-field-subscript-wrapper {
-  display: none !important;
+.search-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.search-field label {
+  font-size: 12px;
+  color: var(--sn-slate-600);
+  font-weight: 500;
+}
+
+.search-field input,
+.search-field select {
+  height: 42px;
+  border: 1px solid var(--sn-slate-200);
+  border-radius: var(--sn-radius-md);
+  padding: 0 14px;
+  font-size: 14px;
+  color: var(--sn-slate-800);
+  background-color: var(--sn-slate-50);
+  box-sizing: border-box;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s var(--sn-ease), background-color 0.2s var(--sn-ease);
+}
+
+.search-field input:focus,
+.search-field select:focus {
+  border-color: #b91c1c; /* Rojo Precotex */
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
+}
+
+@media (max-width: 1200px) {
+  .filtros-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 @media (max-width: 900px) {
@@ -47,59 +102,116 @@
   }
 }
 
+/* Fila de Botones */
 .botones-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 15px;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
 }
 
-.botones-derecha {
+.botones-izquierda, .botones-derecha {
   display: flex;
-  gap: 10px;
-}
-
-/* Base button style for rounded pill shapes */
-.botones-row button {
-  border-radius: 20px !important;
-  font-weight: 500;
-  display: inline-flex;
+  gap: 12px;
   align-items: center;
-  gap: 5px;
-  height: 40px;
-  padding: 0 16px;
 }
 
-.botones-row mat-icon {
-  margin-right: 4px;
+@media (max-width: 992px) {
+  .botones-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .botones-izquierda, .botones-derecha {
+    justify-content: stretch;
+  }
+  .botones-izquierda button, .botones-derecha button {
+    flex: 1;
+  }
 }
 
-.BtnFiltrar {
-  background-color: #1e293b !important;
+@media (max-width: 768px) {
+  .botones-derecha {
+    flex-direction: column;
+  }
+}
+
+/* Estilos de Botones Premium */
+.btn-filtrar, .btn-crear, .btn-exportar, .btn-carga-masiva, .btn-planes-gestion {
+  border-radius: var(--sn-radius-md) !important;
+  font-weight: 500 !important;
+  padding: 8px 18px !important;
+  height: 42px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  letter-spacing: 0.01em !important;
+  transition: all 0.2s var(--sn-ease) !important;
+}
+
+.btn-filtrar:active, .btn-crear:active, .btn-exportar:active, .btn-carga-masiva:active, .btn-planes-gestion:active {
+  transform: scale(0.97) !important;
+}
+
+/* Buscar - Rojo Precotex */
+.btn-filtrar {
+  background-color: #b91c1c !important;
   color: white !important;
+  box-shadow: 0 2px 4px rgba(185, 28, 28, 0.15) !important;
+  border: none !important;
 }
 
-.BtnCrear {
-  background-color: #3f51b5 !important;
+.btn-filtrar:hover {
+  background-color: #991b1b !important;
+  box-shadow: 0 4px 12px rgba(185, 28, 28, 0.25) !important;
+}
+
+/* Nuevo Documento - Primario */
+.btn-crear {
+  background-color: var(--sn-primary-600) !important;
   color: white !important;
+  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.15) !important;
+  border: none !important;
 }
 
-.BtnExportar {
-  background-color: #FFAB00 !important;
-  color: white !important;
+.btn-crear:hover {
+  background-color: var(--sn-primary-700) !important;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25) !important;
 }
 
-.BtnImportar {
-  background-color: #2e7d32 !important;
-  color: white !important;
+/* Botones Secundarios Delineados (Exportar, Carga Masiva, Planes) */
+.btn-exportar, .btn-carga-masiva, .btn-planes-gestion {
+  background-color: var(--sn-surface-card) !important;
+  color: var(--sn-slate-700) !important;
+  border: 1px solid var(--sn-slate-200) !important;
+  box-shadow: var(--sn-shadow-xs) !important;
 }
 
-/* CARDS INDICATORS */
+.btn-exportar:hover, .btn-carga-masiva:hover, .btn-planes-gestion:hover {
+  background-color: var(--sn-slate-50) !important;
+  border-color: var(--sn-slate-300) !important;
+  color: var(--sn-slate-900) !important;
+  box-shadow: var(--sn-shadow-sm) !important;
+}
+
+/* Colorización de íconos al pasar el mouse */
+.btn-exportar mat-icon { transition: color 0.2s var(--sn-ease); }
+.btn-exportar:hover mat-icon { color: #16a34a !important; } /* Verde Excel */
+
+.btn-carga-masiva mat-icon { transition: color 0.2s var(--sn-ease); }
+.btn-carga-masiva:hover mat-icon { color: var(--sn-primary-600) !important; } /* Azul */
+
+.btn-planes-gestion mat-icon { transition: color 0.2s var(--sn-ease); }
+.btn-planes-gestion:hover mat-icon { color: #ea580c !important; } /* Naranja */
+
+/* CARDS INDICATORS (KPIs de Estado) */
 .cards-container {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-top: 15px;
+  gap: 16px;
+  margin-top: 24px;
 }
 
 @media (max-width: 992px) {
@@ -115,44 +227,167 @@
 }
 
 .status-card {
-  background: white;
-  border: 1.5px solid #1e293b;
-  border-radius: 10px;
-  padding: 10px 8px;
-  text-align: center;
-  box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.08);
+  background: var(--sn-surface-card);
+  border: 1px solid var(--sn-slate-200);
+  border-radius: var(--sn-radius-lg);
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s, box-shadow 0.2s;
+  align-items: flex-start;
+  justify-content: space-between;
+  box-shadow: var(--sn-shadow-sm);
+  transition: all 0.25s var(--sn-ease);
 }
 
 .status-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 10px -3px rgb(0 0 0 / 0.1);
+  transform: translateY(-3px);
+  box-shadow: var(--sn-shadow-md);
+  border-color: var(--sn-slate-300);
 }
 
 .card-number {
-  font-size: 26px;
-  font-weight: 800;
-  color: #1e293b;
-  margin: 0;
-  line-height: 1;
-}
-
-.card-divider {
-  width: 60%;
-  height: 1px;
-  background-color: #1e293b;
-  opacity: 0.25;
-  margin: 8px 0;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0 0 6px 0;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--sn-font-family);
 }
 
 .card-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: #1e293b;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--sn-slate-500);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Modificadores Semánticos Pastel para las Tarjetas */
+.card-warning {
+  background: rgba(245, 158, 11, 0.05);
+  border-color: rgba(245, 158, 11, 0.15);
+}
+.card-warning:hover {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+.card-warning .card-number {
+  color: #d97706;
+}
+.card-warning .card-label {
+  color: #b45309;
+}
+
+.card-danger {
+  background: rgba(225, 29, 72, 0.04);
+  border-color: rgba(225, 29, 72, 0.12);
+}
+.card-danger:hover {
+  background: rgba(225, 29, 72, 0.07);
+  border-color: rgba(225, 29, 72, 0.22);
+}
+.card-danger .card-number {
+  color: #e11d48;
+}
+.card-danger .card-label {
+  color: #be123c;
+}
+
+.card-info {
+  background: rgba(37, 99, 235, 0.04);
+  border-color: rgba(37, 99, 235, 0.12);
+}
+.card-info:hover {
+  background: rgba(37, 99, 235, 0.07);
+  border-color: rgba(37, 99, 235, 0.22);
+}
+.card-info .card-number {
+  color: #2563eb;
+}
+.card-info .card-label {
+  color: #1d4ed8;
+}
+
+.card-success {
+  background: rgba(5, 150, 105, 0.04);
+  border-color: rgba(5, 150, 105, 0.12);
+}
+.card-success:hover {
+  background: rgba(5, 150, 105, 0.07);
+  border-color: rgba(5, 150, 105, 0.22);
+}
+.card-success .card-number {
+  color: #059669;
+}
+.card-success .card-label {
+  color: #047857;
+}
+
+/* Tabla Wrapper */
+.tabla-wrapper {
+  width: 100%;
+  border-radius: var(--sn-radius-lg) !important;
+  overflow: hidden !important;
+  background: var(--sn-surface-card) !important;
+  border: 1px solid var(--sn-slate-200) !important;
+  box-shadow: var(--sn-shadow-md) !important;
+  transition: box-shadow 0.3s var(--sn-ease);
+}
+
+.tabla-wrapper:hover {
+  box-shadow: var(--sn-shadow-lg) !important;
+}
+
+/* Cabeceras de Tabla */
+.mat-header-row {
+  background-color: var(--sn-slate-50) !important;
+  border-bottom: 1.5px solid var(--sn-slate-200) !important;
+}
+
+.mat-header-cell {
+  color: var(--sn-slate-600) !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  letter-spacing: 0.02em !important;
+  padding: 16px 12px !important;
+}
+
+/* Celdas de Tabla */
+.mat-cell {
+  color: var(--sn-slate-800) !important;
+  font-size: 14px !important;
+  padding: 14px 12px !important;
+  border-bottom: 1px solid var(--sn-slate-100) !important;
+}
+
+/* Filas con hover suave */
+tr.mat-row {
+  transition: background-color 0.2s var(--sn-ease) !important;
+}
+
+tr.mat-row:hover {
+  background-color: var(--sn-slate-50) !important;
+}
+
+/* Soporte para datos tabulares y códigos */
+.col-tabular {
+  font-variant-numeric: tabular-nums !important;
+  font-family: var(--sn-font-family) !important;
+  font-weight: 500 !important;
+}
+
+/* Reducir ruido en la columna de acciones */
+::ng-deep .mat-column-acciones button {
+  color: var(--sn-slate-400) !important;
+  transition: all 0.2s var(--sn-ease) !important;
+}
+
+::ng-deep .mat-column-acciones button[color="primary"]:hover {
+  color: var(--sn-primary-600) !important;
+  background-color: var(--sn-primary-50) !important;
+}
+
+::ng-deep .mat-column-acciones button[color="warn"]:hover {
+  color: var(--sn-danger-600) !important;
+  background-color: var(--sn-danger-50) !important;
 }

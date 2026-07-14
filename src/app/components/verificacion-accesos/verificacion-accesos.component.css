@@ -1,0 +1,174 @@
+/* ===================================================================
+   Verificación de Accesos — Estilos Rediseñados Premium
+   =================================================================== */
+
+.contenedor {
+  padding: 24px;
+  animation: fadeIn 0.4s var(--sn-ease) both;
+}
+
+/* Botón Superior Nueva Revisión */
+.top-row {
+  margin-bottom: 24px;
+}
+
+.btn-nueva-revision {
+  background-color: var(--sn-primary-600) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: var(--sn-radius-md) !important;
+  padding: 10px 20px !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.15) !important;
+  transition: all 0.2s var(--sn-ease) !important;
+}
+
+.btn-nueva-revision:hover {
+  background-color: var(--sn-primary-700) !important;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25) !important;
+}
+
+.btn-nueva-revision:active {
+  transform: scale(0.97) !important;
+}
+
+.btn-nueva-revision mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-nueva-revision .external-icon {
+  font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+  margin-left: 2px;
+  opacity: 0.8;
+}
+
+/* Subtítulo */
+.subtitulo {
+  color: var(--sn-slate-900);
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  letter-spacing: -0.01em;
+}
+
+
+
+/* Tabla de Accesos */
+.table-container {
+  background: var(--sn-surface-card);
+  border-radius: var(--sn-radius-lg) !important;
+  overflow: hidden !important;
+  box-shadow: var(--sn-shadow-md);
+  border: 1px solid var(--sn-slate-200);
+  transition: box-shadow 0.3s var(--sn-ease);
+}
+
+.table-container:hover {
+  box-shadow: var(--sn-shadow-lg);
+}
+
+.tabla-wrapper {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Cabeceras de Tabla (Remueve el rojo ruidoso de fondo) */
+::ng-deep .tabla-wrapper th,
+::ng-deep .tabla-wrapper .mat-mdc-header-cell,
+::ng-deep .tabla-wrapper .mat-header-cell,
+::ng-deep .tabla-wrapper .mat-mdc-header-row,
+::ng-deep .tabla-wrapper .mat-header-row {
+  background-color: var(--sn-slate-50) !important;
+  color: var(--sn-slate-600) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: 14px 16px !important;
+  border-bottom: 1.5px solid var(--sn-slate-200) !important;
+  text-align: left;
+}
+
+/* Celdas de Fila */
+::ng-deep .tabla-wrapper td.mat-cell {
+  font-size: 14px !important;
+  color: var(--sn-slate-800) !important;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid var(--sn-slate-100) !important;
+}
+
+.table-row {
+  transition: background-color 0.2s var(--sn-ease) !important;
+}
+
+.table-row:hover {
+  background-color: var(--sn-slate-50) !important;
+}
+
+/* Formateo de Celdas */
+.col-tabular {
+  font-variant-numeric: tabular-nums !important;
+  font-family: var(--sn-font-family) !important;
+  font-weight: 500 !important;
+}
+
+/* Badges para Usuarios Inactivos (Pills Pastel) */
+.badge-inactivos-warn {
+  background-color: var(--sn-danger-50) !important;
+  color: var(--sn-danger-600) !important;
+  border: 1px solid rgba(225, 29, 72, 0.15) !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: var(--sn-radius-sm) !important;
+  font-size: 11.5px !important;
+  display: inline-block;
+  box-shadow: var(--sn-shadow-xs) !important;
+}
+
+.badge-inactivos-ok {
+  background-color: var(--sn-success-50) !important;
+  color: var(--sn-success-700) !important;
+  border: 1px solid rgba(4, 120, 87, 0.15) !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: var(--sn-radius-sm) !important;
+  font-size: 11.5px !important;
+  display: inline-block;
+  box-shadow: var(--sn-shadow-xs) !important;
+}
+
+/* Botón Eliminar en celda (Neutral con hover reactivo de peligro) */
+.btn-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--sn-slate-400);
+  padding: 6px;
+  border-radius: var(--sn-radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s var(--sn-ease);
+}
+
+.btn-delete:hover {
+  color: var(--sn-danger-600);
+  background-color: var(--sn-danger-50);
+}
+
+.btn-delete mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+}

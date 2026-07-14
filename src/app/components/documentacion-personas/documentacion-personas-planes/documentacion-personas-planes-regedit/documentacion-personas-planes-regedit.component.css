@@ -1,0 +1,367 @@
+/* ===================================================================
+   Edición de Plan de Gestión Documental — Estilos Rediseñados Premium
+   =================================================================== */
+
+.dialog-container {
+  padding: 32px;
+  background-color: var(--sn-surface-card);
+  border-radius: var(--sn-radius-lg);
+  max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Custom Scrollbar for Dialog */
+.dialog-container::-webkit-scrollbar {
+  width: 6px;
+}
+.dialog-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.dialog-container::-webkit-scrollbar-thumb {
+  background: var(--sn-slate-200);
+  border-radius: 3px;
+}
+.dialog-container::-webkit-scrollbar-thumb:hover {
+  background: var(--sn-slate-300);
+}
+
+/* Banner de Cabecera */
+.banner-header {
+  background: var(--sn-slate-900) !important;
+  color: white !important;
+  padding: 16px 20px !important;
+  border-radius: var(--sn-radius-md) !important;
+  margin-bottom: 24px;
+  height: auto !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.titulo {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Labels de Campos (Elimina las barras grises y bordes negros) */
+.form-section-header {
+  background-color: transparent !important;
+  border: none !important;
+  color: var(--sn-slate-700) !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+  padding: 0 !important;
+  margin-top: 14px !important;
+  margin-bottom: 6px !important;
+}
+
+/* Campos de entrada e Inputs */
+.input-plan, .select-plan {
+  width: 100%;
+  height: 42px;
+  border: 1px solid var(--sn-slate-200);
+  border-radius: var(--sn-radius-md);
+  padding: 0 14px;
+  font-size: 14px;
+  box-sizing: border-box;
+  outline: none;
+  background-color: var(--sn-surface-card);
+  color: var(--sn-slate-800);
+  transition: border-color 0.2s var(--sn-ease), box-shadow 0.2s var(--sn-ease);
+}
+
+.input-plan:focus, .select-plan:focus {
+  border-color: #b91c1c !important; /* Rojo Precotex */
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12) !important;
+}
+
+/* Textarea del Plan */
+.textarea-plan {
+  width: 100%;
+  border: 1px solid var(--sn-slate-200);
+  border-radius: var(--sn-radius-md);
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--sn-slate-800);
+  background-color: var(--sn-surface-card);
+  resize: vertical;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s var(--sn-ease), box-shadow 0.2s var(--sn-ease);
+}
+
+.textarea-plan:focus {
+  border-color: #b91c1c !important; /* Rojo Precotex */
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12) !important;
+}
+
+/* Material Select específico compacto */
+.compact-select {
+  margin-bottom: 0;
+}
+
+::ng-deep .compact-select .mat-mdc-text-field-wrapper {
+  background-color: var(--sn-surface-card) !important;
+  border: 1px solid var(--sn-slate-200) !important;
+  border-radius: var(--sn-radius-md) !important;
+  height: 42px !important;
+  padding: 0 14px !important;
+  align-items: center !important;
+  transition: border-color 0.2s var(--sn-ease), box-shadow 0.2s var(--sn-ease) !important;
+}
+
+::ng-deep .compact-select .mat-mdc-form-field-flex {
+  height: 100% !important;
+  align-items: center !important;
+}
+
+::ng-deep .compact-select .mat-mdc-form-field-infix {
+  padding: 0 !important;
+  min-height: unset !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+::ng-deep .compact-select .mat-mdc-form-field-focus-indicator {
+  display: none !important;
+}
+
+::ng-deep .compact-select .mdc-notched-outline {
+  display: none !important;
+}
+
+::ng-deep .compact-select .mat-mdc-select-trigger {
+  font-size: 14px;
+  color: var(--sn-slate-800);
+}
+
+::ng-deep .compact-select .mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
+
+/* Estilo para Foco en Material Select */
+::ng-deep .compact-select.mat-form-field-should-float .mat-mdc-text-field-wrapper,
+::ng-deep .compact-select.mat-focused .mat-mdc-text-field-wrapper {
+  border-color: #b91c1c !important;
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12) !important;
+}
+
+/* Contenedores de Radio Buttons */
+.radio-group-container {
+  padding: 8px 12px;
+}
+
+::ng-deep .radio-group-container .mat-mdc-radio-button {
+  margin-right: 25px;
+}
+
+::ng-deep .radio-group-container .mat-mdc-radio-button.mat-accent {
+  --mdc-radio-selected-focus-icon-color: #b91c1c !important;
+  --mdc-radio-selected-hover-icon-color: #b91c1c !important;
+  --mdc-radio-selected-icon-color: #b91c1c !important;
+  --mdc-radio-selected-pressed-icon-color: #b91c1c !important;
+}
+
+/* Fila de Botones del Dialogo */
+.dialog-actions-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  justify-content: flex-end;
+  border-top: 1px solid var(--sn-slate-200);
+  padding-top: 24px;
+}
+
+.BtnGuardarPlan, .BtnCancelarPlan {
+  border-radius: var(--sn-radius-md) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  padding: 10px 24px !important;
+  height: 42px !important;
+  cursor: pointer;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  box-sizing: border-box;
+  transition: all 0.2s var(--sn-ease) !important;
+}
+
+.BtnGuardarPlan:active, .BtnCancelarPlan:active {
+  transform: scale(0.97) !important;
+}
+
+/* Guardar Plan - Rojo Precotex */
+.BtnGuardarPlan {
+  background-color: #b91c1c !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 4px rgba(185, 28, 28, 0.15) !important;
+}
+
+.BtnGuardarPlan:hover {
+  background-color: #991b1b !important;
+  box-shadow: 0 4px 12px rgba(185, 28, 28, 0.25) !important;
+}
+
+/* Cancelar - Outlined Secundario */
+.BtnCancelarPlan {
+  background-color: var(--sn-surface-card) !important;
+  color: var(--sn-slate-700) !important;
+  border: 1px solid var(--sn-slate-200) !important;
+  box-shadow: var(--sn-shadow-xs) !important;
+}
+
+.BtnCancelarPlan:hover {
+  background-color: var(--sn-slate-50) !important;
+  border-color: var(--sn-slate-300) !important;
+  color: var(--sn-slate-900) !important;
+  box-shadow: var(--sn-shadow-sm) !important;
+}
+
+/* Contenedor de Documentos y Cuestionarios */
+.documentos-cuestionarios-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.subseccion-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.subseccion-titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sn-slate-800);
+}
+
+/* Tablas de subsecciones estilizadas como tarjetas sutiles */
+.red-table-wrapper {
+  border: 1px solid var(--sn-slate-200);
+  border-radius: var(--sn-radius-md);
+  overflow: hidden;
+  box-shadow: var(--sn-shadow-sm);
+  transition: all 0.25s var(--sn-ease);
+}
+
+.red-table-wrapper:hover {
+  border-color: var(--sn-slate-300);
+  box-shadow: var(--sn-shadow-md);
+}
+
+/* Reemplaza la cabecera rojo brillante por gris sutil B2B */
+.red-table-header {
+  background-color: var(--sn-slate-50);
+  color: var(--sn-slate-800);
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 42px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--sn-slate-200);
+}
+
+.red-table-header .header-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sn-slate-900);
+}
+
+/* Botón solicitar - Outlined sutil */
+.btn-solicitar {
+  background-color: white;
+  color: var(--sn-slate-700);
+  border: 1px solid var(--sn-slate-200);
+  border-radius: var(--sn-radius-sm);
+  font-size: 11px;
+  font-weight: 500;
+  height: 28px;
+  padding: 0 12px;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.2s var(--sn-ease);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-solicitar:hover {
+  background-color: var(--sn-slate-50);
+  border-color: var(--sn-slate-300);
+  color: var(--sn-slate-900);
+}
+
+.btn-solicitar:active {
+  transform: scale(0.96);
+}
+
+.red-table-body {
+  background-color: white;
+  min-height: 40px;
+  display: flex;
+  flex-direction: column;
+}
+
+.red-table-empty {
+  padding: 16px;
+  font-size: 13px;
+  color: var(--sn-slate-400);
+  text-align: left;
+}
+
+.red-table-row {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--sn-slate-700);
+  border-bottom: 1px solid var(--sn-slate-100);
+  background-color: white;
+}
+
+.red-table-row:last-child {
+  border-bottom: none;
+}
+
+/* Carta de Comunicación */
+.carta-comunicacion-container {
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+/* Botón de Carta de Comunicación - Outlined */
+.btn-carta-editar {
+  background-color: white !important;
+  color: var(--sn-slate-700) !important;
+  border: 1px solid var(--sn-slate-200) !important;
+  font-weight: 500 !important;
+  height: 42px !important;
+  border-radius: var(--sn-radius-md) !important;
+  box-shadow: var(--sn-shadow-xs) !important;
+  transition: all 0.2s var(--sn-ease) !important;
+}
+
+.btn-carta-editar:hover {
+  background-color: var(--sn-slate-50) !important;
+  border-color: var(--sn-slate-300) !important;
+  color: var(--sn-slate-900) !important;
+  box-shadow: var(--sn-shadow-sm) !important;
+}
+
+.btn-carta-editar:active {
+  transform: scale(0.97) !important;
+}

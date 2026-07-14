@@ -1,42 +1,82 @@
-<div class="login-container">
+<div class="login-wrapper">
+  
+  <!-- LEFT SIDE: FORM PANEL -->
+  <div class="login-left-panel">
+    <div class="login-card sn-animate-in">
+      
+      <h2 class="login-title">Iniciar sesión en su cuenta</h2>
+      
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="login-form">
+        
+        <!-- Usuario -->
+        <div class="input-group">
+          <label class="input-label">Usuario</label>
+          <div class="input-wrapper">
+            <input type="text" formControlName="user" placeholder="Escriba su usuario" class="form-input">
+            <button type="button" class="clear-btn" *ngIf="loginForm.get('user')?.value" (click)="loginForm.get('user')?.setValue('')">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        </div>
 
-  <mat-card class="login-card">
+        <!-- Contraseña -->
+        <div class="input-group">
+          <label class="input-label">Contraseña</label>
+          <div class="input-wrapper">
+            <input [type]="ocultarPassword ? 'password' : 'text'" 
+                   formControlName="pass" 
+                   placeholder="••••••••" 
+                   class="form-input">
+            <button type="button" class="toggle-password-btn" (click)="ocultarPassword = !ocultarPassword">
+              <mat-icon class="toggle-icon">
+                {{ ocultarPassword ? 'visibility_off' : 'visibility' }}
+              </mat-icon>
+            </button>
+          </div>
+        </div>
 
-    <h2>Iniciar Sesión</h2>
+        <!-- Opciones Checkbox & Link -->
+        <div class="login-options">
+          <label class="custom-checkbox">
+            <input type="checkbox">
+            <span>Recordarme</span>
+          </label>
+          <a href="javascript:void(0)" class="forgot-link">¿Olvidó su contraseña?</a>
+        </div>
 
-    <form [formGroup]="loginForm">
-
-      <mat-form-field appearance="outline" class="full">
-        <mat-label>Usuario</mat-label>
-        <input matInput formControlName="user">
-        <mat-icon matSuffix>person</mat-icon>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="full">
-        <mat-label>Contraseña</mat-label>
-        <input matInput 
-               [type]="ocultarPassword ? 'password' : 'text'"
-               formControlName="pass">
-
-        <button mat-icon-button matSuffix 
-                (click)="ocultarPassword=!ocultarPassword"
-                type="button">
-          <mat-icon>
-            {{ocultarPassword ? 'visibility_off' : 'visibility'}}
-          </mat-icon>
+        <!-- Botón Ingresar -->
+        <button type="submit" class="btn-login-submit">
+          Ingresar
         </button>
-      </mat-form-field>
 
-      <button mat-raised-button 
-              color="primary" 
-              class="full"
-              (click)="onLogin()">
+      </form>
+    </div>
+  </div>
 
-        Ingresar
-      </button>
+  <!-- RIGHT SIDE: COLORFUL MESH PANEL -->
+  <div class="login-right-panel">
+    <div class="circles-overlay">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="svg-circles">
+        <circle cx="100" cy="0" r="30" stroke="rgba(255,255,255,0.12)" stroke-width="0.3"/>
+        <circle cx="100" cy="0" r="40" stroke="rgba(255,255,255,0.12)" stroke-width="0.3"/>
+        <circle cx="100" cy="0" r="50" stroke="rgba(255,255,255,0.12)" stroke-width="0.3"/>
+        <circle cx="100" cy="0" r="60" stroke="rgba(255,255,255,0.12)" stroke-width="0.3"/>
+        <circle cx="100" cy="0" r="70" stroke="rgba(255,255,255,0.12)" stroke-width="0.3"/>
+        <circle cx="100" cy="0" r="80" stroke="rgba(255,255,255,0.12)" stroke-width="0.3"/>
+        <circle cx="100" cy="0" r="90" stroke="rgba(255,255,255,0.12)" stroke-width="0.3"/>
+      </svg>
+    </div>
+    
+    <div class="mesh-logo-container">
+      <div class="mesh-shield">
+        <mat-icon>security</mat-icon>
+      </div>
+      <h1 class="mesh-title">Precotex Seguridad</h1>
+      <p class="mesh-subtitle">Sistema de Gestión de Seguridad y Salud en el Trabajo</p>
+    </div>
 
-    </form>
-
-  </mat-card>
+    <!-- Dots pattern -->
+    <div class="dots-pattern"></div>
+  </div>
 
 </div>

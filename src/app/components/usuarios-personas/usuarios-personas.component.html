@@ -6,140 +6,186 @@
 
 <div class="contenedor">
     <form class="container-cuerpo" [formGroup]="formulario" #formDirective="ngForm">
-        <mat-card class="filtros-card">
+        
+        <fieldset class="search-fieldset">
+            <legend class="search-legend">Búsqueda de Usuarios / Personas</legend>
             <div class="acciones-container">
 
                 <!-- FILTROS GRID -->
                 <div class="filtros-grid">
 
                     <!-- Organización -->
-                    <mat-form-field appearance="outline">
-                        <mat-label>Organización</mat-label>
-                        <mat-select formControlName="ctrol_organizacion" (selectionChange)="onChangeOrga($event)">
-                            <mat-option *ngFor="let orga of lstOrganizacion" [value]="orga.codigo">
+                    <div class="search-field">
+                        <label for="organizacion">Organización</label>
+                        <select id="organizacion" formControlName="ctrol_organizacion" (change)="onChangeOrga($event)">
+                            <option value="">Selecciona</option>
+                            <option *ngFor="let orga of lstOrganizacion" [value]="orga.codigo">
                                 {{ orga.descripcion }}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>   
+                            </option>
+                        </select>
+                    </div>   
                      
                     <!-- Sede -->
-                    <mat-form-field appearance="outline">
-                        <mat-label>Sede</mat-label>
-                        <mat-select formControlName="ctrol_sede">
-                            <mat-option *ngFor="let sede of lstSedes" [value]="sede.codigo">
+                    <div class="search-field">
+                        <label for="sede">Sede</label>
+                        <select id="sede" formControlName="ctrol_sede">
+                            <option value="">Selecciona</option>
+                            <option *ngFor="let sede of lstSedes" [value]="sede.codigo">
                                 {{ sede.descripcion }}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>                   
+                            </option>
+                        </select>
+                    </div>                   
 
                     <!-- Puesto -->
-                    <mat-form-field appearance="outline">
-                        <mat-label>Puesto</mat-label>
-                        <mat-select formControlName="ctrol_puesto">
-                            <mat-option *ngFor="let puesto of lstPuestos" [value]="puesto.codigo">
+                    <div class="search-field">
+                        <label for="puesto">Puesto</label>
+                        <select id="puesto" formControlName="ctrol_puesto">
+                            <option value="">Selecciona</option>
+                            <option *ngFor="let puesto of lstPuestos" [value]="puesto.codigo">
                                 {{ puesto.descripcion }}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>                   
+                            </option>
+                        </select>
+                    </div>                   
 
                     <!-- Nombre / Apellidos -->
-                    <mat-form-field appearance="outline">
-                        <mat-label>Nombre / Apellidos</mat-label>
-                        <input matInput formControlName="ctrol_nombre_apellido" placeholder="Buscar por nombre...">
-                    </mat-form-field>
+                    <div class="search-field">
+                        <label for="nombreApellido">Nombre / Apellidos</label>
+                        <input id="nombreApellido" type="text" formControlName="ctrol_nombre_apellido" placeholder="Buscar por nombre...">
+                    </div>
 
                     <!-- Nivel de Riesgo -->
-                    <mat-form-field appearance="outline">
-                        <mat-label>Nivel de Riesgo</mat-label>
-                        <mat-select formControlName="ctrol_nivel">
-                            <mat-option *ngFor="let nivel of lstNivelRiesgo" [value]="nivel.codigo">
+                    <div class="search-field">
+                        <label for="nivelRiesgo">Nivel de Riesgo</label>
+                        <select id="nivelRiesgo" formControlName="ctrol_nivel">
+                            <option value="">Selecciona</option>
+                            <option *ngFor="let nivel of lstNivelRiesgo" [value]="nivel.codigo">
                                 {{ nivel.descripcion }}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>
+                            </option>
+                        </select>
+                    </div>
 
                     <!-- Ordenar por -->
-                    <mat-form-field appearance="outline">
-                        <mat-label>Ordenar por</mat-label>
-                        <mat-select formControlName="ctrol_ordenar">
-                            <mat-option value="nombreCompleto">Nombre / Apellidos</mat-option>
-                            <mat-option value="codigo_Persona">Código</mat-option>
-                        </mat-select>
-                    </mat-form-field>
+                    <div class="search-field">
+                        <label for="ordenarPor">Ordenar por</label>
+                        <select id="ordenarPor" formControlName="ctrol_ordenar">
+                            <option value="nombreCompleto">Nombre / Apellidos</option>
+                            <option value="codigo_Persona">Código</option>
+                        </select>
+                    </div>
 
                 </div>
 
                 <!-- BOTONES ROW -->
                 <div class="botones-row">
                     <div class="botones-izquierda">
-                        <button type="button" class="BtnFiltrar" mat-flat-button (click)="onBuscar()">
-                            <mat-icon>filter_alt</mat-icon> Filtrar
+                        <button type="button" class="btn-filtrar" (click)="onBuscar()">
+                            <mat-icon>search</mat-icon> Buscar
                         </button>
                     </div>
 
                     <div class="botones-derecha">
-                        <button type="button" class="BtnCrear" mat-flat-button (click)="onAgregar()">
-                            <mat-icon>person_add</mat-icon> Agregar
+                        <button type="button" class="btn-crear" (click)="onAgregar()">
+                            <mat-icon>person_add</mat-icon> Nuevo Usuario/Persona
                         </button>    
 
-                        <button type="button" class="BtnExportar" mat-flat-button (click)="onExportar()">
+                        <button type="button" class="btn-exportar" (click)="onExportar()">
                             <mat-icon>download</mat-icon> Exportar a Excel
                         </button>              
                         
-                        <button type="button" class="BtnImportar" mat-flat-button (click)="onImportar()">
+                        <button type="button" class="btn-importar" (click)="onImportar()">
                             <mat-icon>upload</mat-icon> Importar Personas
                         </button>
                     </div>
                 </div>            
             </div>
-        </mat-card>
+        </fieldset>
 
         <!-- TABLA -->
         <table mat-table [dataSource]="dataSource" matSort class="tabla-wrapper">
 
-            <!-- Código -->
-            <ng-container matColumnDef="codigo">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Código</th>
-                <td mat-cell *matCellDef="let row">{{row.codigo_Persona}}</td>
-            </ng-container>     
+            <!-- Activo -->
+            <ng-container matColumnDef="activo">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Activo</th>
+                <td mat-cell *matCellDef="let row">
+                    <span [ngClass]="(row.flg_Activo === 'True' || row.flg_Activo === '1') ? 'activo' : 'inactivo'">
+                        {{ (row.flg_Activo === 'True' || row.flg_Activo === '1') ? 'Activo' : 'Inactivo' }}
+                    </span>
+                </td>
+            </ng-container> 
 
-
-
-            <!-- Organización -->
-            <ng-container matColumnDef="organizacion">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Organización</th>
-                <td mat-cell *matCellDef="let row">{{row.organizacion}}</td>
+            <!-- NOMBRE -->
+            <ng-container matColumnDef="nombre">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Nombre</th>
+                <td mat-cell *matCellDef="let row">{{row.nombre}}</td>
             </ng-container>             
             
-            <!-- Sede -->
-            <ng-container matColumnDef="sede">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Sede</th>
-                <td mat-cell *matCellDef="let row">{{row.sede}}</td>
+            <!-- Apellidos -->
+            <ng-container matColumnDef="apellidos">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Apellidos</th>
+                <td mat-cell *matCellDef="let row">{{row.apellidos}}</td>
             </ng-container>              
             
-            <!-- Puesto -->
-            <ng-container matColumnDef="puesto">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Puesto</th>
-                <td mat-cell *matCellDef="let row">{{row.puesto}}</td>
+            <!-- EMAIL -->
+            <ng-container matColumnDef="email">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
+                <td mat-cell *matCellDef="let row">{{row.email}}</td>
             </ng-container>              
 
-            <!-- Nivel Riesgo -->
-            <ng-container matColumnDef="nivel">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Nivel Riesgo</th>
-                <td mat-cell *matCellDef="let row">{{row.nivelRiesgo}}</td>
+            <!-- TELEFONO -->
+            <ng-container matColumnDef="teléfono">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Teléfono</th>
+                <td mat-cell *matCellDef="let row" class="col-tabular">{{row.telefono}}</td>
             </ng-container>   
             
-            <!-- Estado -->
-            <ng-container matColumnDef="estado">
-                <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <!-- SEDE -->
+            <ng-container matColumnDef="sede">
+                <th mat-header-cell *matHeaderCellDef>Sede</th>
                 <td mat-cell *matCellDef="let row">
-                    <span [ngClass]="row.flg_Activo === 'True' ? 'activo' : 'inactivo'">
-                        {{row.flg_Activo === "True" ? 'Activo' : 'Inactivo'}}
-                    </span>
+                    {{row.sede}}
                 </td>
             </ng-container>     
             
-            <!-- Acciones -->
+            <!-- PUESTO -->
+            <ng-container matColumnDef="puesto">
+                <th mat-header-cell *matHeaderCellDef>Puesto</th>
+                <td mat-cell *matCellDef="let row">
+                    {{row.puesto}}
+                </td>
+            </ng-container>     
+            
+            <!-- PROXIMA -->
+            <ng-container matColumnDef="proxima">
+                <th mat-header-cell *matHeaderCellDef>Próxima Eval.</th>
+                <td mat-cell *matCellDef="let row" class="col-tabular">
+                    {{row.proxima}}
+                </td>
+            </ng-container>     
+            
+            <!-- ESTADO EVALUCIÓN -->
+            <ng-container matColumnDef="estado_evaluacion">
+                <th mat-header-cell *matHeaderCellDef>Estado Eval.</th>
+                <td mat-cell *matCellDef="let row">
+                    <span [ngClass]="row.estado_evaluacion === 'True' ? 'activo' : 'inactivo'">
+                        {{row.estado_evaluacion === "True" ? 'Activo' : 'Inactivo'}}
+                    </span>
+                </td>
+            </ng-container>
+
+            <!-- PROXIMA EVALUACION PLANIFICADA -->
+            <ng-container matColumnDef="prox-evalución-plant">
+                <th mat-header-cell *matHeaderCellDef>Próxima Eval. Planificada</th>
+                <td mat-cell *matCellDef="let row" class="col-tabular">
+                    {{row.proxima_evaluacion_plan}}
+                </td>
+            </ng-container>
+
+            <!-- ACCIONES EVALUCIÓN ACTUAL -->
+            <ng-container matColumnDef="acc-evaluación-act">
+                <th mat-header-cell *matHeaderCellDef>Acciones Eval. Actual</th>
+                <td mat-cell *matCellDef="let row"></td>
+            </ng-container>
+            
+            <!-- ACCIONES -->
             <ng-container matColumnDef="acciones">
                 <th mat-header-cell *matHeaderCellDef>Acciones</th>
                 <td mat-cell *matCellDef="let e">

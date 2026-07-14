@@ -1,0 +1,158 @@
+<div class="dialog-container">
+  <mat-toolbar class="banner-header">
+    <span class="titulo">{{ data.Accion === 'I' ? 'Nuevo Plan de Gestión Documental' : 'Editar Plan de Gestión Documental' }}</span>
+  </mat-toolbar>
+
+  <form [formGroup]="formulario" (ngSubmit)="onGuardar()" class="form-content">
+    
+    <!-- Denominación del Plan de Gestión -->
+    <div class="form-section-header">Denominación del Plan de Gestión (*)</div>
+    <input type="text" formControlName="ctrol_denominacion" class="input-plan" placeholder="Ingrese denominación...">
+
+    <!-- Frecuencia -->
+    <div class="form-section-header">Frecuencia (*)</div>
+    <select formControlName="ctrol_frecuencia" class="select-plan">
+      <option value="">Selecciona</option>
+      <option value="Mensual">Mensual</option>
+      <option value="Trimestral">Trimestral</option>
+      <option value="Anual">Anual</option>
+    </select>
+
+    <!-- Tipo -->
+    <div class="form-section-header">Tipo (*)</div>
+    <select formControlName="ctrol_tipo" class="select-plan">
+      <option value="">Tipo</option>
+      <option value="General">General</option>
+      <option value="Específico">Específico</option>
+    </select>
+
+    <!-- Persona/s destinatarias -->
+    <div class="form-section-header">Persona/s destinatarias (*)</div>
+    <mat-form-field appearance="outline" class="w-100 compact-select">
+      <mat-select formControlName="ctrol_destinatarios" multiple placeholder="Selecciona">
+        <mat-option *ngFor="let p of lstPersonas" [value]="p.codigo">{{ p.descripcion }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Responsable/s del Plan Documental -->
+    <div class="form-section-header">Responsable/s del Plan Documental (*)</div>
+    <mat-form-field appearance="outline" class="w-100 compact-select">
+      <mat-select formControlName="ctrol_responsables" multiple placeholder="Selecciona">
+        <mat-option *ngFor="let r of lstResponsables" [value]="r.codigo">{{ r.descripcion }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Descripción -->
+    <div class="form-section-header">Descripción</div>
+    <textarea formControlName="ctrol_descripcion" class="textarea-plan" rows="3" placeholder="Ingrese descripción del plan..."></textarea>
+
+    <!-- Características -->
+    <div class="form-section-header">Características</div>
+    <textarea formControlName="ctrol_caracteristicas" class="textarea-plan" rows="3" placeholder="Ingrese características del plan..."></textarea>
+
+    <!-- ¿Requiere confirmación del lectura? -->
+    <div class="form-section-header">¿Requiere confirmación del lectura?</div>
+    <div class="radio-group-container">
+      <mat-radio-group formControlName="ctrol_req_confirmacion">
+        <mat-radio-button [value]="false">Sin Confirmación</mat-radio-button>
+        <mat-radio-button [value]="true">Con Confirmación</mat-radio-button>
+      </mat-radio-group>
+    </div>
+
+    <!-- ¿Requiere aceptación/rechazo por parte del Usuario? -->
+    <div class="form-section-header">¿Requiere aceptación/rechazo por parte del Usuario?</div>
+    <div class="radio-group-container">
+      <mat-radio-group formControlName="ctrol_req_aceptacion">
+        <mat-radio-button [value]="false">No</mat-radio-button>
+        <mat-radio-button [value]="true">Si</mat-radio-button>
+      </mat-radio-group>
+    </div>
+
+    <!-- Texto por defecto de la Comunicación -->
+    <div class="form-section-header">Texto por defecto de la Comunicación</div>
+    <textarea formControlName="ctrol_texto_defecto" class="textarea-plan" rows="3"></textarea>
+
+    <!-- Sección Documentos / Cuestionarios a facilitar por el Personal -->
+    <div class="form-section-header">Documentos / Cuestionarios a facilitar por el Personal</div>
+
+    <div class="documentos-cuestionarios-container">
+
+      <!-- Subsección A -->
+      <div class="subseccion-container">
+        <div class="subseccion-titulo">A.- Documentos / Información PUNTUAL a facilitar por el Personal</div>
+        <div class="red-table-wrapper">
+          <div class="red-table-header">
+            <span class="header-title">Documentos / Información</span>
+            <button type="button" class="btn-solicitar" (click)="onSolicitarA()">Solicitar Puntualmente</button>
+          </div>
+          <div class="red-table-body">
+            <div *ngIf="lstDocumentosA.length === 0" class="red-table-empty">
+              No se han encontrado documentos
+            </div>
+            <div *ngFor="let doc of lstDocumentosA" class="red-table-row">
+              {{ doc }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subsección B -->
+      <div class="subseccion-container">
+        <div class="subseccion-titulo">B.- Documentos facilitados por la Organización, que debe aceptar el Personal</div>
+        <div class="red-table-wrapper">
+          <div class="red-table-header">
+            <span class="header-title">Documentos / Información</span>
+            <button type="button" class="btn-solicitar" (click)="onSolicitarB()">Solicitar Puntualmente</button>
+          </div>
+          <div class="red-table-body">
+            <div *ngIf="lstDocumentosB.length === 0" class="red-table-empty">
+              No se han encontrado documentos
+            </div>
+            <div *ngFor="let doc of lstDocumentosB" class="red-table-row">
+              {{ doc }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subsección C -->
+      <div class="subseccion-container">
+        <div class="subseccion-titulo">C.- Cuestionarios a cumplimentar por el Personal</div>
+        <div class="red-table-wrapper">
+          <div class="red-table-header">
+            <span class="header-title">Cuestionario</span>
+            <button type="button" class="btn-solicitar" (click)="onSolicitarC()">Solicitar Puntualmente</button>
+          </div>
+          <div class="red-table-body">
+            <div *ngIf="lstCuestionariosC.length === 0" class="red-table-empty">
+              No se han encontrado Cuestionarios
+            </div>
+            <div *ngFor="let q of lstCuestionariosC" class="red-table-row">
+              {{ q }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Sección Carta de Comunicación -->
+    <div class="form-section-header">Carta de Comunicación (*)</div>
+    <div class="carta-comunicacion-container">
+      <button type="button" class="btn-carta-editar" mat-flat-button (click)="onVerEditarCarta()">
+        Ver/Editar Carta de Comunicación
+      </button>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="dialog-actions-row">
+      <button type="submit" class="BtnGuardarPlan" mat-flat-button>
+        Guardar Plan
+      </button>
+      <button type="button" class="BtnCancelarPlan" mat-flat-button (click)="onCancelar()">
+        Cancelar
+      </button>
+    </div>
+
+  </form>
+</div>

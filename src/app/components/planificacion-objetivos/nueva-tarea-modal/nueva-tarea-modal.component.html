@@ -1,0 +1,62 @@
+<div class="modal-wrapper">
+  <div class="modal-header">
+    <h2>Acción / Tarea a realizar en Objetivos</h2>
+    <button type="button" class="close-btn" (click)="onCancelar()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <form [formGroup]="formulario" (ngSubmit)="onGuardar()" class="modal-content">
+    <!-- Acción / Tarea -->
+    <div class="campo-seccion">
+      <div class="campo-header">Acción / Tarea (*):</div>
+      <div class="campo-body">
+        <input type="text" formControlName="ctrol_tarea" class="input-text">
+      </div>
+    </div>
+
+    <!-- Fechas Inicio / Fin side-by-side -->
+    <div class="campos-row-2">
+      <div class="campo-seccion">
+        <div class="campo-header">Fecha Inicio (*):</div>
+        <div class="campo-body">
+          <input type="date" formControlName="ctrol_fecha_inicio" class="input-date">
+        </div>
+      </div>
+      <div class="campo-seccion">
+        <div class="campo-header">Fecha Fin (*):</div>
+        <div class="campo-body">
+          <input type="date" formControlName="ctrol_fecha_fin" class="input-date">
+        </div>
+      </div>
+    </div>
+
+    <!-- Puesto / Persona responsable -->
+    <div class="campo-seccion">
+      <div class="campo-header">Puesto / Persona responsable de la Acción / Tarea (*):</div>
+      <div class="campo-body dropdowns-row">
+        <select formControlName="ctrol_puesto" class="select-dropdown">
+          <option value="" disabled selected>Selecciona Puesto</option>
+          <option *ngFor="let puesto of lstPuestos" [value]="puesto.codigo">{{ puesto.descripcion }}</option>
+        </select>
+        <select formControlName="ctrol_persona" class="select-dropdown">
+          <option value="" disabled selected>Selecciona Persona</option>
+          <option *ngFor="let persona of lstPersonas" [value]="persona.codigo">{{ persona.descripcion }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Observaciones -->
+    <div class="campo-seccion">
+      <div class="campo-header">Observaciones:</div>
+      <div class="campo-body">
+        <textarea formControlName="ctrol_observaciones" rows="4" class="textarea-input"></textarea>
+      </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="form-actions">
+      <button type="submit" class="btn-guardar">Guardar Acción / Tarea</button>
+    </div>
+  </form>
+</div>

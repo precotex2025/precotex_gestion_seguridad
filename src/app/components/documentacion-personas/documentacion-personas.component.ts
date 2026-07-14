@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { NgxSpinnerService } from 'ngx-spinner';
 
 import { DocumentacionPersonasRegeditComponent } from './documentacion-personas-regedit/documentacion-personas-regedit.component';
+import { DocumentacionPersonasPlanesComponent } from './documentacion-personas-planes/documentacion-personas-planes.component';
 
 import { OrganizacionService } from '../../services/organizacion.service';
 import { SedesService } from '../../services/sedes.service';
@@ -56,6 +57,8 @@ export class DocumentacionPersonasComponent implements OnInit {
   ];  
   dataSource = new MatTableDataSource<any>();
 
+  mostrarPlanes = false;
+
   constructor(
     private formBuilder: FormBuilder,
     private SpinnerService: NgxSpinnerService,
@@ -80,9 +83,10 @@ export class DocumentacionPersonasComponent implements OnInit {
       ctrol_estado_documento: [''],
       ctrol_estado_revision: ['']
     });
+  }
 
-    this.onComboOrganizacion();
-    this.onComboPuestos();
+  onPlanesGestion() {
+    this.mostrarPlanes = true;
   }
 
   onBuscar() {
@@ -178,8 +182,9 @@ export class DocumentacionPersonasComponent implements OnInit {
     });
   }
 
+
   onChangeOrga(event: any) {
-    const valor = event.value;
+    const valor = event.value || event.target?.value || '';
     this.formulario.get('ctrol_sede')?.setValue('');
     this.onComboSedes(valor);
   }

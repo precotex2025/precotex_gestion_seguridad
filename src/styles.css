@@ -1,4 +1,196 @@
-/* You can add global styles to this file, and also import other style files */
+/* ===================================================================
+   SecureNorm — Premium Design System
+   =================================================================== */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+/* --- CSS Custom Properties (Design Tokens) --- */
+:root {
+  /* Primary Palette */
+  --sn-primary-50:  #eef2ff;
+  --sn-primary-100: #e0e7ff;
+  --sn-primary-200: #c7d2fe;
+  --sn-primary-400: #818cf8;
+  --sn-primary-500: #6366f1;
+  --sn-primary-600: #4f46e5;
+  --sn-primary-700: #4338ca;
+  --sn-primary-800: #3730a3;
+
+  /* Accent */
+  --sn-accent-400: #a78bfa;
+  --sn-accent-500: #8b5cf6;
+  --sn-accent-600: #7c3aed;
+
+  /* Semantic Colors */
+  --sn-success-50:  #ecfdf5;
+  --sn-success-100: #d1fae5;
+  --sn-success-500: #10b981;
+  --sn-success-600: #059669;
+  --sn-success-700: #047857;
+
+  --sn-danger-50:   #fff1f2;
+  --sn-danger-100:  #ffe4e6;
+  --sn-danger-500:  #f43f5e;
+  --sn-danger-600:  #e11d48;
+
+  --sn-warning-50:  #fffbeb;
+  --sn-warning-100: #fef3c7;
+  --sn-warning-500: #f59e0b;
+  --sn-warning-600: #d97706;
+
+  --sn-info-50:     #eff6ff;
+  --sn-info-500:    #3b82f6;
+  --sn-info-600:    #2563eb;
+
+  /* Neutrals (Slate) */
+  --sn-slate-50:  #f8fafc;
+  --sn-slate-100: #f1f5f9;
+  --sn-slate-200: #e2e8f0;
+  --sn-slate-300: #cbd5e1;
+  --sn-slate-400: #94a3b8;
+  --sn-slate-500: #64748b;
+  --sn-slate-600: #475569;
+  --sn-slate-700: #334155;
+  --sn-slate-800: #1e293b;
+  --sn-slate-900: #0f172a;
+  --sn-slate-950: #020617;
+
+  /* Surfaces */
+  --sn-surface-ground:   #f1f5f9;
+  --sn-surface-card:     #ffffff;
+  --sn-surface-overlay:  rgba(255, 255, 255, 0.7);
+  --sn-surface-border:   #e2e8f0;
+
+  /* Typography */
+  --sn-font-family:  'Inter', 'Roboto', 'Helvetica Neue', sans-serif;
+  --sn-font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Shadows */
+  --sn-shadow-xs:  0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --sn-shadow-sm:  0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.08);
+  --sn-shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07);
+  --sn-shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+  --sn-shadow-xl:  0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
+
+  /* Glassmorphism */
+  --sn-glass-bg:     rgba(255, 255, 255, 0.45);
+  --sn-glass-border: rgba(255, 255, 255, 0.25);
+  --sn-glass-blur:   12px;
+
+  /* Transitions */
+  --sn-ease:        cubic-bezier(0.4, 0, 0.2, 1);
+  --sn-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --sn-duration:    0.3s;
+
+  /* Radii */
+  --sn-radius-sm: 6px;
+  --sn-radius-md: 10px;
+  --sn-radius-lg: 16px;
+  --sn-radius-xl: 24px;
+}
+
+/* --- Global Reset & Base --- */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--sn-font-family);
+  color: var(--sn-slate-800);
+  background-color: var(--sn-surface-ground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+/* --- Smooth Scrolling --- */
+html {
+  scroll-behavior: smooth;
+}
+
+/* --- Scrollbar Styling --- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--sn-slate-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--sn-slate-300);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--sn-slate-400);
+}
+
+/* --- Animation Keyframes --- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(79, 70, 229, 0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* --- Utility: Glassmorphism --- */
+.sn-glass {
+  background: var(--sn-glass-bg);
+  backdrop-filter: blur(var(--sn-glass-blur));
+  -webkit-backdrop-filter: blur(var(--sn-glass-blur));
+  border: 1px solid var(--sn-glass-border);
+}
+
+/* --- Utility: Animated Entry --- */
+.sn-animate-in {
+  animation: fadeInUp 0.5s var(--sn-ease) both;
+}
+
+.sn-animate-in-delay-1 { animation-delay: 0.05s; }
+.sn-animate-in-delay-2 { animation-delay: 0.1s; }
+.sn-animate-in-delay-3 { animation-delay: 0.15s; }
+.sn-animate-in-delay-4 { animation-delay: 0.2s; }
+.sn-animate-in-delay-5 { animation-delay: 0.25s; }
+.sn-animate-in-delay-6 { animation-delay: 0.3s; }
+.sn-animate-in-delay-7 { animation-delay: 0.35s; }
+.sn-animate-in-delay-8 { animation-delay: 0.4s; }

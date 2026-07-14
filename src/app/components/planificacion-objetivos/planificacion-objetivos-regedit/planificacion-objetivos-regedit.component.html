@@ -1,0 +1,379 @@
+<div class="dialog-container">
+  <!-- Cabecera con pestañas -->
+  <div class="tabs-header">
+    <div class="tab-item active-tab" [class.active]="activeTab === 'datos'" (click)="activeTab = 'datos'">
+      <mat-icon>storage</mat-icon>
+      <span>Datos Objetivo</span>
+      <div class="arrow-right"></div>
+    </div>
+    <div class="tab-item inactive-tab" [class.active]="activeTab === 'procesos'" (click)="activeTab = 'procesos'">
+      <mat-icon>account_tree</mat-icon>
+      <span>Procesos</span>
+    </div>
+  </div>
+
+  <form [formGroup]="formulario" (ngSubmit)="onSave()" class="form-content">
+    
+    <!-- PESTAÑA: DATOS OBJETIVO -->
+    <div *ngIf="activeTab === 'datos'" class="tab-pane">
+      
+      <!-- Fila 1: Denominación y Carga de anteriores -->
+      <div class="form-row flex-row gap-20">
+        <div class="flex-3">
+          <div class="field-label red-label">Denominación del Objetivo 💡 (*):</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <input matInput formControlName="ctrol_denominacion" placeholder="Ingrese denominación del objetivo">
+          </mat-form-field>
+        </div>
+
+        <div class="flex-2 alignment-self-center">
+          <div class="field-label red-label center-text">¿Cargar datos de Objetivos utilizados anteriormente?</div>
+          <div class="checkbox-group-row">
+            <mat-checkbox formControlName="ctrol_cargar_anteriores" [checked]="!formulario.get('ctrol_cargar_anteriores')?.value">No</mat-checkbox>
+            <mat-checkbox formControlName="ctrol_cargar_anteriores">Sí</mat-checkbox>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fila 2: Organización y Sede -->
+      <div class="form-row flex-row gap-20">
+        <div class="flex-1">
+          <div class="field-label red-label">Organización (*):</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_organizacion" placeholder="Selecciona">
+              <mat-option *ngFor="let orga of lstOrganizacion" [value]="orga.codigo">
+                {{ orga.descripcion }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="flex-1">
+          <div class="field-label red-label">Sede (*):</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <mat-select formControlName="ctrol_sede" placeholder="Selecciona">
+              <mat-option *ngFor="let sede of lstSedes" [value]="sede.codigo">
+                {{ sede.descripcion }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <div class="error-msg-box" *ngIf="!formulario.get('ctrol_organizacion')?.value">
+            <mat-icon style="font-size: 14px; width: 14px; height: 14px;">cancel</mat-icon>
+            <span>Por favor, seleccione una Organización para listar sus Seder</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fila 3: Normas -->
+      <div class="form-row">
+        <div class="section-title-band">Norma/s (*):</div>
+        <div class="checkbox-grid">
+          <div class="checkbox-col">
+            <mat-checkbox formControlName="ctrol_norma_14001">ISO 14001:2015</mat-checkbox>
+            <mat-checkbox formControlName="ctrol_norma_9001">ISO 9001:2015</mat-checkbox>
+            <mat-checkbox formControlName="ctrol_norma_45001">ISO 45001:2018</mat-checkbox>
+          </div>
+          <div class="checkbox-col">
+            <mat-checkbox formControlName="ctrol_norma_wca">WCA</mat-checkbox>
+            <mat-checkbox formControlName="ctrol_norma_wrap">WRAP</mat-checkbox>
+            <mat-checkbox formControlName="ctrol_norma_otra">Otra</mat-checkbox>
+            <mat-checkbox formControlName="ctrol_norma_ley29783">Ley Nº 29783</mat-checkbox>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fila 4: Fechas y Primera medición -->
+      <div class="form-row flex-row gap-20">
+        <div class="flex-1">
+          <div class="field-label red-label">Fecha Inicio Medición (yyyy-mm-dd) (*):</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <input matInput [matDatepicker]="pickerInicio" formControlName="ctrol_fecha_inicio" placeholder="yyyy-mm-dd">
+            <mat-datepicker-toggle matIconSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+            <mat-datepicker #pickerInicio></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <div class="flex-1">
+          <div class="field-label red-label">Fecha Fin Medición (yyyy-mm-dd) (*):</div>
+          <mat-form-field appearance="outline" class="w-100 compact-field">
+            <input matInput [matDatepicker]="pickerFin" formControlName="ctrol_fecha_fin" placeholder="yyyy-mm-dd">
+            <mat-datepicker-toggle matIconSuffix [for]="pickerFin"></mat-datepicker-toggle>
+            <mat-datepicker #pickerFin></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <div class="flex-1 alignment-self-center">
+          <div class="field-label red-label">¿Primera medición en Fecha de Inicio? (*):</div>
+          <mat-radio-group formControlName="ctrol_primera_medicion_inicio" class="radio-row">
+            <mat-radio-button value="si">Sí</mat-radio-button>
+            <mat-radio-button value="no">No</mat-radio-button>
+          </mat-radio-group>
+        </div>
+      </div>
+
+      <!-- Fila: Sin fecha de finalización -->
+      <div class="form-row" style="margin-top: -10px;">
+        <mat-checkbox formControlName="ctrol_sin_fecha_fin" style="font-size: 11px;">
+          Sin Fecha de Finalización (Si el objetivo NO requiere mediciones periódicas, no se podrá marcar "Sin fecha de Finalización")
+        </mat-checkbox>
+      </div>
+
+      <!-- Fila: Tipo de Objetivo / Opciones de Resultado -->
+      <div class="form-row">
+        <div class="section-title-band">Tipo de Objetivo / Opciones de Resultado (*)</div>
+        <div class="checkbox-group-row-left">
+          <div class="checkbox-with-help">
+            <mat-checkbox formControlName="ctrol_resultado_si_no">Si / No</mat-checkbox>
+            <mat-icon class="help-icon" title="Ayuda sobre opción Si / No">help</mat-icon>
+          </div>
+          <div class="checkbox-with-help">
+            <mat-checkbox formControlName="ctrol_resultado_texto">Texto</mat-checkbox>
+            <mat-icon class="help-icon" title="Ayuda sobre opción Texto">help</mat-icon>
+          </div>
+          <div class="checkbox-with-help">
+            <mat-checkbox formControlName="ctrol_resultado_numerico">Valor Numérico</mat-checkbox>
+            <mat-icon class="help-icon" title="Ayuda sobre opción Valor Numérico">help</mat-icon>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fila: ¿Requiere Mediciones / Seguimiento Periódico? -->
+      <div class="form-row">
+        <div class="section-title-band">¿Requiere Mediciones / Seguimiento Periódico? (*)</div>
+        <mat-radio-group formControlName="ctrol_requiere_mediciones" class="radio-row">
+          <mat-radio-button value="si">Sí</mat-radio-button>
+          <mat-radio-button value="no">No</mat-radio-button>
+        </mat-radio-group>
+      </div>
+
+      <!-- Fila: Frecuencia de Medición -->
+      <div class="form-row" *ngIf="formulario.get('ctrol_requiere_mediciones')?.value === 'si'">
+        <div class="section-title-band">Frecuencia de Medición / Seguimiento (*)</div>
+        <mat-form-field appearance="outline" class="w-100 compact-field">
+          <mat-select formControlName="ctrol_frecuencia_medicion" placeholder="Selecciona">
+            <mat-option value="">Selecciona</mat-option>
+            <mat-option value="mensual">Mensual</mat-option>
+            <mat-option value="trimestral">Trimestral</mat-option>
+            <mat-option value="anual">Anual</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Fila: ¿En las mediciones parciales se requiere cumplir objetivos? -->
+      <div class="form-row" *ngIf="formulario.get('ctrol_requiere_mediciones')?.value === 'si'">
+        <div class="section-title-band">¿En las mediciones / seguimientos parciales se requiere cumplir objetivos? (*)</div>
+        <mat-radio-group formControlName="ctrol_cumplir_objetivos_parciales" class="radio-row">
+          <mat-radio-button value="si">Sí</mat-radio-button>
+          <mat-radio-button value="no">No</mat-radio-button>
+        </mat-radio-group>
+      </div>
+
+      <!-- Fila: Responsable seguimiento del Objetivo -->
+      <div class="form-row">
+        <div class="section-title-band">Responsable seguimiento del Objetivo (*):</div>
+        <div class="checkbox-group-row-left gap-40">
+          <mat-checkbox formControlName="ctrol_resp_seg_yo">Yo mismo</mat-checkbox>
+          <mat-checkbox formControlName="ctrol_resp_seg_usuario">Usuario</mat-checkbox>
+          <mat-checkbox formControlName="ctrol_resp_seg_puesto">Puesto</mat-checkbox>
+        </div>
+      </div>
+
+      <!-- Fila: Responsable Medición / Registro -->
+      <div class="form-row">
+        <div class="section-title-band">Responsable Medición / Registro de Datos del Objetivo (*):</div>
+        <div class="checkbox-group-row-left gap-40">
+          <mat-checkbox formControlName="ctrol_resp_med_yo">Yo mismo</mat-checkbox>
+          <mat-checkbox formControlName="ctrol_resp_med_usuario">Usuario</mat-checkbox>
+          <mat-checkbox formControlName="ctrol_resp_med_puesto">Puesto</mat-checkbox>
+        </div>
+      </div>
+
+      <!-- Fila: Resultados Visibles para -->
+      <div class="form-row">
+        <div class="section-title-band">Resultados Visibles para</div>
+        <mat-form-field appearance="outline" class="w-100 compact-field">
+          <mat-select formControlName="ctrol_resultados_visibles" placeholder="Selecciona">
+            <mat-option value="">Selecciona</mat-option>
+            <mat-option value="todos">Todos</mat-option>
+            <mat-option value="responsables">Solo Responsables</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Fila: Fuente de Datos -->
+      <div class="form-row">
+        <div class="section-title-band">Fuente de Datos:</div>
+        <div class="rich-editor-container">
+          <div class="editor-toolbar">
+            <mat-icon title="Pegar">content_paste</mat-icon>
+            <mat-icon title="Deshacer">undo</mat-icon>
+            <mat-icon title="Rehacer">redo</mat-icon>
+            <span class="editor-separator"></span>
+            <mat-icon class="bold-text" title="Negrita">format_bold</mat-icon>
+            <mat-icon class="italic-text" title="Cursiva">format_italic</mat-icon>
+            <mat-icon class="underline-text" title="Subrayado">format_underlined</mat-icon>
+            <span class="editor-separator"></span>
+            <mat-icon title="Alinear izquierda">format_align_left</mat-icon>
+            <mat-icon title="Centrar">format_align_center</mat-icon>
+            <mat-icon title="Alinear derecha">format_align_right</mat-icon>
+            <mat-icon title="Justificar">format_align_justify</mat-icon>
+            <span class="editor-separator"></span>
+            <mat-icon title="Lista con viñetas">format_list_bulleted</mat-icon>
+            <mat-icon title="Lista numerada">format_list_numbered</mat-icon>
+            <span class="editor-separator"></span>
+            <mat-icon title="Disminuir sangría">format_indent_decrease</mat-icon>
+            <mat-icon title="Aumentar sangría">format_indent_increase</mat-icon>
+            <span class="editor-separator"></span>
+            <mat-icon title="Limpiar formato">format_clear</mat-icon>
+            <mat-icon title="Insertar tabla">table_view</mat-icon>
+          </div>
+          <textarea matInput formControlName="ctrol_fuente_datos" rows="4" class="editor-textarea" placeholder="Ingrese fuente de datos..."></textarea>
+        </div>
+      </div>
+
+      <!-- Fila: Descripción de las Tareas -->
+      <div class="form-row">
+        <div class="section-title-band">Descripción de las Tareas:</div>
+        <div class="rich-editor-container">
+          <div class="editor-toolbar">
+            <mat-icon title="Pegar">content_paste</mat-icon>
+            <mat-icon title="Deshacer">undo</mat-icon>
+            <mat-icon title="Rehacer">redo</mat-icon>
+            <span class="editor-separator"></span>
+            <mat-icon class="bold-text" title="Negrita">format_bold</mat-icon>
+            <mat-icon class="italic-text" title="Cursiva">format_italic</mat-icon>
+            <mat-icon class="underline-text" title="Subrayado">format_underlined</mat-icon>
+            <span class="editor-separator"></span>
+            <mat-icon title="Alinear izquierda">format_align_left</mat-icon>
+            <mat-icon title="Centrar">format_align_center</mat-icon>
+            <mat-icon title="Alinear derecha">format_align_right</mat-icon>
+            <mat-icon title="Justificar">format_align_justify</mat-icon>
+            <span class="editor-separator"></span>
+            <mat-icon title="Lista con viñetas">format_list_bulleted</mat-icon>
+            <mat-icon title="Lista numerada">format_list_numbered</mat-icon>
+            <span class="editor-separator"></span>
+            <mat-icon title="Disminuir sangría">format_indent_decrease</mat-icon>
+            <mat-icon title="Aumentar sangría">format_indent_increase</mat-icon>
+            <span class="editor-separator"></span>
+            <mat-icon title="Limpiar formato">format_clear</mat-icon>
+            <mat-icon title="Insertar tabla">table_view</mat-icon>
+          </div>
+          <textarea matInput formControlName="ctrol_descripcion_tareas" rows="4" class="editor-textarea" placeholder="Ingrese descripción de las tareas..."></textarea>
+        </div>
+        
+        <!-- Botón y Tabla de Acciones/Tareas -->
+        <div class="tasks-table-container">
+          <button type="button" class="BtnNuevaAccion" mat-flat-button (click)="onNuevaTarea()">
+            <mat-icon>build</mat-icon> Nueva Acción / Tarea a Planificar
+          </button>
+
+          <table class="custom-tasks-table">
+            <thead>
+              <tr>
+                <th class="col-eliminar">Eliminar</th>
+                <th class="col-editar">Editar</th>
+                <th>Acción / Tarea</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Puesto / Persona Responsable</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let task of lstTareas">
+                <td class="center-cell">
+                  <button type="button" mat-icon-button color="warn" (click)="onEliminarTarea(task)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+                <td class="center-cell">
+                  <button type="button" mat-icon-button color="primary" (click)="onEditarTarea(task)">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                </td>
+                <td>{{task.accion}}</td>
+                <td>{{task.inicio}}</td>
+                <td>{{task.fin}}</td>
+                <td>{{task.responsable}}</td>
+              </tr>
+              <tr *ngIf="lstTareas.length === 0">
+                <td colspan="6" class="empty-table-msg">No hay tareas planificadas.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Fila: Recursos Requeridos -->
+      <div class="form-row">
+        <div class="section-title-band">Recursos Requeridos:</div>
+        <div class="rich-editor-container">
+          <div class="editor-toolbar">
+            <mat-icon title="Pegar">content_paste</mat-icon>
+            <mat-icon title="Deshacer">undo</mat-icon>
+            <mat-icon title="Rehacer">redo</mat-icon>
+            <span class="editor-separator"></span>
+            <mat-icon class="bold-text" title="Negrita">format_bold</mat-icon>
+            <mat-icon class="italic-text" title="Cursiva">format_italic</mat-icon>
+            <mat-icon class="underline-text" title="Subrayado">format_underlined</mat-icon>
+            <span class="editor-separator"></span>
+            <mat-icon title="Alinear izquierda">format_align_left</mat-icon>
+            <mat-icon title="Centrar">format_align_center</mat-icon>
+            <mat-icon title="Alinear derecha">format_align_right</mat-icon>
+            <mat-icon title="Justificar">format_align_justify</mat-icon>
+            <span class="editor-separator"></span>
+            <mat-icon title="Lista con viñetas">format_list_bulleted</mat-icon>
+            <mat-icon title="Lista numerada">format_list_numbered</mat-icon>
+            <span class="editor-separator"></span>
+            <mat-icon title="Disminuir sangría">format_indent_decrease</mat-icon>
+            <mat-icon title="Aumentar sangría">format_indent_increase</mat-icon>
+            <span class="editor-separator"></span>
+            <mat-icon title="Limpiar formato">format_clear</mat-icon>
+            <mat-icon title="Insertar tabla">table_view</mat-icon>
+          </div>
+          <textarea matInput formControlName="ctrol_recursos_requeridos" rows="4" class="editor-textarea" placeholder="Ingrese recursos requeridos..."></textarea>
+        </div>
+      </div>
+
+      <!-- Fila: Documento Adjunto -->
+      <div class="form-row flex-row justify-between align-items-center" style="margin-top: 15px;">
+        <div class="flex-1">
+          <div class="section-title-band">Documento Adjunto</div>
+          <div class="file-upload-row">
+            <input type="file" #fileInput style="display: none;" (change)="onFileSelected($event)">
+            <button type="button" class="BtnSeleccionarArchivo" mat-stroked-button (click)="fileInput.click()">
+              Seleccionar archivo
+            </button>
+            <span class="file-name-text">{{selectedFileName || 'Ningún archivo seleccionado'}}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón Gestionar Procesos -->
+      <div class="form-row" style="margin-top: 15px;">
+        <button type="button" class="BtnGestionarProcesos" mat-flat-button (click)="activeTab = 'procesos'">
+          Gestionar Procesos
+        </button>
+      </div>
+
+    </div>
+
+    <!-- PESTAÑA: PROCESOS -->
+    <div *ngIf="activeTab === 'procesos'" class="tab-pane">
+      <div class="placeholder-pane">
+        <mat-icon style="font-size: 48px; width: 48px; height: 48px; color: #ccc; margin-bottom: 10px;">account_tree</mat-icon>
+        <p>Configuración de Procesos vinculados al Objetivo</p>
+      </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="dialog-actions">
+      <button mat-flat-button color="primary" class="BtnGrabar" type="submit">
+        <mat-icon>save</mat-icon> Grabar
+      </button>
+      <button mat-flat-button color="warn" class="BtnSalir" type="button" (click)="onClose()">
+        <mat-icon>close</mat-icon> Salir
+      </button>
+    </div>
+
+  </form>
+</div>

@@ -1,0 +1,219 @@
+<div class="modal-wrapper">
+  
+  <!-- Ribbon de Pasos (Header del Modal) -->
+  <div class="step-ribbon-container">
+    <div class="step-ribbon">
+      <!-- Paso 1 -->
+      <div class="step-item step-first" [class.active]="currentStep === 1" (click)="currentStep = 1">
+        <mat-icon class="step-icon">settings</mat-icon>
+        <span class="step-text">Configuración</span>
+      </div>
+
+      <!-- Paso 2 -->
+      <div class="step-item step-middle" [class.active]="currentStep === 2">
+        <mat-icon class="step-icon">assignment</mat-icon>
+        <span class="step-text">Normas / Objetivos</span>
+      </div>
+
+      <!-- Paso 3 -->
+      <div class="step-item step-middle" [class.active]="currentStep === 3">
+        <mat-icon class="step-icon">business</mat-icon>
+        <span class="step-text">Sedes</span>
+      </div>
+
+      <!-- Paso 4 (Condicional Procesos) -->
+      <div *ngIf="showProcesosStep" class="step-item step-middle" [class.active]="currentStep === 4">
+        <mat-icon class="step-icon">account_tree</mat-icon>
+        <span class="step-text">Procesos</span>
+      </div>
+
+      <!-- Paso 5 (Cuestionarios, siempre es el último) -->
+      <div class="step-item step-last" [class.active]="currentStep === 5">
+        <mat-icon class="step-icon">format_list_bulleted</mat-icon>
+        <span class="step-text">Cuestionarios</span>
+      </div>
+    </div>
+
+    <!-- Botón Cerrar Flotante -->
+    <button type="button" class="close-btn" (click)="onClose()" title="Cerrar modal">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <form [formGroup]="formulario" class="modal-content-wrapper">
+    <div class="modal-body-scroll">
+      
+      <!-- Paso 1: Configuración Inicial -->
+      <div *ngIf="currentStep === 1" class="step-content-view">
+        <h2 class="step-title-header">Paso 1. Configuración Inicial</h2>
+        
+        <!-- Denominación de la Evaluación de Riesgos -->
+        <div class="campo-seccion">
+          <div class="campo-header">Denominación de la Evaluación de Riesgos (*)</div>
+          <div class="campo-body">
+            <input type="text" formControlName="ctrol_denominacion" class="input-text" placeholder="Ej. Sistema Integrado de Gestión_Procesos">
+          </div>
+        </div>
+
+        <!-- Organización -->
+        <div class="campo-seccion">
+          <div class="campo-header">Organización que interviene en la Evaluación de Riesgos (*)</div>
+          <div class="campo-body">
+            <select formControlName="ctrol_organizacion" class="select-dropdown">
+              <option *ngFor="let o of lstOrganizaciones" [value]="o">{{ o }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tipo de Evaluación -->
+        <div class="campo-seccion">
+          <div class="campo-header">Seleccione el Tipo de Evaluación de Riesgos (*)</div>
+          <div class="campo-body radio-vertical-group">
+            <label class="radio-option-block" *ngFor="let t of lstTiposEvaluacion">
+              <input type="radio" [value]="t.codigo" formControlName="ctrol_tipo">
+              <span class="radio-label-text">{{ t.label }}</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 2: Selección de Normas / Objetivos -->
+      <div *ngIf="currentStep === 2" class="step-content-view">
+        <h2 class="step-title-header">Paso 2. Selección de Normas / Objetivos intervinientes en la Evaluación de Riesgos</h2>
+
+        <!-- Criterio para la eficacia -->
+        <div class="campo-seccion">
+          <div class="campo-header">Criterio para la evaluación de la eficacia de los controles</div>
+          <div class="campo-body row-criterio">
+            <select formControlName="ctrol_criterio_eficacia" class="select-dropdown width-auto">
+              <option value="Método Promedio">Método Promedio</option>
+            </select>
+            <div class="help-badge-circle" title="Información del método">?</div>
+          </div>
+        </div>
+
+        <!-- Opciones a considerar en Alta de Riesgos -->
+        <div class="campo-seccion">
+          <div class="campo-header">Opciones a considerar en el Alta de Riesgos de la Evaluación</div>
+          <div class="campo-body padding-none">
+            <table class="table-opciones-alta">
+              <tbody>
+                <tr *ngFor="let opt of lstOpcionesAlta; let odd = odd" [class.row-odd]="odd">
+                  <td class="cell-label">{{ opt.label }}</td>
+                  <td class="cell-radios">
+                    <label class="radio-inline">
+                      <input type="radio" [formControlName]="opt.control" [value]="true">
+                      <span>Mostrar campo</span>
+                    </label>
+                    <label class="radio-inline">
+                      <input type="radio" [formControlName]="opt.control" [value]="false">
+                      <span>No mostrar campo</span>
+                    </label>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Normas / Objetivos de la Evaluación -->
+        <div class="campo-seccion">
+          <div class="campo-header">Normas / Objetivos de la Evaluación de Riesgos (*)</div>
+          <div class="campo-body grid-checkbox-normas">
+            <label class="checkbox-option"><input type="checkbox" formControlName="ctrol_norma_14001"><span>ISO 14001:2015</span></label>
+            <label class="checkbox-option"><input type="checkbox" formControlName="ctrol_norma_9001"><span>ISO 9001:2015</span></label>
+            <label class="checkbox-option"><input type="checkbox" formControlName="ctrol_norma_45001"><span>ISO 45001:2018</span></label>
+            <label class="checkbox-option"><input type="checkbox" formControlName="ctrol_norma_wca"><span>WCA</span></label>
+            <label class="checkbox-option"><input type="checkbox" formControlName="ctrol_norma_wrap"><span>WRAP</span></label>
+            <label class="checkbox-option"><input type="checkbox" formControlName="ctrol_norma_otra"><span>Otra</span></label>
+            <label class="checkbox-option"><input type="checkbox" formControlName="ctrol_norma_ley29783"><span>Ley Nº 29783</span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 3: Configuración de Sedes -->
+      <div *ngIf="currentStep === 3" class="step-content-view">
+        <h2 class="step-title-header">Paso 3. Configuración de Sedes que intervienen en la Evaluación de Riesgos</h2>
+
+        <div class="campo-seccion">
+          <div class="campo-header">Sede/s que interviene/n en la Evaluación de Riesgos (*)</div>
+          <div class="campo-body container-sedes">
+            <div class="org-label-title">Organización: PRECOTEX</div>
+            <div class="vertical-checkbox-list">
+              <label class="checkbox-option"><input type="checkbox" formControlName="ctrol_sede_precotex"><span>PRECOTEX</span></label>
+              <label class="checkbox-option"><input type="checkbox" formControlName="ctrol_sede_santamaria"><span>Santa Maria</span></label>
+              <label class="checkbox-option"><input type="checkbox" formControlName="ctrol_sede_santacecilia"><span>Santa Cecilia</span></label>
+              <label class="checkbox-option"><input type="checkbox" formControlName="ctrol_sede_lurin"><span>Sede Planta Lurin</span></label>
+              <label class="checkbox-option"><input type="checkbox" formControlName="ctrol_sede_ate"><span>Sede Central Ate</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 4: Configuración de Procesos -->
+      <div *ngIf="currentStep === 4 && showProcesosStep" class="step-content-view">
+        <h2 class="step-title-header">Paso 4. Configuración de Procesos que intervienen en la Evaluación de Riesgos</h2>
+
+        <div class="campo-seccion">
+          <div class="campo-header">Proceso/s que interviene/n en la Evaluación de Riesgos (*)</div>
+          <div class="campo-body container-procesos">
+            <div class="vertical-checkbox-list">
+              <label class="checkbox-option"><input type="checkbox" formControlName="ctrol_proc_manto"><span>Mantenimiento</span></label>
+              <label class="checkbox-option"><input type="checkbox" formControlName="ctrol_proc_hila"><span>Hilandería</span></label>
+              <label class="checkbox-option"><input type="checkbox" formControlName="ctrol_proc_tinto"><span>Tintorería</span></label>
+              <label class="checkbox-option"><input type="checkbox" formControlName="ctrol_proc_alma"><span>Almacén</span></label>
+              <label class="checkbox-option"><input type="checkbox" formControlName="ctrol_proc_oficina"><span>Oficinas</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 5: Configuración de Cuestionarios -->
+      <div *ngIf="currentStep === 5" class="step-content-view">
+        <h2 class="step-title-header">Paso {{ showProcesosStep ? '5' : '4' }}. Configuración de los cuestionarios a utilizar en la evaluación</h2>
+
+        <div class="accordion-wrapper">
+          
+          <!-- Cuestionario de Impacto -->
+          <div class="accordion-block" [class.expanded]="impactoExpanded">
+            <div class="accordion-header" (click)="impactoExpanded = !impactoExpanded">
+              <mat-icon class="accordion-arrow">{{ impactoExpanded ? 'keyboard_arrow_down' : 'keyboard_arrow_right' }}</mat-icon>
+              <span class="accordion-title">Cuestionario de Impacto (*)</span>
+            </div>
+            <div class="accordion-panel" *ngIf="impactoExpanded">
+              <div class="accordion-inner-content">
+                No hay opciones configurables adicionales para el cuestionario de impacto.
+              </div>
+            </div>
+          </div>
+
+          <!-- Cuestionario de Probabilidad -->
+          <div class="accordion-block" [class.expanded]="probabilidadExpanded">
+            <div class="accordion-header" (click)="probabilidadExpanded = !probabilidadExpanded">
+              <mat-icon class="accordion-arrow">{{ probabilidadExpanded ? 'keyboard_arrow_down' : 'keyboard_arrow_right' }}</mat-icon>
+              <span class="accordion-title">Cuestionario de Probabilidad (*)</span>
+            </div>
+            <div class="accordion-panel" *ngIf="probabilidadExpanded">
+              <div class="accordion-inner-content">
+                <label class="radio-option-block">
+                  <input type="radio" value="default" formControlName="ctrol_cuestionario_probabilidad">
+                  <span class="radio-label-text">Cuestionario de Probabilidad por defecto</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Botones de navegación inferior -->
+    <div class="wizard-footer-actions">
+      <button type="button" class="btn-nav btn-red-action" *ngIf="currentStep > 1" (click)="onAtras()">Atrás</button>
+      <button type="button" class="btn-nav btn-red-action" *ngIf="currentStep < 5" (click)="onContinuar()">Continuar</button>
+      <button type="button" class="btn-nav btn-red-action" *ngIf="currentStep === 5" (click)="onSave()">Finalizar y Guardar</button>
+    </div>
+  </form>
+
+</div>

@@ -1,0 +1,84 @@
+<div class="contenedor">
+
+  <!-- Botonera Horizontal -->
+  <div class="botonera-horizontal">
+    
+    <button type="button" class="btn-negro" (click)="onNivelesRiesgo()" [class.active-btn]="opcionSeleccionada === 'Niveles Riesgo'">
+      <mat-icon>shield</mat-icon>
+      Niveles Riesgo
+    </button>
+
+    <button type="button" class="btn-negro" (click)="onSeleccionarOpcion('Documentos Solicitar')" [class.active-btn]="opcionSeleccionada === 'Documentos Solicitar'">
+      <mat-icon>file_open</mat-icon>
+      Documentos Solicitar
+    </button>
+
+    <button type="button" class="btn-negro" (click)="onSeleccionarOpcion('Documentos Facilitar')" [class.active-btn]="opcionSeleccionada === 'Documentos Facilitar'">
+      <mat-icon>input</mat-icon>
+      Documentos Facilitar
+    </button>
+
+    <button type="button" class="btn-negro" (click)="onSeleccionarOpcion('Diligencias Adicionales')" [class.active-btn]="opcionSeleccionada === 'Diligencias Adicionales'">
+      <mat-icon>assignment_turned_in</mat-icon>
+      Diligencias Adicionales
+    </button>
+
+    <button type="button" class="btn-negro" (click)="onSeleccionarOpcion('Carta Modelo')" [class.active-btn]="opcionSeleccionada === 'Carta Modelo'">
+      <mat-icon>description</mat-icon>
+      Carta Modelo
+    </button>
+
+    <button type="button" class="btn-negro" (click)="onSeleccionarOpcion('Contacto Organización')" [class.active-btn]="opcionSeleccionada === 'Contacto Organización'">
+      <mat-icon>contacts</mat-icon>
+      Contacto Organización
+    </button>
+
+    <button type="button" class="btn-negro" (click)="onSeleccionarOpcion('Cuestionarios a Puestos')" [class.active-btn]="opcionSeleccionada === 'Cuestionarios a Puestos'">
+      <mat-icon>assignment</mat-icon>
+      Cuestionarios a Puestos
+    </button>
+
+    <button type="button" class="btn-negro" (click)="onSeleccionarOpcion('Preguntas Cuestionarios')" [class.active-btn]="opcionSeleccionada === 'Preguntas Cuestionarios'">
+      <mat-icon>help</mat-icon>
+      Preguntas Cuestionarios
+    </button>
+
+    <button type="button" class="btn-negro" (click)="onSeleccionarOpcion('Alerta Nuevo Usuario')" [class.active-btn]="opcionSeleccionada === 'Alerta Nuevo Usuario'">
+      <mat-icon>notifications</mat-icon>
+      Alerta Nuevo Usuario
+    </button>
+
+    <button type="button" class="btn-negro" (click)="onSeleccionarOpcion('Campos Adicionales Alta')" [class.active-btn]="opcionSeleccionada === 'Campos Adicionales Alta'">
+      <mat-icon>fact_check</mat-icon>
+      Campos Adicionales Alta
+    </button>
+
+    <button type="button" class="btn-negro" (click)="onSeleccionarOpcion('Tipos de Documentos de Personal')" [class.active-btn]="opcionSeleccionada === 'Tipos de Documentos de Personal'">
+      <mat-icon>folder</mat-icon>
+      Tipos de Documentos de Personal
+    </button>
+
+  </div>
+
+  <hr class="divider">
+
+  <!-- Zona de Contenido Inferior -->
+  <div class="contenido-inferior">
+    <div *ngIf="!opcionSeleccionada" class="mensaje-placeholder">
+      Seleccione una opción
+    </div>
+    
+    <div *ngIf="opcionSeleccionada" class="opcion-detalle-panel">
+      <h3 class="detalle-titulo">Opción activa: {{ opcionSeleccionada }}</h3>
+      
+      <div *ngIf="opcionSeleccionada === 'Niveles Riesgo'" class="detalle-config">
+        <p><strong>Configuración actual:</strong> {{ nivelesRiesgoConfigurados }}</p>
+      </div>
+      
+      <div *ngIf="opcionSeleccionada !== 'Niveles Riesgo'" class="detalle-placeholder">
+        <p>Formulario de configuración para <strong>{{ opcionSeleccionada }}</strong>. (Haz clic en Niveles Riesgo para ver el modal interactivo).</p>
+      </div>
+    </div>
+  </div>
+
+</div>

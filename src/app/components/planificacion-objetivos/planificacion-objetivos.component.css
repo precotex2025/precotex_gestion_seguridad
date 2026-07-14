@@ -1,0 +1,861 @@
+.contenedor {
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.filtros-card {
+  margin: 20px 0;
+  padding: 15px;
+  background: white;
+  margin-top: -5px;
+}
+
+.card-title {
+  font-weight: bold;
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 10px;
+  padding-left: 5px;
+}
+
+.acciones-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.filtros-row-1 {
+  display: flex;
+  gap: 15px;
+  width: 100%;
+}
+
+.filtros-row-2 {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.filtro-campo {
+  flex: 1;
+}
+
+.filtro-fecha {
+  flex: 1;
+  max-width: 250px;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.BtnBuscar {
+  background-color: #005CBB !important;
+  color: white !important;
+  font-weight: 500;
+  height: 40px;
+  padding: 0 24px;
+  margin-top: 4px;
+}
+
+.BtnCrear {
+  background-color: #0284c7 !important;
+  color: white !important;
+  font-weight: 500;
+  height: 40px;
+  padding: 0 24px;
+  margin-top: 4px;
+}
+
+.BtnMedicDeobj {
+  background-color: #005cbb !important;
+  color: white !important;
+  font-weight: 500;
+  height: 40px;
+  padding: 0 24px;
+  margin-top: 4px;
+}
+
+/* Rejilla de filtros para la medición de objetivos (3 columnas) */
+.filtros-medicion-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px 20px;
+}
+
+.filtro-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-label {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 13px;
+  margin-bottom: 4px;
+  padding-left: 2px;
+}
+
+.buttons-medicion-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.BtnFiltrarMed {
+  background-color: #c00000 !important;
+  color: white !important;
+  font-weight: bold;
+  height: 40px;
+  flex: 1;
+}
+
+.BtnVolverMed {
+  background-color: #000000 !important;
+  color: white !important;
+  font-weight: bold;
+  height: 40px;
+  flex: 1;
+}
+
+.alignment-self-end {
+  align-self: flex-end;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .filtros-row-1, .filtros-row-2 {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .filtro-fecha {
+    max-width: 100%;
+  }
+  .BtnBuscar, .BtnCrear, .BtnMedicDeobj {
+    width: 100%;
+    margin-top: 0;
+  }
+  .filtros-medicion-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Tabla Medición de Objetivos ===== */
+.tabla-medicion-scroll-container {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background: white;
+}
+
+.tabla-medicion .mes-header {
+  text-align: center;
+  white-space: nowrap;
+  min-width: 80px;
+  padding: 4px 6px !important;
+  font-size: 12px;
+}
+
+.tabla-medicion .mes-cell {
+  text-align: center;
+  min-width: 80px;
+  padding: 4px 6px !important;
+}
+
+.mes-add-btn {
+  width: 22px !important;
+  height: 22px !important;
+  line-height: 22px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+.mes-add-btn .mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  color: #005cbb;
+}
+
+/* ===== VISTA 3: Detalle del Objetivo ===== */
+.detalle-header {
+  background-color: #000000;
+  padding: 20px 25px;
+  margin-bottom: 0;
+}
+
+.detalle-titulo {
+  color: white;
+  font-size: 22px;
+  font-weight: bold;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.detalle-volver-container {
+  margin-bottom: 20px;
+}
+
+.BtnVolverDetalle {
+  background-color: #000000 !important;
+  color: white !important;
+  font-weight: bold;
+  height: 36px;
+  font-size: 12px;
+  padding: 0 16px;
+  border-radius: 0;
+}
+
+.BtnVolverDetalle .mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+}
+
+.detalle-seccion {
+  margin-bottom: 25px;
+  background: white;
+  border: 1px solid #e0e0e0;
+}
+
+.detalle-seccion-header {
+  background-color: #d9d9d9;
+  padding: 10px 15px;
+  font-weight: bold;
+  color: #000000;
+  font-size: 14px;
+  border-bottom: 1px solid #ccc;
+}
+
+.detalle-seccion-body {
+  padding: 15px 20px;
+}
+
+.detalle-campo {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  gap: 6px;
+}
+
+.detalle-campo-barra {
+  width: 4px;
+  min-height: 16px;
+  background-color: #000000;
+  border-radius: 1px;
+  flex-shrink: 0;
+  align-self: stretch;
+}
+
+.detalle-label {
+  font-weight: bold;
+  color: #000000;
+  font-size: 13px;
+}
+
+.detalle-valor {
+  color: #333;
+  font-size: 13px;
+}
+
+.detalle-valor-bloque {
+  color: #333;
+  font-size: 13px;
+  padding-left: 12px;
+  margin-bottom: 10px;
+}
+
+.detalle-lista-item {
+  color: #333;
+  font-size: 13px;
+  padding: 2px 0;
+}
+
+.detalle-recursos-lista {
+  margin: 0;
+  padding-left: 20px;
+  color: #333;
+  font-size: 13px;
+}
+
+.detalle-recursos-lista li {
+  margin-bottom: 4px;
+}
+
+/* Tabla de Tareas Planificadas */
+.detalle-tareas-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+}
+
+.detalle-tareas-tabla thead tr {
+  background-color: #000000;  
+}
+
+.detalle-tareas-tabla thead th {
+  color: white;
+  font-weight: bold;
+  font-size: 13px;
+  padding: 10px 14px;
+  text-align: left;
+  border-right: 1px solid rgba(255,255,255,0.2);
+}
+
+.detalle-tareas-tabla thead th:last-child {
+  border-right: none;
+}
+
+.detalle-tareas-tabla tbody td {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #333;
+  border-bottom: 1px solid #e0e0e0;
+  border-right: 1px solid #e0e0e0;
+  vertical-align: top;
+}
+
+.detalle-tareas-tabla tbody td:last-child {
+  border-right: none;
+}
+
+.detalle-tareas-tabla tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.tarea-icono {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  vertical-align: middle;
+  margin-right: 4px;
+  color: #555;
+}
+
+/* ===== VISTA 4: Mediciones del Objetivo ===== */
+.med-botones-top {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.BtnVolverMediciones {
+  background-color: #000000 !important;
+  color: white !important;
+  font-weight: bold;
+  font-size: 12px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 3px;
+}
+
+.BtnExportarExcel {
+  background-color: #388e3c !important;
+  color: white !important;
+  font-weight: bold;
+  font-size: 12px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 3px;
+}
+
+.med-header {
+  background-color: #000000;
+  padding: 12px 18px;
+  margin-bottom: 15px;
+}
+
+.med-header-text {
+  color: white;
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.med-info-panel {
+  background: white;
+  border: 1px solid #e0e0e0;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+}
+
+.med-info-campo {
+  font-size: 12px;
+  color: #333;
+  line-height: 1.8;
+}
+
+.med-info-campo strong {
+  color: #000;
+}
+
+/* Gráficos row */
+.med-graficos-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.med-graficos-izq {
+  flex: 1;
+  min-width: 0;
+}
+
+.med-graficos-der {
+  flex: 1;
+  min-width: 0;
+}
+
+.med-seccion-header-rojo {
+  background-color: #000000;
+  color: white;
+  font-weight: bold;
+  font-size: 13px;
+  padding: 8px 15px;
+}
+
+.med-graficos-pies {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-top: none;
+}
+
+.med-pie-container {
+  flex: 1;
+  text-align: center;
+}
+
+.med-pie-titulo {
+  font-size: 12px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.med-pie-chart {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  margin: 0 auto 12px;
+}
+
+.med-pie-leyenda {
+  text-align: left;
+  font-size: 11px;
+  color: #333;
+}
+
+.med-leyenda-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-size: 11px;
+}
+
+.med-leyenda-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* Chart de tendencia */
+.med-tendencia-chart-area {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-top: none;
+  padding: 15px;
+}
+
+.med-chart-titulo {
+  font-size: 12px;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.med-chart-leyenda-top {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 12px;
+}
+
+.med-chart-placeholder {
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 15px 10px 5px;
+  min-height: 130px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.med-chart-bars {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  width: 100%;
+  justify-content: center;
+}
+
+.med-chart-bar-group {
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+  flex-direction: row;
+  position: relative;
+  padding-bottom: 18px;
+}
+
+.med-chart-bar {
+  width: 12px;
+  border-radius: 2px 2px 0 0;
+  min-height: 4px;
+}
+
+.med-bar-mes {
+  background: #2196f3;
+}
+
+.med-bar-acum {
+  background: #9c27b0;
+}
+
+.med-bar-meta {
+  background: #4caf50;
+}
+
+.med-chart-bar-label {
+  font-size: 9px;
+  color: #666;
+  text-align: center;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* Sección genérica mediciones */
+.med-seccion {
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+  background: white;
+}
+
+.med-tabla-scroll {
+  overflow-x: auto;
+}
+
+/* Tabla de tendencia */
+.med-tabla-tendencia {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.med-tabla-tendencia thead tr {
+  background-color: #000000;
+}
+
+.med-tabla-tendencia thead th {
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 8px 14px;
+  text-align: left;
+  border-right: 1px solid rgba(255,255,255,0.2);
+  white-space: nowrap;
+}
+
+.med-tabla-tendencia thead th:last-child {
+  border-right: none;
+}
+
+.med-tabla-tendencia tbody td {
+  padding: 8px 14px;
+  font-size: 12px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  border-right: 1px solid #eee;
+  white-space: nowrap;
+}
+
+.med-fila-label {
+  font-weight: bold;
+  color: #1565c0;
+  font-size: 12px;
+}
+
+/* Tabla datos de mediciones */
+.med-tabla-mediciones {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.med-tabla-mediciones thead tr {
+  background-color: #333;
+}
+
+.med-tabla-mediciones thead th {
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 8px 14px;
+  text-align: left;
+  border-right: 1px solid rgba(255,255,255,0.15);
+}
+
+.med-tabla-mediciones thead th:last-child {
+  border-right: none;
+}
+
+.med-tabla-mediciones tbody td {
+  padding: 8px 14px;
+  font-size: 12px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  border-right: 1px solid #eee;
+}
+
+.med-mes-link {
+  color: #000000;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.med-mes-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .med-graficos-row {
+    flex-direction: column;
+  }
+  .med-graficos-pies {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+/* ===== VISTA 5: Gestión de Tareas ===== */
+.BtnVolverGestionTareas {
+  background-color: #000000 !important;
+  color: white !important;
+  font-weight: bold;
+  font-size: 12px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 3px;
+}
+
+.gestion-tareas-header h2 {
+  color: #000000;
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 15px;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.filtros-tareas-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px 20px;
+}
+
+.BtnFiltrarTareas {
+  background-color: #000000 !important;
+  color: white !important;
+  font-weight: bold;
+  height: 40px;
+  width: 100%;
+}
+
+.gestion-tareas-seccion-titulo {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  margin-top: 25px;
+  margin-bottom: 12px;
+}
+
+.gestion-tareas-tabla-container {
+  overflow-x: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background: white;
+  margin-bottom: 25px;
+}
+
+.gestion-tareas-tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gestion-tareas-tabla thead tr {
+  background-color: #000000;
+}
+
+.gestion-tareas-tabla thead th {
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 10px 14px;
+  text-align: left;
+  border-right: 1px solid rgba(255,255,255,0.2);
+}
+
+.gestion-tareas-tabla thead th:last-child {
+  border-right: none;
+}
+
+.gestion-tareas-tabla tbody td {
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  border-right: 1px solid #eee;
+  line-height: 1.5;
+}
+
+.gestion-tareas-tabla tbody td:last-child {
+  border-right: none;
+}
+
+.gestion-tareas-tabla .col-objetivo {
+  font-weight: 500;
+  max-width: 450px;
+}
+
+@media (max-width: 900px) {
+  .filtros-tareas-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .filtros-tareas-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Monthly Tasks Table & PDF Report Styles ===== */
+.table-tareas-mensuales thead th.col-mes-hdr {
+  text-align: center;
+  font-size: 11px;
+  width: 35px;
+  min-width: 35px;
+  padding: 8px 4px;
+}
+
+.pdf-btn {
+  background-color: #000000 !important;
+  color: white !important;
+  border-radius: 4px !important;
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  padding: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pdf-btn .mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.celda-mes-naranja {
+  background-color: #ffa726 !important; /* Vivid orange/amber background */
+  text-align: center;
+  vertical-align: middle;
+  padding: 0 !important;
+  width: 35px;
+  height: 35px;
+  border: 1px solid white !important; /* White border to separate the blocks */
+}
+
+.celda-mes-naranja button {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Botones de acción en tabla principal */
+.action-buttons-cell {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 4px 0;
+}
+
+.btn-action-edit {
+  background-color: #1e293b !important;
+  color: white !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.btn-action-del {
+  background-color: #c00000 !important;
+  color: white !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.btn-action-edit mat-icon,
+.btn-action-del mat-icon {
+  font-size: 15px !important;
+  width: 15px !important;
+  height: 15px !important;
+  margin: 0 !important;
+}
+
+.BtnExportarPlanificacion,
+.BtnNuevaAccionTarea {
+  background-color: #c00000 !important;
+  color: white !important;
+  font-weight: bold;
+  font-size: 12px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 3px;
+}

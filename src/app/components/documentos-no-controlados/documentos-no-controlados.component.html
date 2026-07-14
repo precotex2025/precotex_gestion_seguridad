@@ -43,23 +43,27 @@
                         <mat-label>Nombre Documento</mat-label>
                         <input matInput formControlName="ctrol_nombre_documento">
                     </mat-form-field> 
-                    
-                    <button mat-icon-button color="primary" (click)="onBuscar()" style="transform: scale(1.5); margin-left: 10px;" title="Buscar">
-                        <mat-icon>search</mat-icon>
-                    </button>
                 </div>
 
                 <!-- Fila de botones (acomodada según la imagen) -->
-                <div style="display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
-                    <button type="button" class="BtnCrear" mat-flat-button (click)="onNuevaCarpeta()">
-                        <mat-icon>create_new_folder</mat-icon> Nueva carpeta
-                    </button>
-                    <button mat-raised-button class="BtnExportarPdf" style="border-radius: 20px;">
-                        <mat-icon>picture_as_pdf</mat-icon> Exportar Informe en PDF
-                    </button>
-                    <button mat-raised-button class="BtnExportarExcel" style="border-radius: 20px;">
-                        <mat-icon>table_chart</mat-icon> Exportar Informe en EXCEL
-                    </button>
+                <div class="botones-row">
+                    <div class="botones-izquierda">
+                        <button type="button" class="BtnFiltrar" mat-flat-button (click)="onBuscar()">
+                            <mat-icon>search</mat-icon> Buscar
+                        </button>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" class="BtnCrear" mat-flat-button (click)="onNuevaCarpeta()">
+                            <mat-icon>create_new_folder</mat-icon> Nueva carpeta
+                        </button>
+                        <button mat-raised-button class="BtnExportarPdf" style="border-radius: 20px;">
+                            <mat-icon>picture_as_pdf</mat-icon> Exportar Informe en PDF
+                        </button>
+                        <button mat-raised-button class="BtnExportarExcel" style="border-radius: 20px;">
+                            <mat-icon>table_chart</mat-icon> Exportar Informe en EXCEL
+                        </button>
+                    </div>
                 </div>
 
             </div>

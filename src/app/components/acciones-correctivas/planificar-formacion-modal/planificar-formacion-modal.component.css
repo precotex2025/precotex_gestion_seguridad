@@ -1,0 +1,577 @@
+/* ===================================================================
+   Planificar Nueva Formación (Regedit) — Estilos Rediseñados Premium
+   =================================================================== */
+
+.dialog-container {
+  display: flex;
+  flex-direction: column;
+  max-height: 95vh;
+  width: 100%;
+  min-width: 1100px;
+  box-sizing: border-box;
+  font-family: var(--sn-font-family);
+  background-color: var(--sn-surface-card);
+  border-radius: var(--sn-radius-lg);
+  overflow: hidden;
+}
+
+@media (max-width: 1200px) {
+  .dialog-container {
+    min-width: 900px;
+  }
+}
+@media (max-width: 992px) {
+  .dialog-container {
+    min-width: 100%;
+  }
+}
+
+/* Header */
+.banner-header {
+  background-color: var(--sn-slate-900) !important;
+  color: white !important;
+  height: 54px !important;
+  display: flex;
+  align-items: center;
+  padding: 0 24px !important;
+  font-size: 16px !important;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.titulo {
+  font-size: 16px;
+}
+
+.flex-spacer {
+  flex: 1 1 auto;
+}
+
+.btn-close-header {
+  background: none;
+  border: none;
+  color: var(--sn-slate-400);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: var(--sn-radius-sm);
+  transition: all 0.2s var(--sn-ease);
+}
+
+.btn-close-header:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.btn-close-header mat-icon {
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* Body / Scrollable Content */
+.form-content {
+  padding: 24px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 76vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  background-color: var(--sn-surface-card) !important;
+}
+
+/* Custom Scrollbar for Form Content */
+.form-content::-webkit-scrollbar {
+  width: 6px;
+}
+.form-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.form-content::-webkit-scrollbar-thumb {
+  background: var(--sn-slate-200);
+  border-radius: 3px;
+}
+.form-content::-webkit-scrollbar-thumb:hover {
+  background: var(--sn-slate-300);
+}
+
+/* Headers de sección (Limpia las barras grises y lineas rojas) */
+.form-section-header {
+  background-color: transparent !important;
+  border: none !important;
+  color: var(--sn-slate-700) !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+  padding: 0 !important;
+  margin-top: 14px !important;
+  margin-bottom: 6px !important;
+}
+
+/* Radios y Checkboxes */
+.radio-row {
+  display: flex;
+  gap: 20px;
+  padding: 8px 0;
+  flex-wrap: wrap;
+}
+
+.radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--sn-slate-700);
+}
+
+.radio-label input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #b91c1c; /* Rojo Precotex */
+}
+
+/* Grillas */
+.grid-2-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-section-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.full-width-input,
+.single-width-input {
+  height: 42px;
+  border: 1px solid var(--sn-slate-200);
+  border-radius: var(--sn-radius-md);
+  padding: 0 14px;
+  font-size: 14px;
+  color: var(--sn-slate-800);
+  background-color: var(--sn-surface-card);
+  box-sizing: border-box;
+  outline: none;
+  margin-top: 4px;
+  transition: border-color 0.2s var(--sn-ease), box-shadow 0.2s var(--sn-ease);
+}
+
+.full-width-input:focus,
+.single-width-input:focus {
+  border-color: #b91c1c !important;
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12) !important;
+}
+
+.single-width-input {
+  width: 350px;
+}
+
+/* Editor de Texto enriquecido (Mock) */
+.rich-textarea-container {
+  border: 1px solid var(--sn-slate-200);
+  border-radius: var(--sn-radius-md);
+  overflow: hidden;
+  background-color: white;
+  margin-top: 4px;
+  box-shadow: var(--sn-shadow-sm);
+  transition: border-color 0.2s var(--sn-ease);
+}
+
+.rich-textarea-container:focus-within {
+  border-color: #b91c1c;
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
+}
+
+.rich-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px;
+  background-color: var(--sn-slate-50);
+  border-bottom: 1px solid var(--sn-slate-200);
+  align-items: center;
+}
+
+.rich-toolbar button {
+  background: none;
+  border: 1px solid transparent;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: var(--sn-radius-xs);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sn-slate-600);
+  transition: all 0.2s var(--sn-ease);
+}
+
+.rich-toolbar button:hover {
+  background-color: var(--sn-slate-200);
+  color: var(--sn-slate-900);
+}
+
+.rich-toolbar button mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 16px;
+  background-color: var(--sn-slate-200);
+  margin: 0 6px;
+}
+
+.rich-textarea-container textarea {
+  width: 100%;
+  border: none;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: var(--sn-slate-800);
+  box-sizing: border-box;
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+  background-color: white;
+}
+
+/* Custom Datepicker */
+.calendar-section {
+  padding: 8px 0;
+}
+
+.calendar-title-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--sn-slate-700);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.custom-datepicker-container {
+  position: relative;
+  width: 350px;
+}
+
+.custom-datepicker-input {
+  width: 100%;
+  height: 42px;
+  border: 1px solid var(--sn-slate-200);
+  border-radius: var(--sn-radius-md);
+  padding: 0 14px;
+  font-size: 14px;
+  color: var(--sn-slate-800);
+  box-sizing: border-box;
+  outline: none;
+  cursor: pointer;
+  background-color: white;
+  transition: border-color 0.2s var(--sn-ease), box-shadow 0.2s var(--sn-ease);
+}
+
+.custom-datepicker-input:focus {
+  border-color: #b91c1c;
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
+}
+
+.custom-datepicker-popup {
+  position: absolute;
+  top: 46px;
+  left: 0;
+  width: 280px;
+  background-color: white;
+  border: 1px solid var(--sn-slate-200);
+  border-radius: var(--sn-radius-md);
+  box-shadow: var(--sn-shadow-lg);
+  z-index: 1000;
+  overflow: hidden;
+  font-family: inherit;
+}
+
+.datepicker-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: var(--sn-slate-50);
+  border-bottom: 1px solid var(--sn-slate-200);
+}
+
+.datepicker-popup-header .month-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sn-slate-900);
+}
+
+.datepicker-popup-header .btn-nav {
+  background-color: var(--sn-slate-100);
+  color: var(--sn-slate-700);
+  border: 1px solid var(--sn-slate-200);
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s var(--sn-ease);
+}
+
+.datepicker-popup-header .btn-nav:hover {
+  background-color: var(--sn-slate-200);
+  color: var(--sn-slate-900);
+}
+
+.datepicker-popup-header .btn-nav mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.datepicker-popup-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background-color: var(--sn-slate-100);
+  color: var(--sn-slate-700);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--sn-slate-200);
+}
+
+.datepicker-popup-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background-color: white;
+}
+
+.day-cell {
+  text-align: center;
+  padding: 8px 0;
+  font-size: 12px;
+  cursor: pointer;
+  background-color: white;
+  user-select: none;
+  border-radius: var(--sn-radius-xs);
+  transition: background-color 0.2s;
+  color: var(--sn-slate-800);
+}
+
+.day-cell:hover:not(.empty) {
+  background-color: var(--sn-slate-50);
+}
+
+.day-cell.empty {
+  cursor: default;
+  background-color: white;
+  opacity: 0;
+}
+
+.day-cell.selected {
+  background-color: var(--sn-primary-600) !important;
+  color: white !important;
+  font-weight: 600;
+}
+
+/* Transfer List (Sedes) */
+.transfer-list-container {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.transfer-list-box {
+  flex: 1;
+  border: 1px solid var(--sn-slate-200);
+  border-radius: var(--sn-radius-md);
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  height: 180px;
+  overflow: hidden;
+  box-shadow: var(--sn-shadow-sm);
+  transition: border-color 0.25s var(--sn-ease);
+}
+
+.transfer-list-box:hover {
+  border-color: var(--sn-slate-300);
+}
+
+.transfer-box-title {
+  background-color: var(--sn-slate-50);
+  padding: 8px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--sn-slate-800);
+  border-bottom: 1px solid var(--sn-slate-200);
+}
+
+.transfer-box-content {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.transfer-item {
+  padding: 8px 12px;
+  font-size: 13.5px;
+  cursor: pointer;
+  color: var(--sn-slate-700);
+  border-bottom: 1px solid var(--sn-slate-50);
+  transition: all 0.2s var(--sn-ease);
+}
+
+.transfer-item:hover {
+  background-color: var(--sn-slate-50);
+}
+
+.transfer-item.selected {
+  background-color: var(--sn-primary-50) !important;
+  color: var(--sn-primary-700) !important;
+  font-weight: 600;
+}
+
+.transfer-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn-transfer {
+  background-color: var(--sn-slate-100);
+  border: 1px solid var(--sn-slate-200);
+  border-radius: 50% !important;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--sn-shadow-xs);
+  transition: all 0.2s var(--sn-ease);
+}
+
+.btn-transfer:hover:not([disabled]) {
+  background-color: var(--sn-slate-200);
+  color: var(--sn-slate-900);
+  box-shadow: var(--sn-shadow-sm);
+}
+
+.btn-transfer[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+
+.btn-transfer:active:not([disabled]) {
+  transform: scale(0.95);
+}
+
+.btn-transfer mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  color: var(--sn-slate-700);
+}
+
+/* Adjuntar archivos */
+.file-upload-row {
+  padding: 8px 0;
+}
+
+.file-input {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px dashed var(--sn-slate-300);
+  background: white;
+  border-radius: var(--sn-radius-sm);
+  cursor: pointer;
+  box-sizing: border-box;
+  font-size: 13.5px;
+  color: var(--sn-slate-600);
+  transition: all 0.2s var(--sn-ease);
+}
+
+.file-input:hover {
+  border-color: var(--sn-primary-500);
+  background-color: var(--sn-primary-50);
+  color: var(--sn-primary-700);
+}
+
+/* Acciones del Dialog */
+.dialog-actions-row {
+  background-color: var(--sn-surface-card) !important;
+  padding: 24px !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 12px !important;
+  border-top: 1px solid var(--sn-slate-200) !important;
+  margin: 0 !important;
+}
+
+.BtnGuardarPlan, .BtnCancelarPlan {
+  border-radius: var(--sn-radius-md) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  padding: 10px 24px !important;
+  height: 42px !important;
+  cursor: pointer;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  box-sizing: border-box;
+  transition: all 0.2s var(--sn-ease) !important;
+}
+
+.BtnGuardarPlan:active, .BtnCancelarPlan:active {
+  transform: scale(0.97) !important;
+}
+
+/* Guardar Plan - Rojo de Marca */
+.BtnGuardarPlan {
+  background-color: #b91c1c !important;
+  color: white !important;
+  box-shadow: 0 2px 4px rgba(185, 28, 28, 0.15) !important;
+  border: none !important;
+}
+
+.BtnGuardarPlan:hover {
+  background-color: #991b1b !important;
+  box-shadow: 0 4px 12px rgba(185, 28, 28, 0.25) !important;
+}
+
+/* Cancelar - Outlined Secundario */
+.BtnCancelarPlan {
+  background-color: var(--sn-surface-card) !important;
+  color: var(--sn-slate-700) !important;
+  border: 1px solid var(--sn-slate-200) !important;
+  box-shadow: var(--sn-shadow-xs) !important;
+}
+
+.BtnCancelarPlan:hover {
+  background-color: var(--sn-slate-50) !important;
+  border-color: var(--sn-slate-300) !important;
+  color: var(--sn-slate-900) !important;
+  box-shadow: var(--sn-shadow-sm) !important;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .transfer-list-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .transfer-buttons {
+    flex-direction: row;
+    justify-content: center;
+  }
+}

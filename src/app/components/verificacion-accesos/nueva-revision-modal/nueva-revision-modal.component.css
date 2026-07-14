@@ -1,0 +1,164 @@
+.modal-container {
+  padding: 24px;
+  background-color: #f5f5f5;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Cabecera */
+.header-section {
+  margin-bottom: 12px;
+}
+
+.main-title {
+  color: #c00000;
+  font-size: 26px;
+  font-weight: bold;
+  margin: 0;
+}
+
+/* Fila de Acciones */
+.action-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.btn-cerrar {
+  background-color: #c00000;
+  color: white;
+  border: none;
+  border-radius: 2px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s;
+}
+
+.btn-cerrar:hover {
+  background-color: #a00000;
+}
+
+.btn-cerrar mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.btn-revision-realizada {
+  background-color: #c00000;
+  color: white;
+  border: none;
+  border-radius: 2px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-revision-realizada:hover {
+  background-color: #a00000;
+}
+
+/* Tabla de Revisión */
+.table-scroll-container {
+  max-height: 480px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #e5e5e5;
+  padding: 4px;
+}
+
+.revision-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 6px 6px;
+}
+
+.revision-table th {
+  background-color: #c00000;
+  color: white;
+  font-weight: bold;
+  font-size: 13px;
+  padding: 10px 12px;
+  text-align: left;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.revision-table td {
+  background-color: #dbdbdb;
+  color: #333;
+  font-size: 12.5px;
+  padding: 10px 12px;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+
+.revision-table tr:hover td {
+  background-color: #cfcfcf;
+}
+
+.revision-table tr.marked-deactivated td {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Clases específicas de celda */
+.user-text {
+  font-weight: 500;
+  color: #444;
+}
+
+.puesto-sin-asignar {
+  color: #777;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.status-activo {
+  color: #166534;
+  font-weight: bold;
+}
+
+.status-desactivado {
+  color: #991b1b;
+  font-weight: 500;
+}
+
+.empty-field {
+  display: inline-block;
+  min-height: 18px;
+}
+
+.center-align {
+  text-align: center;
+}
+
+/* Checkbox */
+.checkbox-container {
+  display: inline-block;
+  cursor: pointer;
+}
+
+::ng-deep .checkbox-container .mdc-label {
+  font-size: 12px !important;
+  color: #333 !important;
+  font-weight: 500 !important;
+}
+
+/* Fila de acciones inferior */
+.bottom-action-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
+}

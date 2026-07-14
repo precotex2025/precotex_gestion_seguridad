@@ -1,0 +1,49 @@
+<div class="modal-wrapper">
+  
+  <!-- Header -->
+  <div class="modal-header">
+    <h2>Número de Niveles de Riesgo</h2>
+  </div>
+
+  <!-- Content -->
+  <div class="modal-content">
+    <p class="subtitle">Determina el número de niveles de riesgo:</p>
+
+    <!-- Información de 3 Niveles -->
+    <div class="nivel-descripcion">
+      <strong>3 Niveles:</strong> Alto / Medio / Bajo
+    </div>
+
+    <!-- Información de 5 Niveles -->
+    <div class="nivel-descripcion">
+      <strong>5 Niveles:</strong> Extremo / Alto / Moderado / Bajo / Muy Bajo
+    </div>
+
+    <!-- Selección -->
+    <div class="seleccion-row">
+      
+      <label class="custom-radio-container" (click)="onSelectNivel('3')">
+        <span class="custom-checkbox" [class.checked]="seleccionNivel === '3'">
+          <mat-icon *ngIf="seleccionNivel === '3'">check</mat-icon>
+        </span>
+        <span class="radio-label">3 Niveles</span>
+      </label>
+
+      <label class="custom-radio-container" (click)="onSelectNivel('5')">
+        <span class="custom-checkbox" [class.checked]="seleccionNivel === '5'">
+          <mat-icon *ngIf="seleccionNivel === '5'">check</mat-icon>
+        </span>
+        <span class="radio-label">5 Niveles</span>
+      </label>
+
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="action-buttons">
+      <button type="button" class="btn-guardar" (click)="onGuardar()">Guardar Niveles</button>
+      <button type="button" class="btn-cancelar" (click)="onCancelar()">Cancelar</button>
+    </div>
+
+  </div>
+
+</div>

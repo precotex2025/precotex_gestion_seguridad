@@ -74,8 +74,9 @@ export class NormasComponent implements OnInit {
     });
   }  
 
-  aplicarFiltro(object: any){
-    
+  aplicarFiltro(event: Event): void {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
   onEditar(item: any){

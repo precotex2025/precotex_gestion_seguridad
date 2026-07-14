@@ -1,0 +1,407 @@
+/* ===================================================================
+   Acciones Correctivas y Formativas — Estilos Rediseñados Premium
+   =================================================================== */
+
+.contenedor {
+  padding: 24px;
+  animation: fadeIn 0.4s var(--sn-ease) both;
+}
+
+/* Botones Superiores */
+.top-buttons-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+/* Botón Primario: Planificar Nueva Formación */
+.btn-planificar {
+  background-color: var(--sn-primary-600) !important;
+  color: white !important;
+  border: none !important;
+  padding: 10px 20px !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  border-radius: var(--sn-radius-md) !important;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.15) !important;
+  transition: all 0.2s var(--sn-ease) !important;
+}
+
+.btn-planificar:hover {
+  background-color: var(--sn-primary-700) !important;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25) !important;
+}
+
+/* Botones Secundarios: Exportar PDF y Excel */
+.btn-exportar-pdf,
+.btn-exportar-excel {
+  background-color: var(--sn-surface-card) !important;
+  color: var(--sn-slate-700) !important;
+  border: 1px solid var(--sn-slate-200) !important;
+  padding: 10px 20px !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  border-radius: var(--sn-radius-md) !important;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--sn-shadow-xs) !important;
+  transition: all 0.2s var(--sn-ease) !important;
+}
+
+.btn-exportar-pdf:hover,
+.btn-exportar-excel:hover {
+  background-color: var(--sn-slate-50) !important;
+  border-color: var(--sn-slate-300) !important;
+  color: var(--sn-slate-900) !important;
+  box-shadow: var(--sn-shadow-sm) !important;
+}
+
+/* Hover de Iconos para indicar el tipo de exportación */
+.btn-exportar-pdf:hover mat-icon {
+  color: var(--sn-danger-600) !important;
+}
+
+.btn-exportar-excel:hover mat-icon {
+  color: var(--sn-success-600) !important;
+}
+
+.btn-planificar:active,
+.btn-exportar-pdf:active,
+.btn-exportar-excel:active {
+  transform: scale(0.97) !important;
+}
+
+.btn-planificar mat-icon,
+.btn-exportar-pdf mat-icon,
+.btn-exportar-excel mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Buscador Fieldset (Rediseñado como Tarjeta Moderna) */
+.search-fieldset {
+  border: 1px solid var(--sn-slate-200) !important;
+  border-radius: var(--sn-radius-lg) !important;
+  padding: 24px !important;
+  margin-bottom: 24px;
+  background-color: var(--sn-surface-card) !important;
+  box-shadow: var(--sn-shadow-md) !important;
+  transition: all 0.3s var(--sn-ease);
+}
+
+.search-fieldset:hover {
+  box-shadow: var(--sn-shadow-lg) !important;
+  border-color: var(--sn-slate-300) !important;
+}
+
+.search-legend {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--sn-slate-900) !important;
+  padding: 0 10px !important;
+}
+
+.search-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.search-row-3 {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 16px;
+}
+
+.search-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.search-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.search-field label {
+  font-size: 12px;
+  color: var(--sn-slate-600);
+  font-weight: 500;
+}
+
+.search-field input,
+.search-field select {
+  height: 42px;
+  border: 1px solid var(--sn-slate-200);
+  border-radius: var(--sn-radius-md);
+  padding: 0 14px;
+  font-size: 14px;
+  color: var(--sn-slate-800);
+  background-color: var(--sn-slate-50);
+  box-sizing: border-box;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s var(--sn-ease), background-color 0.2s var(--sn-ease);
+}
+
+.search-field input:focus,
+.search-field select:focus {
+  border-color: #b91c1c; /* Rojo Precotex */
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
+}
+
+.search-button-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 4px;
+}
+
+/* Botón Filtrar */
+.btn-filtrar {
+  background-color: #b91c1c !important; /* Rojo Precotex */
+  color: white !important;
+  border: none !important;
+  height: 42px !important;
+  padding: 0 28px !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  border-radius: var(--sn-radius-md) !important;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(185, 28, 28, 0.15) !important;
+  transition: all 0.2s var(--sn-ease) !important;
+}
+
+.btn-filtrar:hover {
+  background-color: #991b1b !important;
+  box-shadow: 0 4px 12px rgba(185, 28, 28, 0.25) !important;
+}
+
+.btn-filtrar:active {
+  transform: scale(0.97) !important;
+}
+
+/* Tabla Wrapper */
+.table-container {
+  background: var(--sn-surface-card);
+  border-radius: var(--sn-radius-lg) !important;
+  overflow: hidden !important;
+  box-shadow: var(--sn-shadow-md);
+  border: 1px solid var(--sn-slate-200);
+  transition: box-shadow 0.3s var(--sn-ease);
+}
+
+.table-container:hover {
+  box-shadow: var(--sn-shadow-lg);
+}
+
+.tabla-wrapper {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Cabeceras de Tabla (Remueve el rojo ruidoso de fondo) */
+::ng-deep .tabla-wrapper th,
+::ng-deep .tabla-wrapper .mat-mdc-header-cell,
+::ng-deep .tabla-wrapper .mat-header-cell,
+::ng-deep .tabla-wrapper .mat-mdc-header-row,
+::ng-deep .tabla-wrapper .mat-header-row {
+  background-color: var(--sn-slate-50) !important;
+  color: var(--sn-slate-600) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: 14px 12px !important;
+  border-bottom: 1.5px solid var(--sn-slate-200) !important;
+  text-align: left;
+}
+
+::ng-deep .tabla-wrapper th.mat-sort-header,
+::ng-deep .tabla-wrapper th .mat-sort-header-container,
+::ng-deep .tabla-wrapper th .mat-sort-header-button,
+::ng-deep .tabla-wrapper th .mat-mdc-sort-header-container,
+::ng-deep .tabla-wrapper th .mat-mdc-sort-header-button {
+  color: var(--sn-slate-600) !important;
+}
+
+::ng-deep .tabla-wrapper th .mat-sort-header-arrow,
+::ng-deep .tabla-wrapper th .mat-mdc-sort-header-arrow {
+  color: var(--sn-slate-400) !important;
+}
+
+/* Celdas de Fila */
+::ng-deep .tabla-wrapper td.mat-cell {
+  font-size: 14px !important;
+  color: var(--sn-slate-800) !important;
+  padding: 12px 12px !important;
+  border-bottom: 1px solid var(--sn-slate-100) !important;
+}
+
+.table-row {
+  transition: background-color 0.2s var(--sn-ease) !important;
+}
+
+.table-row:hover {
+  background-color: var(--sn-slate-50) !important;
+}
+
+.denominacion-cell {
+  font-weight: 500;
+  max-width: 300px;
+  white-space: normal;
+  line-height: 1.4;
+  color: var(--sn-slate-900) !important;
+}
+
+/* Formateo de Celdas */
+.col-tabular {
+  font-variant-numeric: tabular-nums !important;
+  font-family: var(--sn-font-family) !important;
+  font-weight: 500 !important;
+}
+
+/* Botones de acción en celdas (neutrales con hover reactivo) */
+.action-buttons-cell {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-edit,
+.btn-delete {
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: var(--sn-radius-sm);
+  transition: all 0.2s var(--sn-ease);
+}
+
+.btn-edit {
+  color: var(--sn-slate-400);
+}
+
+.btn-edit:hover {
+  background-color: var(--sn-slate-100);
+  color: var(--sn-slate-800);
+}
+
+.btn-delete {
+  color: var(--sn-slate-400);
+}
+
+.btn-delete:hover {
+  background-color: var(--sn-danger-50);
+  color: var(--sn-danger-600);
+}
+
+.btn-edit mat-icon,
+.btn-delete mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+/* Badges de Estado (Pills Pastel) */
+.estado-badge {
+  display: inline-block;
+  padding: 4px 10px !important;
+  border-radius: var(--sn-radius-sm) !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  box-shadow: var(--sn-shadow-xs) !important;
+  letter-spacing: 0.015em !important;
+}
+
+.estado-abierta {
+  background-color: var(--sn-warning-50) !important;
+  color: var(--sn-warning-600) !important;
+  border: 1px solid rgba(217, 119, 6, 0.15) !important;
+}
+
+.estado-proceso {
+  background-color: var(--sn-info-50) !important;
+  color: var(--sn-info-600) !important;
+  border: 1px solid rgba(37, 99, 235, 0.15) !important;
+}
+
+.estado-cerrada {
+  background-color: var(--sn-success-50) !important;
+  color: var(--sn-success-700) !important;
+  border: 1px solid rgba(4, 120, 87, 0.15) !important;
+}
+
+.estado-anulada {
+  background-color: var(--sn-danger-50) !important;
+  color: var(--sn-danger-600) !important;
+  border: 1px solid rgba(225, 29, 72, 0.15) !important;
+}
+
+/* Badges de Valoración de Eficacia (Pills Pastel) */
+.eficacia-badge {
+  display: inline-block;
+  padding: 4px 10px !important;
+  border-radius: var(--sn-radius-sm) !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  box-shadow: var(--sn-shadow-xs) !important;
+  letter-spacing: 0.015em !important;
+}
+
+.eficacia-eficaz {
+  background-color: var(--sn-success-50) !important;
+  color: var(--sn-success-700) !important;
+  border: 1px solid rgba(4, 120, 87, 0.15) !important;
+}
+
+.eficacia-no-eficaz {
+  background-color: var(--sn-danger-50) !important;
+  color: var(--sn-danger-600) !important;
+  border: 1px solid rgba(225, 29, 72, 0.15) !important;
+}
+
+.eficacia-pendiente {
+  background-color: var(--sn-slate-100) !important;
+  color: var(--sn-slate-600) !important;
+  border: 1px solid var(--sn-slate-200) !important;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--sn-slate-400);
+  font-weight: 500;
+}
+
+.empty-state mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 8px;
+  color: var(--sn-slate-300);
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 13.5px;
+}

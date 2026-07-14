@@ -6,6 +6,19 @@ import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSortModule } from '@angular/material/sort';
 
+/* PrimeNG */
+import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeng/themes/aura';
+import { ChartModule } from 'primeng/chart';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule as PrimeTooltipModule } from 'primeng/tooltip';
+import { AvatarModule } from 'primeng/avatar';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { KnobModule } from 'primeng/knob';
+
 import { provideHttpClient } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -19,6 +32,7 @@ import { MatCardModule } from '@angular/material/card';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSelectModule } from '@angular/material/select';
 import { MatRadioModule} from '@angular/material/radio';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 
 import { NormasComponent } from './components/normas/normas.component';
@@ -42,17 +56,45 @@ import { SedesRegeditComponent } from './components/mnto-sedes/sedes-regedit/sed
 import { ProcesosRegeditComponent } from './components/mnto-procesos/procesos-regedit/procesos-regedit.component';
 import { PuestosComponent } from './components/puestos/puestos.component';
 import { PuestosRegeditComponent } from './components/puestos/puestos-regedit/puestos-regedit.component';
+import { PuestosFichaComponent } from './components/puestos/puestos-ficha/puestos-ficha.component';
+import { PuestosUsuariosComponent } from './components/puestos/puestos-usuarios/puestos-usuarios.component';
 import { DocumentosControladosComponent } from './components/documentos-controlados/documentos-controlados.component';
 import { DocumentosNoControladosComponent } from './components/documentos-no-controlados/documentos-no-controlados.component';
 import { DocumentosControladosRegeditComponent } from './components/documentos-controlados/documentos-controlados-regedit/documentos-controlados-regedit.component';
 import { UsuariosPersonasComponent } from './components/usuarios-personas/usuarios-personas.component';
+import { UsuariosPersonasRegeditComponent } from './components/usuarios-personas/usuarios-personas-regedit/usuarios-personas-regedit.component';
 import { DocumentacionPersonasComponent } from './components/documentacion-personas/documentacion-personas.component';
 import { DocumentacionPersonasRegeditComponent } from './components/documentacion-personas/documentacion-personas-regedit/documentacion-personas-regedit.component';
-import { PrincipalComponent } from './components/principal/principal.component';
+import { DocumentacionPersonasPlanesComponent } from './components/documentacion-personas/documentacion-personas-planes/documentacion-personas-planes.component';
+import { DocumentacionPersonasPlanesRegeditComponent } from './components/documentacion-personas/documentacion-personas-planes/documentacion-personas-planes-regedit/documentacion-personas-planes-regedit.component';
+import { MisDocumentosComponent } from './components/mis-documentos/mis-documentos.component';
+import { EvaluacionesPuntualesComponent } from './components/evaluaciones-puntuales/evaluaciones-puntuales.component';
+import { EvaluacionesPuntualesRegeditComponent } from './components/evaluaciones-puntuales/evaluaciones-puntuales-regedit/evaluaciones-puntuales-regedit.component';
+import { CampusVirtualComponent } from './components/campus-virtual/campus-virtual.component';
+import { AccionesCorrectivasComponent } from './components/acciones-correctivas/acciones-correctivas.component';
+import { PlanificarFormacionModalComponent } from './components/acciones-correctivas/planificar-formacion-modal/planificar-formacion-modal.component';
+import { AnalyticsComponent } from './components/analytics/analytics.component';
+import { VerificacionAccesosComponent } from './components/verificacion-accesos/verificacion-accesos.component';
+import { NuevaRevisionModalComponent } from './components/verificacion-accesos/nueva-revision-modal/nueva-revision-modal.component';
+import { LogAccesosComponent } from './components/log-accesos/log-accesos.component';
+import { MapaPermisosComponent } from './components/mapa-permisos/mapa-permisos.component';
+import { ConfiguracionPuestosComponent } from './components/configuracion-puestos/configuracion-puestos.component';
+import { NivelesRiesgoModalComponent } from './components/configuracion-puestos/niveles-riesgo-modal/niveles-riesgo-modal.component';
+
+
 
 
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { DocumentosNoControladosRegeditCarpetaComponent } from './components/documentos-no-controlados-regedit-carpeta/documentos-no-controlados-regedit-carpeta.component';
+import { RegistrosPendientesComponent } from './components/registros-pendientes/registros-pendientes.component';
+import { PlanificacionObjetivosComponent } from './components/planificacion-objetivos/planificacion-objetivos.component';
+import { PlanificacionObjetivosRegeditComponent } from './components/planificacion-objetivos/planificacion-objetivos-regedit/planificacion-objetivos-regedit.component';
+import { PlanificacionObjetivosMedicionComponent } from './components/planificacion-objetivos/planificacion-objetivos-medicion/planificacion-objetivos-medicion.component';
+import { NuevaTareaModalComponent } from './components/planificacion-objetivos/nueva-tarea-modal/nueva-tarea-modal.component';
+import { MedicionesPendientesComponent } from './components/mediciones-pendientes/mediciones-pendientes.component';
+import { EvaluacionRiesgosComponent } from './components/evaluacion-riesgos/evaluacion-riesgos.component';
+import { EvaluacionRiesgosRegeditComponent } from './components/evaluacion-riesgos/evaluacion-riesgos-regedit/evaluacion-riesgos-regedit.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
 
 @NgModule({
   declarations: [
@@ -70,10 +112,13 @@ import { DocumentosNoControladosRegeditCarpetaComponent } from './components/doc
     ProcesosRegeditComponent,
     PuestosComponent,
     PuestosRegeditComponent,
+    PuestosFichaComponent,
+    PuestosUsuariosComponent,
     DocumentosControladosComponent,
     DocumentosNoControladosComponent,
     DocumentosControladosRegeditComponent,
     UsuariosPersonasComponent,
+    UsuariosPersonasRegeditComponent,
     DocumentacionPersonasComponent,
     DocumentacionPersonasRegeditComponent,
     PrincipalComponent,
@@ -102,12 +147,31 @@ import { DocumentosNoControladosRegeditCarpetaComponent } from './components/doc
     MatDialogModule,
     MatSortModule,
     MatCheckboxModule,
+    MatTooltipModule,
     CommonModule,
-    ToastrModule.forRoot()
+    ToastrModule.forRoot(),
+    /* PrimeNG Modules */
+    ChartModule,
+    TableModule,
+    ButtonModule,
+    CardModule,
+    TagModule,
+    PrimeTooltipModule,
+    AvatarModule,
+    ProgressBarModule,
+    KnobModule
   ],
   providers: [
     provideHttpClient(),
-    provideNativeDateAdapter()
+    provideNativeDateAdapter(),
+    providePrimeNG({
+      theme: {
+        preset: Aura,
+        options: {
+          darkModeSelector: false
+        }
+      }
+    })
   ],
   bootstrap: [AppComponent]
 })

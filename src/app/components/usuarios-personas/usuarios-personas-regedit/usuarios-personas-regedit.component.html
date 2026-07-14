@@ -1,0 +1,201 @@
+<div class="dialog-container">
+  <!-- Cabecera con pestañas (Wizard Step Header) -->
+  <div class="tabs-header">
+    <div class="tab-item" [class.active-tab]="activeTab === 'datos'" [class.inactive-tab]="activeTab !== 'datos'" (click)="activeTab = 'datos'">
+      <mat-icon>storage</mat-icon>
+      <span>Datos Básicos</span>
+    </div>
+    <div class="tab-item" [class.active-tab]="activeTab === 'permisos'" [class.inactive-tab]="activeTab !== 'permisos'" (click)="activeTab = 'permisos'">
+      <mat-icon>vpn_key</mat-icon>
+      <span>Permisos de Acceso</span>
+    </div>
+  </div>
+
+  <form [formGroup]="formulario" class="form-content">
+    
+    <!-- PESTAÑA 1: DATOS BÁSICOS -->
+    <div *ngIf="activeTab === 'datos'" class="tab-pane">
+      <h2 class="title-puestos">Datos básicos del usuario/persona</h2>
+      
+      <!-- Código (Solo visible en edición) -->
+      <div class="form-row" *ngIf="data.Accion !== 'I'">
+        <div class="field-label-puestos">Código del Usuario:</div>
+        <input class="input-puestos" formControlName="ctrol_codigo" readonly style="background-color: #f1f5f9; cursor: not-allowed;">
+      </div>
+
+      <!-- Nombre y Apellidos -->
+      <div class="form-row flex-row gap-20">
+        <div class="flex-1">
+          <div class="field-label-puestos">Nombre (*):</div>
+          <input class="input-puestos" formControlName="ctrol_nombre" placeholder="Ingrese nombre (ej: Luis)">
+        </div>
+        <div class="flex-1">
+          <div class="field-label-puestos">Apellidos (*):</div>
+          <input class="input-puestos" formControlName="ctrol_apellidos" placeholder="Ingrese apellidos (ej: Aldana)">
+        </div>
+      </div>
+
+      <!-- Email y Teléfono -->
+      <div class="form-row flex-row gap-20">
+        <div class="flex-1">
+          <div class="field-label-puestos">Email (*):</div>
+          <input class="input-puestos" formControlName="ctrol_email" placeholder="ejemplo@precotex.com.pe">
+        </div>
+        <div class="flex-1">
+          <div class="field-label-puestos">Teléfono:</div>
+          <input class="input-puestos" formControlName="ctrol_telefono" placeholder="ej: 987654321">
+        </div>
+      </div>
+
+      <!-- Organización y Sede -->
+      <div class="form-row flex-row gap-20">
+        <div class="flex-1">
+          <div class="field-label-puestos">Organización (*):</div>
+          <select class="select-puestos" formControlName="ctrol_organizacion" (change)="onChangeOrga($event.target)">
+            <option value="" disabled selected>Selecciona</option>
+            <option *ngFor="let org of lstOrganizacion" [value]="org.codigo">{{ org.descripcion }}</option>
+          </select>
+        </div>
+        <div class="flex-1">
+          <div class="field-label-puestos">Sede (*):</div>
+          <select class="select-puestos" formControlName="ctrol_sede">
+            <option value="" disabled selected>Selecciona</option>
+            <option *ngFor="let sede of lstSedes" [value]="sede.codigo">{{ sede.descripcion }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Puesto y Nivel de Riesgo -->
+      <div class="form-row flex-row gap-20">
+        <div class="flex-1">
+          <div class="field-label-puestos">Puesto (*):</div>
+          <select class="select-puestos" formControlName="ctrol_puesto">
+            <option value="" disabled selected>Selecciona</option>
+            <option *ngFor="let puesto of lstPuestos" [value]="puesto.codigo">{{ puesto.descripcion }}</option>
+          </select>
+        </div>
+        <div class="flex-1">
+          <div class="field-label-puestos">Nivel de Riesgo (*):</div>
+          <select class="select-puestos" formControlName="ctrol_nivel">
+            <option value="" disabled selected>Selecciona</option>
+            <option *ngFor="let nivel of lstNivelRiesgo" [value]="nivel.codigo">{{ nivel.descripcion }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Características Adicionales: Activo y Es Admin -->
+      <div class="form-row flex-row gap-20" style="margin-top: 10px;">
+        <div class="flex-1 checkbox-card">
+          <div class="field-label-puestos">Estado de Usuario</div>
+          <div class="checkbox-option">
+            <input type="checkbox" id="user_activo_chk" formControlName="ctrol_activo">
+            <label for="user_activo_chk">Usuario Activo en el Sistema</label>
+          </div>
+        </div>
+        <div class="flex-1 checkbox-card">
+          <div class="field-label-puestos">Rol Administrativo</div>
+          <div class="checkbox-option">
+            <input type="checkbox" id="user_admin_chk" formControlName="ctrol_es_admin">
+            <label for="user_admin_chk">Otorgar privilegios de Administrador</label>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PESTAÑA 2: PERMISOS DE ACCESO -->
+    <div *ngIf="activeTab === 'permisos'" class="tab-pane">
+      <h2 class="title-puestos">Configuración de Permisos de Acceso</h2>
+      
+      <!-- Marcado Rápido Global -->
+      <div class="global-links-container">
+        <span>Marcar Todos los Módulos como:</span>
+        <button type="button" class="link-item btn-link" (click)="marcarTodosGlobal('edicion')">Edición</button>
+        <span class="link-separator">|</span>
+        <button type="button" class="link-item btn-link" (click)="marcarTodosGlobal('lectura')">Lectura</button>
+        <span class="link-separator">|</span>
+        <button type="button" class="link-item btn-link" (click)="marcarTodosGlobal('ninguno')">Ninguno (Desmarcar Todo)</button>
+      </div>
+
+      <!-- Lista de Módulos / Secciones de Permisos -->
+      <div *ngFor="let sec of lstSeccionesPermisos" class="permission-section">
+        <div class="permission-header">
+          <span class="section-title-text">{{ sec.titulo }}</span>
+          
+          <!-- Enlaces Rápidos por Sección -->
+          <div *ngIf="!sec.esDocumentos" class="section-links">
+            <button type="button" class="link-item btn-link" (click)="marcarTodosSeccion(sec, 'edicion')">Marcar Todos Edición</button>
+            <span class="link-separator">|</span>
+            <button type="button" class="link-item btn-link" (click)="marcarTodosSeccion(sec, 'lectura')">Marcar Todos Lectura</button>
+            <span class="link-separator">|</span>
+            <button type="button" class="link-item btn-link" (click)="marcarTodosSeccion(sec, 'ninguno')">Desmarcar Todos</button>
+          </div>
+
+          <div *ngIf="sec.esDocumentos" class="section-links">
+            <button type="button" class="link-item btn-link" (click)="marcarTodosSeccion(sec, 'admin')">Marcar Todos Administración / Edición</button>
+            <span class="link-separator">|</span>
+            <button type="button" class="link-item btn-link" (click)="marcarTodosSeccion(sec, 'asignados')">Marcar Todos Solo Asignados</button>
+          </div>
+        </div>
+
+        <!-- Tabla de Permisos del Módulo -->
+        <div class="table-container" style="margin-top: 0; margin-bottom: 20px;">
+          <table class="procesos-table">
+            <thead>
+              <tr>
+                <th class="center-align" style="width: 120px;">
+                  {{ sec.esDocumentos ? 'Acceso únicamente documentos asignados' : 'Ninguno' }}
+                </th>
+                <th class="center-align" style="width: 120px;">
+                  {{ sec.esDocumentos ? 'Administración / Edición' : 'Edición' }}
+                </th>
+                <th *ngIf="!sec.esDocumentos" class="center-align" style="width: 120px;">Lectura</th>
+                <th>Funcionalidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of sec.items">
+                <!-- Secciones Estándar -->
+                <ng-container *ngIf="!sec.esDocumentos">
+                  <td class="center-align">
+                    <input type="radio" [name]="item.id" value="ninguno" [(ngModel)]="item.seleccion" [ngModelOptions]="{standalone: true}">
+                  </td>
+                  <td class="center-align">
+                    <input type="radio" [name]="item.id" value="edicion" [(ngModel)]="item.seleccion" [ngModelOptions]="{standalone: true}">
+                  </td>
+                  <td class="center-align">
+                    <input type="radio" [name]="item.id" value="lectura" [(ngModel)]="item.seleccion" [ngModelOptions]="{standalone: true}">
+                  </td>
+                </ng-container>
+
+                <!-- Sección Especial de Documentos -->
+                <ng-container *ngIf="sec.esDocumentos">
+                  <td class="center-align">
+                    <input type="radio" [name]="item.id" value="asignados" [(ngModel)]="item.seleccion" [ngModelOptions]="{standalone: true}">
+                  </td>
+                  <td class="center-align">
+                    <input type="radio" [name]="item.id" value="admin" [(ngModel)]="item.seleccion" [ngModelOptions]="{standalone: true}">
+                  </td>
+                </ng-container>
+
+                <!-- Nombre -->
+                <td [class.red-permission-text]="item.colorRojo">{{ item.nombre }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </form>
+
+  <!-- Botones de Control Inferior -->
+  <div class="bottom-action-buttons">
+    <button type="button" class="btn-guardar" (click)="onSave()">
+      <mat-icon>save</mat-icon> Guardar Registro
+    </button>
+    <button type="button" class="btn-cancelar" (click)="onClose()">
+      <mat-icon>close</mat-icon> Cancelar / Salir
+    </button>
+  </div>
+</div>

@@ -1,0 +1,79 @@
+<div class="contenedor">
+
+  <!-- Panel de Opciones de Filtrado -->
+  <fieldset class="filtros-container">
+    <legend class="legend-title">Opciones de Filtrado:</legend>
+    
+    <div class="filtros-grid">
+      <!-- Persona -->
+      <div class="filtro-campo">
+        <label for="persona-select">Persona:</label>
+        <div class="select-wrapper">
+          <select id="persona-select" [(ngModel)]="filtroPersona">
+            <option *ngFor="let p of personasUnicas" [value]="p">{{ p }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Desde -->
+      <div class="filtro-campo">
+        <label for="fecha-desde">Desde</label>
+        <div class="date-input-wrapper">
+          <input type="text" id="fecha-desde" placeholder="dd/mm/aaaa" [(ngModel)]="filtroDesde">
+          <mat-icon class="calendar-icon">calendar_today</mat-icon>
+        </div>
+      </div>
+
+      <!-- Hasta -->
+      <div class="filtro-campo">
+        <label for="fecha-hasta">hasta</label>
+        <div class="date-input-wrapper">
+          <input type="text" id="fecha-hasta" placeholder="dd/mm/aaaa" [(ngModel)]="filtroHasta">
+          <mat-icon class="calendar-icon">calendar_today</mat-icon>
+        </div>
+      </div>
+
+      <!-- Botón Filtrar -->
+      <div class="btn-filtrar-container">
+        <button type="button" class="btn-filtrar" (click)="onFiltrar()">Filtrar</button>
+      </div>
+    </div>
+  </fieldset>
+
+  <!-- Contador de Registros -->
+  <div class="contador-registros">
+    Se han encontrado {{ totalRecords }} registros
+  </div>
+
+  <!-- Tabla de Resultados -->
+  <div class="table-container">
+    <table class="logs-table">
+      <thead>
+        <tr>
+          <th>Fecha / Hora</th>
+          <th>Usuario</th>
+          <th>Puesto</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of displayedLogs">
+          <td class="col-fecha">{{ row.fechaHora }}</td>
+          <td class="col-usuario">{{ row.usuario || '&nbsp;' }}</td>
+          <td class="col-puesto">{{ row.puesto || '&nbsp;' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginación -->
+  <div class="paginacion-container">
+    <button 
+      type="button" 
+      *ngFor="let p of pages" 
+      [class]="p === currentPage ? 'page-btn page-active' : 'page-btn'"
+      (click)="setPage(p)">
+      {{ p }}
+    </button>
+  </div>
+
+</div>
