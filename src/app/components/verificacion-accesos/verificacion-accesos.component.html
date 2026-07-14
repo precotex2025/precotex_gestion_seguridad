@@ -12,17 +12,7 @@
   <!-- Título principal -->
   <h2 class="subtitulo">Últimas verificaciones realizadas</h2>
 
-  <!-- Toggle para simular error -->
-  <div class="toggle-container">
-    <mat-checkbox [(ngModel)]="mostrarErrorPHP" color="warn">
-      Simular error original de PHP (Fatal error)
-    </mat-checkbox>
-  </div>
 
-  <!-- PHP Fatal Error box -->
-  <div class="php-error-box" *ngIf="mostrarErrorPHP" ngNonBindable>
-    <strong>Fatal error:</strong> Uncaught TypeError: sizeof(): Argument #1 ($value) must be of type Countable|array, null given in /usr/home/sofidya/www/verificacion-accesos.php:56 Stack trace: #0 &#123;main&#125; thrown in <strong>/usr/home/sofidya/www/verificacion-accesos.php</strong> on line <strong>56</strong>
-  </div>
 
   <!-- Grid Table -->
   <div class="table-container">
@@ -31,7 +21,7 @@
       <!-- Fecha / Hora -->
       <ng-container matColumnDef="fechaHora">
         <th mat-header-cell *matHeaderCellDef>Fecha / Hora</th>
-        <td mat-cell *matCellDef="let row" style="font-weight: 500;">{{ row.fechaHora }}</td>
+        <td mat-cell *matCellDef="let row" class="col-tabular">{{ row.fechaHora }}</td>
       </ng-container>
 
       <!-- Responsable Verificación -->

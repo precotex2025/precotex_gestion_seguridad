@@ -4,22 +4,18 @@
     <div class="tab-item" [class.active-tab]="activeTab === 'datos'" [class.inactive-tab]="activeTab !== 'datos'" (click)="activeTab = 'datos'">
       <mat-icon>storage</mat-icon>
       <span>Datos Básicos</span>
-      <div class="arrow-right" *ngIf="activeTab === 'datos'"></div>
     </div>
     <div class="tab-item" [class.active-tab]="activeTab === 'procesos'" [class.inactive-tab]="activeTab !== 'procesos'" (click)="activeTab = 'procesos'">
       <mat-icon>settings</mat-icon>
       <span>Proceso/s del Puesto</span>
-      <div class="arrow-right" *ngIf="activeTab === 'procesos'"></div>
     </div>
     <div class="tab-item" [class.active-tab]="activeTab === 'permisos'" [class.inactive-tab]="activeTab !== 'permisos'" (click)="activeTab = 'permisos'">
       <mat-icon>vpn_key</mat-icon>
       <span>Permisos de Acceso</span>
-      <div class="arrow-right" *ngIf="activeTab === 'permisos'"></div>
     </div>
     <div class="tab-item" [class.active-tab]="activeTab === 'documentos'" [class.inactive-tab]="activeTab !== 'documentos'" (click)="activeTab = 'documentos'">
       <mat-icon>description</mat-icon>
       <span>Documentos Requeridos</span>
-      <div class="arrow-right" *ngIf="activeTab === 'documentos'"></div>
     </div>
   </div>
 
@@ -31,21 +27,21 @@
       
       <!-- Denominación del Puesto -->
       <div class="form-row">
-        <div class="field-label-puestos">Denominación del Puesto (*):</div>
+        <h3 class="section-title">Denominación del Puesto <span class="required">*</span></h3>
         <input class="input-puestos" formControlName="ctrol_denominacion" placeholder="Jefe de SSOMA">
       </div>
 
       <!-- Nivel de Riesgo y Sedes -->
       <div class="form-row flex-row gap-20">
         <div class="flex-1">
-          <div class="field-label-puestos">Nivel de Riesgo (*):</div>
+          <h3 class="section-title">Nivel de Riesgo <span class="required">*</span></h3>
           <select class="select-puestos" formControlName="ctrol_nivel">
             <option value="" disabled selected>Selecciona</option>
             <option *ngFor="let nivel of lstNivelRiesgo" [value]="nivel.codigo">{{ nivel.descripcion }}</option>
           </select>
         </div>
         <div class="flex-1">
-          <div class="field-label-puestos">Sede/s (*):</div>
+          <h3 class="section-title">Sede/s <span class="required">*</span></h3>
           <div class="sede-checkboxes-container">
             <div *ngFor="let sede of lstSedes" class="sede-checkbox-item">
               <input type="checkbox" 
@@ -63,7 +59,7 @@
 
       <!-- Descripción del Puesto (Rich Text) -->
       <div class="form-row">
-        <div class="field-label-puestos">Descripción del Puesto</div>
+        <h3 class="section-title">Descripción del Puesto</h3>
         <div class="helper-text-editor">Formato de imagen permitido: .jpg. Ancho máximo recomendado: 710px. Los nombres de imagen no pueden contener caracteres especiales (Error 400)</div>
         <div class="rich-editor-container">
           <div class="editor-toolbar">
@@ -95,7 +91,7 @@
 
       <!-- Características visibles para el puesto -->
       <div class="form-row">
-        <div class="field-label-puestos">Características visibles para el puesto</div>
+        <h3 class="section-title">Características visibles para el puesto</h3>
         <div class="radio-group-puestos">
           <label class="custom-radio-label">
             <input type="radio" [value]="true" formControlName="ctrol_caracteristicasVisibles"> Si
@@ -108,7 +104,7 @@
 
       <!-- Editar los datos con Revisión -->
       <div class="form-row">
-        <div class="field-label-puestos">Editar los datos con Revisión</div>
+        <h3 class="section-title">Editar los datos con Revisión</h3>
         <div class="revision-checkboxes-container">
           <label class="custom-checkbox-label">
             <input type="checkbox" 
@@ -148,7 +144,7 @@
         <span class="process-link" (click)="setAllProcesosSeleccion('responsable')">Es Responsable en Todos</span>
       </div>
 
-      <div class="table-container">
+      <div class="table-container shadow-premium">
         <table class="procesos-table">
           <thead>
             <tr>
@@ -160,8 +156,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let proc of lstProcesosPuesto">
-              <td>{{ proc.denominacion }}</td>
+            <tr *ngFor="let proc of lstProcesosPuesto" class="fila">
+              <td class="norma-cell">{{ proc.denominacion }}</td>
               <td>{{ proc.tipo }}</td>
               <td class="center-align">
                 <input type="radio" [name]="'proc_' + proc.id" value="sin" [(ngModel)]="proc.seleccion" [ngModelOptions]="{standalone: true}">
@@ -191,35 +187,32 @@
           
           <div *ngIf="!sec.esDocumentos" class="section-links">
             <span class="link-item" (click)="marcarTodosSeccion(sec, 'edicion')">Marcar Todos Edición</span>
-            <span class="link-separator">|</span>
             <span class="link-item" (click)="marcarTodosSeccion(sec, 'lectura')">Marcar Todos Lectura</span>
-            <span class="link-separator">|</span>
             <span class="link-item" (click)="marcarTodosSeccion(sec, 'ninguno')">Desmarcar Todos</span>
           </div>
 
           <div *ngIf="sec.esDocumentos" class="section-links">
             <span class="link-item" (click)="marcarTodosSeccion(sec, 'admin')">Marcar Todos Administración / Edición</span>
-            <span class="link-separator">|</span>
             <span class="link-item" (click)="marcarTodosSeccion(sec, 'asignados')">Marcar Todos Solo Asignados</span>
           </div>
         </div>
 
-        <div class="table-container" style="margin-top: 0; margin-bottom: 20px;">
+        <div class="table-container shadow-premium" style="margin-top: 0; margin-bottom: 20px;">
           <table class="procesos-table">
             <thead>
               <tr>
-                <th class="center-align" style="width: 120px;">
+                <th class="center-align" style="width: 150px;">
                   {{ sec.esDocumentos ? 'Acceso únicamente documentos asignados' : 'Ninguno' }}
                 </th>
-                <th class="center-align" style="width: 120px;">
+                <th class="center-align" style="width: 150px;">
                   {{ sec.esDocumentos ? 'Administración / Edición' : 'Edición' }}
                 </th>
-                <th *ngIf="!sec.esDocumentos" class="center-align" style="width: 120px;">Lectura</th>
-                <th></th>
+                <th *ngIf="!sec.esDocumentos" class="center-align" style="width: 150px;">Lectura</th>
+                <th>Denominación de Permiso</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of sec.items">
+              <tr *ngFor="let item of sec.items" class="fila">
                 <!-- Standard Section Option -->
                 <ng-container *ngIf="!sec.esDocumentos">
                   <td class="center-align">
@@ -244,7 +237,7 @@
                 </ng-container>
 
                 <!-- Label -->
-                <td [class.red-permission-text]="item.colorRojo">{{ item.nombre }}</td>
+                <td [class.red-permission-text]="item.colorRojo" class="norma-cell">{{ item.nombre }}</td>
               </tr>
             </tbody>
           </table>
@@ -263,8 +256,8 @@
 
       <!-- Sección A -->
       <div class="document-section">
-        <div class="field-label-puestos">A.- Documentos / Información a facilitar por el Puesto</div>
-        <div class="table-container" style="margin-top: 0; margin-bottom: 20px;">
+        <h3 class="section-title">A.- Documentos / Información a facilitar por el Puesto</h3>
+        <div class="table-container shadow-premium" style="margin-top: 0; margin-bottom: 20px;">
           <table class="procesos-table">
             <thead>
               <tr>
@@ -285,8 +278,8 @@
 
       <!-- Sección B -->
       <div class="document-section">
-        <div class="field-label-puestos">B.- Documentos facilitados que debe aceptar el usuario del puesto</div>
-        <div class="table-container" style="margin-top: 0; margin-bottom: 20px;">
+        <h3 class="section-title">B.- Documentos facilitados que debe aceptar el usuario del puesto</h3>
+        <div class="table-container shadow-premium" style="margin-top: 0; margin-bottom: 20px;">
           <table class="procesos-table">
             <thead>
               <tr>
@@ -307,8 +300,8 @@
 
       <!-- Sección C -->
       <div class="document-section">
-        <div class="field-label-puestos">C.- Cuestionarios al Puesto</div>
-        <div class="table-container" style="margin-top: 0; margin-bottom: 20px;">
+        <h3 class="section-title">C.- Cuestionarios al Puesto</h3>
+        <div class="table-container shadow-premium" style="margin-top: 0; margin-bottom: 20px;">
           <table class="procesos-table">
             <thead>
               <tr>
@@ -329,8 +322,8 @@
 
       <!-- Sección D -->
       <div class="document-section">
-        <div class="field-label-puestos">D.- Verificaciones de Diligencias Adicionales a realizar</div>
-        <div class="table-container" style="margin-top: 0; margin-bottom: 20px;">
+        <h3 class="section-title">D.- Verificaciones de Diligencias Adicionales a realizar</h3>
+        <div class="table-container shadow-premium" style="margin-top: 0; margin-bottom: 20px;">
           <table class="procesos-table">
             <thead>
               <tr>
@@ -355,11 +348,11 @@
     <div class="wizard-actions-row">
       <button type="button" class="BtnGuardarContinuar" (click)="onGuardarYContinuar()">
         <mat-icon>{{ activeTab === 'documentos' ? 'save' : 'arrow_forward' }}</mat-icon>
-        {{ activeTab === 'documentos' ? 'Guardar Puesto' : 'Guardar y Continuar' }}
+        <span>{{ activeTab === 'documentos' ? 'Guardar Puesto' : 'Guardar y Continuar' }}</span>
       </button>
       <button type="button" class="BtnSalir" (click)="onClose()">
         <mat-icon>close</mat-icon>
-        Salir
+        <span>Salir</span>
       </button>
     </div>
 

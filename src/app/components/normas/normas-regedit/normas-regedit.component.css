@@ -1,92 +1,210 @@
-.card {
-    margin-top: 5px;
-    margin-left: 5px;
-    margin-right: 8px;
-    min-width: 350px;
-    min-height: 400px;
-    height: 640px; 
-}
-.card-header {
-    background-color: #3f51b5;
-    color: #ffffff;
-    padding: 8px 10px 10px 10px;
-    text-align: center;
-    /* border-bottom: 1px solid #337AB7; */
-    border-radius: 4px 4px 0px 0px;
-    border-bottom: 1px solid #337ab7;
-    font-family: corbel, arial;
-    font-size: 15px;
-    font-weight: bold;
+/* ===================================================================
+   Normas Regedit Component — Premium Modal Dialog Styles
+   =================================================================== */
+
+.dialog-wrapper {
+  padding: 8px 12px;
+  background: #ffffff;
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
 }
 
-.container {
-    box-sizing: border-box;
-    width: 100%;
-    height: 138%;
-    padding: 5px;
-    font-family: corbel, arial;
-    font-size: 15px;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid #337ab7;
-  }
+/* --- Header --- */
+.dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.header-icon {
+  color: #4f46e5;
+  font-size: 22px !important;
+  width: 22px !important;
+  height: 22px !important;
+}
+
+.header-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+/* --- Form Fields --- */
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
 
 .row {
-    display: flex; 
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
-.dialog-scroll {
-  max-height: 80vh; /* o el % o px que necesites */
-  overflow-y: auto;
-  padding-right: 10px; /* opcional para evitar que el scroll tape contenido */
+.form-label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #475569;
 }
 
-  /* ------------------------- */
-  /* TABLA */
-  /* ------------------------- */
-.mat-header-cell {
-  text-align: center;
-  padding: 15px;
-  width: 10px;
-
+.form-label .required {
+  color: #ef4444;
+  margin-left: 2px;
 }
 
-th.mat-header-cell:last-of-type {
-  padding-right: 12px;
+/* --- Input Wrapper --- */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0 12px;
+  height: 40px;
+  transition: all 0.2s ease;
 }
-  
-.mat-elevation-z8 {
+
+.input-wrapper:focus-within {
+  background: #ffffff;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+}
+
+.disabled-field {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+}
+
+.disabled-field input {
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+.input-icon {
+  color: #94a3b8;
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.input-wrapper:focus-within .input-icon {
+  color: #4f46e5;
+}
+
+.form-input {
+  background: transparent;
+  border: none;
+  color: #0f172a;
+  font-size: 0.82rem;
+  font-family: 'Inter', sans-serif;
   width: 100%;
-  font-family: arial;
-  font-size: 10px;
-}
-  
-th.mat-cell {
-  padding: 15px;
-  text-align: center;
+  outline: none;
 }
 
-td.mat-cell {
-  padding: 15px;
-  text-align: center;
+.form-input::placeholder {
+  color: #94a3b8;
 }
 
-tr:hover {
-  border-color: currentColor;
-  background: #E1E1E1;
+/* --- Textarea --- */
+.textarea-wrapper {
+  height: auto;
+  padding: 8px 12px;
+  align-items: flex-start;
 }
 
-tr:active {
-  background: #efefef;
+.textarea-wrapper .input-icon {
+  margin-top: 2px;
 }
 
+.form-textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* --- Buttons --- */
 .button-row {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    margin-top: 24px;
-    margin-bottom: 32px; /* Agrega espacio hacia abajo */
-    flex-wrap: wrap;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 16px;
+  background: linear-gradient(135deg, #4f46e5, #8b5cf6);
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
+  background: linear-gradient(135deg, #4338ca, #7c3aed);
+}
+
+.btn-primary mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  color: #fff;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 16px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.btn-secondary mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  color: #475569;
 }

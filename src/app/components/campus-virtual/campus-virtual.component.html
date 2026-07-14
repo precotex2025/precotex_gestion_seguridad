@@ -80,7 +80,7 @@
         <!-- Precio (€ / US$) -->
         <ng-container matColumnDef="precio">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Precio (€ / US$)</th>
-          <td mat-cell *matCellDef="let row" style="font-weight: 500;">
+          <td mat-cell *matCellDef="let row" class="col-tabular">
             {{ row.precio | number:'1.2-2' }} €
           </td>
         </ng-container>

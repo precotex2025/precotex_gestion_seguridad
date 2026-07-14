@@ -1,122 +1,101 @@
-<form class="container-cuerpo" [formGroup]="formulario" #formDirective="ngForm">
-     <mat-card class="example-card" appearance="outlined"></mat-card>
-     <mat-card-header>
-        <div mat-card-avatar class="example-header-image"></div>
-        <mat-card-title>{{data.Title}} </mat-card-title>
-        <!-- <mat-card-subtitle>Fecha Emisión: {{ data.Datos.fecha_Emisor | date: 'dd/MM/yyyy HH:mm' }}</mat-card-subtitle>  -->
-    </mat-card-header>  
-    
-    <mat-card-content>
+<div class="dialog-wrapper">
+  
+  <header class="dialog-header">
+    <mat-icon class="header-icon">business</mat-icon>
+    <h2 class="header-title">{{ data.Title.replace('::. ', '').replace(' .::', '') }}</h2>
+  </header>
 
-        <div class="row" *ngIf="data?.Accion !== 'I'">
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Codigo</mat-label>
-                <input matInput formControlName="ctrol_codigo">
-            </mat-form-field>              
-        </div>       
+  <form [formGroup]="formulario" #formDirective="ngForm" class="dialog-form">
+    <div class="dialog-content">
+      
+      <!-- Código (solo editable / visible si no es inserción "I") -->
+      <div class="row" *ngIf="data?.Accion !== 'I'">
+        <label class="form-label">Código de la Organización</label>
+        <div class="input-wrapper disabled-field">
+          <mat-icon class="input-icon">vpn_key</mat-icon>
+          <input type="text" formControlName="ctrol_codigo" readonly class="form-input">
+        </div>
+      </div>
+
+      <!-- Denominación -->
+      <div class="row">
+        <label class="form-label">Denominación <span class="required">*</span></label>
+        <div class="input-wrapper">
+          <mat-icon class="input-icon">business</mat-icon>
+          <input type="text" 
+                 formControlName="ctrol_denominacion" 
+                 placeholder="Ingrese denominación de la organización..." 
+                 class="form-input">
+        </div>
+      </div>
+
+      <!-- Dirección -->
+      <div class="row">
+        <label class="form-label">Dirección</label>
+        <div class="input-wrapper">
+          <mat-icon class="input-icon">place</mat-icon>
+          <input type="text" 
+                 formControlName="ctrol_direccion" 
+                 placeholder="Ingrese dirección..." 
+                 class="form-input">
+        </div>
+      </div>
+
+      <!-- Localidad / Provincia -->
+      <div class="form-grid">
         
+        <!-- Localidad -->
         <div class="row">
-
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Denominación (*)</mat-label>
-                <input matInput formControlName="ctrol_denominacion" placeholder="Ingrese denominación" >
-            </mat-form-field>            
-
-        </div>        
-
-        <div class="row">
-
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Dirección</mat-label>
-                <input matInput formControlName="ctrol_direccion" placeholder="Ingrese dirección" >
-            </mat-form-field>                     
-
-        </div>      
-
-        <div class="row">
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Localidad</mat-label>
-                <input matInput formControlName="ctrol_localidad" placeholder="Ingrese localidad" >
-            </mat-form-field>   
+          <label class="form-label">Localidad</label>
+          <div class="input-wrapper">
+            <mat-icon class="input-icon">location_city</mat-icon>
+            <input type="text" 
+                   formControlName="ctrol_localidad" 
+                   placeholder="Ingrese localidad..." 
+                   class="form-input">
+          </div>
         </div>
 
- 
-        
+        <!-- Provincia -->
         <div class="row">
-
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Provincia</mat-label>
-                <input matInput formControlName="ctrol_provincia" placeholder="Ingrese dirección" >
-            </mat-form-field>                    
-
-        </div>   
-
-        <div class="row">
-   
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>País</mat-label>
-                <input matInput formControlName="ctrol_pais" placeholder="Ingrese localidad" >
-            </mat-form-field>                
-
-        </div>          
-        
-        <!-- <div class="row">
-
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Denominación de la Sede Principal (*)</mat-label>
-                <input matInput formControlName="ctrol_denominacionSP" placeholder="Ingrese denominación" >
-            </mat-form-field>                  
-
+          <label class="form-label">Provincia</label>
+          <div class="input-wrapper">
+            <mat-icon class="input-icon">map</mat-icon>
+            <input type="text" 
+                   formControlName="ctrol_provincia" 
+                   placeholder="Ingrese provincia..." 
+                   class="form-input">
+          </div>
         </div>
 
-        <div class="row">
+      </div>
 
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Acronimo</mat-label>
-                <input matInput formControlName="ctrol_acronimoSP" placeholder="Ingrese acronimo" >
-            </mat-form-field>         
-            
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>dirección</mat-label>
-                <input matInput formControlName="ctrol_direccionSP" placeholder="Ingrese Dirección Sede Principal" >
-            </mat-form-field>                
+      <!-- País -->
+      <div class="row">
+        <label class="form-label">País</label>
+        <div class="input-wrapper">
+          <mat-icon class="input-icon">public</mat-icon>
+          <input type="text" 
+                 formControlName="ctrol_pais" 
+                 placeholder="Ingrese país..." 
+                 class="form-input">
+        </div>
+      </div>
 
-        </div>        
-        
-        <div class="row">
+    </div>
 
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Localidad</mat-label>
-                <input matInput formControlName="ctrol_localidadSP" placeholder="Ingrese localidad" >
-            </mat-form-field>         
-            
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Provincia</mat-label>
-                <input matInput formControlName="ctrol_provinciaSP" placeholder="Ingrese provincia" >
-            </mat-form-field>                
+    <!-- Acciones / Botones -->
+    <div class="button-row"> 
+      <button type="button" class="btn-primary" (click)="onSave()"> 
+        <mat-icon>save</mat-icon>
+        <span>Grabar</span>
+      </button>
 
-        </div>      
-        
-        <div class="row">
+      <button type="button" class="btn-secondary" mat-dialog-close (click)="onClose()">
+        <mat-icon>close</mat-icon>
+        <span>Salir</span>
+      </button>
+    </div>   
+  </form>
 
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>País</mat-label>
-                <input matInput formControlName="ctrol_paisSP" placeholder="Ingrese pais" >
-            </mat-form-field>              
-
-        </div> -->
-
-    </mat-card-content>
-</form>
-
-<div class="button-row"> 
-    <!-- [disabled]="data.Datos.cod_Estado_Memo !== '04' && bEdita" -->
-    <button mat-flat-button color="primary" class="form-button" (click)="onSave()" > 
-        <mat-icon>save</mat-icon> Grabar
-    </button>
-
-    <button mat-flat-button color="warn" mat-dialog-close class="form-button" (click)="onClose()" >
-        <mat-icon>close</mat-icon> Salir
-    </button>
-    
-</div>  
+</div>

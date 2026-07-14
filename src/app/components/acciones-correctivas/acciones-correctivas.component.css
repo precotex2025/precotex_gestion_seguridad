@@ -1,37 +1,80 @@
+/* ===================================================================
+   Acciones Correctivas y Formativas — Estilos Rediseñados Premium
+   =================================================================== */
+
 .contenedor {
   padding: 24px;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-  color: #333;
+  animation: fadeIn 0.4s var(--sn-ease) both;
 }
 
 /* Botones Superiores */
 .top-buttons-row {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
-.btn-planificar,
-.btn-exportar-pdf,
-.btn-exportar-excel {
-  background-color: #c00000;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 4px;
+/* Botón Primario: Planificar Nueva Formación */
+.btn-planificar {
+  background-color: var(--sn-primary-600) !important;
+  color: white !important;
+  border: none !important;
+  padding: 10px 20px !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  border-radius: var(--sn-radius-md) !important;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: background-color 0.2s ease;
+  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.15) !important;
+  transition: all 0.2s var(--sn-ease) !important;
 }
 
-.btn-planificar:hover,
+.btn-planificar:hover {
+  background-color: var(--sn-primary-700) !important;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25) !important;
+}
+
+/* Botones Secundarios: Exportar PDF y Excel */
+.btn-exportar-pdf,
+.btn-exportar-excel {
+  background-color: var(--sn-surface-card) !important;
+  color: var(--sn-slate-700) !important;
+  border: 1px solid var(--sn-slate-200) !important;
+  padding: 10px 20px !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  border-radius: var(--sn-radius-md) !important;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--sn-shadow-xs) !important;
+  transition: all 0.2s var(--sn-ease) !important;
+}
+
 .btn-exportar-pdf:hover,
 .btn-exportar-excel:hover {
-  background-color: #a00000;
+  background-color: var(--sn-slate-50) !important;
+  border-color: var(--sn-slate-300) !important;
+  color: var(--sn-slate-900) !important;
+  box-shadow: var(--sn-shadow-sm) !important;
+}
+
+/* Hover de Iconos para indicar el tipo de exportación */
+.btn-exportar-pdf:hover mat-icon {
+  color: var(--sn-danger-600) !important;
+}
+
+.btn-exportar-excel:hover mat-icon {
+  color: var(--sn-success-600) !important;
+}
+
+.btn-planificar:active,
+.btn-exportar-pdf:active,
+.btn-exportar-excel:active {
+  transform: scale(0.97) !important;
 }
 
 .btn-planificar mat-icon,
@@ -40,40 +83,50 @@
   font-size: 18px !important;
   width: 18px !important;
   height: 18px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Buscador Fieldset */
+/* Buscador Fieldset (Rediseñado como Tarjeta Moderna) */
 .search-fieldset {
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  padding: 20px;
-  margin-bottom: 20px;
-  background-color: #fafafa;
+  border: 1px solid var(--sn-slate-200) !important;
+  border-radius: var(--sn-radius-lg) !important;
+  padding: 24px !important;
+  margin-bottom: 24px;
+  background-color: var(--sn-surface-card) !important;
+  box-shadow: var(--sn-shadow-md) !important;
+  transition: all 0.3s var(--sn-ease);
+}
+
+.search-fieldset:hover {
+  box-shadow: var(--sn-shadow-lg) !important;
+  border-color: var(--sn-slate-300) !important;
 }
 
 .search-legend {
-  font-size: 13px;
-  font-weight: bold;
-  color: #333;
-  padding: 0 8px;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--sn-slate-900) !important;
+  padding: 0 10px !important;
 }
 
 .search-grid {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 16px;
 }
 
 .search-row-3 {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
-  gap: 15px;
+  gap: 16px;
 }
 
 .search-row-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  gap: 16px;
 }
 
 .search-field {
@@ -84,79 +137,93 @@
 
 .search-field label {
   font-size: 12px;
-  color: #444;
-  font-weight: 600;
+  color: var(--sn-slate-600);
+  font-weight: 500;
 }
 
 .search-field input,
 .search-field select {
-  height: 34px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 0 10px;
-  font-size: 13px;
-  background-color: white;
+  height: 42px;
+  border: 1px solid var(--sn-slate-200);
+  border-radius: var(--sn-radius-md);
+  padding: 0 14px;
+  font-size: 14px;
+  color: var(--sn-slate-800);
+  background-color: var(--sn-slate-50);
   box-sizing: border-box;
   outline: none;
   width: 100%;
+  transition: border-color 0.2s var(--sn-ease), background-color 0.2s var(--sn-ease);
 }
 
 .search-field input:focus,
 .search-field select:focus {
-  border-color: #c00000;
+  border-color: #b91c1c; /* Rojo Precotex */
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
 }
 
 .search-button-row {
   display: flex;
   justify-content: flex-start;
-  margin-top: 5px;
+  margin-top: 4px;
 }
 
+/* Botón Filtrar */
 .btn-filtrar {
-  background-color: #c00000;
-  color: white;
-  border: none;
-  height: 34px;
-  padding: 0 24px;
-  font-size: 13px;
-  font-weight: bold;
-  border-radius: 4px;
+  background-color: #b91c1c !important; /* Rojo Precotex */
+  color: white !important;
+  border: none !important;
+  height: 42px !important;
+  padding: 0 28px !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  border-radius: var(--sn-radius-md) !important;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  box-shadow: 0 2px 4px rgba(185, 28, 28, 0.15) !important;
+  transition: all 0.2s var(--sn-ease) !important;
 }
 
 .btn-filtrar:hover {
-  background-color: #a00000;
+  background-color: #991b1b !important;
+  box-shadow: 0 4px 12px rgba(185, 28, 28, 0.25) !important;
 }
 
-/* Tabla */
+.btn-filtrar:active {
+  transform: scale(0.97) !important;
+}
+
+/* Tabla Wrapper */
 .table-container {
-  background: white;
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  border: 1px solid #e0e0e0;
+  background: var(--sn-surface-card);
+  border-radius: var(--sn-radius-lg) !important;
+  overflow: hidden !important;
+  box-shadow: var(--sn-shadow-md);
+  border: 1px solid var(--sn-slate-200);
+  transition: box-shadow 0.3s var(--sn-ease);
+}
+
+.table-container:hover {
+  box-shadow: var(--sn-shadow-lg);
 }
 
 .tabla-wrapper {
   width: 100%;
+  border-collapse: collapse;
 }
 
-::ng-deep .tabla-wrapper {
-  --mat-table-header-container-background-color: #c00000 !important;
-}
-
+/* Cabeceras de Tabla (Remueve el rojo ruidoso de fondo) */
 ::ng-deep .tabla-wrapper th,
 ::ng-deep .tabla-wrapper .mat-mdc-header-cell,
 ::ng-deep .tabla-wrapper .mat-header-cell,
 ::ng-deep .tabla-wrapper .mat-mdc-header-row,
 ::ng-deep .tabla-wrapper .mat-header-row {
-  background-color: #c00000 !important;
-  color: white !important;
-  font-size: 12.5px !important;
-  font-weight: bold !important;
-  padding: 12px 10px !important;
-  border-bottom: none !important;
+  background-color: var(--sn-slate-50) !important;
+  color: var(--sn-slate-600) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: 14px 12px !important;
+  border-bottom: 1.5px solid var(--sn-slate-200) !important;
   text-align: left;
 }
 
@@ -165,23 +232,28 @@
 ::ng-deep .tabla-wrapper th .mat-sort-header-button,
 ::ng-deep .tabla-wrapper th .mat-mdc-sort-header-container,
 ::ng-deep .tabla-wrapper th .mat-mdc-sort-header-button {
-  color: white !important;
+  color: var(--sn-slate-600) !important;
 }
 
 ::ng-deep .tabla-wrapper th .mat-sort-header-arrow,
 ::ng-deep .tabla-wrapper th .mat-mdc-sort-header-arrow {
-  color: white !important;
+  color: var(--sn-slate-400) !important;
 }
 
+/* Celdas de Fila */
 ::ng-deep .tabla-wrapper td.mat-cell {
-  font-size: 13px;
-  color: #333;
-  padding: 12px 10px !important;
-  border-bottom: 1px solid #f0f0f0 !important;
+  font-size: 14px !important;
+  color: var(--sn-slate-800) !important;
+  padding: 12px 12px !important;
+  border-bottom: 1px solid var(--sn-slate-100) !important;
+}
+
+.table-row {
+  transition: background-color 0.2s var(--sn-ease) !important;
 }
 
 .table-row:hover {
-  background-color: #fcfcfc !important;
+  background-color: var(--sn-slate-50) !important;
 }
 
 .denominacion-cell {
@@ -189,12 +261,20 @@
   max-width: 300px;
   white-space: normal;
   line-height: 1.4;
+  color: var(--sn-slate-900) !important;
 }
 
-/* Botones de acción en celdas */
+/* Formateo de Celdas */
+.col-tabular {
+  font-variant-numeric: tabular-nums !important;
+  font-family: var(--sn-font-family) !important;
+  font-weight: 500 !important;
+}
+
+/* Botones de acción en celdas (neutrales con hover reactivo) */
 .action-buttons-cell {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   justify-content: center;
   align-items: center;
 }
@@ -208,24 +288,26 @@
   align-items: center;
   justify-content: center;
   padding: 6px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
+  border-radius: var(--sn-radius-sm);
+  transition: all 0.2s var(--sn-ease);
 }
 
 .btn-edit {
-  color: #1e293b;
+  color: var(--sn-slate-400);
 }
 
 .btn-edit:hover {
-  background-color: #e2e8f0;
+  background-color: var(--sn-slate-100);
+  color: var(--sn-slate-800);
 }
 
 .btn-delete {
-  color: #c00000;
+  color: var(--sn-slate-400);
 }
 
 .btn-delete:hover {
-  background-color: #fee2e2;
+  background-color: var(--sn-danger-50);
+  color: var(--sn-danger-600);
 }
 
 .btn-edit mat-icon,
@@ -235,77 +317,91 @@
   height: 18px !important;
 }
 
-/* Badges de Estado */
+/* Badges de Estado (Pills Pastel) */
 .estado-badge {
   display: inline-block;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: bold;
+  padding: 4px 10px !important;
+  border-radius: var(--sn-radius-sm) !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
   text-transform: uppercase;
+  box-shadow: var(--sn-shadow-xs) !important;
+  letter-spacing: 0.015em !important;
 }
 
 .estado-abierta {
-  background-color: #fff8e1;
-  color: #f57c00;
+  background-color: var(--sn-warning-50) !important;
+  color: var(--sn-warning-600) !important;
+  border: 1px solid rgba(217, 119, 6, 0.15) !important;
 }
 
 .estado-proceso {
-  background-color: #e0f2f1;
-  color: #004d40;
+  background-color: var(--sn-info-50) !important;
+  color: var(--sn-info-600) !important;
+  border: 1px solid rgba(37, 99, 235, 0.15) !important;
 }
 
 .estado-cerrada {
-  background-color: #dcfce7;
-  color: #166534;
+  background-color: var(--sn-success-50) !important;
+  color: var(--sn-success-700) !important;
+  border: 1px solid rgba(4, 120, 87, 0.15) !important;
 }
 
 .estado-anulada {
-  background-color: #fee2e2;
-  color: #991b1b;
+  background-color: var(--sn-danger-50) !important;
+  color: var(--sn-danger-600) !important;
+  border: 1px solid rgba(225, 29, 72, 0.15) !important;
 }
 
-/* Badges de Eficacia */
+/* Badges de Valoración de Eficacia (Pills Pastel) */
 .eficacia-badge {
   display: inline-block;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: bold;
+  padding: 4px 10px !important;
+  border-radius: var(--sn-radius-sm) !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  box-shadow: var(--sn-shadow-xs) !important;
+  letter-spacing: 0.015em !important;
 }
 
 .eficacia-eficaz {
-  background-color: #dcfce7;
-  color: #166534;
+  background-color: var(--sn-success-50) !important;
+  color: var(--sn-success-700) !important;
+  border: 1px solid rgba(4, 120, 87, 0.15) !important;
 }
 
 .eficacia-no-eficaz {
-  background-color: #fee2e2;
-  color: #991b1b;
+  background-color: var(--sn-danger-50) !important;
+  color: var(--sn-danger-600) !important;
+  border: 1px solid rgba(225, 29, 72, 0.15) !important;
 }
 
 .eficacia-pendiente {
-  background-color: #f1f5f9;
-  color: #475569;
+  background-color: var(--sn-slate-100) !important;
+  color: var(--sn-slate-600) !important;
+  border: 1px solid var(--sn-slate-200) !important;
 }
 
-/* Empty state */
+/* Empty State */
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 40px;
-  color: #94a3b8;
+  color: var(--sn-slate-400);
+  font-weight: 500;
 }
 
 .empty-state mat-icon {
-  font-size: 48px;
-  width: 48px;
-  height: 48px;
-  margin-bottom: 12px;
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 8px;
+  color: var(--sn-slate-300);
 }
 
 .empty-state p {
-  font-size: 14px;
+  margin: 0;
+  font-size: 13.5px;
 }

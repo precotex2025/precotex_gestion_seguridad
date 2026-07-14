@@ -1,26 +1,80 @@
+/* ===================================================================
+   Gestión de Usuarios / Personas — Estilos Rediseñados
+   =================================================================== */
+
 .contenedor {
-  padding: 20px;
-  border-radius: 12px;
+  padding: 24px;
+  animation: fadeIn 0.4s var(--sn-ease) both;
 }
 
-.filtros-card {
-  margin: 20px 0;
-  padding: 20px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+/* Buscador Fieldset (Rediseñado como Tarjeta Moderna) */
+.search-fieldset {
+  border: 1px solid var(--sn-slate-200) !important;
+  border-radius: var(--sn-radius-lg) !important;
+  padding: 24px !important;
+  margin-bottom: 24px;
+  background-color: var(--sn-surface-card) !important;
+  box-shadow: var(--sn-shadow-md) !important;
+  transition: all 0.3s var(--sn-ease);
+}
+
+.search-fieldset:hover {
+  box-shadow: var(--sn-shadow-lg) !important;
+  border-color: var(--sn-slate-300) !important;
+}
+
+.search-legend {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--sn-slate-900) !important;
+  padding: 0 10px !important;
 }
 
 .acciones-container {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
 }
 
+/* Grid de Filtros */
 .filtros-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
+  gap: 16px;
+}
+
+.search-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.search-field label {
+  font-size: 12px;
+  color: var(--sn-slate-600);
+  font-weight: 500;
+}
+
+.search-field input,
+.search-field select {
+  height: 42px;
+  border: 1px solid var(--sn-slate-200);
+  border-radius: var(--sn-radius-md);
+  padding: 0 14px;
+  font-size: 14px;
+  color: var(--sn-slate-800);
+  background-color: var(--sn-slate-50);
+  box-sizing: border-box;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s var(--sn-ease), background-color 0.2s var(--sn-ease);
+}
+
+.search-field input:focus,
+.search-field select:focus {
+  border-color: #b91c1c; /* Rojo Precotex */
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
 }
 
 @media (max-width: 992px) {
@@ -35,84 +89,201 @@
   }
 }
 
+/* Fila de Botones */
 .botones-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 12px;
+  margin-top: 8px;
 }
 
-.botones-izquierda {
+.botones-izquierda, .botones-derecha {
   display: flex;
-  gap: 10px;
+  gap: 12px;
+  align-items: center;
 }
 
-.botones-derecha {
-  display: flex;
-  gap: 10px;
+@media (max-width: 768px) {
+  .botones-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .botones-izquierda, .botones-derecha {
+    justify-content: stretch;
+  }
+  .botones-izquierda button, .botones-derecha button {
+    flex: 1;
+  }
 }
 
-.BtnFiltrar {
-  background-color: #c00000 !important;
+/* Estilos de Botones Premium */
+.btn-filtrar, .btn-crear, .btn-exportar, .btn-importar {
+  border-radius: var(--sn-radius-md) !important;
+  font-weight: 500 !important;
+  padding: 8px 18px !important;
+  height: 42px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  letter-spacing: 0.01em !important;
+  transition: all 0.2s var(--sn-ease) !important;
+}
+
+.btn-filtrar:active, .btn-crear:active, .btn-exportar:active, .btn-importar:active {
+  transform: scale(0.97) !important;
+}
+
+/* Buscar - Rojo Precotex sofisticado */
+.btn-filtrar {
+  background-color: #b91c1c !important;
   color: white !important;
-  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(185, 28, 28, 0.15) !important;
 }
 
-.BtnCrear {
-  background-color: #3f51b5 !important;
+.btn-filtrar:hover {
+  background-color: #991b1b !important;
+  box-shadow: 0 4px 12px rgba(185, 28, 28, 0.25) !important;
+}
+
+/* Nuevo Usuario - Primario (Slate Dark / Indigo) */
+.btn-crear {
+  background-color: var(--sn-primary-600) !important;
   color: white !important;
+  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.15) !important;
 }
 
-.BtnExportar {
-  background-color: #FFAB00 !important;
-  color: white !important;
+.btn-crear:hover {
+  background-color: var(--sn-primary-700) !important;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25) !important;
 }
 
-.BtnImportar {
-  background-color: #2e7d32 !important;
-  color: white !important;
+/* Botones Secundarios Delineados (Exportar / Importar) */
+.btn-exportar, .btn-importar {
+  background-color: var(--sn-surface-card) !important;
+  color: var(--sn-slate-700) !important;
+  border: 1px solid var(--sn-slate-200) !important;
+  box-shadow: var(--sn-shadow-xs) !important;
 }
 
+.btn-exportar:hover, .btn-importar:hover {
+  background-color: var(--sn-slate-50) !important;
+  border-color: var(--sn-slate-300) !important;
+  color: var(--sn-slate-900) !important;
+  box-shadow: var(--sn-shadow-sm) !important;
+}
+
+/* Colorización sutil al pasar el mouse por botones secundarios */
+.btn-exportar mat-icon {
+  transition: color 0.2s var(--sn-ease);
+}
+.btn-exportar:hover mat-icon {
+  color: #16a34a !important; /* Verde Excel */
+}
+
+.btn-importar mat-icon {
+  transition: color 0.2s var(--sn-ease);
+}
+.btn-importar:hover mat-icon {
+  color: var(--sn-primary-600) !important; /* Azul Importar */
+}
+
+/* Tabla Wrapper */
 .tabla-wrapper {
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  width: 100%;
+  border-radius: var(--sn-radius-lg) !important;
+  overflow: hidden !important;
+  background: var(--sn-surface-card) !important;
+  border: 1px solid var(--sn-slate-200) !important;
+  box-shadow: var(--sn-shadow-md) !important;
+  transition: box-shadow 0.3s var(--sn-ease);
 }
 
-/* Header */
+.tabla-wrapper:hover {
+  box-shadow: var(--sn-shadow-lg) !important;
+}
+
+/* Cabeceras de Tabla */
 .mat-header-row {
-  background: transparent;
-  border-bottom: 1.5px solid #cbd5e1;
+  background-color: var(--sn-slate-50) !important;
+  border-bottom: 1.5px solid var(--sn-slate-200) !important;
 }
 
 .mat-header-cell {
-  color: #334155 !important;
-  font-weight: 600;
-  font-size: 14px;
+  color: var(--sn-slate-600) !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  letter-spacing: 0.02em !important;
+  padding: 16px 12px !important;
 }
 
-/* Hover filas */
+/* Celdas de Tabla */
+.mat-cell {
+  color: var(--sn-slate-800) !important;
+  font-size: 14px !important;
+  padding: 14px 12px !important;
+  border-bottom: 1px solid var(--sn-slate-100) !important;
+}
+
+/* Filas con hover suave */
+tr.mat-row {
+  transition: background-color 0.2s var(--sn-ease) !important;
+}
+
 tr.mat-row:hover {
-  background: #f1f5f9;
-  transition: 0.2s;
+  background-color: var(--sn-slate-50) !important;
 }
 
+/* Soporte para datos tabulares y códigos */
+.col-tabular {
+  font-variant-numeric: tabular-nums !important;
+  font-family: var(--sn-font-family) !important;
+  font-weight: 500 !important;
+}
+
+/* Badges de Estado Pastel Premium */
 .activo {
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-weight: bold;
+  background-color: var(--sn-success-50) !important;
+  color: var(--sn-success-700) !important;
+  border: 1px solid rgba(4, 120, 87, 0.15) !important;
+  padding: 4px 10px !important;
+  border-radius: var(--sn-radius-sm) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  display: inline-block !important;
+  text-align: center !important;
+  box-shadow: var(--sn-shadow-xs) !important;
+  letter-spacing: 0.01em !important;
 }
 
 .inactivo {
-  background-color: #f5c6cb;
-  color: #721c24;
-  border: 1px solid #f1b0b7;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-weight: bold;
+  background-color: var(--sn-danger-50) !important;
+  color: var(--sn-danger-600) !important;
+  border: 1px solid rgba(225, 29, 72, 0.15) !important;
+  padding: 4px 10px !important;
+  border-radius: var(--sn-radius-sm) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  display: inline-block !important;
+  text-align: center !important;
+  box-shadow: var(--sn-shadow-xs) !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* Reducir ruido en la columna de acciones */
+::ng-deep .mat-column-acciones button {
+  color: var(--sn-slate-400) !important;
+  transition: all 0.2s var(--sn-ease) !important;
+}
+
+::ng-deep .mat-column-acciones button[color="primary"]:hover {
+  color: var(--sn-primary-600) !important;
+  background-color: var(--sn-primary-50) !important;
+}
+
+::ng-deep .mat-column-acciones button[color="warn"]:hover {
+  color: var(--sn-danger-600) !important;
+  background-color: var(--sn-danger-50) !important;
 }

@@ -182,8 +182,9 @@ export class DocumentacionPersonasComponent implements OnInit {
     });
   }
 
+
   onChangeOrga(event: any) {
-    const valor = event.value;
+    const valor = event.value || event.target?.value || '';
     this.formulario.get('ctrol_sede')?.setValue('');
     this.onComboSedes(valor);
   }

@@ -6,6 +6,19 @@ import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSortModule } from '@angular/material/sort';
 
+/* PrimeNG */
+import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeng/themes/aura';
+import { ChartModule } from 'primeng/chart';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule as PrimeTooltipModule } from 'primeng/tooltip';
+import { AvatarModule } from 'primeng/avatar';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { KnobModule } from 'primeng/knob';
+
 import { provideHttpClient } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -81,6 +94,7 @@ import { NuevaTareaModalComponent } from './components/planificacion-objetivos/n
 import { MedicionesPendientesComponent } from './components/mediciones-pendientes/mediciones-pendientes.component';
 import { EvaluacionRiesgosComponent } from './components/evaluacion-riesgos/evaluacion-riesgos.component';
 import { EvaluacionRiesgosRegeditComponent } from './components/evaluacion-riesgos/evaluacion-riesgos-regedit/evaluacion-riesgos-regedit.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
 
 @NgModule({
   declarations: [
@@ -134,7 +148,8 @@ import { EvaluacionRiesgosRegeditComponent } from './components/evaluacion-riesg
     NuevaTareaModalComponent,
     MedicionesPendientesComponent,
     EvaluacionRiesgosComponent,
-    EvaluacionRiesgosRegeditComponent
+    EvaluacionRiesgosRegeditComponent,
+    DashboardComponent
   ],
   imports: [
     BrowserModule     ,
@@ -161,11 +176,29 @@ import { EvaluacionRiesgosRegeditComponent } from './components/evaluacion-riesg
     MatCheckboxModule,
     MatTooltipModule,
     CommonModule,
-    ToastrModule.forRoot()
+    ToastrModule.forRoot(),
+    /* PrimeNG Modules */
+    ChartModule,
+    TableModule,
+    ButtonModule,
+    CardModule,
+    TagModule,
+    PrimeTooltipModule,
+    AvatarModule,
+    ProgressBarModule,
+    KnobModule
   ],
   providers: [
     provideHttpClient(),
-    provideNativeDateAdapter()
+    provideNativeDateAdapter(),
+    providePrimeNG({
+      theme: {
+        preset: Aura,
+        options: {
+          darkModeSelector: false
+        }
+      }
+    })
   ],
   bootstrap: [AppComponent]
 })

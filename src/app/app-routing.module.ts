@@ -25,6 +25,7 @@ import { MapaPermisosComponent } from './components/mapa-permisos/mapa-permisos.
 import { ConfiguracionPuestosComponent } from './components/configuracion-puestos/configuracion-puestos.component';
 import { MedicionesPendientesComponent } from './components/mediciones-pendientes/mediciones-pendientes.component';
 import { EvaluacionRiesgosComponent } from './components/evaluacion-riesgos/evaluacion-riesgos.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
 
 
 const routes: Routes = [
@@ -35,6 +36,7 @@ const routes: Routes = [
   //Layout Principal pes
   {
     path: "principal", component : LayoutComponent, children: [
+      { path: ''             , component: DashboardComponent },
       { path: "normas"      , component: NormasComponent },
       { path: "organizacion", component: OrganizacionComponent },
       { path: "puestos", component: PuestosComponent },

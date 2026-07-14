@@ -1,164 +1,342 @@
-/* ===== TOOLBAR ===== */
+/* ===================================================================
+   Organización Component — Premium Dashboard Styles
+   =================================================================== */
 
-.toolbar{
-  display:flex;
-  justify-content:space-between;
-  background:#0f172a;
-  color:white;
-  padding:10px 20px;
+.contenedor {
+  padding: 0 24px 24px 24px;
+  max-width: 1440px;
+  margin: 0 auto;
 }
 
-.left{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.icono{
-  color:#38bdf8;
-}
-
-.titulo{
-  font-size:18px;
-  font-weight:600;
-}
-
-.right{
-  display:flex;
-  align-items:center;
-  gap:15px;
-}
-
+/* --- Filter Card --- */
 .filtros-card {
-  margin: 20px 0;
-  padding: 15px;
-  background:white;
-  height: 10%;
-  margin-top: -5px;
-  padding-top: 1px;
-  padding-bottom: 1px;
+  margin: 16px 0 20px 0;
+  padding: 16px 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
-
 
 .acciones-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 20px 0;
-  gap: 15px;
+  gap: 16px;
+  width: 100%;
 }
 
-
-.buscador{
-  background:white;
-  border-radius:8px;
-  width:250px;
+/* --- Custom Search Bar --- */
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0 12px;
+  height: 40px;
+  width: 280px;
+  transition: all 0.2s ease;
 }
 
+.search-wrapper:focus-within {
+  background: #ffffff;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+}
+
+.search-icon {
+  color: #64748b;
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+  margin-right: 8px;
+}
+
+.search-input {
+  background: transparent;
+  border: none;
+  color: #1e293b;
+  font-size: 0.85rem;
+  font-family: 'Inter', sans-serif;
+  width: 100%;
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: #94a3b8;
+}
+
+/* --- Buttons --- */
 .botones {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: nowrap; /* evita que bajen de línea */
+  gap: 12px;
 }
 
-.botones button {
-  width: auto;        /* tamaño natural */
-  min-width: unset;   /* evita tamaño mínimo de Material */
-  white-space: nowrap; /* evita salto de texto */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  background: linear-gradient(135deg, #4f46e5, #8b5cf6);
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+  transition: all 0.2s ease;
 }
 
-.contenedor{
-  padding:20px;
-  border-radius:12px;
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
+  background: linear-gradient(135deg, #4338ca, #7c3aed);
 }
 
-.filtro{
-  width:300px;
-  margin-bottom:15px;
+.btn-primary mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  color: #fff;
 }
 
-.tabla-wrapper{
-  /*background:white;*/
-  border-radius:12px;
-  overflow:hidden;
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #334155;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.tabla{
-  width:100%;
+.btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 
-/* Header */
-.mat-header-row{
-  background:transparent;
-  border-bottom: 1.5px solid #cbd5e1;
+.btn-secondary mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  color: #475569;
 }
 
-.mat-header-cell{
-  color:#334155 !important;
-  font-weight:600;
+/* --- Premium Table Container --- */
+.table-container {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow-x: auto;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
 }
 
-/* Hover filas */
-.fila:hover{
-  background:#f1f5f9;
-  transition:0.2s;
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-/* Chips */
-.chip-activo{
-  background:#16a34a;
-  color:white;
-  padding:4px 12px;
-  border-radius:20px;
-  font-size:12px;
+/* Material table overrides */
+::ng-deep .tabla.mat-mdc-table {
+  background: #ffffff !important;
 }
 
-.chip-inactivo{
-  background:#dc2626;
-  color:white;
-  padding:4px 12px;
-  border-radius:20px;
-  font-size:12px;
+::ng-deep .tabla .mat-mdc-header-row {
+  background: #f8fafc !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  height: 48px;
 }
 
-  .BtnCrear{
-    grid-area: col4;
-    width: 100%;
-    height: 40px;
-    max-width: 180px;
-    margin: auto;
-    margin-top: 3px;
-    background-color: #3f51b5;
-    color: #ffffff;
-  }
+::ng-deep .tabla .mat-mdc-header-cell {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.76rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  font-family: 'Inter', sans-serif !important;
+  border-bottom: none !important;
+  padding: 8px 16px !important;
+}
 
- .BtnExportar{
-    grid-area: col4;
-    width: 100%;
-    height: 40px;
-    max-width: 180px;
-    margin: auto;
-    margin-top: 3px;
-    background-color: #FFAB00;
-    color: #ffffff;
-  }  
+::ng-deep .tabla .mat-mdc-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid #f1f5f9;
+}
 
+::ng-deep .tabla .mat-mdc-row:hover {
+  background-color: #f8fafc !important;
+}
 
-.activo {
-  background-color: #d4edda; /* verde claro */
-  color: #155724;
-  border: 1px solid #c3e6cb;
-  padding: 4px 8px;
+::ng-deep .tabla .mat-mdc-row:last-child {
+  border-bottom: none;
+}
+
+::ng-deep .tabla .mat-mdc-cell {
+  color: #334155 !important;
+  font-size: 0.82rem !important;
+  font-family: 'Inter', sans-serif !important;
+  border-bottom: none !important;
+  padding: 8px 16px !important;
+}
+
+/* Custom cell formats */
+.code-badge {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #4f46e5;
+  background: #eef2ff;
+  padding: 2px 6px;
   border-radius: 4px;
-  font-weight: bold;
+  border: 1px solid #e0e7ff;
+}
+
+.norma-cell {
+  font-weight: 600;
+  color: #0f172a !important;
+}
+
+/* --- Status badges --- */
+.activo {
+  background-color: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
 }
 
 .inactivo {
-  background-color: #f5c6cb; /* rojo más fuerte */
-  color: #721c24;
-  border: 1px solid #f1b0b7;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-weight: bold;
+  background-color: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* --- Action buttons --- */
+.actions-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.action-btn {
+  border: none;
+  background: transparent;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* General button styles for grid actions */
+.btn-sede {
+  color: #0284c7;
+}
+
+.btn-sede:hover {
+  background: #f0f9ff;
+  color: #0369a1;
+}
+
+.btn-proceso {
+  color: #8b5cf6;
+}
+
+.btn-proceso:hover {
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+.btn-activo {
+  color: #f59e0b;
+}
+
+.btn-activo:hover {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.btn-edit {
+  color: #4f46e5;
+}
+
+.btn-edit:hover {
+  background: #eef2ff;
+  color: #3730a3;
+}
+
+.btn-delete {
+  color: #ef4444;
+}
+
+.btn-delete:hover {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.action-btn mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+  .contenedor {
+    padding: 0 16px 16px 16px;
+  }
+
+  .acciones-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .search-wrapper {
+    width: 100%;
+  }
+
+  .botones {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .botones button {
+    flex: 1;
+  }
 }

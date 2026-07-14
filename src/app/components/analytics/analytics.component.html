@@ -94,34 +94,30 @@
   </fieldset>
 
   <!-- KPI Cards Row -->
-  <div class="kpi-cards-container">
+  <div class="cards-container">
     
     <!-- Card 1 -->
-    <div class="kpi-card">
-      <div class="kpi-value">{{ kpiConsultasActivas }}</div>
-      <div class="kpi-divider"></div>
-      <div class="kpi-label">Consultas Activas</div>
+    <div class="status-card card-info">
+      <span class="card-number">{{ kpiConsultasActivas }}</span>
+      <span class="card-label">Consultas Activas</span>
     </div>
 
     <!-- Card 2 -->
-    <div class="kpi-card">
-      <div class="kpi-value">{{ kpiMonitorizacionesActivas }}</div>
-      <div class="kpi-divider"></div>
-      <div class="kpi-label">Monitorizaciones Activas</div>
+    <div class="status-card card-success">
+      <span class="card-number">{{ kpiMonitorizacionesActivas }}</span>
+      <span class="card-label">Monitorizaciones Activas</span>
     </div>
 
     <!-- Card 3 -->
-    <div class="kpi-card">
-      <div class="kpi-value">{{ kpiConsultasPositivasPendientes }}</div>
-      <div class="kpi-divider"></div>
-      <div class="kpi-label">Consultas Positivas Pendientes Verificación</div>
+    <div class="status-card card-warning">
+      <span class="card-number">{{ kpiConsultasPositivasPendientes }}</span>
+      <span class="card-label">Consultas Positivas Pendientes Verificación</span>
     </div>
 
     <!-- Card 4 -->
-    <div class="kpi-card">
-      <div class="kpi-value">{{ kpiMonitorizacionesPositivas }}</div>
-      <div class="kpi-divider"></div>
-      <div class="kpi-label">Monitorizaciones Positivas Pendientes Verificación</div>
+    <div class="status-card card-danger">
+      <span class="card-number">{{ kpiMonitorizacionesPositivas }}</span>
+      <span class="card-label">Monitorizaciones Positivas Pendientes Verificación</span>
     </div>
 
   </div>
@@ -163,7 +159,7 @@
       <!-- Fecha/Hora -->
       <ng-container matColumnDef="fechaHora">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha/Hora</th>
-        <td mat-cell *matCellDef="let row">{{ row.fechaHora }}</td>
+        <td mat-cell *matCellDef="let row" class="col-tabular">{{ row.fechaHora }}</td>
       </ng-container>
 
       <!-- Tipo Consulta -->
@@ -238,7 +234,7 @@
       <!-- Fecha -->
       <ng-container matColumnDef="fecha">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha</th>
-        <td mat-cell *matCellDef="let row">{{ row.fechaHora }}</td>
+        <td mat-cell *matCellDef="let row" class="col-tabular">{{ row.fechaHora }}</td>
       </ng-container>
 
       <!-- Usuario Buscado -->

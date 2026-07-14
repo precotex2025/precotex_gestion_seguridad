@@ -4,12 +4,10 @@
     <div class="tab-item" [class.active-tab]="activeTab === 'datos'" [class.inactive-tab]="activeTab !== 'datos'" (click)="activeTab = 'datos'">
       <mat-icon>storage</mat-icon>
       <span>Datos Básicos</span>
-      <div class="arrow-right" *ngIf="activeTab === 'datos'"></div>
     </div>
     <div class="tab-item" [class.active-tab]="activeTab === 'permisos'" [class.inactive-tab]="activeTab !== 'permisos'" (click)="activeTab = 'permisos'">
       <mat-icon>vpn_key</mat-icon>
       <span>Permisos de Acceso</span>
-      <div class="arrow-right" *ngIf="activeTab === 'permisos'"></div>
     </div>
   </div>
 

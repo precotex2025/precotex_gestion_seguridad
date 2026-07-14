@@ -1,0 +1,245 @@
+<div class="dashboard">
+
+  <!-- Header Section -->
+  <header class="dashboard-header sn-animate-in">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="header-title">{{ greeting }}, <span class="header-name">{{ userName }}</span></h1>
+        <p class="header-subtitle">{{ currentDate | titlecase }}</p>
+      </div>
+      <div class="header-badge">
+        <div class="cumplimiento-circle">
+          <p-knob [(ngModel)]="cumplimientoGlobal"
+                  [readonly]="true"
+                  [size]="90"
+                  [strokeWidth]="8"
+                  valueTemplate="{value}%"
+                  valueColor="#4f46e5"
+                  rangeColor="#e2e8f0">
+          </p-knob>
+          <span class="cumplimiento-label">Cumplimiento Global</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- KPI Cards Grid -->
+  <section class="kpi-grid">
+    <div *ngFor="let kpi of kpiCards; let i = index"
+         class="kpi-card sn-animate-in"
+         [ngClass]="kpi.colorClass"
+         [class]="'sn-animate-in-delay-' + (i + 1)"
+         (click)="kpi.route ? navigateTo(kpi.route) : null"
+         [style.cursor]="kpi.route ? 'pointer' : 'default'">
+      <div class="kpi-icon-wrapper">
+        <i [class]="kpi.icon"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ kpi.value }}</span>
+        <span class="kpi-title">{{ kpi.title }}</span>
+      </div>
+      <div class="kpi-trend" [class.trend-up]="kpi.trendUp" [class.trend-down]="!kpi.trendUp">
+        <i [class]="kpi.trendUp ? 'pi pi-arrow-up' : 'pi pi-arrow-down'"></i>
+        <span>{{ kpi.trend }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Charts Row 1: Line Chart & Doughnut Chart -->
+  <section class="charts-grid-main">
+    
+    <!-- Line Chart: Inspections & Audits -->
+    <div class="chart-card sn-animate-in sn-animate-in-delay-1">
+      <div class="chart-header">
+        <h3 class="chart-title">
+          <i class="pi pi-chart-line"></i>
+          Tendencia de Inspecciones y Auditorías
+        </h3>
+        <p-tag value="Historial 6 meses" [rounded]="true" severity="success"></p-tag>
+      </div>
+      <div class="chart-body">
+        <div class="chart-scroll-wrapper">
+          <div class="chart-inner-container">
+            <p-chart type="line" [data]="chartAuditorias" [options]="chartAuditoriasOptions" height="280px"></p-chart>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Doughnut Chart: Risks -->
+    <div class="chart-card sn-animate-in sn-animate-in-delay-2">
+      <div class="chart-header">
+        <h3 class="chart-title">
+          <i class="pi pi-exclamation-circle"></i>
+          Distribución de Riesgos
+        </h3>
+        <p-tag value="39 registrados" [rounded]="true" severity="warn"></p-tag>
+      </div>
+      <div class="chart-body chart-body-centered">
+        <p-chart type="doughnut" [data]="chartRiesgos" [options]="chartRiesgosOptions" height="280px"></p-chart>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Split Content Layout: Left (Table + Quick Access) & Right (Alerts + Upcoming) -->
+  <div class="split-content-layout">
+    
+    <!-- Left Column (65% width) -->
+    <div class="left-column">
+      
+      <!-- Bar Chart: Cumplimiento por Categoría (moved here for visual rhythm) -->
+      <section class="bar-chart-section sn-animate-in sn-animate-in-delay-3" style="margin-bottom: 24px;">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3 class="chart-title">
+              <i class="pi pi-chart-bar"></i>
+              Cumplimiento por Categoría
+            </h3>
+            <p-tag value="Evaluación actual" [rounded]="true" severity="info"></p-tag>
+          </div>
+          <div class="chart-body">
+            <div class="chart-scroll-wrapper">
+              <div class="chart-inner-container">
+                <p-chart type="bar" [data]="chartCumplimiento" [options]="chartCumplimientoOptions" height="230px"></p-chart>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Activity Table -->
+      <section class="table-section sn-animate-in sn-animate-in-delay-4">
+        <div class="table-card">
+          <div class="table-header">
+            <h3 class="table-title">
+              <i class="pi pi-history"></i>
+              Actividad Reciente
+            </h3>
+          </div>
+          <p-table [value]="actividades"
+                   [rows]="5"
+                   [paginator]="true"
+                   [showCurrentPageReport]="true"
+                   currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+                   [tableStyle]="{'min-width': '100%'}"
+                   styleClass="p-datatable-sm p-datatable-striped">
+
+            <ng-template pTemplate="header">
+              <tr>
+                <th style="width: 90px">ID</th>
+                <th>Acción</th>
+                <th style="width: 110px">Módulo</th>
+                <th style="width: 100px">Usuario</th>
+                <th style="width: 120px">Fecha</th>
+                <th style="width: 110px">Estado</th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-act>
+              <tr>
+                <td><span class="activity-id">{{ act.id }}</span></td>
+                <td class="activity-action">{{ act.accion }}</td>
+                <td><span class="module-badge">{{ act.modulo }}</span></td>
+                <td>
+                  <div class="user-cell">
+                    <p-avatar [label]="act.usuario.charAt(0).toUpperCase()" shape="circle" [style]="{'background-color': '#4f46e5', 'color': '#fff', 'font-size': '0.7rem', 'width': '22px', 'height': '22px'}"></p-avatar>
+                    <span>{{ act.usuario }}</span>
+                  </div>
+                </td>
+                <td class="date-cell">{{ act.fecha.substring(5) }}</td>
+                <td>
+                  <p-tag [value]="act.estado" [severity]="getSeverityClass(act.severidad)" [rounded]="true"></p-tag>
+                </td>
+              </tr>
+            </ng-template>
+
+          </p-table>
+        </div>
+      </section>
+
+      <!-- Quick Access -->
+      <section class="quick-access sn-animate-in sn-animate-in-delay-5">
+        <h3 class="section-title">
+          <i class="pi pi-th-large"></i>
+          Accesos Rápidos
+        </h3>
+        <div class="access-grid">
+          <div *ngFor="let acceso of accesosRapidos"
+               class="access-card"
+               (click)="navigateTo(acceso.route)"
+               pTooltip="{{ acceso.description }}"
+               tooltipPosition="top">
+            <div class="access-icon" [style.background-color]="acceso.color + '15'" [style.color]="acceso.color">
+              <i [class]="acceso.icon"></i>
+            </div>
+            <span class="access-label">{{ acceso.label }}</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Right Column (35% width) -->
+    <div class="right-column">
+      
+      <!-- Panel de Alertas de Seguridad -->
+      <section class="panel-section alerts-panel sn-animate-in sn-animate-in-delay-3">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3 class="panel-title">
+              <i class="pi pi-bell animated-bell"></i>
+              Alertas del Sistema
+            </h3>
+            <span class="pulse-indicator"></span>
+          </div>
+          <div class="panel-body">
+            <div *ngFor="let alerta of alertas" class="alert-item" [ngClass]="'alert-' + alerta.severidad">
+              <div class="alert-marker"></div>
+              <div class="alert-details">
+                <p class="alert-title">{{ alerta.titulo }}</p>
+                <div class="alert-footer">
+                  <span class="alert-time">{{ alerta.tiempo }}</span>
+                  <span class="alert-level">{{ alerta.nivel }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel de Próximas Formaciones y Eventos -->
+      <section class="panel-section events-panel sn-animate-in sn-animate-in-delay-4">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3 class="panel-title">
+              <i class="pi pi-calendar"></i>
+              Próximos Eventos
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div *ngFor="let evento of proximosEventos" class="event-item">
+              <div class="event-date">
+                <span class="day">{{ evento.fecha.split(' ')[0] }}</span>
+                <span class="month">{{ evento.fecha.split(' ')[1] }}</span>
+              </div>
+              <div class="event-info">
+                <p class="event-title">{{ evento.titulo }}</p>
+                <div class="event-meta">
+                  <span class="event-type-badge">{{ evento.tipo }}</span>
+                  <div class="event-progress-container">
+                    <p-progressBar [value]="evento.progreso" [showValue]="false" [style]="{'height': '4px'}"></p-progressBar>
+                    <span class="progress-val">{{ evento.progreso }}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+
+</div>

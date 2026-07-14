@@ -1,25 +1,322 @@
-.login-container{
+/* ===================================================================
+   Login Component — Premium Split-Screen Styles
+   =================================================================== */
+
+.login-wrapper {
+  display: flex;
   height: 100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background: linear-gradient(135deg,#1e3c72,#2a5298);
+  width: 100vw;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  background-color: #f8fafc;
 }
 
-.login-card{
-  width: 350px;
-  padding: 25px;
-  text-align:center;
-  border-radius:12px;
+/* ==========================================
+   LEFT PANEL: FORM
+   ========================================== */
+.login-left-panel {
+  width: 42%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  background-color: #ffffff;
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.02);
+  z-index: 10;
+  box-sizing: border-box;
 }
 
-.full{
-  width:100%;
-  margin-bottom:15px;
+.login-card {
+  width: 360px;
+  max-width: 100%;
 }
 
-h2{
-  margin-bottom:20px;
+.login-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 28px;
+  letter-spacing: -0.03em;
+  text-align: left;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+/* --- Input Field Wrapper --- */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0 14px;
+  height: 44px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.input-wrapper:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+.form-input {
+  background: transparent;
+  border: none;
+  color: #0f172a;
+  font-size: 0.88rem;
+  font-family: 'Inter', sans-serif;
+  width: 100%;
+  outline: none;
+  height: 100%;
+}
+
+.form-input::placeholder {
+  color: #94a3b8;
+}
+
+/* --- Clear / Toggle Buttons --- */
+.clear-btn,
+.toggle-password-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.clear-btn mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  color: #94a3b8;
+  transition: color 0.15s;
+}
+
+.clear-btn:hover mat-icon {
+  color: #475569;
+}
+
+.toggle-icon {
+  color: #94a3b8;
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  transition: color 0.15s;
+}
+
+.toggle-password-btn:hover .toggle-icon {
+  color: #475569;
+}
+
+/* --- Checkbox & Recover Link --- */
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.custom-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #475569;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.custom-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #3b82f6;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+}
+
+.forgot-link {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.15s;
+}
+
+.forgot-link:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+/* --- Submit Button --- */
+.btn-login-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  background: #3b82f6;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  transition: all 0.2s ease;
+  width: 100%;
+  margin-top: 8px;
+  box-sizing: border-box;
+}
+
+.btn-login-submit:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+}
+
+.btn-login-submit:active {
+  transform: translateY(0);
+}
+
+/* ==========================================
+   RIGHT PANEL: COLORFUL MESH
+   ========================================== */
+.login-right-panel {
+  width: 58%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 80px;
+  position: relative;
+  box-sizing: border-box;
+  
+  /* Vibrant mesh gradient background */
+  background: linear-gradient(135deg, #f59e0b, #ec4899, #3b82f6, #10b981);
+  background-size: 400% 400%;
+  animation: gradientAnimation 12s ease infinite;
+}
+
+@keyframes gradientAnimation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.circles-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.svg-circles {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 55%;
+  height: auto;
+}
+
+.dots-pattern {
+  position: absolute;
+  bottom: 8%;
+  left: 8%;
+  width: 160px;
+  height: 120px;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.2) 1.5px, transparent 1.5px);
+  background-size: 16px 16px;
+  pointer-events: none;
+}
+
+/* --- Brand text overlay --- */
+.mesh-logo-container {
+  position: relative;
+  z-index: 5;
+  color: #ffffff;
+  max-width: 480px;
+}
+
+.mesh-shield {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 14px;
+  margin-bottom: 24px;
+}
+
+.mesh-shield mat-icon {
+  color: #ffffff;
+  font-size: 28px !important;
+  width: 28px !important;
+  height: 28px !important;
+}
+
+.mesh-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.03em;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.mesh-subtitle {
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+@media (max-width: 992px) {
+  .login-left-panel {
+    width: 100%;
+    background-color: #f8fafc;
+  }
+  
+  .login-right-panel {
+    display: none;
+  }
+
+  .login-card {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 16px;
+    padding: 40px 32px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  }
 }
 
 

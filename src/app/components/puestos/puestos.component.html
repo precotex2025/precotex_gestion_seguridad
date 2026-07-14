@@ -4,28 +4,29 @@
   >
 </app-bread-crumb>
 
-<div class="contenedor">
-    <form class="container-cuerpo" [formGroup]="formulario" #formDirective="ngForm">
-        <mat-card class="filtros-card">
+<div class="contenedor sn-animate-in">
+    <form [formGroup]="formulario" #formDirective="ngForm" class="dialog-form">
+        
+        <!-- CARD FILTROS -->
+        <div class="filtros-card">
             <div class="acciones-container">
 
-                <!-- FILTROS -->
+                <!-- FILTROS SELECT -->
                 <div class="filtros">
-
                     <mat-form-field appearance="outline" class="filtro-select">
-                        <mat-label>Organización </mat-label>
+                        <mat-label>Organización</mat-label>
                         <mat-select formControlName="ctrol_organizacion" (selectionChange)="onChangeOrga($event)">
                             <mat-option *ngFor="let orga of lstOrganizacion" [value]="orga.codigo">
-                            {{ orga.descripcion }}
+                                {{ orga.descripcion }}
                             </mat-option>
                         </mat-select>
                     </mat-form-field>   
                      
                     <mat-form-field appearance="outline" class="filtro-select">
-                        <mat-label>Sede </mat-label>
-                        <mat-select formControlName="ctrol_sede" >
+                        <mat-label>Sede</mat-label>
+                        <mat-select formControlName="ctrol_sede">
                             <mat-option *ngFor="let sede of lstSedes" [value]="sede.codigo">
-                            {{ sede.descripcion }}
+                                {{ sede.descripcion }}
                             </mat-option>
                         </mat-select>
                     </mat-form-field>                   
@@ -38,115 +39,134 @@
                             </mat-option>
                         </mat-select>
                     </mat-form-field>
-
                 </div>
-
 
                 <!-- BOTONES -->
                 <div class="botones">
-
-                    <button type="button" class="BtnBuscar" mat-flat-button (click)="onBuscar()">
-                        <mat-icon aria-label="create_new_folder">search
-                        </mat-icon> Buscar
+                    <button type="button" class="btn-search" (click)="onBuscar()">
+                        <mat-icon>search</mat-icon> 
+                        <span>Buscar</span>
                     </button>                        
 
-                    <button type="button" class="BtnCrear" mat-flat-button (click)="onAgregar()">
-                        <mat-icon aria-label="create_new_folder">create_new_folder
-                        </mat-icon> Agregar
+                    <button type="button" class="btn-primary" (click)="onAgregar()">
+                        <mat-icon>create_new_folder</mat-icon> 
+                        <span>Agregar</span>
                     </button>    
 
-                    <button type="button" class="BtnExportar" mat-flat-button (click)="onExportar()" >
-                        <mat-icon aria-label="create_new_folder">download
-                        </mat-icon> Exportar a Excel
+                    <button type="button" class="btn-excel" (click)="onExportar()">
+                        <mat-icon>download</mat-icon> 
+                        <span>Exportar a Excel</span>
                     </button>
                     
-                    <button type="button" class="BtnImportar" mat-flat-button (click)="onImportar()" >
-                        <mat-icon aria-label="create_new_folder">upload
-                        </mat-icon> Importar Puestos
+                    <button type="button" class="btn-import" (click)="onImportar()">
+                        <mat-icon>upload</mat-icon> 
+                        <span>Importar Puestos</span>
                     </button>
                 </div>            
             </div>
-        </mat-card>
+        </div>
 
-        <table mat-table [dataSource]="dataSource" matSort class="tabla-wrapper">
+        <!-- CONTENEDOR DE TABLA PREMIUM -->
+        <div class="table-container shadow-premium">
+            <table mat-table [dataSource]="dataSource" matSort class="tabla">
 
-            <!-- FICHA DESCRIPCIóN -->
-            <ng-container matColumnDef="ficha_descrip">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Ficha Descripción</th>
-                <td mat-cell *matCellDef="let row">
-                    <button type="button" mat-icon-button color="primary" (click)="onVerFicha(row)" title="Ver Ficha">
-                        <mat-icon>description</mat-icon>
-                    </button>
-                </td>
-            </ng-container>     
+                <!-- FICHA DESCRIPCIÓN -->
+                <ng-container matColumnDef="ficha_descrip">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px; text-align: center;">Ficha Descripción</th>
+                    <td mat-cell *matCellDef="let row" style="text-align: center;">
+                        <button type="button" class="action-btn btn-view-ficha" (click)="onVerFicha(row)" title="Ver Ficha">
+                            <mat-icon>description</mat-icon>
+                        </button>
+                    </td>
+                </ng-container>     
 
-            <!-- HISTORICO DE REVISION -->
-            <ng-container matColumnDef="his_de_revi">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Histórico de Revisión</th>
-                <td mat-cell *matCellDef="let row">{{row.his_de_revi}}</td>
-            </ng-container>              
+                <!-- HISTORICO DE REVISION -->
+                <ng-container matColumnDef="his_de_revi">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 140px;">Histórico de Revisión</th>
+                    <td mat-cell *matCellDef="let row">
+                        <span class="rev-badge">{{ row.his_de_revi }}</span>
+                    </td>
+                </ng-container>              
 
-            <!-- ES ADMIN -->
-            <ng-container matColumnDef="es_admin">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>¿Es Admin?</th>
-                <td mat-cell *matCellDef="let row">{{row.es_admin}}</td>
-            </ng-container>             
-            
-            <!-- Sede -->
-            <ng-container matColumnDef="n_user_activ">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>N° Usuarios Activos</th>
-                <td mat-cell *matCellDef="let row">
-                    <span class="user-count-link" (click)="onVerUsuarios(row)">{{row.n_user_activ}}</span>
-                </td>
-            </ng-container>              
-            
-            <!-- Puesto -->
-            <ng-container matColumnDef="puesto">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Puesto</th>
-                <td mat-cell *matCellDef="let row">{{row.puesto}}</td>
-            </ng-container>   
-            
-            <!-- organización -->
-            <ng-container matColumnDef="organización">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Organización</th>
-                <td mat-cell *matCellDef="let row">{{row.organizacion}}</td>
-            </ng-container>     
-            
-            <!-- SEDE -->
-            <ng-container matColumnDef="sede">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Sede</th>
-                <td mat-cell *matCellDef="let row">{{row.sede}}</td>
-            </ng-container>
+                <!-- ES ADMIN -->
+                <ng-container matColumnDef="es_admin">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px; text-align: center;">¿Es Admin?</th>
+                    <td mat-cell *matCellDef="let row" style="text-align: center;">
+                        <span [class]="row.es_admin === 'Sí' ? 'badge-admin-yes' : 'badge-admin-no'">
+                            {{ row.es_admin }}
+                        </span>
+                    </td>
+                </ng-container>             
+                
+                <!-- N° Usuarios Activos -->
+                <ng-container matColumnDef="n_user_activ">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px; text-align: center;">N° Usuarios Activos</th>
+                    <td mat-cell *matCellDef="let row" style="text-align: center;">
+                        <span class="user-badge-pill" (click)="onVerUsuarios(row)" title="Ver usuarios activos">
+                            <mat-icon class="pill-icon">people</mat-icon>
+                            {{ row.n_user_activ }}
+                        </span>
+                    </td>
+                </ng-container>              
+                
+                <!-- Puesto -->
+                <ng-container matColumnDef="puesto">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 180px;">Puesto</th>
+                    <td mat-cell *matCellDef="let row" class="norma-cell">{{ row.puesto }}</td>
+                </ng-container>   
+                
+                <!-- Organización -->
+                <ng-container matColumnDef="organización">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 150px;">Organización</th>
+                    <td mat-cell *matCellDef="let row">{{ row.organizacion }}</td>
+                </ng-container>     
+                
+                <!-- Sede -->
+                <ng-container matColumnDef="sede">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 150px;">Sede</th>
+                    <td mat-cell *matCellDef="let row">{{ row.sede }}</td>
+                </ng-container>
 
-            <!-- Nivel Riesgo -->
-            <ng-container matColumnDef="nivel_riesgo">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Nivel Riesgo</th>
-                <td mat-cell *matCellDef="let row">{{row.nivelRiesgo}}</td>
-            </ng-container>
+                <!-- Nivel Riesgo -->
+                <ng-container matColumnDef="nivel_riesgo">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 130px; text-align: center;">Nivel Riesgo</th>
+                    <td mat-cell *matCellDef="let row" style="text-align: center;">
+                        <span [class]="'badge-riesgo-' + row.nivelRiesgo.toLowerCase()">
+                            {{ row.nivelRiesgo }}
+                        </span>
+                    </td>
+                </ng-container>
 
-            <!-- CON DOCUMENTOS FACILITADOS/SOLICITADOS/CUESTIONARIOS -->
-            <ng-container matColumnDef="con_doc_fal">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Documentos Facilitados/Solicitados/Cuestionarios</th>
-                <td mat-cell *matCellDef="let row">{{row.con_doc_fal}}</td>
-            </ng-container>  
+                <!-- Documentos Facilitados/Solicitados/Cuestionarios -->
+                <ng-container matColumnDef="con_doc_fal">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 250px;">Documentos Facilitados/Solicitados/Cuestionarios</th>
+                    <td mat-cell *matCellDef="let row">
+                        <span [class]="row.con_doc_fal.startsWith('Sí') ? 'badge-doc-yes' : 'badge-doc-no'">
+                            {{ row.con_doc_fal }}
+                        </span>
+                    </td>
+                </ng-container>  
 
-            <!-- ACCIONES -->
-            <ng-container matColumnDef="acciones">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Acciones</th>
-                <td mat-cell *matCellDef="let row">
-                    <button mat-icon-button color="primary" (click)="onEditar(row)">
-                        <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button color="warn" (click)="onEliminar(row)">
-                        <mat-icon>delete</mat-icon>
-                    </button>
-                </td>
-            </ng-container>  
-            
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>                  
-                    
-        </table>
+                <!-- Acciones -->
+                <ng-container matColumnDef="acciones">
+                    <th mat-header-cell *matHeaderCellDef style="width: 110px; text-align: center;">Acciones</th>
+                    <td mat-cell *matCellDef="let row">
+                        <div class="actions-wrapper">
+                            <button type="button" class="action-btn btn-edit" (click)="onEditar(row)" title="Editar">
+                                <mat-icon>edit</mat-icon>
+                            </button>
+                            <button type="button" class="action-btn btn-delete" (click)="onEliminar(row)" title="Eliminar">
+                                <mat-icon>delete</mat-icon>
+                            </button>
+                        </div>
+                    </td>
+                </ng-container>  
+                
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="fila"></tr>                  
+                        
+            </table>
+        </div>
 
     </form>
 </div>

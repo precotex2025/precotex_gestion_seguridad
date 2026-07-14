@@ -1,42 +1,49 @@
+/* ===================================================================
+   Verificación de Accesos — Estilos Rediseñados Premium
+   =================================================================== */
+
 .contenedor {
   padding: 24px;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-  color: #333;
+  animation: fadeIn 0.4s var(--sn-ease) both;
 }
 
 /* Botón Superior Nueva Revisión */
 .top-row {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .btn-nueva-revision {
-  background-color: #c00000;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: bold;
+  background-color: var(--sn-primary-600) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: var(--sn-radius-md) !important;
+  padding: 10px 20px !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: background-color 0.2s, transform 0.1s;
+  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.15) !important;
+  transition: all 0.2s var(--sn-ease) !important;
 }
 
 .btn-nueva-revision:hover {
-  background-color: #a00000;
+  background-color: var(--sn-primary-700) !important;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25) !important;
 }
 
 .btn-nueva-revision:active {
-  transform: scale(0.98);
+  transform: scale(0.97) !important;
 }
 
 .btn-nueva-revision mat-icon {
   font-size: 18px !important;
   width: 18px !important;
   height: 18px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-nueva-revision .external-icon {
@@ -44,117 +51,120 @@
   width: 14px !important;
   height: 14px !important;
   margin-left: 2px;
+  opacity: 0.8;
 }
 
 /* Subtítulo */
 .subtitulo {
-  color: #c00000;
-  font-size: 16px;
-  font-weight: bold;
+  color: var(--sn-slate-900);
+  font-size: 18px;
+  font-weight: 600;
   margin-top: 24px;
   margin-bottom: 16px;
-  text-transform: none;
+  letter-spacing: -0.01em;
 }
 
-/* Toggle container */
-.toggle-container {
-  margin-bottom: 15px;
-}
 
-/* PHP Fatal Error simulation box */
-.php-error-box {
-  background-color: #ffffff;
-  border: 1px solid #ff0000;
-  padding: 12px;
-  font-family: monospace, Courier, sans-serif;
-  font-size: 12px;
-  color: #000000;
-  margin-bottom: 20px;
-  line-height: 1.6;
-  border-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
 
 /* Tabla de Accesos */
 .table-container {
-  background: white;
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  border: 1px solid #e0e0e0;
+  background: var(--sn-surface-card);
+  border-radius: var(--sn-radius-lg) !important;
+  overflow: hidden !important;
+  box-shadow: var(--sn-shadow-md);
+  border: 1px solid var(--sn-slate-200);
+  transition: box-shadow 0.3s var(--sn-ease);
+}
+
+.table-container:hover {
+  box-shadow: var(--sn-shadow-lg);
 }
 
 .tabla-wrapper {
   width: 100%;
+  border-collapse: collapse;
 }
 
-::ng-deep .tabla-wrapper {
-  --mat-table-header-container-background-color: #c00000 !important;
-}
-
+/* Cabeceras de Tabla (Remueve el rojo ruidoso de fondo) */
 ::ng-deep .tabla-wrapper th,
 ::ng-deep .tabla-wrapper .mat-mdc-header-cell,
 ::ng-deep .tabla-wrapper .mat-header-cell,
 ::ng-deep .tabla-wrapper .mat-mdc-header-row,
 ::ng-deep .tabla-wrapper .mat-header-row {
-  background-color: #c00000 !important;
-  color: white !important;
+  background-color: var(--sn-slate-50) !important;
+  color: var(--sn-slate-600) !important;
   font-size: 13px !important;
-  font-weight: bold !important;
-  padding: 12px 16px !important;
-  border-bottom: none !important;
+  font-weight: 600 !important;
+  padding: 14px 16px !important;
+  border-bottom: 1.5px solid var(--sn-slate-200) !important;
   text-align: left;
 }
 
+/* Celdas de Fila */
 ::ng-deep .tabla-wrapper td.mat-cell {
-  font-size: 13px;
-  color: #333;
+  font-size: 14px !important;
+  color: var(--sn-slate-800) !important;
   padding: 12px 16px !important;
-  border-bottom: 1px solid #f0f0f0 !important;
+  border-bottom: 1px solid var(--sn-slate-100) !important;
+}
+
+.table-row {
+  transition: background-color 0.2s var(--sn-ease) !important;
 }
 
 .table-row:hover {
-  background-color: #fcfcfc !important;
+  background-color: var(--sn-slate-50) !important;
 }
 
-/* Badges para Usuarios Inactivos */
+/* Formateo de Celdas */
+.col-tabular {
+  font-variant-numeric: tabular-nums !important;
+  font-family: var(--sn-font-family) !important;
+  font-weight: 500 !important;
+}
+
+/* Badges para Usuarios Inactivos (Pills Pastel) */
 .badge-inactivos-warn {
-  background-color: #fee2e2;
-  color: #991b1b;
-  font-weight: bold;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 11.5px;
+  background-color: var(--sn-danger-50) !important;
+  color: var(--sn-danger-600) !important;
+  border: 1px solid rgba(225, 29, 72, 0.15) !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: var(--sn-radius-sm) !important;
+  font-size: 11.5px !important;
   display: inline-block;
+  box-shadow: var(--sn-shadow-xs) !important;
 }
 
 .badge-inactivos-ok {
-  background-color: #dcfce7;
-  color: #166534;
-  font-weight: bold;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 11.5px;
+  background-color: var(--sn-success-50) !important;
+  color: var(--sn-success-700) !important;
+  border: 1px solid rgba(4, 120, 87, 0.15) !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: var(--sn-radius-sm) !important;
+  font-size: 11.5px !important;
   display: inline-block;
+  box-shadow: var(--sn-shadow-xs) !important;
 }
 
-/* Botón Eliminar en celda */
+/* Botón Eliminar en celda (Neutral con hover reactivo de peligro) */
 .btn-delete {
   background: none;
   border: none;
   cursor: pointer;
-  color: #ef4444;
+  color: var(--sn-slate-400);
   padding: 6px;
-  border-radius: 50%;
+  border-radius: var(--sn-radius-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s, color 0.2s;
+  transition: all 0.2s var(--sn-ease);
 }
 
 .btn-delete:hover {
-  color: #dc2626;
-  background-color: #fee2e2;
+  color: var(--sn-danger-600);
+  background-color: var(--sn-danger-50);
 }
 
 .btn-delete mat-icon {

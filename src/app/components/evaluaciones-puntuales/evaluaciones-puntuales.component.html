@@ -68,13 +68,13 @@
       <!-- Fecha Alta -->
       <ng-container matColumnDef="fecha_alta">
         <th mat-header-cell *matHeaderCellDef style="width: 140px;">Fecha Alta</th>
-        <td mat-cell *matCellDef="let row">{{ row.fechaAlta }}</td>
+        <td mat-cell *matCellDef="let row" class="col-tabular">{{ row.fechaAlta }}</td>
       </ng-container>
 
       <!-- Fecha Límite -->
       <ng-container matColumnDef="fecha_limite">
         <th mat-header-cell *matHeaderCellDef style="width: 140px;">Fecha Límite</th>
-        <td mat-cell *matCellDef="let row">{{ row.fechaLimite }}</td>
+        <td mat-cell *matCellDef="let row" class="col-tabular">{{ row.fechaLimite }}</td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

@@ -22,8 +22,6 @@ export class VerificacionAccesosComponent implements OnInit {
   dataSource = new MatTableDataSource<VerificacionRegistro>();
   displayedColumns: string[] = ['fechaHora', 'responsable', 'usuariosInactivos', 'acciones'];
 
-  // Toggle for original PHP bug visual
-  mostrarErrorPHP: boolean = false;
 
   // Mock data
   originalRegistros: VerificacionRegistro[] = [

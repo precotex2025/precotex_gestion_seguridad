@@ -1,80 +1,97 @@
 <mat-sidenav-container class="container">
 
   <!-- SIDENAV -->
-  <mat-sidenav #sidenav mode="side" opened class="sidenav">
+  <mat-sidenav #sidenav [mode]="isMobile ? 'over' : 'side'" [opened]="!isMobile" class="sidenav">
 
-    <h3 class="logo">SecureNorm</h3>
+    <!-- Logo / Brand -->
+    <div class="sidenav-brand" routerLink="/principal" style="cursor: pointer;">
+      <div class="brand-icon">
+        <mat-icon>verified_user</mat-icon>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">SecureNorm</span>
+        <span class="brand-version">v2.0</span>
+      </div>
+    </div>
 
-    <mat-nav-list>
+    <mat-nav-list (click)="onNavListClick($event)">
+
+      <!-- INICIO -->
+      <a mat-list-item routerLink="/principal" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+        <mat-icon class="nav-icon">dashboard</mat-icon>
+        <span class="nav-label">Inicio</span>
+      </a>
+      <div class="nav-divider"></div>
+      <span class="nav-section-label">GESTIÓN</span>
 
       <!-- MENU 1 -->
-      <mat-expansion-panel>
+      <mat-expansion-panel class="nav-panel">
         <mat-expansion-panel-header>
-          <mat-icon>folder</mat-icon>
-          <span style="margin-left:8px;">Organización</span>
+          <mat-icon class="nav-icon">folder</mat-icon>
+          <span class="nav-label">Organización</span>
         </mat-expansion-panel-header>
 
-        <a mat-list-item routerLink="/principal/normas">
+        <a mat-list-item routerLink="/principal/normas" routerLinkActive="active-link" class="nav-subitem">
           Normas
         </a>
 
-        <a mat-list-item routerLink="/principal/organizacion">
+        <a mat-list-item routerLink="/principal/organizacion" routerLinkActive="active-link" class="nav-subitem">
           Organización
         </a>
 
       </mat-expansion-panel>     
       
       <!-- MENU 2 -->
-      <mat-expansion-panel>
+      <mat-expansion-panel class="nav-panel">
         <mat-expansion-panel-header>
-          <mat-icon>diversity_3</mat-icon>
-          <span style="margin-left:8px;">Personas</span>
+          <mat-icon class="nav-icon">diversity_3</mat-icon>
+          <span class="nav-label">Personas</span>
         </mat-expansion-panel-header>
 
-        <a mat-list-item routerLink="/principal/puestos">
+        <a mat-list-item routerLink="/principal/puestos" routerLinkActive="active-link" class="nav-subitem">
           Puestos
         </a>
 
-        <a mat-list-item routerLink="/principal/usuariosPersonas">
+        <a mat-list-item routerLink="/principal/usuariosPersonas" routerLinkActive="active-link" class="nav-subitem">
           Usuarios / Personas
         </a>
 
-        <a mat-list-item routerLink="/principal/documentacionPersonas">
+        <a mat-list-item routerLink="/principal/documentacionPersonas" routerLinkActive="active-link" class="nav-subitem">
           Documentación Personas
         </a>        
 
-        <a mat-list-item routerLink="/principal/misDocumentos">
+        <a mat-list-item routerLink="/principal/misDocumentos" routerLinkActive="active-link" class="nav-subitem">
           Mis Documentos
         </a>        
 
-        <a mat-list-item routerLink="/principal/evaluacionesPuntuales">
+        <a mat-list-item routerLink="/principal/evaluacionesPuntuales" routerLinkActive="active-link" class="nav-subitem">
           Evaluaciones Puntuales
         </a>        
-        <a mat-list-item routerLink="/principal/campusVirtual">
+        <a mat-list-item routerLink="/principal/campusVirtual" routerLinkActive="active-link" class="nav-subitem">
           Campus Virtual
         </a>        
 
-        <a mat-list-item routerLink="/principal/accionesCorrectivas">
+        <a mat-list-item routerLink="/principal/accionesCorrectivas" routerLinkActive="active-link" class="nav-subitem">
           Acciones Correctivas
         </a>        
 
-        <a mat-list-item routerLink="/principal/analytics">
+        <a mat-list-item routerLink="/principal/analytics" routerLinkActive="active-link" class="nav-subitem">
           Analytics
         </a>        
 
-        <a mat-list-item routerLink="/principal/verificacionAccesos">
+        <a mat-list-item routerLink="/principal/verificacionAccesos" routerLinkActive="active-link" class="nav-subitem">
           Verificación de accesos
         </a>        
 
-        <a mat-list-item routerLink="/principal/logAccesos">
+        <a mat-list-item routerLink="/principal/logAccesos" routerLinkActive="active-link" class="nav-subitem">
           Log de Accesos
         </a>        
 
-        <a mat-list-item routerLink="/principal/mapaPermisos">
-          Mapa de permisos de los puestos
+        <a mat-list-item routerLink="/principal/mapaPermisos" routerLinkActive="active-link" class="nav-subitem">
+          Mapa de permisos
         </a>        
 
-        <a mat-list-item routerLink="/principal/configuracionPuestos">
+        <a mat-list-item routerLink="/principal/configuracionPuestos" routerLinkActive="active-link" class="nav-subitem">
           Configuración de puestos
         </a>        
 
@@ -82,68 +99,58 @@
       </mat-expansion-panel>
 
       <!-- MENU 3 -->
-      <mat-expansion-panel>
+      <mat-expansion-panel class="nav-panel">
         <mat-expansion-panel-header>
-          <mat-icon>folder</mat-icon>
-          <span style="margin-left:8px;">Documentos</span>
+          <mat-icon class="nav-icon">folder</mat-icon>
+          <span class="nav-label">Documentos</span>
         </mat-expansion-panel-header>
 
-        <a mat-list-item routerLink="/principal/documentosControlados">
+        <a mat-list-item routerLink="/principal/documentosControlados" routerLinkActive="active-link" class="nav-subitem">
           Docs. Controlados
         </a>
 
-        <a mat-list-item routerLink="/principal/documentosNoControlados">
+        <a mat-list-item routerLink="/principal/documentosNoControlados" routerLinkActive="active-link" class="nav-subitem">
           Docs. no Controlados
         </a>    
 
-        <a mat-list-item routerLink="/principal/registrosPendientes">
+        <a mat-list-item routerLink="/principal/registrosPendientes" routerLinkActive="active-link" class="nav-subitem">
           Registros Pendientes
         </a>
 
       </mat-expansion-panel>       
       
       <!-- MENU 4 -->
-      <mat-expansion-panel>
+      <mat-expansion-panel class="nav-panel">
         <mat-expansion-panel-header>
-          <mat-icon>track_changes</mat-icon>
-          <span style="margin-left:8px;">Objetivos</span>
+          <mat-icon class="nav-icon">track_changes</mat-icon>
+          <span class="nav-label">Objetivos</span>
         </mat-expansion-panel-header>
 
-        <a mat-list-item routerLink="/principal/planificacionObjetivos">
+        <a mat-list-item routerLink="/principal/planificacionObjetivos" routerLinkActive="active-link" class="nav-subitem">
           Planificación Objetivos
         </a>
 
-        <a mat-list-item routerLink="/principal/gestionObjetivos">
+        <a mat-list-item routerLink="/principal/gestionObjetivos" routerLinkActive="active-link" class="nav-subitem">
           Gestión Objetivos
         </a>
 
-        <a mat-list-item routerLink="/principal/medicionesPendientes">
+        <a mat-list-item routerLink="/principal/medicionesPendientes" routerLinkActive="active-link" class="nav-subitem">
           Mediciones Pendientes
         </a>
 
       </mat-expansion-panel>       
 
       <!-- MENU 5: RIESGOS -->
-      <mat-expansion-panel>
+      <mat-expansion-panel class="nav-panel">
         <mat-expansion-panel-header>
-          <mat-icon>warning</mat-icon>
-          <span style="margin-left:8px;">Riesgos</span>
+          <mat-icon class="nav-icon">warning</mat-icon>
+          <span class="nav-label">Riesgos</span>
         </mat-expansion-panel-header>
 
-        <a mat-list-item routerLink="/principal/evaluacionRiesgos">
+        <a mat-list-item routerLink="/principal/evaluacionRiesgos" routerLinkActive="active-link" class="nav-subitem">
           Evaluación de Riesgos
         </a>
       </mat-expansion-panel>       
-      
-      <!-- <a mat-list-item routerLink="/principal">
-        <mat-icon>home</mat-icon>
-        Principal
-      </a>
-
-      <a mat-list-item routerLink="/normas">
-        <mat-icon>description</mat-icon>
-        Normas
-      </a> -->
 
     </mat-nav-list>
 
@@ -153,13 +160,27 @@
   <mat-sidenav-content>
 
     <!-- TOOLBAR -->
-    <mat-toolbar color="primary" class="mix-toolbar">
+    <mat-toolbar class="mix-toolbar">
 
-      <button mat-icon-button (click)="sidenav.toggle()">
+      <button mat-icon-button (click)="sidenav.toggle()" class="toolbar-toggle">
         <mat-icon>menu</mat-icon>
       </button>
 
-      Sistema de Normas
+      <span class="toolbar-title">Sistema de Normas</span>
+
+      <span class="toolbar-spacer"></span>
+
+      <!-- User info -->
+      <div class="toolbar-user">
+        <div class="toolbar-avatar">
+          <mat-icon>person</mat-icon>
+        </div>
+        <span class="toolbar-username">{{ userName }}</span>
+      </div>
+
+      <button mat-icon-button (click)="onLogout()" class="toolbar-logout" matTooltip="Cerrar sesión">
+        <mat-icon>logout</mat-icon>
+      </button>
 
     </mat-toolbar>
 

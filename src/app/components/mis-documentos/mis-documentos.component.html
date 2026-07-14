@@ -8,63 +8,59 @@
   <form [formGroup]="formulario" (ngSubmit)="onFiltrar()" class="form-content">
     
     <!-- Filtros Card -->
-    <mat-card class="filtros-card">
-      <mat-card-subtitle class="card-title">Búsqueda de Documentos</mat-card-subtitle>
+    <fieldset class="search-fieldset">
+      <legend class="search-legend">Búsqueda de Documentos</legend>
       
       <div class="filtros-grid">
         <!-- Búsqueda Libre -->
-        <mat-form-field appearance="outline" class="w-100">
-          <mat-label>Búsqueda Libre</mat-label>
-          <input matInput formControlName="ctrol_busqueda" placeholder="Buscar por nombre del documento...">
-        </mat-form-field>
+        <div class="search-field">
+          <label for="busquedaLibre">Búsqueda Libre</label>
+          <input id="busquedaLibre" type="text" formControlName="ctrol_busqueda" placeholder="Buscar por nombre del documento...">
+        </div>
 
         <!-- Tipo -->
-        <mat-form-field appearance="outline" class="w-100">
-          <mat-label>Tipo</mat-label>
-          <mat-select formControlName="ctrol_tipo">
-            <mat-option value="">Selecciona</mat-option>
-            <mat-option value="Política">Política</mat-option>
-            <mat-option value="Procedimiento">Procedimiento</mat-option>
-            <mat-option value="Manual">Manual</mat-option>
-            <mat-option value="Instrucción">Instrucción</mat-option>
-          </mat-select>
-        </mat-form-field>
+        <div class="search-field">
+          <label for="tipo">Tipo</label>
+          <select id="tipo" formControlName="ctrol_tipo">
+            <option value="">Selecciona</option>
+            <option value="Política">Política</option>
+            <option value="Procedimiento">Procedimiento</option>
+            <option value="Manual">Manual</option>
+            <option value="Instrucción">Instrucción</option>
+          </select>
+        </div>
 
-        <!-- A partir de (Datepicker) -->
-        <mat-form-field appearance="outline" class="w-100">
-          <mat-label>A partir de</mat-label>
-          <input matInput [matDatepicker]="pickerDesde" formControlName="ctrol_fecha_desde" placeholder="dd/mm/aaaa">
-          <mat-datepicker-toggle matSuffix [for]="pickerDesde"></mat-datepicker-toggle>
-          <mat-datepicker #pickerDesde></mat-datepicker>
-        </mat-form-field>
+        <!-- A partir de -->
+        <div class="search-field">
+          <label for="fechaDesde">A partir de</label>
+          <input id="fechaDesde" type="date" formControlName="ctrol_fecha_desde">
+        </div>
 
-        <!-- Hasta (Datepicker) -->
-        <mat-form-field appearance="outline" class="w-100">
-          <mat-label>Hasta</mat-label>
-          <input matInput [matDatepicker]="pickerHasta" formControlName="ctrol_fecha_hasta" placeholder="dd/mm/aaaa">
-          <mat-datepicker-toggle matSuffix [for]="pickerHasta"></mat-datepicker-toggle>
-          <mat-datepicker #pickerHasta></mat-datepicker>
-        </mat-form-field>
+        <!-- Hasta -->
+        <div class="search-field">
+          <label for="fechaHasta">Hasta</label>
+          <input id="fechaHasta" type="date" formControlName="ctrol_fecha_hasta">
+        </div>
 
         <!-- Clasificación Documento -->
-        <mat-form-field appearance="outline" class="w-100">
-          <mat-label>Clasificación Documento</mat-label>
-          <mat-select formControlName="ctrol_clasificacion">
-            <mat-option value="">Selecciona</mat-option>
-            <mat-option value="Controlado">Controlado</mat-option>
-            <mat-option value="No Controlado">No Controlado</mat-option>
-            <mat-option value="Confidencial">Confidencial</mat-option>
-          </mat-select>
-        </mat-form-field>
+        <div class="search-field">
+          <label for="clasificacionDoc">Clasificación Documento</label>
+          <select id="clasificacionDoc" formControlName="ctrol_clasificacion">
+            <option value="">Selecciona</option>
+            <option value="Controlado">Controlado</option>
+            <option value="No Controlado">No Controlado</option>
+            <option value="Confidencial">Confidencial</option>
+          </select>
+        </div>
 
         <!-- Botón de Búsqueda -->
         <div class="botones-grupo">
-          <button type="submit" class="BtnBuscar" mat-flat-button>
+          <button type="submit" class="BtnBuscar">
             Buscar
           </button>
         </div>
       </div>
-    </mat-card>
+    </fieldset>
 
     <!-- Tabla de resultados -->
     <table mat-table [dataSource]="dataSource" class="tabla-wrapper">
@@ -138,7 +134,7 @@
       <!-- Fecha de Alta en el Sistema -->
       <ng-container matColumnDef="fecha_alta">
         <th mat-header-cell *matHeaderCellDef>Fecha de Alta en el Sistema</th>
-        <td mat-cell *matCellDef="let doc">{{ doc.fechaAlta }}</td>
+        <td mat-cell *matCellDef="let doc" class="col-tabular">{{ doc.fechaAlta }}</td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
