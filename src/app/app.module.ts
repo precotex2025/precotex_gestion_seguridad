@@ -65,6 +65,7 @@ import { UsuariosPersonasComponent } from './components/usuarios-personas/usuari
 import { UsuariosPersonasRegeditComponent } from './components/usuarios-personas/usuarios-personas-regedit/usuarios-personas-regedit.component';
 import { DocumentacionPersonasComponent } from './components/documentacion-personas/documentacion-personas.component';
 import { DocumentacionPersonasRegeditComponent } from './components/documentacion-personas/documentacion-personas-regedit/documentacion-personas-regedit.component';
+import { PrincipalComponent } from './components/principal/principal.component';
 import { DocumentacionPersonasPlanesComponent } from './components/documentacion-personas/documentacion-personas-planes/documentacion-personas-planes.component';
 import { DocumentacionPersonasPlanesRegeditComponent } from './components/documentacion-personas/documentacion-personas-planes/documentacion-personas-planes-regedit/documentacion-personas-planes-regedit.component';
 import { MisDocumentosComponent } from './components/mis-documentos/mis-documentos.component';
@@ -122,7 +123,31 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
     DocumentacionPersonasComponent,
     DocumentacionPersonasRegeditComponent,
     PrincipalComponent,
-    DocumentosNoControladosRegeditCarpetaComponent
+    DocumentosNoControladosRegeditCarpetaComponent,
+    DocumentacionPersonasPlanesComponent,
+    DocumentacionPersonasPlanesRegeditComponent,
+    MisDocumentosComponent,
+    EvaluacionesPuntualesComponent,
+    EvaluacionesPuntualesRegeditComponent,
+    CampusVirtualComponent,
+    AccionesCorrectivasComponent,
+    PlanificarFormacionModalComponent,
+    AnalyticsComponent,
+    VerificacionAccesosComponent,
+    NuevaRevisionModalComponent,
+    LogAccesosComponent,
+    MapaPermisosComponent,
+    ConfiguracionPuestosComponent,
+    NivelesRiesgoModalComponent,
+    RegistrosPendientesComponent,
+    PlanificacionObjetivosComponent,
+    PlanificacionObjetivosRegeditComponent,
+    PlanificacionObjetivosMedicionComponent,
+    NuevaTareaModalComponent,
+    MedicionesPendientesComponent,
+    EvaluacionRiesgosComponent,
+    EvaluacionRiesgosRegeditComponent,
+    DashboardComponent
   ],
   imports: [
     BrowserModule     ,
