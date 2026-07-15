@@ -1,42 +1,69 @@
 <div class="dialog-wrapper">
   
   <header class="dialog-header">
-    <mat-icon class="header-icon">gavel</mat-icon>
-    <h2 class="header-title">{{ data.Title.replace('::. ', '').replace(' .::', '') }}</h2>
+    <h2 class="header-title">{{ data.Accion === 'I' ? 'Nuevo registro' : 'Editar registro' }}</h2>
   </header>
 
   <form [formGroup]="formulario" #formDirective="ngForm" class="dialog-form">
     <div class="dialog-content">
       
-      <!-- Código (solo editable / visible si no es inserción "I") -->
-      <div class="row" *ngIf="data?.Accion !== 'I'">
-        <label class="form-label">Código de la Norma</label>
-        <div class="input-wrapper disabled-field">
-          <mat-icon class="input-icon">vpn_key</mat-icon>
-          <input type="text" formControlName="ctrol_codigo" readonly class="form-input">
-        </div>
-      </div>
-
-      <!-- Denominación -->
-      <div class="row">
-        <label class="form-label">Denominación / Objetivo <span class="required">*</span></label>
-        <div class="input-wrapper">
-          <mat-icon class="input-icon">description</mat-icon>
+      <!-- Fila 1: Nombre de la norma -->
+      <div class="form-row">
+        <div class="form-field full-width">
+          <label class="form-label">Nombre de la norma</label>
           <input type="text" 
                  formControlName="ctrol_denominacion" 
-                 placeholder="Ingrese denominación o código de norma..." 
+                 placeholder="Ej. ISO 27001:2022" 
                  class="form-input">
         </div>
       </div>
 
-      <!-- Descripción -->
-      <div class="row">
-        <label class="form-label">Descripción Detallada</label>
-        <div class="input-wrapper textarea-wrapper">
-          <mat-icon class="input-icon">chat_bubble_outline</mat-icon>
+      <!-- Fila 2: Categoría y Estado -->
+      <div class="form-row split-2">
+        <div class="form-field">
+          <label class="form-label">Categoría / Ámbito</label>
+          <select formControlName="ctrol_categoria" class="form-select">
+            <option value="Calidad">Calidad</option>
+            <option value="Seguridad y Salud">Seguridad y Salud</option>
+            <option value="Medio Ambiente">Medio Ambiente</option>
+            <option value="Otros">Otros</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Estado</label>
+          <select formControlName="ctrol_estado" class="form-select">
+            <option value="Vigente">Vigente</option>
+            <option value="En revisión">En revisión</option>
+            <option value="Por vencer">Por vencer</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Fila 3: Fechas -->
+      <div class="form-row split-2">
+        <div class="form-field">
+          <label class="form-label">Fecha de vencimiento</label>
+          <input type="date" 
+                 formControlName="ctrol_fechaVencimiento" 
+                 class="form-input-date">
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Última auditoría</label>
+          <input type="date" 
+                 formControlName="ctrol_fechaAuditoria" 
+                 class="form-input-date">
+        </div>
+      </div>
+
+      <!-- Fila 4: Descripción Breve -->
+      <div class="form-row">
+        <div class="form-field full-width">
+          <label class="form-label">Descripción breve</label>
           <textarea formControlName="ctrol_descripcion" 
-                    placeholder="Ingrese una descripción breve..." 
-                    class="form-input form-textarea" 
+                    placeholder="Qué cubre esta norma para Precotex..." 
+                    class="form-textarea" 
                     rows="3"></textarea>
         </div>
       </div>        
@@ -45,14 +72,12 @@
 
     <!-- Acciones / Botones -->
     <div class="button-row"> 
-      <button type="button" class="btn-primary" (click)="onSave()"> 
-        <mat-icon>save</mat-icon>
-        <span>Grabar</span>
+      <button type="button" class="btn-cancelar" (click)="onClose()">
+        <span>Cancelar</span>
       </button>
-
-      <button type="button" class="btn-secondary" mat-dialog-close (click)="onClose()">
-        <mat-icon>close</mat-icon>
-        <span>Salir</span>
+      
+      <button type="button" class="btn-guardar" (click)="onSave()"> 
+        <span>Guardar</span>
       </button>
     </div>   
   </form>

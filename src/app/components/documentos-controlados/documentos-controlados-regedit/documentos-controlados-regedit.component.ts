@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
@@ -10,6 +10,31 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 })
 export class DocumentosControladosRegeditComponent implements OnInit {
   formulario!: FormGroup;
+  title: string = 'Registrar nuevo Documento';
+  action: string = 'I';
+
+  PROCESOS_GROUPS: { [key: string]: string[] } = {
+    'Soporte (SOP)': ['Sistemas', 'Mantenimiento General', 'Seguridad Patrimonial', 'SSOMA'],
+    'Auditoría Interna (AIO)': ['Auditoría Interna'],
+    'Control Patrimonial (CPT)': ['Control Patrimonial'],
+    'Ingeniería y Mejora Continua (IMC)': ['Organización y Métodos', 'Investigación, Desarrollo e Innovación', 'Certificaciones'],
+    'Administración y Finanzas (AFC)': ['Administración', 'Finanzas', 'Contabilidad y Costos', 'Tesorería'],
+    'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitaciones y Desarrollo', 'Comunicaciones', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
+    'Servicio de Estampado y Bordado (SEB)': ['Estampado', 'Bordado', 'Calidad Estampado y Bordado', 'Planeamiento y Programación de la Producción E&B'],
+    'Operaciones Manufactura (OPM)': ['Corte', 'Costura', 'Inspección', 'Acabados', 'Aseguramiento de la Calidad Manufactura', 'Consumos'],
+    'Operaciones Textil (OPT)': ['Tejeduría', 'Tintorería', 'Laboratorio de Color', 'Estampado Digital', 'Acabados Textil', 'Aseguramiento de Calidad Textil', 'Lavandería'],
+    'Balance de Materia (BM)': ['Balance de Materia'],
+    'Planeamiento y Control de la Producción (PCP)': ['PCP Textil', 'PCP Manufactura', 'PCP Estampado y Bordado'],
+    'Logística (LOG)': ['Almacén', 'Comercio Exterior', 'Logística', 'Transporte'],
+    'Gestión Comercial (GCOM)': ['Desarrollo de Producto', 'Desarrollo de Estampado y Bordado', 'Desarrollo Textil', 'Comercial Exportación de Prendas'],
+    'Gerencia General (GG)': ['Comercial Exportación de Telas', 'Comercial Venta Local Textil', 'Alianzas Estratégicas', 'Desarrollo de Negocios', 'Proyectos Gerenciales', 'Sistema de Gestión General', 'Gestión Estratégica']
+  };
+
+  tipos = ['Procedimiento', 'Instructivo', 'Formato', 'Manual', 'Perfil de puesto'];
+  formatos = ['PDF', 'Word', 'Excel'];
+  estados = ['Vigente', 'Por vencer', 'Obsoleto'];
+
+  fileName: string = 'Ningún archivo cargado';
 
   constructor(
     private formBuilder: FormBuilder,
@@ -18,33 +43,45 @@ export class DocumentosControladosRegeditComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.title = this.data?.Title || 'Registrar nuevo Documento';
+    this.action = this.data?.Accion || 'I';
+    const row = this.data?.Datos;
+
     this.formulario = this.formBuilder.group({
-      ctrol_denominacion: [''],
-      ctrol_carpeta: ['ACABADO'],
-      ctrol_codigo: [''],
-      ctrol_version: [''],
-      ctrol_tiempo_conservacion: ['5 años'],
-      
-      chk_iso_14001: [false],
-      chk_iso_9001: [false],
-      chk_otra: [false],
-      chk_wrap: [false],
-      chk_iso_45001: [false],
-      chk_ley_28783: [false],
-      chk_wca: [false],
-      
-      ctrol_descripcion: [''],
-      ctrol_descarga_permitida: ['Descarga permitida'],
-      ctrol_registros_asociados: ['No'],
-      ctrol_requiere_revision: ['No']
+      nombre: [row?.nombre || '', Validators.required],
+      codigo: [row?.codigo || '', Validators.required],
+      tipo: [row?.tipo || 'Procedimiento'],
+      version: [row?.version || 'v1.0'],
+      formato: [row?.formato || 'PDF'],
+      proceso: [row?.proceso || 'Sistemas'],
+      vig: [row?.vig || ''],
+      estado: [row?.estado || 'Vigente'],
+      archivo: [row?.archivo || '']
     });
+
+    if (row?.archivo) {
+      this.fileName = row.archivo;
+    }
   }
 
-  onArchivoSeleccionado(event: any) {
-    // Manejar selección de archivo
+  getMacroProcesses(): string[] {
+    return Object.keys(this.PROCESOS_GROUPS);
+  }
+
+  onFileChange(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.fileName = file.name;
+      this.formulario.patchValue({
+        archivo: file.name
+      });
+    }
   }
 
   onSave() {
+    if (this.formulario.invalid) {
+      return;
+    }
     this.dialogRef.close(this.formulario.value);
   }
 

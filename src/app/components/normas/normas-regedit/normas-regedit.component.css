@@ -3,136 +3,118 @@
    =================================================================== */
 
 .dialog-wrapper {
-  padding: 8px 12px;
-  background: #ffffff;
+  padding: 24px 28px;
+  background: #111827; /* Dark background matching Image 2 */
   border-radius: 12px;
   font-family: 'Inter', sans-serif;
+  color: #f1f5f9;
 }
 
 /* --- Header --- */
 .dialog-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.header-icon {
-  color: #4f46e5;
-  font-size: 22px !important;
-  width: 22px !important;
-  height: 22px !important;
+  margin-bottom: 24px;
 }
 
 .header-title {
-  font-size: 1.05rem;
+  font-size: 1.25rem;
   font-weight: 700;
-  color: #0f172a;
+  color: #ffffff;
   margin: 0;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 /* --- Form Fields --- */
 .dialog-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .dialog-content {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
-.row {
+.form-row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.form-row.split-2 > .form-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-field {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
+}
+
+.form-field.full-width {
+  width: 100%;
 }
 
 .form-label {
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: #475569;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: rgba(148, 163, 184, 0.6); /* Muted slate gray */
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-.form-label .required {
-  color: #ef4444;
-  margin-left: 2px;
-}
-
-/* --- Input Wrapper --- */
-.input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
+/* --- Standard Styled Inputs --- */
+.form-input, 
+.form-select, 
+.form-input-date, 
+.form-textarea {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
-  padding: 0 12px;
-  height: 40px;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-family: 'Inter', sans-serif;
+  height: 42px; /* Fix heights so they match perfectly! */
+  padding: 0 14px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
   transition: all 0.2s ease;
 }
 
-.input-wrapper:focus-within {
-  background: #ffffff;
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+.form-input:focus, 
+.form-select:focus, 
+.form-input-date:focus, 
+.form-textarea:focus {
+  border-color: #6366f1;
+  background: #1e293b;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
 }
 
-.disabled-field {
-  background: #f1f5f9;
-  border-color: #e2e8f0;
-  cursor: not-allowed;
+.form-input::placeholder, 
+.form-textarea::placeholder {
+  color: rgba(148, 163, 184, 0.35);
 }
 
-.disabled-field input {
-  color: #64748b;
-  cursor: not-allowed;
+.form-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 36px;
 }
 
-.input-icon {
-  color: #94a3b8;
-  font-size: 18px !important;
-  width: 18px !important;
-  height: 18px !important;
-  margin-right: 8px;
-  flex-shrink: 0;
-}
-
-.input-wrapper:focus-within .input-icon {
-  color: #4f46e5;
-}
-
-.form-input {
-  background: transparent;
-  border: none;
-  color: #0f172a;
-  font-size: 0.82rem;
-  font-family: 'Inter', sans-serif;
-  width: 100%;
-  outline: none;
-}
-
-.form-input::placeholder {
-  color: #94a3b8;
-}
-
-/* --- Textarea --- */
-.textarea-wrapper {
-  height: auto;
-  padding: 8px 12px;
-  align-items: flex-start;
-}
-
-.textarea-wrapper .input-icon {
-  margin-top: 2px;
+.form-input-date {
+  cursor: pointer;
 }
 
 .form-textarea {
+  height: 90px !important;
+  padding: 10px 14px !important;
   resize: vertical;
   line-height: 1.5;
 }
@@ -142,69 +124,48 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 10px;
-  margin-top: 12px;
+  gap: 12px;
+  margin-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 20px;
 }
 
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
+.btn-cancelar {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #94a3b8;
   height: 38px;
-  padding: 0 16px;
-  background: linear-gradient(135deg, #4f46e5, #8b5cf6);
+  padding: 0 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancelar:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-guardar {
+  background: #6366f1;
+  color: #ffffff;
   border: none;
   border-radius: 8px;
-  color: #ffffff;
-  font-size: 0.82rem;
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
-  transition: all 0.2s ease;
-}
-
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
-  background: linear-gradient(135deg, #4338ca, #7c3aed);
-}
-
-.btn-primary mat-icon {
-  font-size: 16px !important;
-  width: 16px !important;
-  height: 16px !important;
-  color: #fff;
-}
-
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
   height: 38px;
-  padding: 0 16px;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  color: #475569;
+  padding: 0 24px;
+  font-family: 'Inter', sans-serif;
   font-size: 0.82rem;
   font-weight: 600;
-  font-family: 'Inter', sans-serif;
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
   transition: all 0.2s ease;
 }
 
-.btn-secondary:hover {
-  background: #f8fafc;
-  border-color: #94a3b8;
-  color: #0f172a;
-}
-
-.btn-secondary mat-icon {
-  font-size: 16px !important;
-  width: 16px !important;
-  height: 16px !important;
-  color: #475569;
+.btn-guardar:hover {
+  background: #4f46e5;
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
 }

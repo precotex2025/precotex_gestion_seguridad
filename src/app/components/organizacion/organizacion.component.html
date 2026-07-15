@@ -1,93 +1,75 @@
-<app-bread-crumb
-  titulo="Estructura de la Organización"
-  icon="gavel">
-</app-bread-crumb>
-
 <div class="contenedor sn-animate-in">
 
-  <!-- CARD FILTROS -->
-  <div class="filtros-card">
-    <div class="acciones-container">
+  <!-- BANNER NOTIFICACIÓN -->
+  <div class="banner-aviso">
+    <span>✦ Registro funcional. Pulsa <strong>Agregar sede</strong>, llena el formulario y guarda. Persiste aunque recargues.</span>
+  </div>
 
-      <!-- BUSCADOR MODERNO -->
-      <div class="search-wrapper">
-        <mat-icon class="search-icon">search</mat-icon>
-        <input type="text" 
-               (keyup)="aplicarFiltro($event)" 
-               placeholder="Buscar organización..." 
-               class="search-input">
-      </div>
+  <!-- ESTADÍSTICAS CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card border-left-purple">
+      <div class="stat-label">TOTAL</div>
+      <div class="stat-value text-white">{{ stats.total }}</div>
+      <div class="stat-desc">Registros</div>
+    </div>
+    <div class="stat-card border-left-purple-light">
+      <div class="stat-label">HUACHIPA</div>
+      <div class="stat-value text-purple">{{ stats.huachipa }}</div>
+    </div>
+    <div class="stat-card border-left-blue">
+      <div class="stat-label">INDEPENDENCIA</div>
+      <div class="stat-value text-blue">{{ stats.independencia }}</div>
+    </div>
+    <div class="stat-card border-left-green">
+      <div class="stat-label">ATE</div>
+      <div class="stat-value text-green">{{ stats.ate }}</div>
+    </div>
+  </div>
 
-      <!-- BOTONES MODERNOS -->
-      <div class="botones">
-        <button type="button" class="btn-primary" (click)="onAgregar()">
-          <mat-icon>create_new_folder</mat-icon> 
-          <span>Agregar</span>
-        </button>    
+  <!-- TÍTULO DE SECCIÓN Y BOTÓN AGREGAR -->
+  <div class="seccion-header">
+    <h2 class="seccion-titulo">SEDES DE LA EMPRESA</h2>
+    <button type="button" class="btn-agregar-norma" (click)="onAgregar()">
+      <span>+ Agregar sede</span>
+    </button>
+  </div>
 
-        <button type="button" class="btn-secondary" (click)="onExportar()">
-          <mat-icon>download</mat-icon> 
-          <span>Exportar</span>
-        </button>           
-      </div>
-
-    </div>  
+  <!-- BUSCADOR -->
+  <div class="buscador-container">
+    <input type="text" 
+           (keyup)="aplicarFiltro($event)" 
+           placeholder="Buscar..." 
+           class="buscador-input">
   </div>
 
   <!-- CONTENEDOR DE TABLA PREMIUM -->
   <div class="table-container shadow-premium">
     <table mat-table [dataSource]="dataSource" matSort class="tabla">
 
-      <!-- Código -->
-      <ng-container matColumnDef="codigo">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 120px;">Código</th>
-        <td mat-cell *matCellDef="let row">
-          <span class="code-badge">{{ row.codigo_Organizacion }}</span>
-        </td>
+      <!-- Nombre de la Sede -->
+      <ng-container matColumnDef="nombre">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 220px;">Nombre de la Sede</th>
+        <td mat-cell *matCellDef="let row" class="norma-cell">{{ row.nombre }}</td>
       </ng-container>
 
-      <!-- Organización -->
-      <ng-container matColumnDef="denominacion">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 200px;">Organización</th>
-        <td mat-cell *matCellDef="let row" class="norma-cell">{{ row.denominacion }}</td>
+      <!-- Dirección -->
+      <ng-container matColumnDef="direccion">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 250px;">Dirección</th>
+        <td mat-cell *matCellDef="let row">{{ row.direccion }}</td>
       </ng-container>
 
-      <!-- Sedes -->
-      <ng-container matColumnDef="sedes">
-        <th mat-header-cell *matHeaderCellDef style="width: 100px; text-align: center;">Sedes</th>
-        <td mat-cell *matCellDef="let row" style="text-align: center;">
-          <button class="action-btn btn-sede" (click)="onSedes(row)" title="Ver sedes">
-            <mat-icon>home</mat-icon>
-          </button>
-        </td>
-      </ng-container>
-
-      <!-- Procesos/Departamentos -->
+      <!-- Procesos que operan -->
       <ng-container matColumnDef="procesos">
-        <th mat-header-cell *matHeaderCellDef style="width: 220px; text-align: center;">Procesos/Departamentos</th>
-        <td mat-cell *matCellDef="let row" style="text-align: center;">
-          <button class="action-btn btn-proceso" (click)="onProcesos(row)" title="Ver procesos/departamentos">
-            <mat-icon>settings</mat-icon>
-          </button>
-        </td>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 250px;">Procesos que operan</th>
+        <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.procesos || '—' }}</td>
       </ng-container>
 
-      <!-- Activos -->
-      <ng-container matColumnDef="activos">
-        <th mat-header-cell *matHeaderCellDef style="width: 100px; text-align: center;">Activos</th>
-        <td mat-cell *matCellDef="let row" style="text-align: center;">
-          <button class="action-btn btn-activo" title="Ver activos">
-            <mat-icon>shoppingmode</mat-icon>
-          </button>
-        </td>
-      </ng-container>
-
-      <!-- Estado -->
+      <!-- Estado / Ubicación -->
       <ng-container matColumnDef="estado">
-        <th mat-header-cell *matHeaderCellDef style="width: 120px;">Estado</th>
+        <th mat-header-cell *matHeaderCellDef style="width: 140px;">Estado</th>
         <td mat-cell *matCellDef="let row">
-          <span [class]="row.flg_Activo === 'True' ? 'activo' : 'inactivo'">
-            {{ row.flg_Activo === "True" ? 'Activo' : 'Inactivo' }}
+          <span [class]="'badge-estado-' + getEstadoClass(row.estado || '')">
+            {{ row.estado }}
           </span>
         </td>
       </ng-container>    
@@ -111,6 +93,27 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="fila"></tr>
 
     </table>
+  </div>
+
+  <!-- SECCIÓN ORGANIGRAMA CORPORATIVO -->
+  <div class="organigrama-section shadow-premium">
+    <h3 class="organigrama-titulo">Organigrama corporativo</h3>
+    <p class="organigrama-sub">Inserta el organigrama oficial de la empresa (PDF, PNG, Word o Excel).</p>
+    
+    <div class="upload-wrapper">
+      <input type="file" 
+             id="organigrama-upload" 
+             class="hide" 
+             (change)="onFileSelected($event)">
+      
+      <button type="button" class="btn-upload" (click)="triggerUpload()">
+        Seleccionar archivo
+      </button>
+      
+      <span class="file-name" [class.no-file]="!organigramaNombre">
+        {{ organigramaNombre || 'Sin organigrama cargado' }}
+      </span>
+    </div>
   </div>
 
 </div>

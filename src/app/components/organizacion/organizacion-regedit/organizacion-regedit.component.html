@@ -8,77 +8,61 @@
   <form [formGroup]="formulario" #formDirective="ngForm" class="dialog-form">
     <div class="dialog-content">
       
-      <!-- Código (solo editable / visible si no es inserción "I") -->
-      <div class="row" *ngIf="data?.Accion !== 'I'">
-        <label class="form-label">Código de la Organización</label>
-        <div class="input-wrapper disabled-field">
-          <mat-icon class="input-icon">vpn_key</mat-icon>
-          <input type="text" formControlName="ctrol_codigo" readonly class="form-input">
-        </div>
-      </div>
-
-      <!-- Denominación -->
+      <!-- Nombre de la Sede -->
       <div class="row">
-        <label class="form-label">Denominación <span class="required">*</span></label>
+        <label class="form-label">Nombre de la Sede <span class="required">*</span></label>
         <div class="input-wrapper">
-          <mat-icon class="input-icon">business</mat-icon>
+          <mat-icon class="input-icon">store</mat-icon>
           <input type="text" 
-                 formControlName="ctrol_denominacion" 
-                 placeholder="Ingrese denominación de la organización..." 
+                 formControlName="ctrol_nombre" 
+                 placeholder="Ej. Huachipa 1" 
                  class="form-input">
         </div>
       </div>
 
       <!-- Dirección -->
       <div class="row">
-        <label class="form-label">Dirección</label>
+        <label class="form-label">Dirección <span class="required">*</span></label>
         <div class="input-wrapper">
           <mat-icon class="input-icon">place</mat-icon>
           <input type="text" 
                  formControlName="ctrol_direccion" 
-                 placeholder="Ingrese dirección..." 
+                 placeholder="Ej. Av. Los Frutales 123, Huachipa" 
                  class="form-input">
         </div>
       </div>
 
-      <!-- Localidad / Provincia -->
-      <div class="form-grid">
-        
-        <!-- Localidad -->
-        <div class="row">
-          <label class="form-label">Localidad</label>
-          <div class="input-wrapper">
-            <mat-icon class="input-icon">location_city</mat-icon>
-            <input type="text" 
-                   formControlName="ctrol_localidad" 
-                   placeholder="Ingrese localidad..." 
-                   class="form-input">
-          </div>
-        </div>
-
-        <!-- Provincia -->
-        <div class="row">
-          <label class="form-label">Provincia</label>
-          <div class="input-wrapper">
-            <mat-icon class="input-icon">map</mat-icon>
-            <input type="text" 
-                   formControlName="ctrol_provincia" 
-                   placeholder="Ingrese provincia..." 
-                   class="form-input">
-          </div>
-        </div>
-
-      </div>
-
-      <!-- País -->
+      <!-- Procesos que operan -->
       <div class="row">
-        <label class="form-label">País</label>
+        <label class="form-label">Procesos que operan</label>
+        <div class="checkbox-scroll-container">
+          <div *ngFor="let group of getProcesosKeys()" class="checkbox-group">
+            <h4 class="checkbox-group-title">{{ group }}</h4>
+            <div class="checkbox-grid">
+              <div *ngFor="let proceso of procesosGroups[group]" class="checkbox-item">
+                <input type="checkbox" 
+                       [id]="proceso" 
+                       [checked]="isProcesoSelected(proceso)" 
+                       (change)="onProcesoToggle(proceso, $any($event.target).checked)">
+                <label [for]="proceso">{{ proceso }}</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estado / Ubicación (Distrito) -->
+      <div class="row">
+        <label class="form-label">Sede / Ubicación <span class="required">*</span></label>
         <div class="input-wrapper">
-          <mat-icon class="input-icon">public</mat-icon>
-          <input type="text" 
-                 formControlName="ctrol_pais" 
-                 placeholder="Ingrese país..." 
-                 class="form-input">
+          <mat-icon class="input-icon">map</mat-icon>
+          <select formControlName="ctrol_estado" class="form-input select-input">
+            <option value="">Seleccione una ubicación...</option>
+            <option value="Huachipa">Huachipa</option>
+            <option value="Independencia">Independencia</option>
+            <option value="Ate">Ate</option>
+            <option value="SJL">SJL</option>
+          </select>
         </div>
       </div>
 
