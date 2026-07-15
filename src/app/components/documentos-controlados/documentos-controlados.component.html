@@ -1,220 +1,162 @@
-<app-bread-crumb
-  titulo="Biblioteca - Documentos Controlados"
-  icon="gavel"
-  >
-</app-bread-crumb>
+<div class="contenedor sn-animate-in">
 
-<div class="contenedor">
-    <form class="container-cuerpo" [formGroup]="formulario" #formDirective="ngForm">
-        <mat-card class="filtros-card">
-            <div class="acciones-container">
+  <!-- BANNER EXPLICATIVO -->
+  <div class="banner-aviso">
+    <span>✦ Registro funcional. Pulsa <strong>Nuevo documento</strong>, llena el formulario y guarda. Se mantiene aunque recargues la página.</span>
+  </div>
 
-                <!-- FILTROS -->
-                <div class="filtros">
-                    
-                    <mat-form-field appearance="outline" class="small-field" style="flex: 1;">
-                        <mat-label>Organización </mat-label>
-                        <mat-select formControlName="ctrol_organizacion" (selectionChange)="onChangeOrga($event)">
-                            <mat-option *ngFor="let orga of lstOrganizacion" [value]="orga.codigo">
-                            {{ orga.descripcion }}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field> 
+  <div class="doc-layout">
+    <!-- PANEL IZQUIERDO: ESTRUCTURA DOCUMENTAL -->
+    <div class="tree-panel shadow-premium">
+      <div class="tree-header">Estructura documental</div>
+      
+      <div class="tree-node" 
+           [class.active]="activeFilter === '__all__'" 
+           (click)="setFilter('__all__')"
+           style="font-weight: 700;">
+        <span>Todos los procesos</span>
+        <em class="badge-count">{{ docsList.length }}</em>
+      </div>
 
-                    <mat-form-field appearance="outline" style="flex: 1;">
-                        <mat-label>Sede </mat-label>
-                        <mat-select formControlName="ctrol_sede" >
-                            <mat-option *ngFor="let sede of lstSedes" [value]="sede.codigo">
-                            {{ sede.descripcion }}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>           
-                    
-                    <mat-form-field appearance="outline" style="flex: 1;">
-                        <mat-label>Puestos </mat-label>
-                        <mat-select formControlName="ctrol_puesto" >
-                            <mat-option *ngFor="let sede of lstSedes" [value]="sede.codigo">
-                            {{ sede.descripcion }}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>            
-                    
-                    <mat-form-field appearance="outline" style="flex: 1;">
-                        <mat-label>Procesos </mat-label>
-                        <mat-select formControlName="ctrol_proceso" >
-                            <mat-option *ngFor="let sede of lstSedes" [value]="sede.codigo">
-                            {{ sede.descripcion }}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field> 
-                          
-                                     
-                    
-                    <mat-form-field appearance="outline" style="flex: 1;">
-                        <mat-label>Norma </mat-label>
-                        <mat-select formControlName="ctrol_organizacion" (selectionChange)="onChangeOrga($event)">
-                            <mat-option *ngFor="let orga of lstOrganizacion" [value]="orga.codigo">
-                            {{ orga.descripcion }}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>
-
-                    <!--Fila 2-->
-                    <mat-form-field appearance="outline" style="flex: 1;">
-                        <mat-label>Estado </mat-label>
-                        <mat-select formControlName="ctrol_organizacion" (selectionChange)="onChangeOrga($event)">
-                            <mat-option *ngFor="let orga of lstOrganizacion" [value]="orga.codigo">
-                            {{ orga.descripcion }}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>     
-                    
-                    <mat-form-field appearance="outline" class="buscador">
-                        <mat-label>Código</mat-label>
-                        <input matInput placeholder="Busque por código.">
-                        <mat-icon matSuffix>search</mat-icon>
-                    </mat-form-field>        
-                    
-                    <mat-form-field appearance="outline" class="buscador">
-                        <mat-label>Nombre Documento</mat-label>
-                        <input matInput placeholder="Busque por nombre de documento.">
-                        <mat-icon matSuffix>search</mat-icon>
-                    </mat-form-field>     
-                    
-                    <button type="button" class="BtnBuscar" mat-flat-button (click)="onBuscar()">
-                        <mat-icon>search</mat-icon> Buscar
-                    </button>   
-
-                    <button type="button" class="BtnCrear" mat-flat-button (click)="onAgregar()">
-                        <mat-icon>create_new_folder</mat-icon> Nuevo Documento
-                    </button>                       
-
-                    <!-- Fila 3: Espacio vacío para saltar 3 columnas -->
-                    <div style="grid-column: span 3;"></div>
-
-                    <button type="button" color="warn" mat-flat-button style="background-color: #b90000; color: white; margin-top: -20px;">
-                        <mat-icon>picture_as_pdf</mat-icon> Exportar Informe en PDF
-                    </button>
-
-                    <button type="button" color="warn" mat-flat-button style="background-color: #b90000; color: white; margin-top: -20px;">
-                        <mat-icon>description</mat-icon> Exportar Informe en EXCEL
-                    </button>
-                </div>
-
+      <div class="tree-groups-container">
+        <div *ngFor="let macro of getMacroProcesses()" class="macro-group-wrapper">
+          <div class="tree-node macro-node" 
+               [class.active]="activeFilter === 'macro:' + macro"
+               (click)="setFilter('macro:' + macro)">
+            <span>{{ macro }}</span>
+            <em class="badge-count">{{ getMacroCount(macro) }}</em>
+          </div>
+          
+          <div class="sub-nodes-container">
+            <div *ngFor="let proc of PROCESOS_GROUPS[macro]" 
+                 class="tree-node process-node"
+                 [class.active]="activeFilter === proc"
+                 (click)="setFilter(proc)">
+              <span>{{ proc }}</span>
+              <em class="badge-count">{{ getProcessCount(proc) }}</em>
             </div>
-        </mat-card>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        <!-- TABLA CON FILAS AGRUPADORAS -->
-        <table mat-table [dataSource]="dataSource" matSort class="tabla-wrapper" style="margin-top: 20px; width: 100%;">
+    <!-- PANEL DERECHO: DETALLES Y LISTA -->
+    <div class="details-panel">
+      
+      <!-- CUADROS DE ESTADÍSTICAS -->
+      <div class="stats-grid">
+        <div class="stat-card border-left-purple">
+          <div class="stat-value text-white">{{ getStatCount('Total') }}</div>
+          <div class="stat-label">Total Documentos</div>
+        </div>
+        <div class="stat-card border-left-green">
+          <div class="stat-value text-green">{{ getStatCount('Vigente') }}</div>
+          <div class="stat-label">Vigentes</div>
+        </div>
+        <div class="stat-card border-left-amber">
+          <div class="stat-value text-amber">{{ getStatCount('Por vencer') }}</div>
+          <div class="stat-label">Por Vencer</div>
+        </div>
+        <div class="stat-card border-left-red">
+          <div class="stat-value text-red">{{ getStatCount('Obsoleto') }}</div>
+          <div class="stat-label">Obsoletos</div>
+        </div>
+      </div>
 
-            <!-- Código -->
-            <ng-container matColumnDef="codigo">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Cód.</th>
-                <td mat-cell *matCellDef="let row">{{row.codigo}}</td>
-            </ng-container>     
+      <!-- CONTROLES Y ACCIONES -->
+      <div class="controls-bar shadow-premium">
+        <div class="search-box">
+          <span class="material-icons search-icon">search</span>
+          <input type="text" 
+                 [(ngModel)]="searchQuery" 
+                 placeholder="Buscar por código, nombre, tipo..." 
+                 class="search-input">
+        </div>
+        
+        <div class="actions-buttons">
+          <button type="button" class="btn-primary" (click)="onAgregar()">
+            <span class="material-icons">add</span> Nuevo documento
+          </button>
+          <button type="button" class="btn-secondary" (click)="onCargarLote()">
+            <span class="material-icons">upload_file</span> Cargar lote
+          </button>
+          <button type="button" class="btn-excel" (click)="exportExcel()">
+            <span class="material-icons">grid_on</span> Excel
+          </button>
+          <button type="button" class="btn-pdf" (click)="exportPDF()">
+            <span class="material-icons">picture_as_pdf</span> PDF
+          </button>
+        </div>
+      </div>
 
-            <!-- Ver./Ed. -->
-            <ng-container matColumnDef="ver_ed">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Ver./Ed.</th>
-                <td mat-cell *matCellDef="let row">{{row.ver_ed}}</td>
-            </ng-container>              
-
-            <!-- Nombre -->
-            <ng-container matColumnDef="nombre">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Nombre</th>
-                <td mat-cell *matCellDef="let row">{{row.nombre}}</td>
-            </ng-container>             
-            
-            <!-- Estado -->
-            <ng-container matColumnDef="estado">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
-                <td mat-cell *matCellDef="let row">{{row.estado}}</td>
-            </ng-container>              
-            
-            <!-- Vence -->
-            <ng-container matColumnDef="vence">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Vence</th>
-                <td mat-cell *matCellDef="let row">{{row.vence}}</td>
-            </ng-container>   
-            
-            <!-- Tiempo conserv. -->
-            <ng-container matColumnDef="tiempo_conserv">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Tiempo<br>conserv.</th>
-                <td mat-cell *matCellDef="let row">{{row.tiempo_conserv}}</td>
-            </ng-container>     
-
-            <!-- Acciones -->
-            <ng-container matColumnDef="acciones">
-                <th mat-header-cell *matHeaderCellDef>Acciones</th>
-                <td mat-cell *matCellDef="let e">
-                    <button mat-icon-button color="primary" title="Editar">
-                        <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button color="warn" title="Eliminar">
-                        <mat-icon>delete</mat-icon>
-                    </button>
-                </td>
-            </ng-container>    
-
-            <!-- Registro Doc-asociados -->
-            <ng-container matColumnDef="registro_doc_asociados">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Registro Doc-<br>asociados</th>
-                <td mat-cell *matCellDef="let row">{{row.registro_doc_asociados}}</td>
-            </ng-container>     
-
-            <!-- Registro Infinity asociados -->
-            <ng-container matColumnDef="registro_infinity_asociados">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Registro Infinity<br>asociados</th>
-                <td mat-cell *matCellDef="let row">{{row.registro_infinity_asociados}}</td>
-            </ng-container>     
-
-            <!-- Elaborado Por -->
-            <ng-container matColumnDef="elaborado_por">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Elaborado Por</th>
-                <td mat-cell *matCellDef="let row">{{row.elaborado_por}}</td>
-            </ng-container>     
-
-            <!-- Revisado Por -->
-            <ng-container matColumnDef="revisado_por">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Revisado Por</th>
-                <td mat-cell *matCellDef="let row">{{row.revisado_por}}</td>
-            </ng-container>     
-
-            <!-- Aprobado Por -->
-            <ng-container matColumnDef="aprobado_por">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Aprobado Por</th>
-                <td mat-cell *matCellDef="let row">{{row.aprobado_por}}</td>
-            </ng-container>    
-
-            <!-- Fila Agrupadora (Carpeta) -->
-            <ng-container matColumnDef="groupHeader">
-                <td mat-cell colspan="12" *matCellDef="let group">
-                    <div class="carpeta-header-row" (click)="toggleGroup(group)">
-                        <mat-icon style="margin-right: 10px;">{{ group.expanded ? 'folder_open' : 'folder' }}</mat-icon> 
-                        <span style="flex: 1; font-weight: bold; font-size: 14px;">{{ group.nombre }}</span>
-                        
-                        <!-- Input de archivo oculto -->
-                        <input type="file" #fileInput style="display: none" (change)="onArchivoImportado($event)">
-                        
-                        <button mat-icon-button (click)="$event.stopPropagation(); fileInput.click()" style="margin-left: 15px; color: white;" title="Importar documentos">
-                            <mat-icon>add_circle</mat-icon>
-                        </button>
-                        <button mat-icon-button (click)="$event.stopPropagation();" style="color: white;" title="Usuarios asignados">
-                            <mat-icon>groups</mat-icon>
-                        </button>
-                    </div>
-                </td>
-            </ng-container>
-            
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-
-            <!-- Definición de fila agrupadora -->
-            <tr mat-row *matRowDef="let row; columns: ['groupHeader']; when: isGroup" class="carpeta-group-row"></tr>
-
-            <!-- Definición de fila de datos normal -->
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;" [style.display]="isGroupExpanded(row) ? '' : 'none'"></tr>                  
-                    
+      <!-- TABLA DE DOCUMENTOS -->
+      <div class="table-container shadow-premium">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th style="width: 110px;">Código</th>
+              <th>Nombre del documento</th>
+              <th style="width: 110px;">Tipo</th>
+              <th style="width: 70px; text-align: center;">Versión</th>
+              <th style="width: 80px; text-align: center;">Formato</th>
+              <th>Proceso</th>
+              <th style="width: 100px; text-align: center;">Vigencia</th>
+              <th style="width: 100px; text-align: center;">Estado</th>
+              <th style="width: 100px; text-align: center;">Archivo</th>
+              <th style="width: 100px; text-align: center;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let doc of filteredDocs; let i = index" class="fila">
+              <td class="code-cell font-mono text-purple">{{ doc.codigo }}</td>
+              <td class="name-cell font-bold text-white">{{ doc.nombre }}</td>
+              <td><span class="doc-type-badge">{{ doc.tipo }}</span></td>
+              <td style="text-align: center;"><span class="version-label">{{ doc.version }}</span></td>
+              <td style="text-align: center;">
+                <span class="format-badge" 
+                      [class.excel-bg]="doc.formato === 'Excel'"
+                      [class.word-bg]="doc.formato === 'Word'"
+                      [class.pdf-bg]="doc.formato === 'PDF'">
+                  {{ doc.formato }}
+                </span>
+              </td>
+              <td class="process-cell">{{ doc.proceso }}</td>
+              <td style="text-align: center;" class="date-cell">{{ doc.vig || '-' }}</td>
+              <td style="text-align: center;">
+                <span class="status-badge"
+                      [class.status-green]="doc.estado === 'Vigente'"
+                      [class.status-amber]="doc.estado === 'Por vencer'"
+                      [class.status-red]="doc.estado === 'Obsoleto'">
+                  {{ doc.estado }}
+                </span>
+              </td>
+              <td style="text-align: center;">
+                <button type="button" class="btn-download" (click)="downloadFile(doc)" title="Descargar archivo">
+                  <span class="material-icons">download</span>
+                </button>
+              </td>
+              <td style="text-align: center;">
+                <div class="actions-wrapper">
+                  <button type="button" class="btn-action-edit" (click)="onEditar(doc, i)" title="Editar registro">
+                    <span class="material-icons">edit</span>
+                  </button>
+                  <button type="button" class="btn-action-delete" (click)="onEliminar(doc)" title="Eliminar registro">
+                    <span class="material-icons">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="filteredDocs.length === 0">
+              <td colspan="10" class="empty-row">
+                <span class="material-icons empty-icon">folder_off</span>
+                <p>No se encontraron documentos en esta selección.</p>
+              </td>
+            </tr>
+          </tbody>
         </table>
+      </div>
 
-    </form>
+    </div>
+  </div>
+
 </div>

@@ -96,6 +96,7 @@ import { MedicionesPendientesComponent } from './components/mediciones-pendiente
 import { EvaluacionRiesgosComponent } from './components/evaluacion-riesgos/evaluacion-riesgos.component';
 import { EvaluacionRiesgosRegeditComponent } from './components/evaluacion-riesgos/evaluacion-riesgos-regedit/evaluacion-riesgos-regedit.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { PlaceholderComponent } from './components/placeholder/placeholder.component';
 
 @NgModule({
   declarations: [
@@ -147,7 +148,8 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
     MedicionesPendientesComponent,
     EvaluacionRiesgosComponent,
     EvaluacionRiesgosRegeditComponent,
-    DashboardComponent
+    DashboardComponent,
+    PlaceholderComponent
   ],
   imports: [
     BrowserModule     ,

@@ -27,6 +27,7 @@ import { ConfiguracionPuestosComponent } from './components/configuracion-puesto
 import { MedicionesPendientesComponent } from './components/mediciones-pendientes/mediciones-pendientes.component';
 import { EvaluacionRiesgosComponent } from './components/evaluacion-riesgos/evaluacion-riesgos.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { PlaceholderComponent } from './components/placeholder/placeholder.component';
 
 
 const routes: Routes = [
@@ -59,7 +60,11 @@ const routes: Routes = [
       { path: "mapaPermisos", component: MapaPermisosComponent },
       { path: "configuracionPuestos", component: ConfiguracionPuestosComponent },
       { path: "medicionesPendientes", component: MedicionesPendientesComponent },
-      { path: "evaluacionRiesgos", component: EvaluacionRiesgosComponent }
+      { path: "evaluacionRiesgos", component: EvaluacionRiesgosComponent },
+      { path: "auditorias", component: PlaceholderComponent },
+      { path: "portafolioMejora", component: PlaceholderComponent },
+      { path: "reqLegal", component: PlaceholderComponent },
+      { path: "ayuda", component: PlaceholderComponent }
     ]
   },
 

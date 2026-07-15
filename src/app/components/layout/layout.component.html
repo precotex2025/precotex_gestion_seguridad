@@ -17,140 +17,78 @@
     <mat-nav-list (click)="onNavListClick($event)">
 
       <!-- INICIO -->
-      <a mat-list-item routerLink="/principal" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
-        <mat-icon class="nav-icon">dashboard</mat-icon>
+      <a mat-list-item routerLink="/principal" [class.active-link]="currentUrl === '/principal' || currentUrl === '/principal/'" class="nav-item">
+        <span class="menu-bullet"></span>
         <span class="nav-label">Inicio</span>
       </a>
       <div class="nav-divider"></div>
       <span class="nav-section-label">GESTIÓN</span>
 
-      <!-- MENU 1 -->
-      <mat-expansion-panel class="nav-panel">
-        <mat-expansion-panel-header>
-          <mat-icon class="nav-icon">folder</mat-icon>
-          <span class="nav-label">Organización</span>
-        </mat-expansion-panel-header>
+      <!-- ORGANIZACION -->
+      <a mat-list-item routerLink="/principal/normas" [class.active-link]="currentModule === 'Organización'" class="nav-item">
+        <span class="menu-bullet"></span>
+        <span class="nav-label">Organización</span>
+      </a>
 
-        <a mat-list-item routerLink="/principal/normas" routerLinkActive="active-link" class="nav-subitem">
-          Normas
-        </a>
+      <!-- PUESTOS -->
+      <a mat-list-item routerLink="/principal/puestos" [class.active-link]="currentModule === 'Puestos'" class="nav-item">
+        <span class="menu-bullet"></span>
+        <span class="nav-label">Puestos</span>
+      </a>
 
-        <a mat-list-item routerLink="/principal/organizacion" routerLinkActive="active-link" class="nav-subitem">
-          Organización
-        </a>
+      <!-- DOCUMENTACION -->
+      <a mat-list-item routerLink="/principal/documentosControlados" [class.active-link]="currentModule === 'Documentación'" class="nav-item">
+        <span class="menu-bullet"></span>
+        <span class="nav-label">Documentación</span>
+      </a>
 
-      </mat-expansion-panel>     
-      
-      <!-- MENU 2 -->
-      <mat-expansion-panel class="nav-panel">
-        <mat-expansion-panel-header>
-          <mat-icon class="nav-icon">diversity_3</mat-icon>
-          <span class="nav-label">Personas</span>
-        </mat-expansion-panel-header>
+      <!-- AUDITORIAS -->
+      <a mat-list-item routerLink="/principal/auditorias" [class.active-link]="currentModule === 'Auditorías'" class="nav-item">
+        <span class="menu-bullet"></span>
+        <span class="nav-label">Auditorías</span>
+      </a>
 
-        <a mat-list-item routerLink="/principal/puestos" routerLinkActive="active-link" class="nav-subitem">
-          Puestos
-        </a>
+      <!-- NO CONFORMIDADES -->
+      <a mat-list-item routerLink="/principal/accionesCorrectivas" [class.active-link]="currentModule === 'No conformidades'" class="nav-item">
+        <span class="menu-bullet"></span>
+        <span class="nav-label">No conformidades</span>
+      </a>
 
-        <a mat-list-item routerLink="/principal/usuariosPersonas" routerLinkActive="active-link" class="nav-subitem">
-          Usuarios / Personas
-        </a>
+      <!-- INDICADORES -->
+      <a mat-list-item routerLink="/principal/analytics" [class.active-link]="currentModule === 'Indicadores'" class="nav-item">
+        <span class="menu-bullet"></span>
+        <span class="nav-label">Indicadores</span>
+      </a>
 
-        <a mat-list-item routerLink="/principal/documentacionPersonas" routerLinkActive="active-link" class="nav-subitem">
-          Documentación Personas
-        </a>        
+      <!-- OBJETIVOS -->
+      <a mat-list-item routerLink="/principal/planificacionObjetivos" [class.active-link]="currentModule === 'Objetivos'" class="nav-item">
+        <span class="menu-bullet"></span>
+        <span class="nav-label">Objetivos</span>
+      </a>
 
-        <a mat-list-item routerLink="/principal/misDocumentos" routerLinkActive="active-link" class="nav-subitem">
-          Mis Documentos
-        </a>        
+      <!-- RIESGOS -->
+      <a mat-list-item routerLink="/principal/evaluacionRiesgos" [class.active-link]="currentModule === 'Riesgos'" class="nav-item">
+        <span class="menu-bullet"></span>
+        <span class="nav-label">Riesgos</span>
+      </a>
 
-        <a mat-list-item routerLink="/principal/evaluacionesPuntuales" routerLinkActive="active-link" class="nav-subitem">
-          Evaluaciones Puntuales
-        </a>        
-        <a mat-list-item routerLink="/principal/campusVirtual" routerLinkActive="active-link" class="nav-subitem">
-          Campus Virtual
-        </a>        
+      <!-- PORTAFOLIO DE MEJORA -->
+      <a mat-list-item routerLink="/principal/portafolioMejora" [class.active-link]="currentModule === 'Portafolio de Mejora'" class="nav-item">
+        <span class="menu-bullet"></span>
+        <span class="nav-label">Portafolio de Mejora</span>
+      </a>
 
-        <a mat-list-item routerLink="/principal/accionesCorrectivas" routerLinkActive="active-link" class="nav-subitem">
-          Acciones Correctivas
-        </a>        
+      <!-- REQ. LEGAL -->
+      <a mat-list-item routerLink="/principal/reqLegal" [class.active-link]="currentModule === 'Req. legal'" class="nav-item">
+        <span class="menu-bullet"></span>
+        <span class="nav-label">Req. legal</span>
+      </a>
 
-        <a mat-list-item routerLink="/principal/analytics" routerLinkActive="active-link" class="nav-subitem">
-          Analytics
-        </a>        
-
-        <a mat-list-item routerLink="/principal/verificacionAccesos" routerLinkActive="active-link" class="nav-subitem">
-          Verificación de accesos
-        </a>        
-
-        <a mat-list-item routerLink="/principal/logAccesos" routerLinkActive="active-link" class="nav-subitem">
-          Log de Accesos
-        </a>        
-
-        <a mat-list-item routerLink="/principal/mapaPermisos" routerLinkActive="active-link" class="nav-subitem">
-          Mapa de permisos
-        </a>        
-
-        <a mat-list-item routerLink="/principal/configuracionPuestos" routerLinkActive="active-link" class="nav-subitem">
-          Configuración de puestos
-        </a>        
-
-
-      </mat-expansion-panel>
-
-      <!-- MENU 3 -->
-      <mat-expansion-panel class="nav-panel">
-        <mat-expansion-panel-header>
-          <mat-icon class="nav-icon">folder</mat-icon>
-          <span class="nav-label">Documentos</span>
-        </mat-expansion-panel-header>
-
-        <a mat-list-item routerLink="/principal/documentosControlados" routerLinkActive="active-link" class="nav-subitem">
-          Docs. Controlados
-        </a>
-
-        <a mat-list-item routerLink="/principal/documentosNoControlados" routerLinkActive="active-link" class="nav-subitem">
-          Docs. no Controlados
-        </a>    
-
-        <a mat-list-item routerLink="/principal/registrosPendientes" routerLinkActive="active-link" class="nav-subitem">
-          Registros Pendientes
-        </a>
-
-      </mat-expansion-panel>       
-      
-      <!-- MENU 4 -->
-      <mat-expansion-panel class="nav-panel">
-        <mat-expansion-panel-header>
-          <mat-icon class="nav-icon">track_changes</mat-icon>
-          <span class="nav-label">Objetivos</span>
-        </mat-expansion-panel-header>
-
-        <a mat-list-item routerLink="/principal/planificacionObjetivos" routerLinkActive="active-link" class="nav-subitem">
-          Planificación Objetivos
-        </a>
-
-        <a mat-list-item routerLink="/principal/gestionObjetivos" routerLinkActive="active-link" class="nav-subitem">
-          Gestión Objetivos
-        </a>
-
-        <a mat-list-item routerLink="/principal/medicionesPendientes" routerLinkActive="active-link" class="nav-subitem">
-          Mediciones Pendientes
-        </a>
-
-      </mat-expansion-panel>       
-
-      <!-- MENU 5: RIESGOS -->
-      <mat-expansion-panel class="nav-panel">
-        <mat-expansion-panel-header>
-          <mat-icon class="nav-icon">warning</mat-icon>
-          <span class="nav-label">Riesgos</span>
-        </mat-expansion-panel-header>
-
-        <a mat-list-item routerLink="/principal/evaluacionRiesgos" routerLinkActive="active-link" class="nav-subitem">
-          Evaluación de Riesgos
-        </a>
-      </mat-expansion-panel>       
+      <!-- AYUDA -->
+      <a mat-list-item routerLink="/principal/ayuda" [class.active-link]="currentModule === 'Ayuda'" class="nav-item">
+        <span class="menu-bullet"></span>
+        <span class="nav-label">Ayuda</span>
+      </a>
 
     </mat-nav-list>
 
@@ -186,7 +124,34 @@
 
     <!-- PAGINAS -->
     <div class="contenido">
-      <router-outlet></router-outlet>
+      <!-- DYNAMIC MODULE HEADER -->
+      <div class="module-header" *ngIf="activeModule">
+        <h1 class="module-title">{{ activeModule.title }}</h1>
+        <div class="module-breadcrumb">{{ activeModule.breadcrumb }}</div>
+        
+        <div class="module-tabs">
+          <a *ngFor="let tab of activeModule.tabs" 
+             [routerLink]="tab.route" 
+             class="module-tab-link" 
+             [class.active-tab]="activeModule.activeTab ? activeModule.activeTab === tab.id : currentUrl.startsWith(tab.route)">
+            {{ tab.label }}
+          </a>
+        </div>
+      </div>
+
+      <!-- SECONDARY NAVIGATION BAR -->
+      <div class="secondary-nav" *ngIf="activeModule && activeModule.secondaryNav">
+        <a *ngFor="let sub of activeModule.secondaryNav" 
+           [routerLink]="sub.route" 
+           class="secondary-nav-link" 
+           [class.active-sublink]="activeSublink === sub.route">
+          {{ sub.label }}
+        </a>
+      </div>
+
+      <div class="page-wrapper" [class.has-header]="activeModule">
+        <router-outlet></router-outlet>
+      </div>
     </div>
 
   </mat-sidenav-content>

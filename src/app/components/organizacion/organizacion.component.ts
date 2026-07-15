@@ -1,14 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
-import { OrganizacionService } from '../../services/organizacion.service';
 import { MatDialog } from '@angular/material/dialog';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { OrganizacionRegeditComponent } from './organizacion-regedit/organizacion-regedit.component';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
-import { MntoSedesComponent } from '../mnto-sedes/mnto-sedes.component';
-import { MntoProcesosComponent } from '../mnto-procesos/mnto-procesos.component';
-import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-organizacion',
@@ -18,84 +14,76 @@ import { ActivatedRoute, Router } from '@angular/router';
 })
 export class OrganizacionComponent implements OnInit {
 
+  stats: {
+    total: number;
+    huachipa: number;
+    independencia: number;
+    ate: number;
+  } = {
+    total: 0,
+    huachipa: 0,
+    independencia: 0,
+    ate: 0
+  };
+
+  organigramaNombre: string | null = null;
+
   constructor(
     private dialog              : MatDialog             ,
-    private serviceOrganizacion : OrganizacionService   ,
     private SpinnerService      : NgxSpinnerService     ,
     private toastr              : ToastrService         ,
-    private router              : Router                ,
-    private route               : ActivatedRoute
-  ){
-
-  }
+  ) {}
 
   displayedColumns: string[] = [
-  'codigo'      ,
-  'denominacion',
-  'sedes'       ,
-  'procesos'    ,
-  'activos'     ,
-  'estado'      ,
-  'acciones'
+    'nombre',
+    'direccion',
+    'procesos',
+    'estado',
+    'acciones'
   ];  
   dataSource = new MatTableDataSource<any>();    
 
   ngOnInit(){
     this.onListado();
+    this.organigramaNombre = localStorage.getItem('precotex_organigrama_nombre');
   }
 
   onListado(){
-    this.SpinnerService.show();
-    this.serviceOrganizacion.getListadoOrganizacion('0').subscribe({
-      next: (response: any)=> {
-        if(response.success){
-          if (response.totalElements > 0){
-              //this.dataListadoMemorandums = response.elements;
-              this.dataSource.data = response.elements;
-              console.log('datos de organizacion', response.elements);
-              //this.dataSource.sort = this.sort;
-
-            this.SpinnerService.hide();
-          }
-          else{
-            //this.dataListadoMemorandums = [];
-            this.dataSource.data = [];            
-            this.SpinnerService.hide();
-          };
-        }else{
-          //this.dataListadoMemorandums = [];
-          this.dataSource.data = [];
-        }
-      },  
-      error: (error) => {
-        this.SpinnerService.hide();
-        console.log(error.error.message, 'Cerrar', {
-        timeOut: 2500,
-         });
-      }          
-    });
+    const localSedes = localStorage.getItem('precotex_sedes');
+    if (localSedes) {
+      const data = JSON.parse(localSedes);
+      this.dataSource.data = data;
+      this.calculateStats(data);
+    } else {
+      const defaultSedes = [
+        { id: 's-001', nombre: 'Huachipa 1', direccion: 'Av. Los Frutales 123, Huachipa', procesos: 'Costura, Corte, Organización y Métodos', estado: 'Huachipa' },
+        { id: 's-002', nombre: 'Huachipa 2', direccion: 'Av. Los Frutales 456, Huachipa', procesos: 'Costura, Estampado', estado: 'Huachipa' },
+        { id: 's-003', nombre: 'Independencia', direccion: 'Av. Túpac Amaru 1200', procesos: 'SSOMA, Costura', estado: 'Independencia' },
+        { id: 's-004', nombre: 'Santa Cecilia', direccion: 'Calle Santa Cecilia 340, SJL', procesos: 'Logística, Almacén', estado: 'SJL' }
+      ];
+      localStorage.setItem('precotex_sedes', JSON.stringify(defaultSedes));
+      this.dataSource.data = defaultSedes;
+      this.calculateStats(defaultSedes);
+    }
   }
 
-  onExportar(){
-
+  calculateStats(sedes: any[]): void {
+    this.stats = {
+      total: sedes.length,
+      huachipa: sedes.filter(s => s.estado === 'Huachipa').length,
+      independencia: sedes.filter(s => s.estado === 'Independencia').length,
+      ate: sedes.filter(s => s.estado === 'Ate').length
+    };
   }
 
-  onAgregar(){
-    
-    let dialogRef = this.dialog.open(OrganizacionRegeditComponent, {
-      width: '700px',
-      disableClose: true,
-      panelClass: 'my-class',
-      data: {
-         Title  : "::. Registra nueva Organización .::",
-         Accion : "I",
-         Datos  : null
-      }
-    });
-    dialogRef.afterClosed().subscribe(() => {
-      this.onListado();
-    });       
-
+  getEstadoClass(estado: string | null | undefined): string {
+    if (!estado) return 'huachipa';
+    const normalized = estado.toLowerCase().trim();
+    if (normalized.includes('huachipa')) return 'huachipa';
+    if (normalized.includes('independencia')) return 'independencia';
+    if (normalized.includes('sjl')) return 'sjl';
+    if (normalized.includes('ate')) return 'ate';
+    return 'huachipa';
   }
 
   aplicarFiltro(event: Event): void {
@@ -103,11 +91,45 @@ export class OrganizacionComponent implements OnInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
+  onAgregar(){
+    let dialogRef = this.dialog.open(OrganizacionRegeditComponent, {
+      width: '600px',
+      disableClose: true,
+      panelClass: 'my-class',
+      data: {
+         Title  : "::. Agregar sede .::",
+         Accion : "I",
+         Datos  : null
+      }
+    });
+    dialogRef.afterClosed().subscribe((res) => {
+      if (res) {
+        this.onListado();
+      }
+    });       
+  }
+
+  onEditar(item: any){
+    let dialogRef = this.dialog.open(OrganizacionRegeditComponent, {
+      width: '600px',
+      disableClose: true,
+      panelClass: 'my-class',
+      data: {
+         Title  : "::. Editar sede .::",
+         Accion : "U",
+         Datos  : item
+      }
+    });
+    dialogRef.afterClosed().subscribe((res) => {
+      if (res) {
+        this.onListado();
+      }
+    });     
+  }
+
   onEliminar(item: any){
-     
-    const sCodOrganizacion: string = item?.codigo_Organizacion;
     Swal.fire({
-      title: '¿Desea eliminar la organización?, Confirme',
+      title: '¿Desea eliminar la sede?, Confirme',
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
@@ -116,107 +138,43 @@ export class OrganizacionComponent implements OnInit {
       cancelButtonText: 'No'
     }).then((result) => {    
       if (result.isConfirmed) {
-        
-        let data: any = {
-          "codigo_Organizacion" : sCodOrganizacion,
-          "denominacion"        : "",
-          "direccion"           : "",
-          "localidad"           : "",
-          "provincia"           : "",
-          "pais"                : "",
-          "flg_Activo"          : "",
-          "cod_Usuario"         : "SISTEMAS",
-          "accion": "D",           
-        };
-
-      this.SpinnerService.show();
-      this.serviceOrganizacion.postProcesoMntoOrganizacion(data).subscribe({
-          next: (response: any)=> {
-            if(response.success){
-              if (response.codeResult == 200){
-                this.toastr.success(response.message, '', {
-                  timeOut: 2500,
-                });
-                this.onListado();
-
-              }else if(response.codeResult == 201){
-                this.toastr.info(response.message, '', {
-                  timeOut: 2500,
-                });
-              }
-              this.SpinnerService.hide();
-            }else{
-              this.toastr.error(response.message, 'Cerrar', {
-                timeOut: 2500,
-              });
-              this.SpinnerService.hide();
-            }
-          },
-          error: (error) => {
-            const mensaje =
-              error?.error?.message ||
-              error?.error?.title ||
-              "Ocurrió un error en el servidor";
+        try {
+          const localSedes = localStorage.getItem('precotex_sedes');
+          if (localSedes) {
+            let data = JSON.parse(localSedes);
+            data = data.filter((s: any) => s.id !== item.id);
+            localStorage.setItem('precotex_sedes', JSON.stringify(data));
             
-            this.toastr.error(mensaje, 'Cerrar', {
-            timeOut: 2500,
+            this.toastr.success('Sede eliminada correctamente.', '', {
+              timeOut: 2500,
             });
-            this.SpinnerService.hide();
+            this.onListado();
           }
-        });           
+        } catch (e) {
+          this.toastr.error('Error al eliminar la sede.', '', {
+            timeOut: 2500,
+          });
+        }
       }
     });      
-    
-
-  }  
-
-  onEditar(item: any){
-
-    let dialogRef = this.dialog.open(OrganizacionRegeditComponent, {
-      width: '600px',
-      disableClose: true,
-      panelClass: 'my-class',
-      data: {
-         Title  : "::. Editar organización .::",
-         Accion : "U",
-         Datos  : item
-      }
-    });
-    dialogRef.afterClosed().subscribe(() => {
-      this.onListado();
-    });     
-
   }
 
-  onSedes(item: any){
-
-    const codigoOrganizacion:string =  item?.codigo_Organizacion;
-    this.router.navigate(['/principal/mntoSedes', codigoOrganizacion]);
+  triggerUpload() {
+    const fileInput = document.getElementById('organigrama-upload');
+    if (fileInput) {
+      fileInput.click();
+    }
   }
 
-  onProcesos(item: any){
-
-    const codigoOrgnizacion:string = item?.codigo_Organizacion;
-    this.router.navigate(['/principal/mntoProcesos', codigoOrgnizacion]);
-
-    /*
-    let dialogRef = this.dialog.open(MntoProcesosComponent, {
-      width: '60vw',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      height: '50vh',
-
-      disableClose: true,
-      panelClass: 'my-class',
-      data: {
-         Datos  : item
-      }
-    });
-    dialogRef.afterClosed().subscribe(() => {
-      this.onListado();
-    });     
-    */
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      localStorage.setItem('precotex_organigrama_nombre', file.name);
+      this.organigramaNombre = file.name;
+      this.toastr.success('Organigrama corporativo cargado correctamente.', '', {
+        timeOut: 2500
+      });
+    }
   }
-
 
 }

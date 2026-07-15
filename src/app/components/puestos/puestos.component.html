@@ -1,176 +1,223 @@
-<app-bread-crumb
-  titulo="Gestión de Puestos"
-  icon="gavel"
-  >
-</app-bread-crumb>
-
 <div class="contenedor sn-animate-in">
-    <form [formGroup]="formulario" #formDirective="ngForm" class="dialog-form">
-        
-        <!-- CARD FILTROS -->
-        <div class="filtros-card">
-            <div class="acciones-container">
 
-                <!-- FILTROS SELECT -->
-                <div class="filtros">
-                    <mat-form-field appearance="outline" class="filtro-select">
-                        <mat-label>Organización</mat-label>
-                        <mat-select formControlName="ctrol_organizacion" (selectionChange)="onChangeOrga($event)">
-                            <mat-option *ngFor="let orga of lstOrganizacion" [value]="orga.codigo">
-                                {{ orga.descripcion }}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>   
-                     
-                    <mat-form-field appearance="outline" class="filtro-select">
-                        <mat-label>Sede</mat-label>
-                        <mat-select formControlName="ctrol_sede">
-                            <mat-option *ngFor="let sede of lstSedes" [value]="sede.codigo">
-                                {{ sede.descripcion }}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>                   
+  <!-- BANNER NOTIFICACIÓN -->
+  <div class="banner-aviso">
+    <span>✦ Registro funcional. Pulsa <strong>Nuevo puesto</strong>, llena el formulario y guarda. Persiste aunque recargues.</span>
+  </div>
 
-                    <mat-form-field appearance="outline" class="filtro-select">
-                        <mat-label>Nivel de Riesgo</mat-label>
-                        <mat-select formControlName="ctrol_nivel">
-                            <mat-option *ngFor="let nivel of lstNivelRiesgo" [value]="nivel.codigo">
-                                {{ nivel.descripcion }}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>
-                </div>
+  <!-- ESTADÍSTICAS CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card border-left-purple">
+      <div class="stat-label">TOTAL</div>
+      <div class="stat-value text-white">{{ stats.total }}</div>
+      <div class="stat-desc">Registros</div>
+    </div>
+    <div class="stat-card border-left-green">
+      <div class="stat-label">ACTIVO</div>
+      <div class="stat-value text-green">{{ stats.activo }}</div>
+    </div>
+    <div class="stat-card border-left-amber">
+      <div class="stat-label">SIN PERMISOS CONFIG.</div>
+      <div class="stat-value text-amber">{{ stats.sinConfig }}</div>
+    </div>
+  </div>
 
-                <!-- BOTONES -->
-                <div class="botones">
-                    <button type="button" class="btn-search" (click)="onBuscar()">
-                        <mat-icon>search</mat-icon> 
-                        <span>Buscar</span>
-                    </button>                        
+  <!-- TÍTULO DE SECCIÓN Y BOTÓN AGREGAR -->
+  <div class="seccion-header">
+    <h2 class="seccion-titulo">PUESTOS Y USUARIOS ASIGNADOS</h2>
+    <button type="button" class="btn-agregar-norma" (click)="onAgregar()" *ngIf="!showForm">
+      <span>+ Nuevo puesto</span>
+    </button>
+  </div>
 
-                    <button type="button" class="btn-primary" (click)="onAgregar()">
-                        <mat-icon>create_new_folder</mat-icon> 
-                        <span>Agregar</span>
-                    </button>    
-
-                    <button type="button" class="btn-excel" (click)="onExportar()">
-                        <mat-icon>download</mat-icon> 
-                        <span>Exportar a Excel</span>
-                    </button>
-                    
-                    <button type="button" class="btn-import" (click)="onImportar()">
-                        <mat-icon>upload</mat-icon> 
-                        <span>Importar Puestos</span>
-                    </button>
-                </div>            
-            </div>
+  <!-- INLINE FORM PANEL -->
+  <div class="form-panel shadow-premium" *ngIf="showForm">
+    <div class="form-panel-header">
+      <h3 class="form-panel-title">{{ isEditing ? 'Editar registro' : 'Nuevo registro' }}</h3>
+    </div>
+    <form [formGroup]="formulario" class="dialog-form">
+      <div class="form-grid-puestos">
+        <!-- Puesto / Cargo -->
+        <div class="row">
+          <label class="form-label">Puesto / Cargo <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <input type="text" formControlName="ctrol_puesto" placeholder="Ej. Supervisor de Calidad" class="form-input">
+          </div>
         </div>
 
-        <!-- CONTENEDOR DE TABLA PREMIUM -->
-        <div class="table-container shadow-premium">
-            <table mat-table [dataSource]="dataSource" matSort class="tabla">
-
-                <!-- FICHA DESCRIPCIÓN -->
-                <ng-container matColumnDef="ficha_descrip">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px; text-align: center;">Ficha Descripción</th>
-                    <td mat-cell *matCellDef="let row" style="text-align: center;">
-                        <button type="button" class="action-btn btn-view-ficha" (click)="onVerFicha(row)" title="Ver Ficha">
-                            <mat-icon>description</mat-icon>
-                        </button>
-                    </td>
-                </ng-container>     
-
-                <!-- HISTORICO DE REVISION -->
-                <ng-container matColumnDef="his_de_revi">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 140px;">Histórico de Revisión</th>
-                    <td mat-cell *matCellDef="let row">
-                        <span class="rev-badge">{{ row.his_de_revi }}</span>
-                    </td>
-                </ng-container>              
-
-                <!-- ES ADMIN -->
-                <ng-container matColumnDef="es_admin">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px; text-align: center;">¿Es Admin?</th>
-                    <td mat-cell *matCellDef="let row" style="text-align: center;">
-                        <span [class]="row.es_admin === 'Sí' ? 'badge-admin-yes' : 'badge-admin-no'">
-                            {{ row.es_admin }}
-                        </span>
-                    </td>
-                </ng-container>             
-                
-                <!-- N° Usuarios Activos -->
-                <ng-container matColumnDef="n_user_activ">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px; text-align: center;">N° Usuarios Activos</th>
-                    <td mat-cell *matCellDef="let row" style="text-align: center;">
-                        <span class="user-badge-pill" (click)="onVerUsuarios(row)" title="Ver usuarios activos">
-                            <mat-icon class="pill-icon">people</mat-icon>
-                            {{ row.n_user_activ }}
-                        </span>
-                    </td>
-                </ng-container>              
-                
-                <!-- Puesto -->
-                <ng-container matColumnDef="puesto">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 180px;">Puesto</th>
-                    <td mat-cell *matCellDef="let row" class="norma-cell">{{ row.puesto }}</td>
-                </ng-container>   
-                
-                <!-- Organización -->
-                <ng-container matColumnDef="organización">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 150px;">Organización</th>
-                    <td mat-cell *matCellDef="let row">{{ row.organizacion }}</td>
-                </ng-container>     
-                
-                <!-- Sede -->
-                <ng-container matColumnDef="sede">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 150px;">Sede</th>
-                    <td mat-cell *matCellDef="let row">{{ row.sede }}</td>
-                </ng-container>
-
-                <!-- Nivel Riesgo -->
-                <ng-container matColumnDef="nivel_riesgo">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 130px; text-align: center;">Nivel Riesgo</th>
-                    <td mat-cell *matCellDef="let row" style="text-align: center;">
-                        <span [class]="'badge-riesgo-' + row.nivelRiesgo.toLowerCase()">
-                            {{ row.nivelRiesgo }}
-                        </span>
-                    </td>
-                </ng-container>
-
-                <!-- Documentos Facilitados/Solicitados/Cuestionarios -->
-                <ng-container matColumnDef="con_doc_fal">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 250px;">Documentos Facilitados/Solicitados/Cuestionarios</th>
-                    <td mat-cell *matCellDef="let row">
-                        <span [class]="row.con_doc_fal.startsWith('Sí') ? 'badge-doc-yes' : 'badge-doc-no'">
-                            {{ row.con_doc_fal }}
-                        </span>
-                    </td>
-                </ng-container>  
-
-                <!-- Acciones -->
-                <ng-container matColumnDef="acciones">
-                    <th mat-header-cell *matHeaderCellDef style="width: 110px; text-align: center;">Acciones</th>
-                    <td mat-cell *matCellDef="let row">
-                        <div class="actions-wrapper">
-                            <button type="button" class="action-btn btn-edit" (click)="onEditar(row)" title="Editar">
-                                <mat-icon>edit</mat-icon>
-                            </button>
-                            <button type="button" class="action-btn btn-delete" (click)="onEliminar(row)" title="Eliminar">
-                                <mat-icon>delete</mat-icon>
-                            </button>
-                        </div>
-                    </td>
-                </ng-container>  
-                
-                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="fila"></tr>                  
-                        
-            </table>
+        <!-- Proceso -->
+        <div class="row">
+          <label class="form-label">Proceso <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <select formControlName="ctrol_proceso" class="form-input select-input">
+              <option value="" disabled selected>Seleccione un proceso...</option>
+              <optgroup *ngFor="let group of getProcesosKeys()" [label]="group">
+                <option *ngFor="let proc of procesosGroups[group]" [value]="proc">{{ proc }}</option>
+              </optgroup>
+            </select>
+          </div>
         </div>
 
+        <!-- Usuario Asignado -->
+        <div class="row">
+          <label class="form-label">Usuario Asignado</label>
+          <div class="input-wrapper">
+            <input type="text" formControlName="ctrol_usuario" placeholder="Nombre del colaborador" class="form-input">
+          </div>
+        </div>
+
+        <!-- Nivel -->
+        <div class="row">
+          <label class="form-label">Nivel <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <select formControlName="ctrol_nivel" class="form-input select-input">
+              <option value="Gerencial">Gerencial</option>
+              <option value="Jefatura">Jefatura</option>
+              <option value="Operativo">Operativo</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Permisos -->
+        <div class="row">
+          <label class="form-label">Permisos <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <select formControlName="ctrol_permisos" class="form-input select-input">
+              <option value="Lectura">Lectura</option>
+              <option value="Lectura + descarga">Lectura + descarga</option>
+              <option value="Lectura + descarga + modificar">Lectura + descarga + modificar</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Estado -->
+        <div class="row">
+          <label class="form-label">Estado <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <select formControlName="ctrol_estado" class="form-input select-input">
+              <option value="Activo">Activo</option>
+              <option value="Sin permisos config.">Sin permisos config.</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="onCancelar()">Cancelar</button>
+        <button type="button" class="btn-primary" (click)="onGuardar()">Guardar</button>
+      </div>
     </form>
-</div>
+  </div>
 
-<ngx-spinner bdColor="rgba(51, 51, 51, 0.8)" size="default" type="ball-spin">
-    <p style="color: white; text-align: center; ">Cargando... </p>
-</ngx-spinner>
+  <!-- BUSCADOR -->
+  <div class="buscador-container">
+    <input type="text" 
+           (keyup)="aplicarFiltro($event)" 
+           placeholder="Buscar..." 
+           class="buscador-input">
+  </div>
+
+  <!-- CONTENEDOR DE TABLA PREMIUM -->
+  <div class="table-container shadow-premium">
+    <table mat-table [dataSource]="dataSource" matSort class="tabla">
+
+      <!-- Puesto / Cargo -->
+      <ng-container matColumnDef="puesto">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 200px;">Puesto / Cargo</th>
+        <td mat-cell *matCellDef="let row" class="norma-cell">{{ row.puesto }}</td>
+      </ng-container>
+
+      <!-- Proceso -->
+      <ng-container matColumnDef="proceso">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 140px;">Proceso</th>
+        <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.proceso }}</td>
+      </ng-container>
+
+      <!-- Usuario Asignado -->
+      <ng-container matColumnDef="usuario">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 180px;">Usuario Asignado</th>
+        <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.usuario || '—' }}</td>
+      </ng-container>
+
+      <!-- Nivel -->
+      <ng-container matColumnDef="nivel">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 120px;">Nivel</th>
+        <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.nivel }}</td>
+      </ng-container>
+
+      <!-- Permisos -->
+      <ng-container matColumnDef="permisos">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 200px;">Permisos</th>
+        <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.permisos }}</td>
+      </ng-container>
+
+      <!-- Estado -->
+      <ng-container matColumnDef="estado">
+        <th mat-header-cell *matHeaderCellDef style="width: 160px;">Estado</th>
+        <td mat-cell *matCellDef="let row">
+          <span [class]="row.estado === 'Activo' ? 'badge-estado-activo' : 'badge-estado-sin-permisos'">
+            {{ row.estado }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Acciones -->
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef style="width: 160px; text-align: center;">Acciones</th>
+        <td mat-cell *matCellDef="let row">
+          <div class="actions-wrapper">
+            <button class="action-btn btn-edit" (click)="onEditar(row)" title="Editar">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button class="action-btn btn-delete" (click)="onEliminar(row)" title="Eliminar">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="fila"></tr>
+
+    </table>
+  </div>
+
+  <!-- SECCIÓN HISTÓRICO Y ACTIVIDAD -->
+  <div class="activity-widgets-grid">
+    <!-- Histórico de Ingresos -->
+    <div class="activity-card shadow-premium">
+      <h3 class="activity-card-title">Histórico de ingresos a la plataforma</h3>
+      <div class="log-list">
+        <div *ngFor="let log of accesosList" class="log-item">
+          <div [class]="'user-avatar avatar-' + log.c">{{ initials(log.n) }}</div>
+          <div class="log-details">
+            <div class="log-user-meta">
+              <span class="log-user-name">{{ log.n }}</span>
+              <span class="log-user-role">{{ log.rol }}</span>
+            </div>
+            <div class="log-action">{{ log.acc }}</div>
+          </div>
+          <div class="log-time">{{ log.t }}</div>
+        </div>
+      </div>
+      <div class="log-footer">Últimos 6 de 142 registros</div>
+    </div>
+
+    <!-- Actividad por usuario (últimos 7 días) -->
+    <div class="activity-card shadow-premium">
+      <h3 class="activity-card-title">Actividad por usuario — últimos 7 días</h3>
+      <div class="chart-list">
+        <div *ngFor="let act of actividadList" class="chart-item">
+          <div class="chart-label">
+            <span class="chart-name">{{ act.n }}</span>
+            <span class="chart-value">{{ act.count }} acciones</span>
+          </div>
+          <div class="progress-bar-wrapper">
+            <div [class]="'progress-bar-fill fill-' + act.c" [style.width.%]="act.percent"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,81 +1,93 @@
 
-<!-- <mat-toolbar class="toolbar">
 
-  <div class="left">
-    <mat-icon class="icono">gavel</mat-icon>
-    <span class="titulo">Gestión de Normas</span>
-  </div>
-</mat-toolbar> -->
-
-<app-bread-crumb
-  titulo="Gestión de Normas"
-  icon="gavel">
-</app-bread-crumb>
 
 <div class="contenedor sn-animate-in">
 
-  <!-- CARD FILTROS -->
-  <div class="filtros-card">
-    <div class="acciones-container">
+  <!-- BANNER NOTIFICACIÓN -->
+  <div class="banner-aviso">
+    <span>✦ Registro funcional. Pulsa <strong>Agregar norma</strong>, llena el formulario y guarda. Persiste aunque recargues.</span>
+  </div>
 
-      <!-- BUSCADOR MODERNO -->
-      <div class="search-wrapper">
-        <mat-icon class="search-icon">search</mat-icon>
-        <input type="text" 
-               (keyup)="aplicarFiltro($event)" 
-               placeholder="Buscar norma..." 
-               class="search-input">
-      </div>
+  <!-- ESTADÍSTICAS CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card border-left-purple">
+      <div class="stat-label">TOTAL</div>
+      <div class="stat-value text-white">{{ stats.total }}</div>
+      <div class="stat-desc">Registros</div>
+    </div>
+    <div class="stat-card border-left-green">
+      <div class="stat-label">VIGENTE</div>
+      <div class="stat-value text-green">{{ stats.vigente }}</div>
+    </div>
+    <div class="stat-card border-left-amber">
+      <div class="stat-label">EN REVISIÓN</div>
+      <div class="stat-value text-yellow">{{ stats.enRevision }}</div>
+    </div>
+    <div class="stat-card border-left-red">
+      <div class="stat-label">POR VENCER</div>
+      <div class="stat-value text-red">{{ stats.porVencer }}</div>
+    </div>
+  </div>
 
-      <!-- BOTONES MODERNOS -->
-      <div class="botones">
-        <button type="button" class="btn-primary" (click)="onAgregar()">
-          <mat-icon>create_new_folder</mat-icon> 
-          <span>Agregar</span>
-        </button>    
+  <!-- TÍTULO DE SECCIÓN Y BOTÓN AGREGAR -->
+  <div class="seccion-header">
+    <h2 class="seccion-titulo">NORMAS Y CERTIFICACIONES</h2>
+    <button type="button" class="btn-agregar-norma" (click)="onAgregar()">
+      <span>+ Agregar norma</span>
+    </button>
+  </div>
 
-        <button type="button" class="btn-secondary" (click)="onExportar()">
-          <mat-icon>download</mat-icon> 
-          <span>Exportar</span>
-        </button>           
-      </div>
-
-    </div>  
+  <!-- BUSCADOR -->
+  <div class="buscador-container">
+    <input type="text" 
+           (keyup)="aplicarFiltro($event)" 
+           placeholder="Buscar..." 
+           class="buscador-input">
   </div>
 
   <!-- CONTENEDOR DE TABLA PREMIUM -->
   <div class="table-container shadow-premium">
     <table mat-table [dataSource]="dataSource" matSort class="tabla">
 
-      <!-- Código -->
-      <ng-container matColumnDef="codigo">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 140px;">Código</th>
-        <td mat-cell *matCellDef="let row">
-          <span class="code-badge">{{ row.codigo_Norma }}</span>
-        </td>
-      </ng-container>
-
-      <!-- Norma -->
+      <!-- Norma / Certificación -->
       <ng-container matColumnDef="norma">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 200px;">Norma</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 220px;">Norma / Certificación</th>
         <td mat-cell *matCellDef="let row" class="norma-cell">{{ row.norma }}</td>
       </ng-container>
+
+      <!-- Categoría / Ámbito -->
+      <ng-container matColumnDef="categoria">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px;">Categoría / Ámbito</th>
+        <td mat-cell *matCellDef="let row">{{ row.categoria || 'Otros' }}</td>
+      </ng-container>
+
+      <!-- Fecha Vencimiento -->
+      <ng-container matColumnDef="fechaVencimiento">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px;">Fecha Vencimiento</th>
+        <td mat-cell *matCellDef="let row" class="col-tabular">{{ row.fechaVencimiento ? (row.fechaVencimiento | date:'dd/MM/yyyy') : '-' }}</td>
+      </ng-container>
+
+      <!-- Última Auditoría -->
+      <ng-container matColumnDef="fechaAuditoria">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px;">Última Auditoría</th>
+        <td mat-cell *matCellDef="let row" class="col-tabular">{{ row.fechaAuditoria ? (row.fechaAuditoria | date:'dd/MM/yyyy') : '-' }}</td>
+      </ng-container>
+
+      <!-- Estado -->
+      <ng-container matColumnDef="estado">
+        <th mat-header-cell *matHeaderCellDef style="width: 140px;">Estado</th>
+        <td mat-cell *matCellDef="let row">
+          <span [class]="'badge-estado-' + getEstadoClass(row.estado)">
+            {{ row.estado || 'Vigente' }}
+          </span>
+        </td>
+      </ng-container>    
 
       <!-- Descripción -->
       <ng-container matColumnDef="descripcion">
         <th mat-header-cell *matHeaderCellDef style="min-width: 250px;">Descripción</th>
         <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.descripcion }}</td>
       </ng-container>
-
-      <!-- Estado -->
-      <ng-container matColumnDef="estado">
-        <th mat-header-cell *matHeaderCellDef style="width: 120px;">Estado</th>
-        <td mat-cell *matCellDef="let row">
-          <span [class]="row.flg_Activo === 'True' ? 'activo' : 'inactivo'">
-            {{ row.flg_Activo === "True" ? 'Activo' : 'Inactivo' }}
-          </span>
-        </td>
-      </ng-container>    
 
       <!-- Acciones -->
       <ng-container matColumnDef="acciones">
