@@ -1,0 +1,169 @@
+<div class="dialog-container">
+  
+  <mat-toolbar class="banner-header">
+    <span class="titulo">{{ data.Title }}</span>
+    <span class="flex-spacer"></span>
+    <button type="button" class="btn-close-header" (click)="onCancelar()" title="Cerrar">
+      <mat-icon>close</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <form [formGroup]="formulario" (ngSubmit)="onGuardar()">
+    
+    <mat-dialog-content class="form-content">
+      
+      <!-- SECCIÓN 1: IDENTIFICACIÓN -->
+      <div class="section-title">Identificación del Indicador</div>
+      
+      <div class="grid-2-cols">
+        <div class="form-section-item">
+          <div class="form-label">Código del Indicador (*):</div>
+          <input type="text" formControlName="codigo" class="full-width-input" placeholder="Ej. IND-COS-001">
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Nombre (*):</div>
+          <input type="text" formControlName="nombre" class="full-width-input" placeholder="Ej. % eficiencia de línea">
+        </div>
+      </div>
+
+      <div class="grid-2-cols">
+        <div class="form-section-item">
+          <div class="form-label">Tipo (*):</div>
+          <select formControlName="tipo" class="full-width-input">
+            <option *ngFor="let opt of tiposOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Norma ISO (*):</div>
+          <select formControlName="norma" class="full-width-input">
+            <option *ngFor="let opt of normasOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-2-cols">
+        <div class="form-section-item">
+          <div class="form-label">Responsable del Indicador (*):</div>
+          <input type="text" formControlName="responsable" class="full-width-input" placeholder="Ej. Jefe Costura">
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Responsable de Medición (*):</div>
+          <input type="text" formControlName="respmed" class="full-width-input" placeholder="Ej. Supervisor">
+        </div>
+      </div>
+
+      <div class="form-section-item">
+        <div class="form-label">Estado (*):</div>
+        <select formControlName="estado" class="full-width-input">
+          <option *ngFor="let opt of estadosOptions" [value]="opt">{{ opt }}</option>
+        </select>
+      </div>
+
+      <!-- SECCIÓN 2: SEDE Y ÁREA -->
+      <div class="section-title">Sede y Área</div>
+
+      <div class="grid-2-cols">
+        <div class="form-section-item">
+          <div class="form-label">Sede donde aplica (*):</div>
+          <select formControlName="sede" class="full-width-input">
+            <option *ngFor="let opt of sedesOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Proceso (*):</div>
+          <select formControlName="proceso" class="full-width-input">
+            <optgroup *ngFor="let key of getProcesosKeys()" [label]="key">
+              <option *ngFor="let proc of procesosGroups[key]" [value]="proc">{{ proc }}</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-section-item">
+        <div class="form-label">Procesos con acceso (separado por comas):</div>
+        <input type="text" formControlName="areasacc" class="full-width-input" placeholder="Ej. Costura, Calidad, Gerencia">
+      </div>
+
+      <!-- SECCIÓN 3: TEMPORALIDAD -->
+      <div class="section-title">Temporalidad</div>
+
+      <div class="grid-2-cols">
+        <div class="form-section-item">
+          <div class="form-label">Fecha de Inicio (*):</div>
+          <input type="date" formControlName="inicio" class="full-width-input">
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Fecha de Fin (*):</div>
+          <input type="date" formControlName="fin" class="full-width-input">
+        </div>
+      </div>
+
+      <div class="grid-2-cols">
+        <div class="form-section-item">
+          <div class="form-label">Frecuencia de medición (*):</div>
+          <select formControlName="frecuencia" class="full-width-input">
+            <option *ngFor="let opt of frecuenciasOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Fuente de datos (*):</div>
+          <select formControlName="fuente" class="full-width-input">
+            <option *ngFor="let opt of fuentesOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 4: DEFINICIÓN -->
+      <div class="section-title">Definición del Indicador</div>
+
+      <div class="form-section-item">
+        <div class="form-label">Fórmula de cálculo (*):</div>
+        <input type="text" formControlName="formula" class="full-width-input" placeholder="Ej. (Piezas conformes / total) x 100">
+      </div>
+
+      <div class="grid-2-cols">
+        <div class="form-section-item">
+          <div class="form-label">Unidad de medida (*):</div>
+          <select formControlName="unidad" class="full-width-input">
+            <option *ngFor="let opt of unidadesOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Línea base:</div>
+          <input type="text" formControlName="base" class="full-width-input" placeholder="Ej. 79%">
+        </div>
+      </div>
+
+      <div class="grid-2-cols">
+        <div class="form-section-item">
+          <div class="form-label">Meta (*):</div>
+          <input type="text" formControlName="meta" class="full-width-input" placeholder="Ej. >=85%">
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Tipo de meta (*):</div>
+          <select formControlName="tipometa" class="full-width-input">
+            <option *ngFor="let opt of tipometasOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-section-item">
+        <div class="form-label">Sentido (*):</div>
+        <select formControlName="sentido" class="full-width-input">
+          <option *ngFor="let opt of sentidosOptions" [value]="opt">{{ opt }}</option>
+        </select>
+      </div>
+
+    </mat-dialog-content>
+
+    <mat-dialog-actions class="dialog-actions-row">
+      <button type="submit" class="BtnGuardarPlan" mat-flat-button>
+        Guardar Indicador
+      </button>
+      <button type="button" class="BtnCancelarPlan" mat-flat-button (click)="onCancelar()">
+        Cancelar
+      </button>
+    </mat-dialog-actions>
+    
+  </form>
+</div>

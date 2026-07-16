@@ -1,0 +1,79 @@
+<div class="dialog-container">
+  
+  <div class="dialog-header">
+    <h2 class="dialog-title">{{ data.Accion === 'I' ? 'Nuevo registro' : 'Editar registro' }}</h2>
+    <button type="button" class="btn-close-header" (click)="onCancelar()" title="Cerrar">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <form [formGroup]="formulario" (ngSubmit)="onGuardar()">
+    
+    <mat-dialog-content class="form-content">
+      
+      <!-- Fila 1: 4 Columnas (OBJETIVO, PROCESO, FRECUENCIA, META) -->
+      <div class="grid-4-cols">
+        <div class="form-section-item">
+          <div class="form-label">OBJETIVO</div>
+          <input type="text" formControlName="objetivo" list="objetivosList" class="full-width-input" placeholder="Ej. Reducir defectos de calidad">
+          <datalist id="objetivosList">
+            <option *ngFor="let obj of objetivos" [value]="obj.objetivo"></option>
+          </datalist>
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">PROCESO</div>
+          <select formControlName="proceso" class="full-width-input">
+            <optgroup *ngFor="let key of getProcesosKeys()" [label]="key">
+              <option *ngFor="let proc of procesosGroups[key]" [value]="proc">{{ proc }}</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">FRECUENCIA</div>
+          <select formControlName="frecuencia" class="full-width-input">
+            <option *ngFor="let opt of frecuenciasOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">META</div>
+          <input type="text" formControlName="meta" class="full-width-input" placeholder="Ej. ≤10%">
+        </div>
+      </div>
+
+      <!-- Fila 2: 3 Columnas (VALOR OBTENIDO, PERÍODO, SEMÁFORO) -->
+      <div class="grid-3-cols">
+        <div class="form-section-item">
+          <div class="form-label">VALOR OBTENIDO</div>
+          <input type="text" formControlName="valor" class="full-width-input" placeholder="Ej. 9.8%">
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">PERÍODO</div>
+          <input type="text" formControlName="periodo" class="full-width-input" placeholder="Ej. Junio 2025">
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">SEMÁFORO</div>
+          <select formControlName="semaforo" class="full-width-input">
+            <option *ngFor="let opt of semaforosOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Fila 3: Full width (OBSERVACIONES) -->
+      <div class="form-section-item">
+        <div class="form-label">OBSERVACIONES</div>
+        <textarea formControlName="obs" rows="3" class="full-width-input textarea-desc" placeholder="Comentario opcional..."></textarea>
+      </div>
+
+    </mat-dialog-content>
+
+    <mat-dialog-actions class="dialog-actions-row">
+      <button type="submit" class="BtnGuardarPlan" mat-flat-button>
+        Guardar Medición
+      </button>
+      <button type="button" class="BtnCancelarPlan" mat-flat-button (click)="onCancelar()">
+        Cancelar
+      </button>
+    </mat-dialog-actions>
+    
+  </form>
+</div>

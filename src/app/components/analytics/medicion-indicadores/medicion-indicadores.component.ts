@@ -3,17 +3,17 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
-import { MedicionObjetivosRegeditComponent } from '../planificacion-objetivos/medicion-objetivos-regedit/medicion-objetivos-regedit.component';
+import { MedicionRegeditComponent } from './medicion-regedit/medicion-regedit.component';
 
-const STORAGE_KEY = 'precotex_mediciones_obj';
+const STORAGE_KEY = 'precotex_mediciones_ind';
 
 @Component({
-  selector: 'app-mediciones-pendientes',
+  selector: 'app-medicion-indicadores',
   standalone: false,
-  templateUrl: './mediciones-pendientes.component.html',
-  styleUrls: ['./mediciones-pendientes.component.css']
+  templateUrl: './medicion-indicadores.component.html',
+  styleUrls: ['./medicion-indicadores.component.css']
 })
-export class MedicionesPendientesComponent implements OnInit {
+export class MedicionIndicadoresComponent implements OnInit {
 
   stats = {
     total: 0,
@@ -23,13 +23,14 @@ export class MedicionesPendientesComponent implements OnInit {
   };
 
   displayedColumns: string[] = [
-    'objetivo',
+    'indicador',
+    'sede',
     'proceso',
-    'frecuencia',
     'meta',
     'valor',
     'periodo',
     'semaforo',
+    'tendencia',
     'acciones'
   ];
 
@@ -37,37 +38,37 @@ export class MedicionesPendientesComponent implements OnInit {
 
   private readonly seedData = [
     {
-      id: 'MOB-001',
-      objetivo: 'Reducir defectos de calidad',
-      proceso: 'Calidad',
-      frecuencia: 'Mensual',
-      meta: '≤10%',
-      valor: '9.8%',
+      id: 'MED-001',
+      indicador: '% eficiencia de línea',
+      sede: 'Huachipa 1',
+      proceso: 'Costura',
+      meta: '≥85%',
+      valor: '87%',
       periodo: 'Junio 2025',
       semaforo: 'En meta',
       obs: ''
     },
     {
-      id: 'MOB-002',
-      objetivo: 'Cumplimiento prog. operativo',
-      proceso: 'Producción',
-      frecuencia: 'Mensual',
-      meta: '95%',
-      valor: '88%',
-      periodo: 'Junio 2025',
-      semaforo: 'En riesgo',
-      obs: ''
-    },
-    {
-      id: 'MOB-003',
-      objetivo: 'Reducir merma de tela',
+      id: 'MED-002',
+      indicador: '% merma de tela',
+      sede: 'Huachipa 1',
       proceso: 'Corte',
-      frecuencia: 'Semanal',
       meta: '≤8%',
       valor: '15%',
       periodo: 'Junio 2025',
       semaforo: 'Crítico',
-      obs: 'Requiere plan de acción.'
+      obs: 'Revisar tendido de tela.'
+    },
+    {
+      id: 'MED-003',
+      indicador: '% piezas aprobadas 1er control',
+      sede: 'Huachipa 2',
+      proceso: 'Calidad',
+      meta: '≥95%',
+      valor: '91%',
+      periodo: 'Junio 2025',
+      semaforo: 'En riesgo',
+      obs: ''
     }
   ];
 
@@ -120,19 +121,51 @@ export class MedicionesPendientesComponent implements OnInit {
     return '#94a3b8';
   }
 
+  getDonutDashArray(count: number): string {
+    const total = this.stats.total || 1;
+    const pct = Math.round((count / total) * 100);
+    return `${pct} ${100 - pct}`;
+  }
+
+  getDonutPercentage(count: number): number {
+    const total = this.stats.total || 1;
+    return Math.round((count / total) * 100);
+  }
+
+  getSparklinePoints(id: string): string {
+    let x = 0;
+    const str = id || 'xyz';
+    for (let i = 0; i < str.length; i++) {
+      x = (x * 31 + str.charCodeAt(i)) >>> 0;
+    }
+    const rnd = () => {
+      x = (x * 1103515245 + 12345) & 0x7fffffff;
+      return x / 0x7fffffff;
+    };
+    const n = 9;
+    const w = 78;
+    const h = 24;
+    const pad = 3;
+    const pts: number[] = [];
+    for (let i = 0; i < n; i++) {
+      pts.push(0.2 + rnd() * 0.7);
+    }
+    const step = (w - pad * 2) / (n - 1);
+    const path = pts.map((p, i) => `${(pad + i * step).toFixed(1)},${(h - pad - p * (h - pad * 2)).toFixed(1)}`).join(' ');
+    return path;
+  }
+
   aplicarFiltro(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
   onAgregar(): void {
-    const dialogRef = this.dialog.open(MedicionObjetivosRegeditComponent, {
-      width: '1150px',
-      maxWidth: '95vw',
-      panelClass: 'custom-large-dialog',
+    const dialogRef = this.dialog.open(MedicionRegeditComponent, {
+      width: '680px',
       disableClose: true,
       data: {
-        Title: '::. Registrar medición de objetivo .::',
+        Title: '::. Registrar medición de indicador .::',
         Accion: 'I',
         Datos: null
       }
@@ -143,7 +176,7 @@ export class MedicionesPendientesComponent implements OnInit {
         const local = localStorage.getItem(STORAGE_KEY);
         const data = local ? JSON.parse(local) : [];
         const newRecord = {
-          id: 'MOB-' + Date.now(),
+          id: 'MED-' + Date.now(),
           ...res
         };
         data.unshift(newRecord);
@@ -155,13 +188,11 @@ export class MedicionesPendientesComponent implements OnInit {
   }
 
   onEditar(item: any): void {
-    const dialogRef = this.dialog.open(MedicionObjetivosRegeditComponent, {
-      width: '1150px',
-      maxWidth: '95vw',
-      panelClass: 'custom-large-dialog',
+    const dialogRef = this.dialog.open(MedicionRegeditComponent, {
+      width: '680px',
       disableClose: true,
       data: {
-        Title: '::. Editar medición de objetivo .::',
+        Title: '::. Editar medición de indicador .::',
         Accion: 'U',
         Datos: item
       }

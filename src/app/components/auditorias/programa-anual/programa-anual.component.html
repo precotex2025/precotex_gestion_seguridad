@@ -1,0 +1,57 @@
+<div class="contenedor sn-animate-in">
+
+  <!-- BANNER NOTIFICACIÓN / AVISO -->
+  <div class="banner-aviso">
+    <div class="banner-h">⚠ Alertas del programa</div>
+    <span>Este reporte se arma solo con las auditorías de la pestaña <strong>Planificación de auditoría</strong>. Cada barra se ubica en el mes de su fecha de inicio.</span>
+  </div>
+
+  <!-- LEYENDA -->
+  <div class="legend-container">
+    <span class="legend-item"><i class="dot dot-realizada"></i>Realizada</span>
+    <span class="legend-item"><i class="dot dot-programada"></i>Programada</span>
+    <span class="legend-item"><i class="dot dot-no-realizada"></i>No realizada</span>
+  </div>
+
+  <!-- MATRIZ MENSUAL -->
+  <div class="table-container shadow-premium">
+    <table class="prog-table">
+      <thead>
+        <tr>
+          <th class="th-audit">Auditoría</th>
+          <th *ngFor="let mes of meses">{{ mes }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let audit of auditorias">
+          <td class="td-audit">
+            <span class="audit-code">{{ audit.codigo_Auditoria }}</span>
+            <small class="audit-details">
+              {{ audit.tipo }} • {{ audit.norma }} • {{ audit.areas || '' }}
+            </small>
+          </td>
+          <td *ngFor="let mes of meses; let idx = index" class="td-month">
+            <div *ngIf="getMesIndex(audit.inicio) === idx"
+                 [class]="'mk mk-' + getEstadoClass(audit.estado)"
+                 [title]="audit.estado">
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="auditorias.length === 0">
+          <td colspan="13" class="td-empty">
+            Sin auditorías registradas.
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="tfoot-row">
+          <td class="td-foot-label">Auditorías por mes</td>
+          <td *ngFor="let count of counts" [class.has-count]="count > 0">
+            {{ count > 0 ? count : '' }}
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+</div>

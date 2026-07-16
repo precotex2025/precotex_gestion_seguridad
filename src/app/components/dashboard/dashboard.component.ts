@@ -190,6 +190,11 @@ export class DashboardComponent implements OnInit {
   }
 
   private initCharts(): void {
+    const primaryText = '#e7e9f2';
+    const secondaryText = '#8b90a8';
+    const gridColor = 'rgba(38, 43, 64, 0.4)';
+    const cardBg = '#151827';
+
     /* 1. Chart Cumplimiento por Categoría (Barras) */
     this.chartCumplimiento = {
       labels: ['Normas', 'Documentos', 'Objetivos', 'Riesgos', 'Formación', 'Accesos'],
@@ -198,20 +203,20 @@ export class DashboardComponent implements OnInit {
           label: 'Cumplimiento %',
           data: [92, 85, 78, 70, 88, 95],
           backgroundColor: [
-            'rgba(79, 70, 229, 0.8)',
-            'rgba(139, 92, 246, 0.8)',
-            'rgba(16, 185, 129, 0.8)',
-            'rgba(244, 63, 94, 0.8)',
-            'rgba(59, 130, 246, 0.8)',
-            'rgba(245, 158, 11, 0.8)'
+            'rgba(124, 108, 240, 0.8)',
+            'rgba(167, 139, 250, 0.8)',
+            'rgba(62, 207, 142, 0.8)',
+            'rgba(240, 87, 107, 0.8)',
+            'rgba(91, 141, 239, 0.8)',
+            'rgba(240, 180, 41, 0.8)'
           ],
           borderColor: [
-            'rgba(79, 70, 229, 1)',
-            'rgba(139, 92, 246, 1)',
-            'rgba(16, 185, 129, 1)',
-            'rgba(244, 63, 94, 1)',
-            'rgba(59, 130, 246, 1)',
-            'rgba(245, 158, 11, 1)'
+            'rgba(124, 108, 240, 1)',
+            'rgba(167, 139, 250, 1)',
+            'rgba(62, 207, 142, 1)',
+            'rgba(240, 87, 107, 1)',
+            'rgba(91, 141, 239, 1)',
+            'rgba(240, 180, 41, 1)'
           ],
           borderWidth: 1,
           borderRadius: 6,
@@ -230,7 +235,9 @@ export class DashboardComponent implements OnInit {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          backgroundColor: cardBg,
+          borderColor: '#262b40',
+          borderWidth: 1,
           titleFont: { family: 'Inter', size: 13, weight: '600' },
           bodyFont: { family: 'Inter', size: 12 },
           padding: 12,
@@ -246,15 +253,15 @@ export class DashboardComponent implements OnInit {
           max: 100,
           ticks: {
             font: { family: 'Inter', size: 11 },
-            color: '#94a3b8',
+            color: secondaryText,
             callback: (val: number) => val + '%'
           },
-          grid: { color: 'rgba(226, 232, 240, 0.6)' }
+          grid: { color: gridColor }
         },
         x: {
           ticks: {
             font: { family: 'Inter', size: 11 },
-            color: '#64748b'
+            color: secondaryText
           },
           grid: { display: false }
         }
@@ -268,12 +275,12 @@ export class DashboardComponent implements OnInit {
         {
           data: [18, 12, 6, 3],
           backgroundColor: [
-            'rgba(16, 185, 129, 0.85)',
-            'rgba(245, 158, 11, 0.85)',
+            'rgba(62, 207, 142, 0.85)',
+            'rgba(240, 180, 41, 0.85)',
             'rgba(249, 115, 22, 0.85)',
-            'rgba(244, 63, 94, 0.85)'
+            'rgba(240, 87, 107, 0.85)'
           ],
-          borderColor: '#ffffff',
+          borderColor: cardBg,
           borderWidth: 3,
           hoverOffset: 8
         }
@@ -296,11 +303,13 @@ export class DashboardComponent implements OnInit {
             usePointStyle: true,
             pointStyle: 'circle',
             font: { family: 'Inter', size: 11, weight: '500' },
-            color: '#475569'
+            color: secondaryText
           }
         },
         tooltip: {
-          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          backgroundColor: cardBg,
+          borderColor: '#262b40',
+          borderWidth: 1,
           titleFont: { family: 'Inter', size: 13, weight: '600' },
           bodyFont: { family: 'Inter', size: 12 },
           padding: 12,
@@ -312,7 +321,7 @@ export class DashboardComponent implements OnInit {
       }
     };
 
-    /* 3. NEW Chart: Tendencia de Inspecciones y Auditorías (Líneas) */
+    /* 3. Tendencia de Inspecciones y Auditorías (Líneas) */
     this.chartAuditorias = {
       labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
       datasets: [
@@ -320,22 +329,22 @@ export class DashboardComponent implements OnInit {
           label: 'Inspecciones Realizadas',
           data: [15, 28, 22, 35, 30, 42],
           fill: true,
-          borderColor: '#4f46e5',
-          backgroundColor: 'rgba(79, 70, 229, 0.08)',
+          borderColor: '#7c6cf0',
+          backgroundColor: 'rgba(124, 108, 240, 0.08)',
           tension: 0.4,
           borderWidth: 3,
-          pointBackgroundColor: '#4f46e5',
+          pointBackgroundColor: '#7c6cf0',
           pointHoverRadius: 7
         },
         {
           label: 'Auditorías Planificadas',
           data: [5, 12, 8, 15, 10, 18],
           fill: false,
-          borderColor: '#8b5cf6',
+          borderColor: '#a78bfa',
           borderDash: [5, 5],
           tension: 0.4,
           borderWidth: 2,
-          pointBackgroundColor: '#8b5cf6',
+          pointBackgroundColor: '#a78bfa',
           pointHoverRadius: 6
         }
       ]
@@ -355,11 +364,13 @@ export class DashboardComponent implements OnInit {
             usePointStyle: true,
             pointStyle: 'circle',
             font: { family: 'Inter', size: 11, weight: '500' },
-            color: '#64748b'
+            color: secondaryText
           }
         },
         tooltip: {
-          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          backgroundColor: cardBg,
+          borderColor: '#262b40',
+          borderWidth: 1,
           titleFont: { family: 'Inter', size: 13, weight: '600' },
           bodyFont: { family: 'Inter', size: 12 },
           padding: 12,
@@ -371,14 +382,14 @@ export class DashboardComponent implements OnInit {
           beginAtZero: true,
           ticks: {
             font: { family: 'Inter', size: 11 },
-            color: '#94a3b8'
+            color: secondaryText
           },
-          grid: { color: 'rgba(226, 232, 240, 0.6)' }
+          grid: { color: gridColor }
         },
         x: {
           ticks: {
             font: { family: 'Inter', size: 11 },
-            color: '#64748b'
+            color: secondaryText
           },
           grid: { display: false }
         }
@@ -399,13 +410,13 @@ export class DashboardComponent implements OnInit {
 
   private initAccesosRapidos(): void {
     this.accesosRapidos = [
-      { label: 'Normas', icon: 'pi pi-book', route: '/principal/normas', color: '#4f46e5', description: 'Gestionar normas vigentes' },
-      { label: 'Organización', icon: 'pi pi-sitemap', route: '/principal/organizacion', color: '#7c3aed', description: 'Estructura organizacional' },
-      { label: 'Documentos', icon: 'pi pi-folder-open', route: '/principal/documentosControlados', color: '#0284c7', description: 'Documentos controlados' },
-      { label: 'Personas', icon: 'pi pi-users', route: '/principal/usuariosPersonas', color: '#059669', description: 'Gestión de personas' },
-      { label: 'Objetivos', icon: 'pi pi-chart-line', route: '/principal/planificacionObjetivos', color: '#d97706', description: 'Planificación de objetivos' },
-      { label: 'Riesgos', icon: 'pi pi-exclamation-triangle', route: '/principal/evaluacionRiesgos', color: '#e11d48', description: 'Evaluación de riesgos' },
-      { label: 'Analytics', icon: 'pi pi-chart-bar', route: '/principal/analytics', color: '#8b5cf6', description: 'Consultas y monitorizaciones' }
+      { label: 'Normas', icon: 'pi pi-book', route: '/principal/normas', color: '#7c6cf0', description: 'Gestionar normas vigentes' },
+      { label: 'Organización', icon: 'pi pi-sitemap', route: '/principal/organizacion', color: '#a78bfa', description: 'Estructura organizacional' },
+      { label: 'Documentos', icon: 'pi pi-folder-open', route: '/principal/documentosControlados', color: '#5b8def', description: 'Documentos controlados' },
+      { label: 'Personas', icon: 'pi pi-users', route: '/principal/usuariosPersonas', color: '#3ecf8e', description: 'Gestión de personas' },
+      { label: 'Objetivos', icon: 'pi pi-chart-line', route: '/principal/planificacionObjetivos', color: '#f0b429', description: 'Planificación de objetivos' },
+      { label: 'Riesgos', icon: 'pi pi-exclamation-triangle', route: '/principal/evaluacionRiesgos', color: '#f0576b', description: 'Evaluación de riesgos' },
+      { label: 'Analytics', icon: 'pi pi-chart-bar', route: '/principal/analytics', color: '#a99bff', description: 'Consultas y monitorizaciones' }
     ];
   }
 

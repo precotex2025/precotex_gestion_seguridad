@@ -194,3 +194,9 @@ html {
 .sn-animate-in-delay-6 { animation-delay: 0.3s; }
 .sn-animate-in-delay-7 { animation-delay: 0.35s; }
 .sn-animate-in-delay-8 { animation-delay: 0.4s; }
+
+/* --- Custom Large Dialog Override --- */
+.custom-large-dialog {
+  width: 1150px !important;
+  max-width: 95vw !important;
+}

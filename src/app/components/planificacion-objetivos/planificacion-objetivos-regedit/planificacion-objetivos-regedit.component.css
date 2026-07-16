@@ -1,401 +1,154 @@
+/* ===================================================================
+   Planificacion Objetivos Regedit Modal — CSS Styles
+   =================================================================== */
+
 .dialog-container {
-  padding: 10px;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-  background-color: #f8fafc;
-}
-
-/* Tabs */
-.tabs-header {
-  display: flex;
-  background-color: #f1f5f9;
-  border-bottom: 2px solid #e2e8f0;
-  margin-bottom: 15px;
-  height: 40px;
-  align-items: stretch;
-}
-
-.tab-item {
-  display: flex;
-  align-items: center;
-  padding: 0 25px 0 20px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 14px;
-  position: relative;
-  transition: all 0.2s ease;
-  user-select: none;
-  gap: 8px;
-}
-
-.tab-item mat-icon {
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
-}
-
-.active-tab {
-  background-color: #000000;
-  color: white;
-  z-index: 5;
-}
-
-.arrow-right {
-  position: absolute;
-  right: -15px;
-  top: 0;
-  width: 0;
-  height: 0;
-  border-top: 20px solid transparent;
-  border-bottom: 20px solid transparent;
-  border-left: 15px solid #000000;
-  z-index: 10;
-}
-
-.inactive-tab {
-  background-color: #e2e8f0;
-  color: #475569;
-}
-
-.inactive-tab:hover {
-  background-color: #cbd5e1;
-}
-
-/* Form structure */
-.form-content {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.form-row {
-  margin-bottom: 15px;
-}
-
-.flex-row {
-  display: flex;
-}
-
-.gap-20 {
-  gap: 20px;
-}
-
-.flex-1 {
-  flex: 1;
-}
-
-.flex-2 {
-  flex: 2;
-}
-
-.flex-3 {
-  flex: 3;
-}
-
-.w-100 {
-  width: 100%;
-}
-
-.alignment-self-center {
-  align-self: center;
-}
-
-/* Gray title bands */
-.field-label {
-  background-color: #e2e8f0;
-  color: #000000;
-  font-weight: bold;
-  font-size: 13px;
-  padding: 6px 12px;
-  margin-bottom: 6px;
-  border-radius: 2px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  border-bottom: 2px solid #000000;
-}
-
-.red-label {
-  color: #000000;
-}
-
-.center-text {
-  justify-content: center;
-  text-align: center;
-}
-
-.section-title-band {
-  background-color: #e2e8f0;
-  color: #000000;
-  font-weight: bold;
-  font-size: 13px;
-  padding: 6px 12px;
-  margin-bottom: 10px;
-  border-radius: 2px;
-  border-bottom: 2px solid #000000;
-}
-
-/* Checkbox group styling */
-.checkbox-group-row {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  padding: 10px 0;
-}
-
-.checkbox-group-row-left {
-  display: flex;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-  gap: 30px;
-  padding: 10px 0;
-}
-
-.checkbox-with-help {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.help-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-  color: #64748b;
-  cursor: help;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Checkboxes grid */
-.checkbox-grid {
-  display: flex;
-  gap: 40px;
-  padding: 10px 15px;
-  background-color: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-}
-
-.checkbox-col {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* Radio Group */
-.radio-row {
-  display: flex;
-  justify-content: flex-start;
-  gap: 30px;
-  padding: 10px 0;
-}
-
-/* Error message block */
-.error-msg-box {
-  background-color: #fce8e6;
-  color: #c5221f;
-  border: 1px solid #fad2cf;
-  padding: 4px 8px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  margin-top: -12px;
-  margin-bottom: 10px;
-  border-radius: 4px;
-}
-
-.error-msg-box mat-icon {
-  margin-right: 2px;
-}
-
-/* Rich Text Editor Mock */
-.rich-editor-container {
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  background-color: white;
+  background-color: #0b0f19;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  color: #cbd5e1;
+  font-family: 'Inter', sans-serif;
   overflow: hidden;
-  margin-bottom: 15px;
 }
 
-.editor-toolbar {
+.banner-header {
+  background-color: #1e293b !important;
+  color: #ffffff;
+  padding: 12px 24px;
+  height: 56px;
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 6px 12px;
-  background-color: #f1f5f9;
-  border-bottom: 1px solid #cbd5e1;
 }
 
-.editor-toolbar mat-icon {
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
-  color: #475569;
+.titulo {
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.flex-spacer {
+  flex: 1 1 auto;
+}
+
+.btn-close-header {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
-  user-select: none;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
+  transition: color 0.2s ease;
 }
 
-.editor-toolbar mat-icon:hover {
-  color: #0f172a;
+.btn-close-header:hover {
+  color: #ffffff;
 }
 
-.editor-toolbar mat-icon.bold-text {
-  font-weight: bold;
+.form-content {
+  padding: 24px !important;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
-.editor-separator {
-  width: 1px;
-  height: 16px;
-  background-color: #cbd5e1;
-  margin: 0 4px;
-  display: inline-block;
+.grid-2-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 8px;
 }
 
-.editor-textarea {
+.form-section-item {
+  margin-bottom: 12px;
+}
+
+.form-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: rgba(148, 163, 184, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.full-width-input {
   width: 100%;
-  border: none;
-  outline: none;
-  padding: 12px;
-  font-family: inherit;
-  font-size: 13px;
-  line-height: 1.5;
-  resize: vertical;
-  box-sizing: border-box;
-  display: block;
-}
-
-/* Tasks Table & Sub-Actions */
-.tasks-table-container {
-  margin-top: 15px;
-  margin-bottom: 15px;
-}
-
-.BtnNuevaAccion {
-  background-color: #000000 !important;
-  color: white !important;
-  font-weight: bold;
-  margin-bottom: 12px !important;
-}
-
-.custom-tasks-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-  font-size: 13px;
-}
-
-.custom-tasks-table th {
-  background-color: #000000;
-  color: white;
-  font-weight: bold;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
   padding: 10px 12px;
-  text-align: left;
-  border: 1px solid #cbd5e1;
+  color: #ffffff;
+  font-size: 0.82rem;
+  outline: none;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: all 0.2s ease;
 }
 
-.custom-tasks-table td {
-  padding: 8px 12px;
-  border: 1px solid #cbd5e1;
-  vertical-align: middle;
+.full-width-input:focus {
+  border-color: #7c6cf0;
+  box-shadow: 0 0 0 2px rgba(124, 108, 240, 0.15);
 }
 
-.custom-tasks-table tr:nth-child(even) {
-  background-color: #f8fafc;
+select.full-width-input {
+  cursor: pointer;
 }
 
-.center-cell {
-  text-align: center;
+select.full-width-input optgroup {
+  background: #0b0f19;
+  color: #7c6cf0;
 }
 
-.center-cell button {
-  width: 36px;
-  height: 36px;
-  line-height: 36px;
-  padding: 0;
+select.full-width-input option {
+  background: #1e293b;
+  color: #ffffff;
 }
 
-.col-eliminar, .col-editar {
-  width: 80px;
-  text-align: center !important;
+.textarea-desc {
+  resize: vertical;
+  min-height: 80px;
 }
 
-.empty-table-msg {
-  text-align: center;
-  color: #64748b;
-  font-style: italic;
-  padding: 20px !important;
-}
-
-/* File Upload Row */
-.file-upload-row {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  background: white;
-  padding: 12px 15px;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  margin-top: 6px;
-}
-
-.BtnSeleccionarArchivo {
-  border: 1px solid #cbd5e1 !important;
-  background-color: #f8fafc !important;
-  color: #0f172a !important;
-  font-weight: 500;
-}
-
-.file-name-text {
-  font-size: 13px;
-  color: #475569;
-}
-
-/* Process Button */
-.BtnGestionarProcesos {
-  background-color: #000000 !important;
-  color: white !important;
-  font-weight: bold;
-  width: 100%;
-  padding: 10px 0;
-}
-
-/* Custom alignment for dialog actions */
-.dialog-actions {
+.dialog-actions-row {
+  background-color: #090d16;
+  padding: 16px 24px !important;
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-  border-top: 1px solid #e2e8f0;
-  padding-top: 15px;
+  gap: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin: 0 !important;
 }
 
-.BtnGrabar {
-  background-color: #000000 !important;
-  color: white !important;
-  padding: 0 20px;
+.BtnGuardarPlan {
+  background: #3ecf8e !important;
+  color: #04210f !important;
+  font-weight: 700 !important;
+  font-size: 0.8rem !important;
+  padding: 8px 18px !important;
+  border-radius: 6px !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.BtnSalir {
-  background-color: #000000 !important;
-  color: white !important;
-  padding: 0 20px;
+.BtnGuardarPlan:hover {
+  background: #2ebd7e !important;
+  transform: translateY(-1px);
 }
 
-.placeholder-pane {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 50px 20px;
-  background: white;
-  border: 1px dashed #cbd5e1;
-  border-radius: 8px;
-  color: #64748b;
-  text-align: center;
+.BtnCancelarPlan {
+  background: transparent !important;
+  color: #cbd5e1 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  font-weight: 600 !important;
+  font-size: 0.8rem !important;
+  padding: 8px 18px !important;
+  border-radius: 6px !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.BtnCancelarPlan:hover {
+  background: rgba(255, 255, 255, 0.02) !important;
+  color: #ffffff !important;
 }

@@ -1,0 +1,116 @@
+<div class="dialog-wrapper">
+
+  <header class="dialog-header">
+    <h2 class="header-title">{{ data.Accion === 'I' ? 'Planificar auditoría' : 'Editar auditoría' }}</h2>
+    <p class="header-sub" *ngIf="data.Accion === 'U'">
+      <span class="code-ref">{{ formulario.get('ctrol_codigo')?.value }}</span>
+    </p>
+  </header>
+
+  <form [formGroup]="formulario" class="dialog-form">
+    <div class="dialog-content">
+
+      <!-- Fila 1: Tipo y Norma auditada -->
+      <div class="form-row split-2">
+        <div class="form-field">
+          <label class="form-label">Tipo de auditoría</label>
+          <select formControlName="ctrol_tipo" class="form-select">
+            <option value="Interna">Interna</option>
+            <option value="Externa">Externa</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Norma auditada</label>
+          <select formControlName="ctrol_norma" class="form-select">
+            <option value="ISO 9001:2015">ISO 9001:2015</option>
+            <option value="ISO 45001:2018">ISO 45001:2018</option>
+            <option value="ISO 14001:2015">ISO 14001:2015</option>
+            <option value="OCS">OCS</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Fila 2: Responsable y Procesos -->
+      <div class="form-row split-2">
+        <div class="form-field">
+          <label class="form-label">Responsable <span class="req">*</span></label>
+          <input type="text"
+                 formControlName="ctrol_responsable"
+                 placeholder="Ej. Ana Torres"
+                 class="form-input">
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Procesos / Áreas</label>
+          <input type="text"
+                 formControlName="ctrol_areas"
+                 placeholder="Ej. Costura, Calidad"
+                 class="form-input">
+        </div>
+      </div>
+
+      <!-- Fila 3: Fechas -->
+      <div class="form-row split-2">
+        <div class="form-field">
+          <label class="form-label">Fecha inicio</label>
+          <input type="date"
+                 formControlName="ctrol_inicio"
+                 class="form-input-date">
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Fecha fin</label>
+          <input type="date"
+                 formControlName="ctrol_fin"
+                 class="form-input-date">
+        </div>
+      </div>
+
+      <!-- Fila 4: Frecuencia y Estado -->
+      <div class="form-row split-2">
+        <div class="form-field">
+          <label class="form-label">Frecuencia</label>
+          <select formControlName="ctrol_frecuencia" class="form-select">
+            <option value="Anual">Anual</option>
+            <option value="Semestral">Semestral</option>
+            <option value="Trimestral">Trimestral</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Estado</label>
+          <select formControlName="ctrol_estado" class="form-select">
+            <option value="Programada">Programada</option>
+            <option value="Realizada">Realizada</option>
+            <option value="No realizada">No realizada</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Fila 5: Alcance -->
+      <div class="form-row">
+        <div class="form-field full-width">
+          <label class="form-label">Alcance / Objetivo</label>
+          <textarea formControlName="ctrol_alcance"
+                    placeholder="Describe el alcance y objetivo de la auditoría..."
+                    class="form-textarea"
+                    rows="3"></textarea>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Acciones / Botones -->
+    <div class="button-row">
+      <button type="button" class="btn-cancelar" (click)="onClose()">
+        <span>Cancelar</span>
+      </button>
+
+      <button type="button" class="btn-guardar" (click)="onSave()">
+        <span>Guardar</span>
+      </button>
+    </div>
+  </form>
+
+</div>

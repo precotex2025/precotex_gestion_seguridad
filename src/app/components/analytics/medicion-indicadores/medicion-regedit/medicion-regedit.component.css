@@ -1,5 +1,5 @@
 /* ===================================================================
-   No Conformidades Modal — CSS Styles
+   Medicion Regedit Modal — CSS Styles
    =================================================================== */
 
 .dialog-container {
@@ -56,11 +56,11 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .form-section-item {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .form-label {
@@ -69,7 +69,7 @@
   color: rgba(148, 163, 184, 0.6);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .full-width-input {

@@ -1,861 +1,344 @@
+/* ===================================================================
+   Planificacion Objetivos Component — Premium Dashboard Styles
+   =================================================================== */
+
 .contenedor {
-  padding: 20px;
-  border-radius: 12px;
+  padding: 20px 24px 24px 24px;
+  max-width: 1440px;
+  margin: 0 auto;
+  background-color: #090d16;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
-.filtros-card {
-  margin: 20px 0;
-  padding: 15px;
-  background: white;
-  margin-top: -5px;
+/* --- Banner Aviso --- */
+.banner-aviso {
+  background: #0f172a;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 8px;
+  padding: 14px 20px;
+  margin: 16px 0 24px 0;
+  color: #a5b4fc;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.card-title {
-  font-weight: bold;
-  color: #555;
-  font-size: 14px;
-  margin-bottom: 10px;
-  padding-left: 5px;
+.banner-aviso strong {
+  color: #ffffff;
 }
 
-.acciones-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.filtros-row-1 {
-  display: flex;
-  gap: 15px;
-  width: 100%;
-}
-
-.filtros-row-2 {
-  display: flex;
-  gap: 15px;
-  align-items: flex-start;
-  width: 100%;
-}
-
-.filtro-campo {
-  flex: 1;
-}
-
-.filtro-fecha {
-  flex: 1;
-  max-width: 250px;
-}
-
-.flex-1 {
-  flex: 1;
-}
-
-.BtnBuscar {
-  background-color: #005CBB !important;
-  color: white !important;
-  font-weight: 500;
-  height: 40px;
-  padding: 0 24px;
-  margin-top: 4px;
-}
-
-.BtnCrear {
-  background-color: #0284c7 !important;
-  color: white !important;
-  font-weight: 500;
-  height: 40px;
-  padding: 0 24px;
-  margin-top: 4px;
-}
-
-.BtnMedicDeobj {
-  background-color: #005cbb !important;
-  color: white !important;
-  font-weight: 500;
-  height: 40px;
-  padding: 0 24px;
-  margin-top: 4px;
-}
-
-/* Rejilla de filtros para la medición de objetivos (3 columnas) */
-.filtros-medicion-grid {
+/* --- Stats Grid --- */
+.stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px 20px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
 }
 
-.filtro-col {
+.stat-card {
+  background: #0b0f19;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-left-width: 4px;
+  border-radius: 8px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-.input-label {
+.border-left-purple { border-left-color: #7c6cf0; }
+.border-left-green  { border-left-color: #3ecf8e; }
+.border-left-blue   { border-left-color: #3b82f6; }
+.border-left-yellow { border-left-color: #f0b429; }
+
+.stat-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: rgba(148, 163, 184, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.stat-value {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 2px;
+}
+
+.stat-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  color: rgba(148, 163, 184, 0.45);
+}
+
+.text-white  { color: #ffffff; }
+.text-green  { color: #3ecf8e; }
+.text-blue   { color: #3b82f6; }
+.text-yellow { color: #f0b429; }
+
+/* --- Section Header & Add Button --- */
+.seccion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.seccion-titulo {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.btn-agregar {
+  background: #7c6cf0;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
   font-weight: 600;
-  color: #1e293b;
-  font-size: 13px;
-  margin-bottom: 4px;
-  padding-left: 2px;
-}
-
-.buttons-medicion-row {
-  display: flex;
-  gap: 10px;
-  align-items: flex-end;
-}
-
-.BtnFiltrarMed {
-  background-color: #c00000 !important;
-  color: white !important;
-  font-weight: bold;
-  height: 40px;
-  flex: 1;
-}
-
-.BtnVolverMed {
-  background-color: #000000 !important;
-  color: white !important;
-  font-weight: bold;
-  height: 40px;
-  flex: 1;
-}
-
-.alignment-self-end {
-  align-self: flex-end;
-}
-
-.w-100 {
-  width: 100%;
-}
-
-@media (max-width: 768px) {
-  .filtros-row-1, .filtros-row-2 {
-    flex-direction: column;
-    gap: 10px;
-    align-items: stretch;
-  }
-  .filtro-fecha {
-    max-width: 100%;
-  }
-  .BtnBuscar, .BtnCrear, .BtnMedicDeobj {
-    width: 100%;
-    margin-top: 0;
-  }
-  .filtros-medicion-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ===== Tabla Medición de Objetivos ===== */
-.tabla-medicion-scroll-container {
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  background: white;
-}
-
-.tabla-medicion .mes-header {
-  text-align: center;
-  white-space: nowrap;
-  min-width: 80px;
-  padding: 4px 6px !important;
-  font-size: 12px;
-}
-
-.tabla-medicion .mes-cell {
-  text-align: center;
-  min-width: 80px;
-  padding: 4px 6px !important;
-}
-
-.mes-add-btn {
-  width: 22px !important;
-  height: 22px !important;
-  line-height: 22px !important;
-  padding: 0 !important;
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  vertical-align: middle;
-}
-
-.mes-add-btn .mat-icon {
-  font-size: 16px !important;
-  width: 16px !important;
-  height: 16px !important;
-  color: #005cbb;
-}
-
-/* ===== VISTA 3: Detalle del Objetivo ===== */
-.detalle-header {
-  background-color: #000000;
-  padding: 20px 25px;
-  margin-bottom: 0;
-}
-
-.detalle-titulo {
-  color: white;
-  font-size: 22px;
-  font-weight: bold;
-  margin: 0;
-  line-height: 1.4;
-}
-
-.detalle-volver-container {
-  margin-bottom: 20px;
-}
-
-.BtnVolverDetalle {
-  background-color: #000000 !important;
-  color: white !important;
-  font-weight: bold;
-  height: 36px;
-  font-size: 12px;
-  padding: 0 16px;
-  border-radius: 0;
-}
-
-.BtnVolverDetalle .mat-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-  margin-right: 4px;
-}
-
-.detalle-seccion {
-  margin-bottom: 25px;
-  background: white;
-  border: 1px solid #e0e0e0;
-}
-
-.detalle-seccion-header {
-  background-color: #d9d9d9;
-  padding: 10px 15px;
-  font-weight: bold;
-  color: #000000;
-  font-size: 14px;
-  border-bottom: 1px solid #ccc;
-}
-
-.detalle-seccion-body {
-  padding: 15px 20px;
-}
-
-.detalle-campo {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  margin-bottom: 8px;
-  gap: 6px;
-}
-
-.detalle-campo-barra {
-  width: 4px;
-  min-height: 16px;
-  background-color: #000000;
-  border-radius: 1px;
-  flex-shrink: 0;
-  align-self: stretch;
-}
-
-.detalle-label {
-  font-weight: bold;
-  color: #000000;
-  font-size: 13px;
-}
-
-.detalle-valor {
-  color: #333;
-  font-size: 13px;
-}
-
-.detalle-valor-bloque {
-  color: #333;
-  font-size: 13px;
-  padding-left: 12px;
-  margin-bottom: 10px;
-}
-
-.detalle-lista-item {
-  color: #333;
-  font-size: 13px;
-  padding: 2px 0;
-}
-
-.detalle-recursos-lista {
-  margin: 0;
-  padding-left: 20px;
-  color: #333;
-  font-size: 13px;
-}
-
-.detalle-recursos-lista li {
-  margin-bottom: 4px;
-}
-
-/* Tabla de Tareas Planificadas */
-.detalle-tareas-tabla {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 5px;
-  border: 1px solid #ccc;
-}
-
-.detalle-tareas-tabla thead tr {
-  background-color: #000000;  
-}
-
-.detalle-tareas-tabla thead th {
-  color: white;
-  font-weight: bold;
-  font-size: 13px;
-  padding: 10px 14px;
-  text-align: left;
-  border-right: 1px solid rgba(255,255,255,0.2);
-}
-
-.detalle-tareas-tabla thead th:last-child {
-  border-right: none;
-}
-
-.detalle-tareas-tabla tbody td {
-  padding: 10px 14px;
-  font-size: 13px;
-  color: #333;
-  border-bottom: 1px solid #e0e0e0;
-  border-right: 1px solid #e0e0e0;
-  vertical-align: top;
-}
-
-.detalle-tareas-tabla tbody td:last-child {
-  border-right: none;
-}
-
-.detalle-tareas-tabla tbody tr:hover {
-  background-color: #f9f9f9;
-}
-
-.tarea-icono {
-  font-size: 16px !important;
-  width: 16px !important;
-  height: 16px !important;
-  vertical-align: middle;
-  margin-right: 4px;
-  color: #555;
-}
-
-/* ===== VISTA 4: Mediciones del Objetivo ===== */
-.med-botones-top {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-}
-
-.BtnVolverMediciones {
-  background-color: #000000 !important;
-  color: white !important;
-  font-weight: bold;
-  font-size: 12px;
-  height: 36px;
-  padding: 0 16px;
-  border-radius: 3px;
-}
-
-.BtnExportarExcel {
-  background-color: #388e3c !important;
-  color: white !important;
-  font-weight: bold;
-  font-size: 12px;
-  height: 36px;
-  padding: 0 16px;
-  border-radius: 3px;
-}
-
-.med-header {
-  background-color: #000000;
-  padding: 12px 18px;
-  margin-bottom: 15px;
-}
-
-.med-header-text {
-  color: white;
-  font-size: 13px;
-  margin: 0;
-  line-height: 1.5;
-}
-
-.med-info-panel {
-  background: white;
-  border: 1px solid #e0e0e0;
-  padding: 15px 20px;
-  margin-bottom: 20px;
-}
-
-.med-info-campo {
-  font-size: 12px;
-  color: #333;
-  line-height: 1.8;
-}
-
-.med-info-campo strong {
-  color: #000;
-}
-
-/* Gráficos row */
-.med-graficos-row {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.med-graficos-izq {
-  flex: 1;
-  min-width: 0;
-}
-
-.med-graficos-der {
-  flex: 1;
-  min-width: 0;
-}
-
-.med-seccion-header-rojo {
-  background-color: #000000;
-  color: white;
-  font-weight: bold;
-  font-size: 13px;
-  padding: 8px 15px;
-}
-
-.med-graficos-pies {
-  display: flex;
-  gap: 20px;
-  padding: 20px;
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-top: none;
-}
-
-.med-pie-container {
-  flex: 1;
-  text-align: center;
-}
-
-.med-pie-titulo {
-  font-size: 12px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 10px;
-}
-
-.med-pie-chart {
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  margin: 0 auto 12px;
-}
-
-.med-pie-leyenda {
-  text-align: left;
-  font-size: 11px;
-  color: #333;
-}
-
-.med-leyenda-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 4px;
-  font-size: 11px;
-}
-
-.med-leyenda-color {
-  width: 14px;
-  height: 14px;
-  border-radius: 2px;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-/* Chart de tendencia */
-.med-tendencia-chart-area {
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-top: none;
-  padding: 15px;
-}
-
-.med-chart-titulo {
-  font-size: 12px;
-  font-weight: bold;
-  color: #333;
-  text-align: center;
-  margin-bottom: 8px;
-}
-
-.med-chart-leyenda-top {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-bottom: 12px;
-}
-
-.med-chart-placeholder {
-  background: #fafafa;
-  border: 1px solid #eee;
-  border-radius: 4px;
-  padding: 15px 10px 5px;
-  min-height: 130px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-.med-chart-bars {
-  display: flex;
-  gap: 16px;
-  align-items: flex-end;
-  width: 100%;
-  justify-content: center;
-}
-
-.med-chart-bar-group {
-  display: flex;
-  gap: 3px;
-  align-items: flex-end;
-  flex-direction: row;
-  position: relative;
-  padding-bottom: 18px;
-}
-
-.med-chart-bar {
-  width: 12px;
-  border-radius: 2px 2px 0 0;
-  min-height: 4px;
-}
-
-.med-bar-mes {
-  background: #2196f3;
-}
-
-.med-bar-acum {
-  background: #9c27b0;
-}
-
-.med-bar-meta {
-  background: #4caf50;
-}
-
-.med-chart-bar-label {
-  font-size: 9px;
-  color: #666;
-  text-align: center;
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-}
-
-/* Sección genérica mediciones */
-.med-seccion {
-  margin-bottom: 20px;
-  border: 1px solid #e0e0e0;
-  background: white;
-}
-
-.med-tabla-scroll {
-  overflow-x: auto;
-}
-
-/* Tabla de tendencia */
-.med-tabla-tendencia {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.med-tabla-tendencia thead tr {
-  background-color: #000000;
-}
-
-.med-tabla-tendencia thead th {
-  color: white;
-  font-weight: bold;
-  font-size: 12px;
-  padding: 8px 14px;
-  text-align: left;
-  border-right: 1px solid rgba(255,255,255,0.2);
-  white-space: nowrap;
-}
-
-.med-tabla-tendencia thead th:last-child {
-  border-right: none;
-}
-
-.med-tabla-tendencia tbody td {
-  padding: 8px 14px;
-  font-size: 12px;
-  color: #333;
-  border-bottom: 1px solid #eee;
-  border-right: 1px solid #eee;
-  white-space: nowrap;
-}
-
-.med-fila-label {
-  font-weight: bold;
-  color: #1565c0;
-  font-size: 12px;
-}
-
-/* Tabla datos de mediciones */
-.med-tabla-mediciones {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.med-tabla-mediciones thead tr {
-  background-color: #333;
-}
-
-.med-tabla-mediciones thead th {
-  color: white;
-  font-weight: bold;
-  font-size: 12px;
-  padding: 8px 14px;
-  text-align: left;
-  border-right: 1px solid rgba(255,255,255,0.15);
-}
-
-.med-tabla-mediciones thead th:last-child {
-  border-right: none;
-}
-
-.med-tabla-mediciones tbody td {
-  padding: 8px 14px;
-  font-size: 12px;
-  color: #333;
-  border-bottom: 1px solid #eee;
-  border-right: 1px solid #eee;
-}
-
-.med-mes-link {
-  color: #000000;
-  font-weight: 500;
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(124, 108, 240, 0.3);
+  transition: all 0.2s ease;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.med-mes-link:hover {
-  text-decoration: underline;
+.btn-agregar:hover {
+  background: #6352e0;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(124, 108, 240, 0.4);
 }
 
-@media (max-width: 900px) {
-  .med-graficos-row {
-    flex-direction: column;
-  }
-  .med-graficos-pies {
-    flex-direction: column;
-    align-items: center;
-  }
-}
-
-/* ===== VISTA 5: Gestión de Tareas ===== */
-.BtnVolverGestionTareas {
-  background-color: #000000 !important;
-  color: white !important;
-  font-weight: bold;
-  font-size: 12px;
-  height: 36px;
-  padding: 0 16px;
-  border-radius: 3px;
-}
-
-.gestion-tareas-header h2 {
-  color: #000000;
-  font-size: 18px;
-  font-weight: 600;
-  margin-top: 15px;
+/* --- Buscador --- */
+.buscador-container {
   margin-bottom: 20px;
-  line-height: 1.5;
 }
 
-.filtros-tareas-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px 20px;
+.buscador-input {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  width: 380px;
+  outline: none;
+  transition: all 0.2s ease;
 }
 
-.BtnFiltrarTareas {
-  background-color: #000000 !important;
-  color: white !important;
-  font-weight: bold;
-  height: 40px;
-  width: 100%;
+.buscador-input:focus {
+  border-color: #7c6cf0;
 }
 
-.gestion-tareas-seccion-titulo {
-  font-size: 14px;
-  font-weight: bold;
-  color: #333;
-  margin-top: 25px;
-  margin-bottom: 12px;
+.buscador-input::placeholder {
+  color: rgba(148, 163, 184, 0.4);
 }
 
-.gestion-tareas-tabla-container {
+/* --- Tabular column --- */
+.col-tabular {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.8rem !important;
+}
+
+/* --- Premium Table Container --- */
+.table-container {
+  background: #0b0f19;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
   overflow-x: auto;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  background: white;
-  margin-bottom: 25px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-.gestion-tareas-tabla {
+.tabla {
   width: 100%;
   border-collapse: collapse;
 }
 
-.gestion-tareas-tabla thead tr {
-  background-color: #000000;
+/* Material table overrides */
+::ng-deep .tabla.mat-mdc-table {
+  background: transparent !important;
 }
 
-.gestion-tareas-tabla thead th {
-  color: white;
-  font-weight: bold;
-  font-size: 12px;
-  padding: 10px 14px;
-  text-align: left;
-  border-right: 1px solid rgba(255,255,255,0.2);
+::ng-deep .tabla .mat-mdc-header-row {
+  background: #1e293b !important;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.05) !important;
+  height: 48px;
 }
 
-.gestion-tareas-tabla thead th:last-child {
-  border-right: none;
+::ng-deep .tabla .mat-mdc-header-cell {
+  color: #94a3b8 !important;
+  font-weight: 700 !important;
+  font-size: 0.76rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  font-family: 'Inter', sans-serif !important;
+  border-bottom: none !important;
+  padding: 8px 16px !important;
 }
 
-.gestion-tareas-tabla tbody td {
-  padding: 10px 14px;
-  font-size: 12px;
-  color: #333;
-  border-bottom: 1px solid #eee;
-  border-right: 1px solid #eee;
-  line-height: 1.5;
+::ng-deep .tabla .mat-mdc-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.gestion-tareas-tabla tbody td:last-child {
-  border-right: none;
+::ng-deep .tabla .mat-mdc-row:hover {
+  background-color: rgba(255, 255, 255, 0.02) !important;
 }
 
-.gestion-tareas-tabla .col-objetivo {
-  font-weight: 500;
-  max-width: 450px;
+::ng-deep .tabla .mat-mdc-row:last-child {
+  border-bottom: none;
 }
 
-@media (max-width: 900px) {
-  .filtros-tareas-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+::ng-deep .tabla .mat-mdc-cell {
+  color: #cbd5e1 !important;
+  font-size: 0.82rem !important;
+  font-family: 'Inter', sans-serif !important;
+  border-bottom: none !important;
+  padding: 8px 16px !important;
 }
 
-@media (max-width: 600px) {
-  .filtros-tareas-grid {
-    grid-template-columns: 1fr;
-  }
+/* Custom cell formats */
+.norma-cell {
+  font-weight: 600;
+  color: #ffffff !important;
 }
 
-/* ===== Monthly Tasks Table & PDF Report Styles ===== */
-.table-tareas-mensuales thead th.col-mes-hdr {
-  text-align: center;
-  font-size: 11px;
-  width: 35px;
-  min-width: 35px;
-  padding: 8px 4px;
+.areas-cell {
+  color: #94a3b8 !important;
+  font-size: 0.78rem !important;
 }
 
-.pdf-btn {
-  background-color: #000000 !important;
-  color: white !important;
-  border-radius: 4px !important;
-  width: 30px !important;
-  height: 30px !important;
-  min-width: 30px !important;
-  padding: 0 !important;
+/* --- Badges Estado --- */
+.badge-estado-cumplido {
+  background-color: rgba(62, 207, 142, 0.12);
+  color: #3ecf8e;
+  border: 1px solid rgba(62, 207, 142, 0.2);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.badge-estado-planificado {
+  background-color: rgba(59, 130, 246, 0.12);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.badge-estado-pendiente {
+  background-color: rgba(240, 180, 41, 0.12);
+  color: #f0b429;
+  border: 1px solid rgba(240, 180, 41, 0.2);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* --- Action buttons --- */
+.actions-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.action-btn {
+  border: none;
+  background: transparent;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.pdf-btn .mat-icon {
+.btn-edit {
+  color: #4f46e5;
+}
+
+.btn-edit:hover {
+  background: #eef2ff;
+  color: #3730a3;
+}
+
+.btn-delete {
+  color: #ef4444;
+}
+
+.btn-delete:hover {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.action-btn mat-icon {
   font-size: 18px !important;
   width: 18px !important;
   height: 18px !important;
 }
 
-.celda-mes-naranja {
-  background-color: #ffa726 !important; /* Vivid orange/amber background */
-  text-align: center;
-  vertical-align: middle;
-  padding: 0 !important;
-  width: 35px;
-  height: 35px;
-  border: 1px solid white !important; /* White border to separate the blocks */
-}
-
-.celda-mes-naranja button {
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Botones de acción en tabla principal */
-.action-buttons-cell {
+/* --- Empty State --- */
+.empty-state {
   display: flex;
-  gap: 6px;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  padding: 4px 0;
+  padding: 60px 40px;
+  color: rgba(148, 163, 184, 0.4);
+  text-align: center;
 }
 
-.btn-action-edit {
-  background-color: #1e293b !important;
-  color: white !important;
-  font-size: 12px !important;
-  font-weight: bold !important;
-  height: 30px !important;
-  padding: 0 8px !important;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
+.empty-icon {
+  font-size: 48px !important;
+  width: 48px !important;
+  height: 48px !important;
+  margin-bottom: 16px;
+  color: rgba(148, 163, 184, 0.2) !important;
 }
 
-.btn-action-del {
-  background-color: #c00000 !important;
-  color: white !important;
-  font-size: 12px !important;
-  font-weight: bold !important;
-  height: 30px !important;
-  padding: 0 8px !important;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
+.empty-state p {
+  font-size: 0.88rem;
+  margin: 0;
 }
 
-.btn-action-edit mat-icon,
-.btn-action-del mat-icon {
-  font-size: 15px !important;
-  width: 15px !important;
-  height: 15px !important;
-  margin: 0 !important;
-}
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+  .contenedor {
+    padding: 0 16px 16px 16px;
+  }
 
-.BtnExportarPlanificacion,
-.BtnNuevaAccionTarea {
-  background-color: #c00000 !important;
-  color: white !important;
-  font-weight: bold;
-  font-size: 12px;
-  height: 36px;
-  padding: 0 16px;
-  border-radius: 3px;
+  .buscador-input {
+    width: 100%;
+  }
 }

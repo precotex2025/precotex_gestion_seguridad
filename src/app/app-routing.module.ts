@@ -28,6 +28,9 @@ import { MedicionesPendientesComponent } from './components/mediciones-pendiente
 import { EvaluacionRiesgosComponent } from './components/evaluacion-riesgos/evaluacion-riesgos.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { PlaceholderComponent } from './components/placeholder/placeholder.component';
+import { AuditoriasComponent } from './components/auditorias/auditorias.component';
+import { ProgramaAnualComponent } from './components/auditorias/programa-anual/programa-anual.component';
+import { MedicionIndicadoresComponent } from './components/analytics/medicion-indicadores/medicion-indicadores.component';
 
 
 const routes: Routes = [
@@ -55,13 +58,15 @@ const routes: Routes = [
       { path: "campusVirtual", component: CampusVirtualComponent },
       { path: "accionesCorrectivas", component: AccionesCorrectivasComponent },
       { path: "analytics", component: AnalyticsComponent },
+      { path: "analytics/medicion", component: MedicionIndicadoresComponent },
       { path: "verificacionAccesos", component: VerificacionAccesosComponent },
       { path: "logAccesos", component: LogAccesosComponent },
       { path: "mapaPermisos", component: MapaPermisosComponent },
       { path: "configuracionPuestos", component: ConfiguracionPuestosComponent },
       { path: "medicionesPendientes", component: MedicionesPendientesComponent },
       { path: "evaluacionRiesgos", component: EvaluacionRiesgosComponent },
-      { path: "auditorias", component: PlaceholderComponent },
+      { path: "auditorias", component: AuditoriasComponent },
+      { path: "auditorias/programa-anual", component: ProgramaAnualComponent },
       { path: "portafolioMejora", component: PlaceholderComponent },
       { path: "reqLegal", component: PlaceholderComponent },
       { path: "ayuda", component: PlaceholderComponent }

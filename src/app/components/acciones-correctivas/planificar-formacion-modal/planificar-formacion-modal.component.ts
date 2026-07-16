@@ -3,6 +3,12 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 
+interface data {
+  Title: string;
+  Accion: string;
+  Datos: any;
+}
+
 @Component({
   selector: 'app-planificar-formacion-modal',
   standalone: false,
@@ -12,133 +18,54 @@ import { ToastrService } from 'ngx-toastr';
 export class PlanificarFormacionModalComponent implements OnInit {
 
   formulario!: FormGroup;
+  
+  tiposOptions = ['Interna', 'Externa'];
+  estadosOptions = ['Pendiente', 'En ejecución', 'Completada', 'Vencida'];
 
-  // Tabs / Radios
-  tipoAccion: 'nueva' | 'catalogo' = 'nueva';
-  responsableTipo: 'yo' | 'usuario' | 'puesto' = 'yo';
-  fechaImparticionTipo: 'fechas' | 'rango' = 'fechas';
-
-  // Opciones
-  metodologiasOptions = ['Presencial', 'Online', 'Mixta'];
-  tiposFormacionOptions = ['Inducción', 'Capacitación Básica', 'Especialización', 'Simulacro'];
-  estadosOptions = ['Planificada', 'En Curso', 'Realizada', 'Anulada'];
-
-  // Transfer list
-  sedesDisponibles: string[] = ['PRECOTEX 1', 'PRECOTEX 2', 'PRECOTEX 3', 'Santa Cecilia', 'Santa María'];
-  sedesSeleccionadas: string[] = [];
-  selectedDisponible: string = '';
-  selectedSeleccionada: string = '';
-
-  // Custom Datepicker
-  mostrarCalendarioPopup = false;
-  fechaImparticionTexto = '12/03/2026';
-  selectedDay = 12;
-  currentYear = 2026;
-  currentMonth = 2; // 2 es Marzo (0-indexed)
-  monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-  daysGrid: (number | null)[] = [];
+  procesosGroups = {
+    'Soporte (SOP)': ['Sistemas', 'Mantenimiento General', 'Seguridad Patrimonial', 'SSOMA'],
+    'Auditoría Interna (AIO)': ['Auditoría Interna'],
+    'Control Patrimonial (CPT)': ['Control Patrimonial'],
+    'Ingeniería y Mejora Continua (IMC)': ['Organización y Métodos', 'Investigación, Desarrollo e Innovación', 'Certificaciones'],
+    'Administración y Finanzas (AFC)': ['Administración', 'Finanzas', 'Contabilidad y Costos', 'Tesorería'],
+    'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitaciones y Desarrollo', 'Comunicaciones', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
+    'Servicio de Estampado y Bordado (SEB)': ['Estampado', 'Bordado', 'Calidad Estampado y Bordado', 'Planeamiento y Programación de la Producción E&B'],
+    'Operaciones Manufactura (OPM)': ['Corte', 'Costura', 'Inspección', 'Acabados', 'Aseguramiento de la Calidad Manufactura', 'Consumos'],
+    'Operaciones Textil (OPT)': ['Tejeduría', 'Tintorería', 'Laboratorio de Color', 'Estampado Digital', 'Acabados Textil', 'Aseguramiento de Calidad Textil', 'Lavandería'],
+    'Balance de Materia (BM)': ['Balance de Materia'],
+    'Planeamiento y Control de la Producción (PCP)': ['PCP Textil', 'PCP Manufactura', 'PCP Estampado y Bordado'],
+    'Logística (LOG)': ['Almacén', 'Comercio Exterior', 'Logística', 'Transporte'],
+    'Gestión Comercial (GCOM)': ['Desarrollo de Producto', 'Desarrollo de Estampado y Bordado', 'Desarrollo Textil', 'Comercial Exportación de Prendas'],
+    'Gerencia General (GG)': ['Comercial Exportación de Telas', 'Comercial Venta Local Textil', 'Alianzas Estratégicas', 'Desarrollo de Negocios', 'Proyectos Gerenciales', 'Sistema de Gestión General', 'Gestión Estratégica']
+  };
 
   constructor(
     private fb: FormBuilder,
     private toastr: ToastrService,
     public dialogRef: MatDialogRef<PlanificarFormacionModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: data
   ) {}
 
   ngOnInit(): void {
     this.formulario = this.fb.group({
-      accionFormativa: ['', Validators.required],
-      metodologia: ['Selecciona', Validators.required],
-      tipoFormacion: ['Selecciona', Validators.required],
-      estado: ['Planificada', Validators.required],
-      duracionPrevista: [''],
-      duracionReal: [''],
-      numeroAsistentes: [''],
-      objetivos: [''],
-      destinatarios: [''],
-      actividades: [''],
-      formadores: [''],
-      observaciones: [''],
-      temario: ['']
+      nc: ['', Validators.required],
+      tipo: ['Interna', Validators.required],
+      accion: ['', Validators.required],
+      proceso: ['SSOMA', Validators.required],
+      responsable: ['', Validators.required],
+      inicio: ['', Validators.required],
+      limite: ['', Validators.required],
+      estado: ['Pendiente', Validators.required],
+      desc: ['']
     });
 
-    this.generarCalendario();
-  }
-
-  generarCalendario(): void {
-    this.daysGrid = [];
-    const firstDayIndex = new Date(this.currentYear, this.currentMonth, 1).getDay(); // Domingo es 0
-    const totalDays = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
-
-    // Rellenar espacios vacíos al principio
-    for (let i = 0; i < firstDayIndex; i++) {
-      this.daysGrid.push(null);
-    }
-
-    // Agregar los números de días
-    for (let day = 1; day <= totalDays; day++) {
-      this.daysGrid.push(day);
+    if (this.data.Accion === 'U' && this.data.Datos) {
+      this.formulario.patchValue(this.data.Datos);
     }
   }
 
-  toggleCalendario(): void {
-    this.mostrarCalendarioPopup = !this.mostrarCalendarioPopup;
-  }
-
-  prevMonth(): void {
-    if (this.currentMonth === 0) {
-      this.currentMonth = 11;
-      this.currentYear--;
-    } else {
-      this.currentMonth--;
-    }
-    this.generarCalendario();
-  }
-
-  nextMonth(): void {
-    if (this.currentMonth === 11) {
-      this.currentMonth = 0;
-      this.currentYear++;
-    } else {
-      this.currentMonth++;
-    }
-    this.generarCalendario();
-  }
-
-  selectDia(day: number | null): void {
-    if (!day) return;
-    this.selectedDay = day;
-    const formattedMonth = (this.currentMonth + 1).toString().padStart(2, '0');
-    const formattedDay = day.toString().padStart(2, '0');
-    this.fechaImparticionTexto = `${formattedDay}/${formattedMonth}/${this.currentYear}`;
-    this.mostrarCalendarioPopup = false;
-  }
-
-  selectDisponible(sede: string): void {
-    this.selectedDisponible = sede;
-  }
-
-  selectSeleccionada(sede: string): void {
-    this.selectedSeleccionada = sede;
-  }
-
-  transferRight(): void {
-    if (this.selectedDisponible) {
-      this.sedesSeleccionadas.push(this.selectedDisponible);
-      this.sedesDisponibles = this.sedesDisponibles.filter(s => s !== this.selectedDisponible);
-      this.selectedDisponible = '';
-    }
-  }
-
-  transferLeft(): void {
-    if (this.selectedSeleccionada) {
-      this.sedesDisponibles.push(this.selectedSeleccionada);
-      this.sedesSeleccionadas = this.sedesSeleccionadas.filter(s => s !== this.selectedSeleccionada);
-      this.selectedSeleccionada = '';
-    }
+  getProcesosKeys() {
+    return Object.keys(this.procesosGroups) as Array<keyof typeof this.procesosGroups>;
   }
 
   onGuardar(): void {
@@ -146,15 +73,7 @@ export class PlanificarFormacionModalComponent implements OnInit {
       this.toastr.warning('Por favor complete los campos obligatorios (*)', 'Formulario Incompleto');
       return;
     }
-    const dataSave = {
-      ...this.formulario.value,
-      selectedDate: this.fechaImparticionTexto,
-      sedes: this.sedesSeleccionadas,
-      tipoAccion: this.tipoAccion,
-      responsableTipo: this.responsableTipo,
-      fechaImparticionTipo: this.fechaImparticionTipo
-    };
-    this.dialogRef.close(dataSave);
+    this.dialogRef.close(this.formulario.value);
   }
 
   onCancelar(): void {
