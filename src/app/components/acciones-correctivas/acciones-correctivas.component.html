@@ -1,202 +1,139 @@
-<div class="contenedor">
+<div class="contenedor sn-animate-in">
 
-  <!-- Header Buttons Row (Top) -->
-  <div class="top-buttons-row">
-    <button type="button" class="btn-planificar" (click)="onPlanificarNuevaFormacion()">
-      <mat-icon>add_circle</mat-icon>
-      Planificar Nueva Formación
-    </button>
-    <button type="button" class="btn-exportar-pdf" (click)="onExportarPDF()">
-      <mat-icon>picture_as_pdf</mat-icon>
-      Plan Formación (PDF)
-    </button>
-    <button type="button" class="btn-exportar-excel" (click)="onExportarExcel()">
-      <mat-icon>description</mat-icon>
-      Plan Formación (Excel)
+  <!-- BANNER NOTIFICACIÓN -->
+  <div class="banner-aviso">
+    <span>✦ Registro funcional. Pulsa <strong>Nueva acción correctiva</strong>, llena el formulario y guarda. Persiste aunque recargues.</span>
+  </div>
+
+  <!-- ESTADÍSTICAS CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card border-left-purple">
+      <div class="stat-label">TOTAL</div>
+      <div class="stat-value text-white">{{ stats.total }}</div>
+      <div class="stat-desc">Acciones registradas</div>
+    </div>
+    <div class="stat-card border-left-green">
+      <div class="stat-label">COMPLETADAS</div>
+      <div class="stat-value text-green">{{ stats.completadas }}</div>
+      <div class="stat-desc">Cerradas con éxito</div>
+    </div>
+    <div class="stat-card border-left-blue">
+      <div class="stat-label">EN EJECUCIÓN</div>
+      <div class="stat-value text-blue">{{ stats.enEjecucion }}</div>
+      <div class="stat-desc">En proceso</div>
+    </div>
+    <div class="stat-card border-left-amber">
+      <div class="stat-label">PENDIENTES</div>
+      <div class="stat-value text-yellow">{{ stats.pendientes }}</div>
+      <div class="stat-desc">Por iniciar</div>
+    </div>
+    <div class="stat-card border-left-red">
+      <div class="stat-label">VENCIDAS</div>
+      <div class="stat-value text-red">{{ stats.vencidas }}</div>
+      <div class="stat-desc">Plazo expirado</div>
+    </div>
+  </div>
+
+  <!-- TÍTULO DE SECCIÓN Y BOTÓN AGREGAR -->
+  <div class="seccion-header">
+    <h2 class="seccion-titulo">ACCIONES CORRECTIVAS</h2>
+    <button type="button" class="btn-agregar" (click)="onAgregar()">
+      <span>+ Nueva acción correctiva</span>
     </button>
   </div>
 
-  <!-- Search Group -->
-  <fieldset class="search-fieldset">
-    <legend class="search-legend">Búsqueda de Acciones Formativas</legend>
-    <div class="search-grid">
-      
-      <!-- Fila 1: Texto Libre (2 columnas), Valoración Eficacia (1 col), Año (1 col) -->
-      <div class="search-row-3">
-        <div class="search-field">
-          <label for="textoLibre">Texto Libre</label>
-          <input id="textoLibre" type="text" [(ngModel)]="filtroTextoLibre" placeholder="">
-        </div>
-        <div class="search-field">
-          <label for="valoracionEficacia">Valoración Eficacia</label>
-          <select id="valoracionEficacia" [(ngModel)]="filtroValoracionEficacia">
-            <option value="Selecciona">Selecciona</option>
-            <option *ngFor="let val of valoracionesOptions" [value]="val">{{ val }}</option>
-          </select>
-        </div>
-        <div class="search-field">
-          <label for="ano">Año</label>
-          <select id="ano" [(ngModel)]="filtroAno">
-            <option value="Selecciona">Selecciona</option>
-            <option *ngFor="let a of anosOptions" [value]="a">{{ a }}</option>
-          </select>
-        </div>
-      </div>
+  <!-- BUSCADOR -->
+  <div class="buscador-container">
+    <input type="text"
+           (keyup)="aplicarFiltro($event)"
+           placeholder="Buscar por NC vinculada, acción, responsable, proceso..."
+           class="buscador-input">
+  </div>
 
-      <!-- Fila 2: Metodología, Tipo -->
-      <div class="search-row-2">
-        <div class="search-field">
-          <label for="metodologia">Metodología</label>
-          <select id="metodologia" [(ngModel)]="filtroMetodologia">
-            <option value="Selecciona">Selecciona</option>
-            <option *ngFor="let met of metodologiasOptions" [value]="met">{{ met }}</option>
-          </select>
-        </div>
-        <div class="search-field">
-          <label for="tipo">Tipo</label>
-          <select id="tipo" [(ngModel)]="filtroTipo">
-            <option value="Selecciona">Selecciona</option>
-            <option *ngFor="let t of tiposOptions" [value]="t">{{ t }}</option>
-          </select>
-        </div>
-      </div>
+  <!-- CONTENEDOR DE TABLA PREMIUM -->
+  <div class="table-container shadow-premium">
+    <table mat-table [dataSource]="dataSource" matSort class="tabla">
 
-      <!-- Fila 3: Estado, Sede -->
-      <div class="search-row-2">
-        <div class="search-field">
-          <label for="estado">Estado</label>
-          <select id="estado" [(ngModel)]="filtroEstado">
-            <option value="Selecciona">Selecciona</option>
-            <option *ngFor="let est of estadosOptions" [value]="est">{{ est }}</option>
-          </select>
-        </div>
-        <div class="search-field">
-          <label for="sede">Sede</label>
-          <select id="sede" [(ngModel)]="filtroSede">
-            <option value="Selecciona">Selecciona</option>
-            <option *ngFor="let s of sedesOptions" [value]="s">{{ s }}</option>
-          </select>
-        </div>
-      </div>
+      <!-- NC vinculada -->
+      <ng-container matColumnDef="nc">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 160px;">NC Vinculada</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="code-badge">{{ row.nc }}</span>
+        </td>
+      </ng-container>
 
-      <!-- Fila 4: Persona Responsable, Puesto Responsable -->
-      <div class="search-row-2">
-        <div class="search-field">
-          <label for="personaResponsable">Persona Responsable</label>
-          <select id="personaResponsable" [(ngModel)]="filtroPersonaResponsable">
-            <option value="Selecciona">Selecciona</option>
-            <option *ngFor="let pers of personasOptions" [value]="pers">{{ pers }}</option>
-          </select>
-        </div>
-        <div class="search-field">
-          <label for="puestoResponsable">Puesto Responsable</label>
-          <select id="puestoResponsable" [(ngModel)]="filtroPuestoResponsable">
-            <option value="Selecciona">Selecciona</option>
-            <option *ngFor="let puesto of puestosOptions" [value]="puesto">{{ puesto }}</option>
-          </select>
-        </div>
-      </div>
+      <!-- Tipo -->
+      <ng-container matColumnDef="tipo">
+        <th mat-header-cell *matHeaderCellDef style="width: 100px;">Tipo</th>
+        <td mat-cell *matCellDef="let row">
+          <span [class]="'badge-tipo-' + getTipoClass(row.tipo)">{{ row.tipo }}</span>
+        </td>
+      </ng-container>
 
-      <!-- Fila 5: Botón Filtrar -->
-      <div class="search-button-row">
-        <button type="button" class="btn-filtrar" (click)="onFiltrar()">Filtrar</button>
-      </div>
+      <!-- Acción correctiva -->
+      <ng-container matColumnDef="accion">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 200px;">Acción Correctiva</th>
+        <td mat-cell *matCellDef="let row" class="norma-cell">{{ row.accion }}</td>
+      </ng-container>
 
-    </div>
-  </fieldset>
+      <!-- Proceso -->
+      <ng-container matColumnDef="proceso">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px;">Proceso</th>
+        <td mat-cell *matCellDef="let row" class="areas-cell">{{ row.proceso }}</td>
+      </ng-container>
 
-  <!-- Table -->
-  <div class="table-container">
-    <table mat-table [dataSource]="dataSource" matSort class="tabla-wrapper">
+      <!-- Responsable -->
+      <ng-container matColumnDef="responsable">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px;">Responsable</th>
+        <td mat-cell *matCellDef="let row">{{ row.responsable }}</td>
+      </ng-container>
+
+      <!-- Fecha inicio -->
+      <ng-container matColumnDef="inicio">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 120px;">Inicio</th>
+        <td mat-cell *matCellDef="let row" class="col-tabular">{{ row.inicio ? (row.inicio | date:'dd/MM/yyyy') : '-' }}</td>
+      </ng-container>
+
+      <!-- Fecha límite -->
+      <ng-container matColumnDef="limite">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 120px;">Límite</th>
+        <td mat-cell *matCellDef="let row" class="col-tabular">{{ row.limite ? (row.limite | date:'dd/MM/yyyy') : '-' }}</td>
+      </ng-container>
+
+      <!-- Estado -->
+      <ng-container matColumnDef="estado">
+        <th mat-header-cell *matHeaderCellDef style="width: 130px;">Estado</th>
+        <td mat-cell *matCellDef="let row">
+          <span [class]="'badge-estado-' + getEstadoClass(row.estado)">
+            {{ row.estado || 'Pendiente' }}
+          </span>
+        </td>
+      </ng-container>
 
       <!-- Acciones -->
       <ng-container matColumnDef="acciones">
-        <th mat-header-cell *matHeaderCellDef style="width: 130px; text-align: center;">Acciones</th>
-        <td mat-cell *matCellDef="let row" style="text-align: center;">
-          <div class="action-buttons-cell">
-            <button type="button" class="btn-edit" (click)="onEditar(row)" title="Editar">
+        <th mat-header-cell *matHeaderCellDef style="width: 110px; text-align: center;">Acciones</th>
+        <td mat-cell *matCellDef="let e">
+          <div class="actions-wrapper">
+            <button class="action-btn btn-edit" (click)="onEditar(e)" title="Editar">
               <mat-icon>edit</mat-icon>
             </button>
-            <button type="button" class="btn-delete" (click)="onEliminar(row)" title="Eliminar">
+            <button class="action-btn btn-delete" (click)="onEliminar(e)" title="Eliminar">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
         </td>
       </ng-container>
 
-      <!-- Código -->
-      <ng-container matColumnDef="codigo">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Código</th>
-        <td mat-cell *matCellDef="let row" class="col-tabular">{{ row.codigo }}</td>
-      </ng-container>
-
-      <!-- Descripción / Texto Libre -->
-      <ng-container matColumnDef="textoLibre">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Descripción / Texto Libre</th>
-        <td mat-cell *matCellDef="let row" class="denominacion-cell">{{ row.textoLibre }}</td>
-      </ng-container>
-
-      <!-- Año -->
-      <ng-container matColumnDef="ano">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Año</th>
-        <td mat-cell *matCellDef="let row" class="col-tabular">{{ row.ano }}</td>
-      </ng-container>
-
-      <!-- Tipo -->
-      <ng-container matColumnDef="tipo">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo</th>
-        <td mat-cell *matCellDef="let row">{{ row.tipo }}</td>
-      </ng-container>
-
-      <!-- Metodología -->
-      <ng-container matColumnDef="metodologia">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Metodología</th>
-        <td mat-cell *matCellDef="let row">{{ row.metodologia }}</td>
-      </ng-container>
-
-      <!-- Estado -->
-      <ng-container matColumnDef="estado">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
-        <td mat-cell *matCellDef="let row">
-          <span [class]="getEstadoClass(row.estado)" class="estado-badge">{{ row.estado }}</span>
-        </td>
-      </ng-container>
-
-      <!-- Sede -->
-      <ng-container matColumnDef="sede">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Sede</th>
-        <td mat-cell *matCellDef="let row">{{ row.sede }}</td>
-      </ng-container>
-
-      <!-- Responsable -->
-      <ng-container matColumnDef="personaResponsable">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Responsable</th>
-        <td mat-cell *matCellDef="let row">
-          <span style="font-weight: 500;">{{ row.personaResponsable }}</span>
-          <br>
-          <small style="color: #666;">{{ row.puestoResponsable }}</small>
-        </td>
-      </ng-container>
-
-      <!-- Valoración Eficacia -->
-      <ng-container matColumnDef="valoracionEficacia">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Valoración Eficacia</th>
-        <td mat-cell *matCellDef="let row">
-          <span [class]="getEficaciaClass(row.valoracionEficacia)" class="eficacia-badge">
-            {{ row.valoracionEficacia }}
-          </span>
-        </td>
-      </ng-container>
-
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="fila"></tr>
 
     </table>
-
+    
     <!-- Empty state -->
     <div *ngIf="dataSource.data.length === 0" class="empty-state">
-      <mat-icon>assignment_late</mat-icon>
-      <p>No se encontraron acciones formativas o correctivas.</p>
+      <mat-icon class="empty-icon">assignment_late</mat-icon>
+      <p>No se encontraron acciones correctivas registradas.</p>
     </div>
   </div>
 

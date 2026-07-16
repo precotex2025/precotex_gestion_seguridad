@@ -11,7 +11,7 @@
 }
 
 .contenedor {
-  padding: 20px;
+  padding: 0;
   background-color: var(--bg-dark);
   min-height: 100vh;
   font-family: 'Inter', sans-serif;
@@ -39,8 +39,8 @@
 /* Split Layout */
 .doc-layout {
   display: grid;
-  grid-template-columns: 240px 1fr;
-  gap: 16px;
+  grid-template-columns: 215px 1fr;
+  gap: 12px;
   align-items: start;
 }
 
@@ -285,7 +285,7 @@
 .tabla {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1000px; /* Ensures minimum width so fields do not overlap or squeeze */
+  min-width: 800px; /* Ensures minimum width so fields do not overlap or squeeze */
 }
 
 .tabla th {

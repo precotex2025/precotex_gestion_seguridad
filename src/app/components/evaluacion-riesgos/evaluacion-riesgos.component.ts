@@ -4,15 +4,16 @@ import { MatDialog } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { EvaluacionRiesgosRegeditComponent } from './evaluacion-riesgos-regedit/evaluacion-riesgos-regedit.component';
 
-interface RiesgoItem {
+export interface RiesgoItem {
   id: number;
-  denominacion: string;
+  codigo: string;
   tipo: string;
-  estado: string;
-  fechaAprobacion: string;
-  organizacion: string;
-  sede: string;
-  norma: string;
+  descbrief: string;
+  proceso: string;
+  nivel: string;
+  estado: string; // 'Controlado' | 'En seguimiento' | 'Sin control'
+  responsable: string;
+  revision: string; // YYYY-MM-DD
 }
 
 @Component({
@@ -26,8 +27,56 @@ export class EvaluacionRiesgosComponent implements OnInit {
   riesgos: RiesgoItem[] = [];
   riesgosFiltrados: RiesgoItem[] = [];
 
-  cantPendientes = 1;
-  cantActivas = 0;
+  cantTotal = 0;
+  cantControlado = 0;
+  cantEnSeguimiento = 0;
+  cantSinControl = 0;
+
+  readonly tiposOptions = ['Seguridad', 'Calidad', 'Ambiental'];
+  readonly procesosOptions = [
+    'Sistemas', 'Servicios Compartidos', 'Recursos Humanos', 'Finanzas', 'SSOMA',
+    'Corte', 'Costura', 'Tintorería'
+  ];
+  readonly nivelesOptions = ['Alto', 'Medio', 'Bajo'];
+  readonly estadosOptions = ['Controlado', 'En seguimiento', 'Sin control'];
+
+  private readonly STORAGE_KEY = 'precotex_riesgos_declarados';
+
+  private readonly seedData: RiesgoItem[] = [
+    {
+      id: 1,
+      codigo: 'RSG-2025-012',
+      tipo: 'Seguridad',
+      descbrief: 'Falla eléctrica en planta de corte por sobrecarga',
+      proceso: 'Corte',
+      nivel: 'Alto',
+      estado: 'Sin control',
+      responsable: 'Luis Mamani',
+      revision: '2025-08-01'
+    },
+    {
+      id: 2,
+      codigo: 'RSG-2025-025',
+      tipo: 'Calidad',
+      descbrief: 'Variabilidad de tallas en costura',
+      proceso: 'Costura',
+      nivel: 'Medio',
+      estado: 'Controlado',
+      responsable: 'Rosa Chávez',
+      revision: '2025-07-10'
+    },
+    {
+      id: 3,
+      codigo: 'RSG-2025-031',
+      tipo: 'Ambiental',
+      descbrief: 'Derrame de químicos en tintorería',
+      proceso: 'Tintorería',
+      nivel: 'Medio',
+      estado: 'En seguimiento',
+      responsable: 'Pedro Salas',
+      revision: '2025-09-05'
+    }
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -37,85 +86,75 @@ export class EvaluacionRiesgosComponent implements OnInit {
 
   ngOnInit(): void {
     this.formularioBusqueda = this.fb.group({
-      ctrol_estado: ['En Evaluación y Aprobadas'],
-      ctrol_organizacion: [''],
-      ctrol_norma: [''],
-      ctrol_tipo: ['']
+      termino: [''],
+      tipo: [''],
+      proceso: [''],
+      estado: ['']
     });
 
-    this.onListarMock();
+    this.cargarDatos();
   }
 
-  onListarMock(): void {
-    this.riesgos = [
-      {
-        id: 1,
-        denominacion: 'Sistema Integrado de Gestión_Procesos',
-        tipo: 'Estructura Libres',
-        estado: 'En Evaluación',
-        fechaAprobacion: '',
-        organizacion: 'PRECOTEX',
-        sede: 'PRECOTEX\nSanta Maria\nSanta Cecilia',
-        norma: 'ISO 14001:2015\nISO 9001:2015\nISO 45001:2018'
-      },
-      {
-        id: 2,
-        denominacion: 'Plan de Gestión de SST 2026',
-        tipo: 'Estructura Libres',
-        estado: 'Aprobada',
-        fechaAprobacion: '15/01/2026',
-        organizacion: 'PRECOTEX',
-        sede: 'PRECOTEX',
-        norma: 'ISO 45001:2018'
+  cargarDatos(): void {
+    const raw = localStorage.getItem(this.STORAGE_KEY);
+    if (raw) {
+      try {
+        this.riesgos = JSON.parse(raw);
+      } catch (e) {
+        this.riesgos = [...this.seedData];
+        this.guardarEnStorage();
       }
-    ];
+    } else {
+      this.riesgos = [...this.seedData];
+      this.guardarEnStorage();
+    }
     this.actualizarContadores();
     this.riesgosFiltrados = [...this.riesgos];
   }
 
+  guardarEnStorage(): void {
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.riesgos));
+  }
+
   actualizarContadores(): void {
-    this.cantPendientes = this.riesgos.filter(r => r.estado === 'En Evaluación').length;
-    this.cantActivas = this.riesgos.filter(r => r.estado === 'Aprobada' || r.estado === 'Aprobadas').length;
+    this.cantTotal = this.riesgos.length;
+    this.cantControlado = this.riesgos.filter(r => r.estado === 'Controlado').length;
+    this.cantEnSeguimiento = this.riesgos.filter(r => r.estado === 'En seguimiento').length;
+    this.cantSinControl = this.riesgos.filter(r => r.estado === 'Sin control').length;
   }
 
   onBuscar(): void {
     const filters = this.formularioBusqueda.value;
+    const term = (filters.termino || '').toLowerCase().trim();
+
     this.riesgosFiltrados = this.riesgos.filter(item => {
-      // Estado
-      if (filters.ctrol_estado && filters.ctrol_estado !== 'Todas') {
-        const est = item.estado.toLowerCase();
-        if (filters.ctrol_estado === 'En Evaluación y Aprobadas') {
-          if (est !== 'en evaluación' && est !== 'aprobada' && est !== 'aprobadas') {
-            return false;
-          }
-        } else if (filters.ctrol_estado !== item.estado) {
+      if (term) {
+        const cod = (item.codigo || '').toLowerCase();
+        const desc = (item.descbrief || '').toLowerCase();
+        const resp = (item.responsable || '').toLowerCase();
+        if (
+          !cod.includes(term) &&
+          !desc.includes(term) &&
+          !resp.includes(term)
+        ) {
           return false;
         }
       }
-      // Organización
-      if (filters.ctrol_organizacion && item.organizacion !== filters.ctrol_organizacion) {
-        return false;
-      }
-      // Norma
-      if (filters.ctrol_norma && !item.norma.includes(filters.ctrol_norma)) {
-        return false;
-      }
-      // Tipo
-      if (filters.ctrol_tipo && item.tipo !== filters.ctrol_tipo) {
-        return false;
-      }
+      if (filters.tipo && item.tipo !== filters.tipo) return false;
+      if (filters.proceso && item.proceso !== filters.proceso) return false;
+      if (filters.estado && item.estado !== filters.estado) return false;
       return true;
     });
-    this.toastr.success('Filtros de evaluación aplicados.', 'Filtrado');
   }
 
   onAgregar(): void {
     const dialogRef = this.dialog.open(EvaluacionRiesgosRegeditComponent, {
-      width: '1050px',
+      width: '1150px',
       maxWidth: '95vw',
+      panelClass: 'custom-large-dialog',
       disableClose: true,
       data: {
-        Title: 'Registrar Evaluación de Riesgo',
+        Title: 'Declarar Riesgo',
         Accion: 'I',
         Datos: null
       }
@@ -124,23 +163,27 @@ export class EvaluacionRiesgosComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         const nuevoId = this.riesgos.length > 0 ? Math.max(...this.riesgos.map(r => r.id)) + 1 : 1;
-        this.riesgos.push({
+        const nuevoItem: RiesgoItem = {
           id: nuevoId,
           ...result
-        });
+        };
+        this.riesgos.push(nuevoItem);
+        this.guardarEnStorage();
         this.actualizarContadores();
         this.onBuscar();
+        this.toastr.success('Riesgo declarado correctamente.', 'Registrado');
       }
     });
   }
 
   onEdit(item: RiesgoItem): void {
     const dialogRef = this.dialog.open(EvaluacionRiesgosRegeditComponent, {
-      width: '1050px',
+      width: '1150px',
       maxWidth: '95vw',
+      panelClass: 'custom-large-dialog',
       disableClose: true,
       data: {
-        Title: 'Editar Evaluación de Riesgo',
+        Title: 'Editar Riesgo Declarado',
         Accion: 'U',
         Datos: item
       }
@@ -154,58 +197,42 @@ export class EvaluacionRiesgosComponent implements OnInit {
             id: item.id,
             ...result
           };
+          this.guardarEnStorage();
           this.actualizarContadores();
           this.onBuscar();
+          this.toastr.success('Riesgo declarado actualizado.', 'Actualizado');
         }
       }
     });
   }
 
   onDelete(item: RiesgoItem): void {
-    this.riesgos = this.riesgos.filter(r => r.id !== item.id);
-    this.actualizarContadores();
-    this.onBuscar();
-    this.toastr.warning(`Evaluación "${item.denominacion}" eliminada.`, 'Eliminado');
-  }
-
-  onDuplicar(): void {
-    if (this.riesgosFiltrados.length === 0) {
-      this.toastr.warning('No hay evaluaciones disponibles para duplicar.', 'Advertencia');
-      return;
+    if (confirm(`¿Está seguro de eliminar el riesgo con código "${item.codigo}"?`)) {
+      this.riesgos = this.riesgos.filter(r => r.id !== item.id);
+      this.guardarEnStorage();
+      this.actualizarContadores();
+      this.onBuscar();
+      this.toastr.warning(`Riesgo "${item.codigo}" eliminado.`, 'Eliminado');
     }
-    const itemToDuplicate = this.riesgosFiltrados[0];
-    const nuevoId = Math.max(...this.riesgos.map(r => r.id)) + 1;
-    this.riesgos.push({
-      ...itemToDuplicate,
-      id: nuevoId,
-      denominacion: `${itemToDuplicate.denominacion} (Copia)`
-    });
-    this.actualizarContadores();
-    this.onBuscar();
-    this.toastr.success(`Copia creada de: "${itemToDuplicate.denominacion}"`, 'Duplicado');
   }
 
-  onOpcionesVisualizacion(): void {
-    this.toastr.info('Abriendo opciones de visualización de riesgos...', 'Opciones');
+  formatearFecha(fechaStr: string): string {
+    if (!fechaStr) return '--';
+    const parts = fechaStr.split('-');
+    if (parts.length === 3) {
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    return fechaStr;
   }
 
-  onRestriccionPermisos(item: RiesgoItem): void {
-    this.toastr.info(`Restricción de Permisos para: "${item.denominacion}"`, 'Permisos');
-  }
-
-  onVerLog(item: RiesgoItem): void {
-    this.toastr.info(`Logs de auditoría de: "${item.denominacion}"`, 'Log');
-  }
-
-  onEvaluarRiesgos(item: RiesgoItem): void {
-    this.toastr.info(`Iniciando matriz IPERC para: "${item.denominacion}"`, 'Evaluar Riesgos');
-  }
-
-  onRiesgosPuestos(item: RiesgoItem): void {
-    this.toastr.info(`Mapa de riesgos por puesto de: "${item.denominacion}"`, 'Riesgos Puestos');
-  }
-
-  onPlanControl(item: RiesgoItem): void {
-    this.toastr.info(`Plan de control de medidas para: "${item.denominacion}"`, 'Plan Control');
+  getEstadoClass(est: string): string {
+    switch ((est || '').toLowerCase()) {
+      case 'controlado':
+        return 'status-green';
+      case 'en seguimiento':
+        return 'status-amber';
+      default:
+        return 'status-red';
+    }
   }
 }

@@ -96,29 +96,32 @@ export class LayoutComponent implements OnInit, OnDestroy {
       this.activeModule = {
         title: 'No conformidades',
         breadcrumb: 'No conformidades · Acciones Correctivas',
-        tabs: [
-          { label: 'Acciones Correctivas', route: '/principal/accionesCorrectivas' }
-        ]
+        tabs: []
       };
       this.activeSublink = url;
     } else if (url.includes('/principal/analytics')) {
       this.currentModule = 'Indicadores';
+      const isMedicion = url.includes('/principal/analytics/medicion');
       this.activeModule = {
         title: 'Indicadores',
-        breadcrumb: 'Indicadores · Analytics',
+        breadcrumb: 'Indicadores · Gestión',
+        activeTab: isMedicion ? 'medicion' : 'alta',
         tabs: [
-          { label: 'Analytics', route: '/principal/analytics' }
+          { id: 'alta', label: 'Alta de indicadores', route: '/principal/analytics' },
+          { id: 'medicion', label: 'Medición de indicadores', route: '/principal/analytics/medicion' }
         ]
       };
       this.activeSublink = url;
     } else if (url.includes('/principal/planificacionObjetivos') || url.includes('/principal/medicionesPendientes')) {
       this.currentModule = 'Objetivos';
+      const isMedicion = url.includes('/principal/medicionesPendientes');
       this.activeModule = {
         title: 'Objetivos',
-        breadcrumb: 'Objetivos · Planificación y Gestión',
+        breadcrumb: 'Objetivos · Gestión',
+        activeTab: isMedicion ? 'medicion' : 'planificacion',
         tabs: [
-          { label: 'Planificación Objetivos', route: '/principal/planificacionObjetivos' },
-          { label: 'Mediciones Pendientes', route: '/principal/medicionesPendientes' }
+          { id: 'planificacion', label: 'Planificación de objetivos', route: '/principal/planificacionObjetivos' },
+          { id: 'medicion', label: 'Medición de objetivos', route: '/principal/medicionesPendientes' }
         ]
       };
       this.activeSublink = url;
@@ -126,19 +129,20 @@ export class LayoutComponent implements OnInit, OnDestroy {
       this.currentModule = 'Riesgos';
       this.activeModule = {
         title: 'Riesgos',
-        breadcrumb: 'Riesgos · Evaluación',
-        tabs: [
-          { label: 'Evaluación de Riesgos', route: '/principal/evaluacionRiesgos' }
-        ]
+        breadcrumb: 'Riesgos · IPERC',
+        tabs: []
       };
       this.activeSublink = url;
     } else if (url.includes('/principal/auditorias')) {
       this.currentModule = 'Auditorías';
+      const isProgramaAnual = url.includes('/principal/auditorias/programa-anual');
       this.activeModule = {
         title: 'Auditorías',
         breadcrumb: 'Auditorías · Control Interno',
+        activeTab: isProgramaAnual ? 'programa-anual' : 'auditorias',
         tabs: [
-          { label: 'Auditorías', route: '/principal/auditorias' }
+          { id: 'auditorias', label: 'Auditorías', route: '/principal/auditorias' },
+          { id: 'programa-anual', label: 'Programa anual', route: '/principal/auditorias/programa-anual' }
         ]
       };
       this.activeSublink = url;

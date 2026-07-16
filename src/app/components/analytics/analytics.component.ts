@@ -1,18 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
-import { NgxSpinnerService } from 'ngx-spinner';
+import { MatDialog } from '@angular/material/dialog';
+import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
+import { AnalyticsRegeditComponent } from './analytics-regedit/analytics-regedit.component';
 
-export interface AnaliticaRegistro {
-  id: string;
-  usuario: string; // Usuario Buscado (searcher account)
-  personaBuscada: string; // Persona Buscada (searched employee)
-  fechaHora: string;
-  tipo: 'Consulta' | 'Monitorización';
-  resultado: string;
-  alerta: string;
-  verificado: boolean;
-}
+const STORAGE_KEY = 'precotex_indicadores';
 
 @Component({
   selector: 'app-analytics',
@@ -22,254 +15,208 @@ export interface AnaliticaRegistro {
 })
 export class AnalyticsComponent implements OnInit {
 
-  dataSource = new MatTableDataSource<AnaliticaRegistro>();
-  displayedColumns: string[] = [];
+  stats = {
+    total: 0,
+    activos: 0,
+    inactivos: 0
+  };
 
-  // Tab activa
-  currentTab: 'consultas' | 'monitorizaciones' = 'consultas';
+  displayedColumns: string[] = [
+    'codigo',
+    'nombre',
+    'tipo',
+    'proceso',
+    'norma',
+    'frecuencia',
+    'meta',
+    'estado',
+    'acciones'
+  ];
 
-  // Filtros
-  filtroUsuario: string = '';
-  filtroFechaDesde: string = '';
-  filtroFechaHasta: string = '';
-  filtroResultado: string = 'Cualquiera';
-  filtroSeleccionaUsuario: string = 'Todos';
+  dataSource = new MatTableDataSource<any>();
 
-  // Filtros Monitorizaciones
-  filtroTermino: string = '';
-  filtroFechaInicio: string = '';
-  filtroResultadoMonitorizacion: string = 'Cualquiera';
-
-  // Opciones de combos
-  resultadosOptions: string[] = ['Cualquiera', 'Positivo', 'Negativo', 'Pendiente'];
-  usuariosOptions: string[] = ['Todos', 'fhuamani', 'admin', 'sys'];
-
-  // KPIs
-  kpiConsultasActivas = 0;
-  kpiMonitorizacionesActivas = 0;
-  kpiConsultasPositivasPendientes = 0;
-  kpiMonitorizacionesPositivas = 0;
-
-  private originalRegistros: AnaliticaRegistro[] = [
+  private readonly seedData = [
     {
-      id: 'REG-001',
-      usuario: 'fhuamani',
-      personaBuscada: 'Juan Pérez',
-      fechaHora: '2026-06-25',
-      tipo: 'Consulta',
-      resultado: 'Negativo',
-      alerta: 'Sin Alertas',
-      verificado: true
+      codigo: 'IND-COS-001',
+      nombre: '% eficiencia de línea',
+      tipo: 'Eficacia',
+      norma: 'ISO 9001:2015',
+      responsable: 'Jefe Costura',
+      respmed: 'Supervisor',
+      estado: 'Activo',
+      sede: 'Sede Ate',
+      proceso: 'Costura',
+      areasacc: 'Costura, Gerencia',
+      inicio: '2025-01-01',
+      fin: '2025-12-31',
+      frecuencia: 'Diario',
+      fuente: 'Reporte de producción',
+      formula: '(Piezas conformes / Piezas producidas) × 100',
+      unidad: 'Porcentaje (%)',
+      base: '79%',
+      meta: '≥85%',
+      tipometa: 'Mayor o igual (≥)',
+      sentido: '↑ Sube es bueno'
     },
     {
-      id: 'REG-002',
-      usuario: 'fhuamani',
-      personaBuscada: 'María López',
-      fechaHora: '2026-06-24',
-      tipo: 'Consulta',
-      resultado: 'Positivo',
-      alerta: 'Alerta Temperatura',
-      verificado: false
+      codigo: 'IND-COR-001',
+      nombre: '% merma de tela',
+      tipo: 'Eficiencia',
+      norma: 'ISO 9001:2015',
+      responsable: 'Jefe Corte',
+      respmed: 'Supervisor',
+      estado: 'Activo',
+      sede: 'Sede Central — Lima',
+      proceso: 'Corte',
+      areasacc: 'Corte',
+      inicio: '2025-01-01',
+      fin: '2025-12-31',
+      frecuencia: 'Semanal',
+      fuente: 'Reporte de producción',
+      formula: '(Tela desperdiciada / Tela total) × 100',
+      unidad: 'Porcentaje (%)',
+      base: '12%',
+      meta: '≤8%',
+      tipometa: 'Menor o igual (≤)',
+      sentido: '↓ Baja es bueno'
     },
     {
-      id: 'REG-003',
-      usuario: 'admin',
-      personaBuscada: 'Carlos Gómez',
-      fechaHora: '2026-06-23',
-      tipo: 'Monitorización',
-      resultado: 'Negativo',
-      alerta: 'Sin Alertas',
-      verificado: true
-    },
-    {
-      id: 'REG-004',
-      usuario: 'sys',
-      personaBuscada: 'Juan Pérez',
-      fechaHora: '2026-06-22',
-      tipo: 'Monitorización',
-      resultado: 'Positivo',
-      alerta: 'Alerta Falta EPP',
-      verificado: false
-    },
-    {
-      id: 'REG-005',
-      usuario: 'fhuamani',
-      personaBuscada: 'María López',
-      fechaHora: '2026-06-21',
-      tipo: 'Consulta',
-      resultado: 'Negativo',
-      alerta: 'Sin Alertas',
-      verificado: true
+      codigo: 'IND-SSO-001',
+      nombre: 'N° inspecciones realizadas vs prog.',
+      tipo: 'Efectividad',
+      norma: 'ISO 45001:2018',
+      responsable: 'Jefe SSOMA',
+      respmed: 'Jefe SSOMA',
+      estado: 'Activo',
+      sede: 'Todas',
+      proceso: 'SSOMA',
+      areasacc: 'SSOMA',
+      inicio: '2025-01-01',
+      fin: '2025-12-31',
+      frecuencia: 'Mensual',
+      fuente: 'Reporte SSOMA',
+      formula: '(Inspecciones realizadas / Programadas) × 100',
+      unidad: 'Porcentaje (%)',
+      base: '80%',
+      meta: '=100%',
+      tipometa: 'Igual (=)',
+      sentido: '↑ Sube es bueno'
     }
   ];
 
   constructor(
-    private spinner: NgxSpinnerService,
+    private dialog: MatDialog,
     private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
-    this.actualizarColumnas();
-    this.cargarDatos();
+    this.onListado();
   }
 
-  actualizarColumnas(): void {
-    if (this.currentTab === 'consultas') {
-      this.displayedColumns = [
-        'verRevisar',
-        'eliminar',
-        'fechaHora',
-        'tipoConsulta',
-        'usuarioBuscado',
-        'resultadoRevision',
-        'resultadoValidacion'
-      ];
+  onListado(): void {
+    const local = localStorage.getItem(STORAGE_KEY);
+    if (local) {
+      const data = JSON.parse(local);
+      this.dataSource.data = data;
+      this.calculateStats(data);
     } else {
-      this.displayedColumns = [
-        'gestionarResultados',
-        'historicoConsultas',
-        'eliminar',
-        'monitorizacion',
-        'estadoMonitorizacion',
-        'fecha',
-        'usuarioBuscado',
-        'personaBuscada'
-      ];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.seedData));
+      this.dataSource.data = this.seedData;
+      this.calculateStats(this.seedData);
     }
   }
 
-  cargarDatos(): void {
-    this.calcularKPIs();
-    this.onFiltrar();
+  calculateStats(data: any[]): void {
+    this.stats = {
+      total: data.length,
+      activos: data.filter(d => d.estado === 'Activo').length,
+      inactivos: data.filter(d => d.estado === 'Inactivo').length
+    };
   }
 
-  calcularKPIs(): void {
-    this.kpiConsultasActivas = this.originalRegistros.filter(r => r.tipo === 'Consulta').length;
-    this.kpiMonitorizacionesActivas = this.originalRegistros.filter(r => r.tipo === 'Monitorización').length;
-    
-    this.kpiConsultasPositivasPendientes = this.originalRegistros.filter(
-      r => r.tipo === 'Consulta' && r.resultado === 'Positivo' && !r.verificado
-    ).length;
-
-    this.kpiMonitorizacionesPositivas = this.originalRegistros.filter(
-      r => r.tipo === 'Monitorización' && r.resultado === 'Positivo' && !r.verificado
-    ).length;
+  getEstadoClass(estado: string): string {
+    if (!estado) return 'inactivo';
+    const s = estado.toLowerCase().trim();
+    return s.includes('activo') ? 'activo' : 'inactivo';
   }
 
-  setTab(tab: 'consultas' | 'monitorizaciones'): void {
-    this.currentTab = tab;
-    this.actualizarColumnas();
-    this.toastr.success(
-      `Cambiado a: ${tab === 'consultas' ? 'Consultas Puntuales' : 'Monitorizaciones'}`,
-      'Tab Modificada'
-     );
-     this.onFiltrar();
+  aplicarFiltro(event: Event): void {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
-  onFiltrar(): void {
-    this.spinner.show();
-    setTimeout(() => {
-      let filtered = [...this.originalRegistros];
+  onAgregar(): void {
+    const dialogRef = this.dialog.open(AnalyticsRegeditComponent, {
+      width: '680px',
+      disableClose: true,
+      data: {
+        Title: '::. Registrar indicador .::',
+        Accion: 'I',
+        Datos: null
+      }
+    });
 
-      if (this.currentTab === 'consultas') {
-        filtered = filtered.filter(r => r.tipo === 'Consulta');
-
-        // Filtrar por Nombre Usuario (texto libre)
-        if (this.filtroUsuario) {
-          filtered = filtered.filter(r => 
-            r.usuario.toLowerCase().includes(this.filtroUsuario.toLowerCase())
-          );
+    dialogRef.afterClosed().subscribe(res => {
+      if (res) {
+        const local = localStorage.getItem(STORAGE_KEY);
+        const data = local ? JSON.parse(local) : [];
+        if (data.some((d: any) => d.codigo === res.codigo)) {
+          this.toastr.warning('El código del indicador ya existe.', 'Código Duplicado');
+          return;
         }
+        data.unshift(res);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        this.toastr.success('Indicador guardado correctamente.', '', { timeOut: 2500 });
+        this.onListado();
+      }
+    });
+  }
 
-        // Filtrar por Selecciona Usuario (combo)
-        if (this.filtroSeleccionaUsuario && this.filtroSeleccionaUsuario !== 'Todos') {
-          filtered = filtered.filter(r => r.usuario === this.filtroSeleccionaUsuario);
-        }
+  onEditar(item: any): void {
+    const dialogRef = this.dialog.open(AnalyticsRegeditComponent, {
+      width: '680px',
+      disableClose: true,
+      data: {
+        Title: '::. Editar indicador .::',
+        Accion: 'U',
+        Datos: item
+      }
+    });
 
-        // Filtrar por Resultado de la Revisión / Alerta (combo)
-        if (this.filtroResultado && this.filtroResultado !== 'Cualquiera') {
-          filtered = filtered.filter(r => r.resultado === this.filtroResultado);
-        }
-
-        // Filtrar por Rango de fechas
-        if (this.filtroFechaDesde) {
-          filtered = filtered.filter(r => r.fechaHora >= this.filtroFechaDesde);
-        }
-        if (this.filtroFechaHasta) {
-          filtered = filtered.filter(r => r.fechaHora <= this.filtroFechaHasta + ' 23:59');
-        }
-      } else {
-        filtered = filtered.filter(r => r.tipo === 'Monitorización');
-
-        // Filtrar por Término Buscado
-        if (this.filtroTermino) {
-          const term = this.filtroTermino.toLowerCase();
-          filtered = filtered.filter(r => 
-            r.personaBuscada.toLowerCase().includes(term) ||
-            r.usuario.toLowerCase().includes(term)
-          );
-        }
-
-        // Filtrar por Selecciona Usuario (combo)
-        if (this.filtroSeleccionaUsuario && this.filtroSeleccionaUsuario !== 'Todos') {
-          filtered = filtered.filter(r => r.usuario === this.filtroSeleccionaUsuario);
-        }
-
-        // Filtrar por Resultado de la Monitorización (combo)
-        if (this.filtroResultadoMonitorizacion && this.filtroResultadoMonitorizacion !== 'Cualquiera') {
-          filtered = filtered.filter(r => r.resultado === this.filtroResultadoMonitorizacion);
-        }
-
-        // Filtrar por Fecha / Hora Inicio
-        if (this.filtroFechaInicio) {
-          filtered = filtered.filter(r => r.fechaHora >= this.filtroFechaInicio);
+    dialogRef.afterClosed().subscribe(res => {
+      if (res) {
+        const local = localStorage.getItem(STORAGE_KEY);
+        if (local) {
+          let data = JSON.parse(local);
+          data = data.map((d: any) => d.codigo === item.codigo ? res : d);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          this.toastr.success('Indicador actualizado correctamente.', '', { timeOut: 2500 });
+          this.onListado();
         }
       }
-
-      this.dataSource.data = filtered;
-      this.spinner.hide();
-    }, 200);
+    });
   }
 
-  onNuevaConsulta(): void {
-    this.toastr.info('Abriendo formulario de nueva consulta puntual...', 'Nueva Consulta');
-  }
-
-  onExportarListado(): void {
-    this.toastr.success('Exportando listado de analíticas...', 'Exportar');
-  }
-
-  onVerRevisar(row: AnaliticaRegistro): void {
-    this.toastr.info(`Visualizando detalles del registro ${row.id}...`, 'Ver / Revisar');
-  }
-
-  onGestionarResultados(row: AnaliticaRegistro): void {
-    this.toastr.info(`Gestionando resultados de monitorización para ${row.personaBuscada}...`, 'Gestionar Resultados');
-  }
-
-  onHistoricoConsultas(row: AnaliticaRegistro): void {
-    this.toastr.info(`Cargando histórico de consultas para ${row.personaBuscada}...`, 'Histórico Consultas');
-  }
-
-  onEliminar(row: AnaliticaRegistro): void {
-    this.spinner.show();
-    setTimeout(() => {
-      this.originalRegistros = this.originalRegistros.filter(r => r.id !== row.id);
-      this.calcularKPIs();
-      this.onFiltrar();
-      this.toastr.error(`Registro ${row.id} eliminado con éxito.`, 'Registro Eliminado');
-      this.spinner.hide();
-    }, 300);
-  }
-
-  onVerificar(row: AnaliticaRegistro): void {
-    this.spinner.show();
-    setTimeout(() => {
-      row.verificado = true;
-      this.calcularKPIs();
-      this.onFiltrar();
-      this.toastr.success(`Registro ${row.id} verificado con éxito.`, 'Verificación OK');
-      this.spinner.hide();
-    }, 300);
+  onEliminar(item: any): void {
+    Swal.fire({
+      title: '¿Desea eliminar el indicador?, Confirme',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí',
+      cancelButtonText: 'No'
+    }).then(result => {
+      if (result.isConfirmed) {
+        const local = localStorage.getItem(STORAGE_KEY);
+        if (local) {
+          let data = JSON.parse(local);
+          data = data.filter((d: any) => d.codigo !== item.codigo);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          this.toastr.success('Indicador eliminado correctamente.', '', { timeOut: 2500 });
+          this.onListado();
+        }
+      }
+    });
   }
 }

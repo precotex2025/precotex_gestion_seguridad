@@ -1,0 +1,186 @@
+<div class="contenedor sn-animate-in">
+
+  <!-- BANNER NOTIFICACIÓN -->
+  <div class="banner-aviso">
+    <span>✦ Historial de mediciones. Pulsa <strong>Registrar medición</strong>, llena los valores periódicos y visualiza la tendencia automática.</span>
+  </div>
+
+  <!-- DONUT STATS GRID -->
+  <div class="stats-grid">
+    
+    <!-- TOTAL MEDICIONES -->
+    <div class="stat-card">
+      <div class="stat-label">Total mediciones</div>
+      <div class="donut-wrapper">
+        <div class="donut-svg-container">
+          <svg width="54" height="54" viewBox="0 0 42 42">
+            <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#1e293b" stroke-width="4"/>
+            <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#a5b4fc" stroke-width="4" stroke-dasharray="100 0" stroke-dashoffset="25" stroke-linecap="round"/>
+          </svg>
+          <span class="donut-value text-white">{{ stats.total }}</span>
+        </div>
+        <div class="donut-desc">
+          <div class="donut-sub">100% del total</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EN META -->
+    <div class="stat-card">
+      <div class="stat-label">En meta</div>
+      <div class="donut-wrapper">
+        <div class="donut-svg-container">
+          <svg width="54" height="54" viewBox="0 0 42 42">
+            <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#1e293b" stroke-width="4"/>
+            <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#3ecf8e" stroke-width="4" [attr.stroke-dasharray]="getDonutDashArray(stats.enMeta)" stroke-dashoffset="25" stroke-linecap="round"/>
+          </svg>
+          <span class="donut-value text-green">{{ stats.enMeta }}</span>
+        </div>
+        <div class="donut-desc">
+          <div class="donut-sub">{{ getDonutPercentage(stats.enMeta) }}% del total</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EN RIESGO -->
+    <div class="stat-card">
+      <div class="stat-label">En riesgo</div>
+      <div class="donut-wrapper">
+        <div class="donut-svg-container">
+          <svg width="54" height="54" viewBox="0 0 42 42">
+            <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#1e293b" stroke-width="4"/>
+            <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#f0b429" stroke-width="4" [attr.stroke-dasharray]="getDonutDashArray(stats.enRiesgo)" stroke-dashoffset="25" stroke-linecap="round"/>
+          </svg>
+          <span class="donut-value text-yellow">{{ stats.enRiesgo }}</span>
+        </div>
+        <div class="donut-desc">
+          <div class="donut-sub">{{ getDonutPercentage(stats.enRiesgo) }}% del total</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CRÍTICOS -->
+    <div class="stat-card">
+      <div class="stat-label">Críticos</div>
+      <div class="donut-wrapper">
+        <div class="donut-svg-container">
+          <svg width="54" height="54" viewBox="0 0 42 42">
+            <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#1e293b" stroke-width="4"/>
+            <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#f0576b" stroke-width="4" [attr.stroke-dasharray]="getDonutDashArray(stats.criticos)" stroke-dashoffset="25" stroke-linecap="round"/>
+          </svg>
+          <span class="donut-value text-red">{{ stats.criticos }}</span>
+        </div>
+        <div class="donut-desc">
+          <div class="donut-sub">{{ getDonutPercentage(stats.criticos) }}% del total</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TÍTULO DE SECCIÓN Y BOTÓN AGREGAR -->
+  <div class="seccion-header">
+    <h2 class="seccion-titulo">HISTORIAL DE MEDICIONES</h2>
+    <button type="button" class="btn-agregar" (click)="onAgregar()">
+      <span>+ Registrar medición</span>
+    </button>
+  </div>
+
+  <!-- BUSCADOR -->
+  <div class="buscador-container">
+    <input type="text"
+           (keyup)="aplicarFiltro($event)"
+           placeholder="Buscar por indicador, sede, proceso..."
+           class="buscador-input">
+  </div>
+
+  <!-- CONTENEDOR DE TABLA PREMIUM -->
+  <div class="table-container shadow-premium">
+    <table mat-table [dataSource]="dataSource" matSort class="tabla">
+
+      <!-- Indicador -->
+      <ng-container matColumnDef="indicador">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 200px;">Indicador</th>
+        <td mat-cell *matCellDef="let row" class="norma-cell">{{ row.indicador }}</td>
+      </ng-container>
+
+      <!-- Sede -->
+      <ng-container matColumnDef="sede">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 140px;">Sede</th>
+        <td mat-cell *matCellDef="let row">{{ row.sede || '—' }}</td>
+      </ng-container>
+
+      <!-- Proceso -->
+      <ng-container matColumnDef="proceso">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 140px;">Área / Proceso</th>
+        <td mat-cell *matCellDef="let row" class="areas-cell">{{ row.proceso || '—' }}</td>
+      </ng-container>
+
+      <!-- Meta -->
+      <ng-container matColumnDef="meta">
+        <th mat-header-cell *matHeaderCellDef style="width: 110px;">Meta</th>
+        <td mat-cell *matCellDef="let row">{{ row.meta || '—' }}</td>
+      </ng-container>
+
+      <!-- Valor Obtenido -->
+      <ng-container matColumnDef="valor">
+        <th mat-header-cell *matHeaderCellDef style="width: 130px;">Valor Obtenido</th>
+        <td mat-cell *matCellDef="let row" [style.color]="getSemaforoColor(row.semaforo)" style="font-weight: 700; font-size: 0.9rem;">
+          {{ row.valor || '—' }}
+        </td>
+      </ng-container>
+
+      <!-- Período -->
+      <ng-container matColumnDef="periodo">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 130px;">Período</th>
+        <td mat-cell *matCellDef="let row" class="col-tabular">{{ row.periodo || '—' }}</td>
+      </ng-container>
+
+      <!-- Semáforo -->
+      <ng-container matColumnDef="semaforo">
+        <th mat-header-cell *matHeaderCellDef style="width: 130px;">Semáforo</th>
+        <td mat-cell *matCellDef="let row">
+          <span [class]="'badge-estado-' + getSemaforoClass(row.semaforo)">
+            {{ row.semaforo || '—' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Tendencia -->
+      <ng-container matColumnDef="tendencia">
+        <th mat-header-cell *matHeaderCellDef style="width: 120px; text-align: center;">Tendencia</th>
+        <td mat-cell *matCellDef="let row" style="text-align: center;">
+          <svg width="78" height="24" style="vertical-align: middle;">
+            <polyline [attr.points]="getSparklinePoints(row.id)" fill="none" [attr.stroke]="getSemaforoColor(row.semaforo)" stroke-width="1.6" stroke-linejoin="round"/>
+          </svg>
+        </td>
+      </ng-container>
+
+      <!-- Acciones -->
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef style="width: 110px; text-align: center;">Acciones</th>
+        <td mat-cell *matCellDef="let e">
+          <div class="actions-wrapper">
+            <button class="action-btn btn-edit" (click)="onEditar(e)" title="Editar">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button class="action-btn btn-delete" (click)="onEliminar(e)" title="Eliminar">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="fila"></tr>
+
+    </table>
+
+    <!-- Empty state -->
+    <div *ngIf="dataSource.data.length === 0" class="empty-state">
+      <mat-icon class="empty-icon">assignment_late</mat-icon>
+      <p>No se encontraron mediciones registradas.</p>
+    </div>
+  </div>
+
+</div>

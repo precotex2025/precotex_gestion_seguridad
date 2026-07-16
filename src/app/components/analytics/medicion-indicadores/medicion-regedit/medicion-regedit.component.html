@@ -1,0 +1,86 @@
+<div class="dialog-container">
+  
+  <mat-toolbar class="banner-header">
+    <span class="titulo">{{ data.Title }}</span>
+    <span class="flex-spacer"></span>
+    <button type="button" class="btn-close-header" (click)="onCancelar()" title="Cerrar">
+      <mat-icon>close</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <form [formGroup]="formulario" (ngSubmit)="onGuardar()">
+    
+    <mat-dialog-content class="form-content">
+      
+      <!-- Fila 1: Indicador -->
+      <div class="form-section-item">
+        <div class="form-label">Indicador (*):</div>
+        <select formControlName="indicador" class="full-width-input">
+          <option value="" disabled selected>Selecciona un indicador catalogado</option>
+          <option *ngFor="let ind of indicadores" [value]="ind.nombre">{{ ind.codigo }} - {{ ind.nombre }}</option>
+        </select>
+      </div>
+
+      <!-- Fila 2: Sede & Proceso -->
+      <div class="grid-2-cols">
+        <div class="form-section-item">
+          <div class="form-label">Sede (*):</div>
+          <select formControlName="sede" class="full-width-input">
+            <option *ngFor="let opt of sedesOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Proceso (*):</div>
+          <select formControlName="proceso" class="full-width-input">
+            <optgroup *ngFor="let key of getProcesosKeys()" [label]="key">
+              <option *ngFor="let proc of procesosGroups[key]" [value]="proc">{{ proc }}</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+
+      <!-- Fila 3: Meta & Valor Obtenido -->
+      <div class="grid-2-cols">
+        <div class="form-section-item">
+          <div class="form-label">Meta del Indicador (*):</div>
+          <input type="text" formControlName="meta" class="full-width-input" placeholder="Ej. >=85%">
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Valor Obtenido (*):</div>
+          <input type="text" formControlName="valor" class="full-width-input" placeholder="Ej. 87%">
+        </div>
+      </div>
+
+      <!-- Fila 4: Período & Semáforo -->
+      <div class="grid-2-cols">
+        <div class="form-section-item">
+          <div class="form-label">Período (*):</div>
+          <input type="text" formControlName="periodo" class="full-width-input" placeholder="Ej. Junio 2025">
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Semáforo / Estado (*):</div>
+          <select formControlName="semaforo" class="full-width-input">
+            <option *ngFor="let opt of semaforosOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Fila 5: Observaciones -->
+      <div class="form-section-item">
+        <div class="form-label">Observaciones:</div>
+        <textarea formControlName="obs" rows="4" class="full-width-input textarea-desc" placeholder="Comentario u observación opcional..."></textarea>
+      </div>
+
+    </mat-dialog-content>
+
+    <mat-dialog-actions class="dialog-actions-row">
+      <button type="submit" class="BtnGuardarPlan" mat-flat-button>
+        Guardar Medición
+      </button>
+      <button type="button" class="BtnCancelarPlan" mat-flat-button (click)="onCancelar()">
+        Cancelar
+      </button>
+    </mat-dialog-actions>
+    
+  </form>
+</div>

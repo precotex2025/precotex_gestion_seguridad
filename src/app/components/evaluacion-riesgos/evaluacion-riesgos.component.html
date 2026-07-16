@@ -1,184 +1,104 @@
 <app-bread-crumb
   [titulo]="'Riesgos'"
-  [titulo2]="'Evaluación de Riesgos'"
+  [titulo2]="'Matriz de Riesgos'"
 ></app-bread-crumb>
 
 <div class="contenedor">
 
-  <!-- Fila Superior: Botones de Acción y Tarjetas de Métricas -->
-  <div class="top-header-row">
-    <!-- Botones de Acción -->
-    <div class="header-actions">
-      <button type="button" class="btn-action-top" (click)="onAgregar()">
-        <mat-icon>assignment_turned_in</mat-icon> Nueva Evaluación de Riesgos
-      </button>
-      <button type="button" class="btn-action-top" (click)="onDuplicar()">
-        <mat-icon>content_copy</mat-icon> Duplicar Evaluación de Riesgo existente
-      </button>
-      <button type="button" class="btn-action-top" (click)="onOpcionesVisualizacion()">
-        <mat-icon>search</mat-icon> Opciones de Visualización
-      </button>
+  <!-- Tarjetas de Métricas -->
+  <div class="metrics-container-grid">
+    <div class="kpi-card total">
+      <div class="kpi-info">
+        <span class="kpi-label">TOTAL</span>
+        <span class="kpi-value">{{ cantTotal }}</span>
+        <span class="kpi-sub">Registros</span>
+      </div>
+    </div>
+    
+    <div class="kpi-card controlado">
+      <div class="kpi-info">
+        <span class="kpi-label">CONTROLADO</span>
+        <span class="kpi-value text-green">{{ cantControlado }}</span>
+      </div>
     </div>
 
-    <!-- Tarjetas de Métricas -->
-    <div class="metrics-cards">
-      <div class="metric-card">
-        <mat-icon class="metric-icon">event_available</mat-icon>
-        <div class="metric-info">
-          <span class="metric-value">{{ cantPendientes }}</span>
-          <span class="metric-label">Evaluaciones Pendientes</span>
-        </div>
+    <div class="kpi-card en-seguimiento">
+      <div class="kpi-info">
+        <span class="kpi-label">EN SEGUIMIENTO</span>
+        <span class="kpi-value text-amber">{{ cantEnSeguimiento }}</span>
       </div>
-      <div class="metric-card">
-        <mat-icon class="metric-icon">event_busy</mat-icon>
-        <div class="metric-info">
-          <span class="metric-value">{{ cantActivas }}</span>
-          <span class="metric-label">Evaluaciones Activas</span>
-        </div>
+    </div>
+
+    <div class="kpi-card sin-control">
+      <div class="kpi-info">
+        <span class="kpi-label">SIN CONTROL</span>
+        <span class="kpi-value text-red">{{ cantSinControl }}</span>
       </div>
     </div>
   </div>
 
-  <!-- Panel de Opciones de Filtrado (Fila Única Continua) -->
-  <form [formGroup]="formularioBusqueda" (ngSubmit)="onBuscar()" class="filtros-wrapper">
-    <div class="filtros-horizontal-bar">
-      
-      <!-- Estado -->
-      <div class="filtro-campo-horizontal">
-        <label>Estado</label>
-        <div class="select-wrapper">
-          <select formControlName="ctrol_estado">
-            <option value="En Evaluación y Aprobadas">En Evaluación y Aprobadas</option>
-            <option value="Todas">Todas</option>
-            <option value="En Evaluación">En Evaluación</option>
-            <option value="Aprobada">Aprobada</option>
-          </select>
-        </div>
+  <!-- Fila Intermedia: Buscar y Declarar Riesgo -->
+  <div class="mid-actions-row">
+    <div class="mid-title-group">
+      <h3 class="section-title">RIESGOS DECLARADOS</h3>
+      <div class="search-box-wrap">
+        <input type="text" [formControl]="$any(formularioBusqueda.get('termino'))" placeholder="Buscar..." (input)="onBuscar()" class="search-input">
       </div>
-
-      <!-- Organización -->
-      <div class="filtro-campo-horizontal">
-        <label>Organización</label>
-        <div class="select-wrapper">
-          <select formControlName="ctrol_organizacion">
-            <option value="">Selecciona</option>
-            <option value="PRECOTEX">PRECOTEX</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Norma -->
-      <div class="filtro-campo-horizontal">
-        <label>Norma</label>
-        <div class="select-wrapper">
-          <select formControlName="ctrol_norma">
-            <option value="">Selecciona</option>
-            <option value="ISO 14001:2015">ISO 14001:2015</option>
-            <option value="ISO 9001:2015">ISO 9001:2015</option>
-            <option value="ISO 45001:2018">ISO 45001:2018</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Tipo -->
-      <div class="filtro-campo-horizontal">
-        <label>Tipo</label>
-        <div class="select-wrapper">
-          <select formControlName="ctrol_tipo">
-            <option value="">Selecciona</option>
-            <option value="Estructura Libres">Estructura Libres</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Botón Filtrar -->
-      <div class="filtro-btn-container">
-        <button type="submit" class="btn-filtrar-red">Filtrar</button>
-      </div>
-
     </div>
-  </form>
+    <div class="actions-group">
+      <button type="button" class="btn-declarar" (click)="onAgregar()">
+        <span class="plus-sign">+</span> Declarar riesgo
+      </button>
+    </div>
+  </div>
 
-  <!-- Tabla de Evaluaciones segmentada -->
+  <!-- Tabla de Matriz IPERC -->
   <div class="table-container">
     <table class="riesgos-table">
       <thead>
         <tr>
-          <th style="width: 40px; text-align: center;"><mat-icon style="font-size: 14px; width: 14px; height: 14px; color: white;">import_export</mat-icon></th>
-          <th style="width: 40px; text-align: center;"><mat-icon style="font-size: 14px; width: 14px; height: 14px; color: white;">import_export</mat-icon></th>
-          <th style="text-align: center;"><div class="header-with-sort">Restricción Permisos <mat-icon>import_export</mat-icon></div></th>
-          <th style="text-align: center;"><div class="header-with-sort">Log <mat-icon>import_export</mat-icon></div></th>
-          <th style="text-align: center;"><div class="header-with-sort">Evaluar Riesgos <mat-icon>import_export</mat-icon></div></th>
-          <th style="text-align: center;"><div class="header-with-sort">Riesgos Puestos <mat-icon>import_export</mat-icon></div></th>
-          <th style="text-align: center;"><div class="header-with-sort">Plan Control <mat-icon>import_export</mat-icon></div></th>
-          <th><div class="header-with-sort">Denominación <mat-icon>import_export</mat-icon></div></th>
-          <th><div class="header-with-sort">Tipo <mat-icon>import_export</mat-icon></div></th>
-          <th><div class="header-with-sort">Estado <mat-icon>import_export</mat-icon></div></th>
-          <th><div class="header-with-sort">Fecha Aprobación <mat-icon>import_export</mat-icon></div></th>
-          <th><div class="header-with-sort">Organización/es <mat-icon>import_export</mat-icon></div></th>
-          <th><div class="header-with-sort">Sede/s <mat-icon>import_export</mat-icon></div></th>
-          <th><div class="header-with-sort">Norma/s <mat-icon>import_export</mat-icon></div></th>
+          <th style="width: 130px;">CÓDIGO</th>
+          <th style="width: 120px;">TIPO</th>
+          <th>DESCRIPCIÓN</th>
+          <th style="width: 120px;">PROCESO</th>
+          <th style="width: 100px;">NIVEL</th>
+          <th style="width: 140px;">RESPONSABLE</th>
+          <th style="width: 150px;">FECHA DE REVISIÓN</th>
+          <th style="width: 140px; text-align: center;">ESTADO</th>
+          <th style="width: 160px; text-align: center;">ACCIONES</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let item of riesgosFiltrados">
-          <!-- Edit -->
-          <td style="text-align: center; vertical-align: middle;">
-            <button type="button" class="btn-cell-icon edit-btn" (click)="onEdit(item)" title="Editar">
-              <mat-icon>edit</mat-icon>
-            </button>
-          </td>
-          <!-- Delete -->
-          <td style="text-align: center; vertical-align: middle;">
-            <button type="button" class="btn-cell-icon del-btn" (click)="onDelete(item)" title="Eliminar">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </td>
-          <!-- Restricción Permisos -->
-          <td style="text-align: center; vertical-align: middle;">
-            <button type="button" class="btn-cell-icon action-btn-gray" (click)="onRestriccionPermisos(item)" title="Restricción de Permisos">
-              <mat-icon>visibility</mat-icon>
-            </button>
-          </td>
-          <!-- Log -->
-          <td style="text-align: center; vertical-align: middle;">
-            <button type="button" class="btn-cell-icon action-btn-red" (click)="onVerLog(item)" title="Ver Logs">
-              <mat-icon>assignment</mat-icon>
-            </button>
-          </td>
-          <!-- Evaluar Riesgos -->
-          <td style="text-align: center; vertical-align: middle;">
-            <button type="button" class="btn-cell-icon action-btn-red" (click)="onEvaluarRiesgos(item)" title="Evaluar Riesgos">
-              <mat-icon>speed</mat-icon>
-            </button>
-          </td>
-          <!-- Riesgos Puestos -->
-          <td style="text-align: center; vertical-align: middle;">
-            <button type="button" class="btn-cell-icon action-btn-red" (click)="onRiesgosPuestos(item)" title="Riesgos por Puestos">
-              <mat-icon>warning</mat-icon>
-            </button>
-          </td>
-          <!-- Plan Control -->
-          <td style="text-align: center; vertical-align: middle;">
-            <button type="button" class="btn-cell-icon action-btn-gray" (click)="onPlanControl(item)" title="Plan de Control">
-              <mat-icon>build</mat-icon>
-            </button>
-          </td>
-
-          <!-- Texto descriptivo -->
-          <td class="col-denominacion">{{ item.denominacion }}</td>
+          <td style="font-weight: 700; color: #ffffff;">{{ item.codigo }}</td>
           <td>{{ item.tipo }}</td>
-          <td>{{ item.estado }}</td>
-          <td>{{ item.fechaAprobacion || '--' }}</td>
-          <td>{{ item.organizacion }}</td>
-          <td class="col-multiline">{{ item.sede }}</td>
-          <td class="col-multiline">{{ item.norma }}</td>
+          <td>{{ item.descbrief }}</td>
+          <td>{{ item.proceso }}</td>
+          <td>{{ item.nivel }}</td>
+          <td>{{ item.responsable }}</td>
+          <td>{{ formatearFecha(item.revision) }}</td>
+          <td style="text-align: center;">
+            <span class="status-badge" [ngClass]="getEstadoClass(item.estado)">
+              {{ item.estado }}
+            </span>
+          </td>
+          <!-- Acciones -->
+          <td style="text-align: center;">
+            <div class="actions-cell-row">
+              <button type="button" class="btn-action-text edit" (click)="onEdit(item)">
+                Editar
+              </button>
+              <button type="button" class="btn-action-text delete" (click)="onDelete(item)">
+                Eliminar
+              </button>
+            </div>
+          </td>
         </tr>
 
         <!-- Mensaje no registros -->
         <tr *ngIf="riesgosFiltrados.length === 0">
-          <td colspan="14" class="no-records-cell">
-            No se han encontrado Evaluaciones de Riesgo para los filtros aplicados.
+          <td colspan="9" class="no-records-cell">
+            No se han encontrado Riesgos Declarados para los criterios de búsqueda.
           </td>
         </tr>
       </tbody>

@@ -1,5 +1,5 @@
 /* ===================================================================
-   No Conformidades Modal — CSS Styles
+   Analytics Regedit Modal — CSS Styles
    =================================================================== */
 
 .dialog-container {
@@ -52,15 +52,30 @@
   overflow-y: auto;
 }
 
+.section-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #a5b4fc;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 20px 0 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 6px;
+}
+
+.section-title:first-of-type {
+  margin-top: 0;
+}
+
 .grid-2-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .form-section-item {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .form-label {
@@ -69,7 +84,7 @@
   color: rgba(148, 163, 184, 0.6);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .full-width-input {
@@ -103,11 +118,6 @@ select.full-width-input optgroup {
 select.full-width-input option {
   background: #1e293b;
   color: #ffffff;
-}
-
-.textarea-desc {
-  resize: vertical;
-  min-height: 80px;
 }
 
 .dialog-actions-row {

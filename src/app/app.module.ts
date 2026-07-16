@@ -96,6 +96,13 @@ import { EvaluacionRiesgosComponent } from './components/evaluacion-riesgos/eval
 import { EvaluacionRiesgosRegeditComponent } from './components/evaluacion-riesgos/evaluacion-riesgos-regedit/evaluacion-riesgos-regedit.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { PlaceholderComponent } from './components/placeholder/placeholder.component';
+import { AuditoriasComponent } from './components/auditorias/auditorias.component';
+import { AuditoriasRegeditComponent } from './components/auditorias/auditorias-regedit/auditorias-regedit.component';
+import { ProgramaAnualComponent } from './components/auditorias/programa-anual/programa-anual.component';
+import { AnalyticsRegeditComponent } from './components/analytics/analytics-regedit/analytics-regedit.component';
+import { MedicionIndicadoresComponent } from './components/analytics/medicion-indicadores/medicion-indicadores.component';
+import { MedicionRegeditComponent } from './components/analytics/medicion-indicadores/medicion-regedit/medicion-regedit.component';
+import { MedicionObjetivosRegeditComponent } from './components/planificacion-objetivos/medicion-objetivos-regedit/medicion-objetivos-regedit.component';
 
 @NgModule({
   declarations: [
@@ -151,7 +158,14 @@ import { PlaceholderComponent } from './components/placeholder/placeholder.compo
     EvaluacionRiesgosComponent,
     EvaluacionRiesgosRegeditComponent,
     DashboardComponent,
-    PlaceholderComponent
+    PlaceholderComponent,
+    AuditoriasComponent,
+    AuditoriasRegeditComponent,
+    ProgramaAnualComponent,
+    AnalyticsRegeditComponent,
+    MedicionIndicadoresComponent,
+    MedicionRegeditComponent,
+    MedicionObjetivosRegeditComponent
   ],
   imports: [
     BrowserModule     ,

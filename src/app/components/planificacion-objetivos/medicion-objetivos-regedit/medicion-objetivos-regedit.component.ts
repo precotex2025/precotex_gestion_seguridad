@@ -10,18 +10,18 @@ interface data {
 }
 
 @Component({
-  selector: 'app-planificacion-objetivos-regedit',
+  selector: 'app-medicion-objetivos-regedit',
   standalone: false,
-  templateUrl: './planificacion-objetivos-regedit.component.html',
-  styleUrls: ['./planificacion-objetivos-regedit.component.css']
+  templateUrl: './medicion-objetivos-regedit.component.html',
+  styleUrls: ['./medicion-objetivos-regedit.component.css']
 })
-export class PlanificacionObjetivosRegeditComponent implements OnInit {
+export class MedicionObjetivosRegeditComponent implements OnInit {
 
   formulario!: FormGroup;
+  objetivos: any[] = [];
 
-  normasOptions = ['ISO 9001:2015', 'ISO 45001:2018', 'ISO 14001:2015'];
   frecuenciasOptions = ['Mensual', 'Trimestral', 'Semestral'];
-  estadosOptions = ['Planificado', 'Pendiente', 'Cumplido'];
+  semaforosOptions = ['En meta', 'En riesgo', 'Crítico'];
 
   procesosGroups = {
     'Soporte (SOP)': ['Sistemas', 'Mantenimiento General', 'Seguridad Patrimonial', 'SSOMA'],
@@ -43,25 +43,45 @@ export class PlanificacionObjetivosRegeditComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private toastr: ToastrService,
-    @Inject(MAT_DIALOG_DATA) public data: data,
-    public dialogRef: MatDialogRef<PlanificacionObjetivosRegeditComponent>
+    public dialogRef: MatDialogRef<MedicionObjetivosRegeditComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: data
   ) {}
 
   ngOnInit(): void {
+    this.cargarObjetivos();
+
     this.formulario = this.fb.group({
       objetivo: ['', Validators.required],
       proceso: ['SSOMA', Validators.required],
-      norma: ['ISO 45001:2018', Validators.required],
-      indicador: ['', Validators.required],
-      base: [''],
-      meta: ['', Validators.required],
       frecuencia: ['Mensual', Validators.required],
-      estado: ['Planificado', Validators.required],
-      desc: ['']
+      meta: ['', Validators.required],
+      valor: ['', Validators.required],
+      periodo: ['', Validators.required],
+      semaforo: ['En meta', Validators.required],
+      obs: ['']
     });
 
     if (this.data.Accion === 'U' && this.data.Datos) {
       this.formulario.patchValue(this.data.Datos);
+    }
+
+    // Auto-patch metadata fields when selected objective changes
+    this.formulario.get('objetivo')?.valueChanges.subscribe(val => {
+      const selected = this.objetivos.find(o => o.objetivo === val);
+      if (selected) {
+        this.formulario.patchValue({
+          proceso: selected.proceso,
+          frecuencia: selected.frecuencia,
+          meta: selected.meta
+        });
+      }
+    });
+  }
+
+  cargarObjetivos(): void {
+    const local = localStorage.getItem('precotex_objetivos');
+    if (local) {
+      this.objetivos = JSON.parse(local);
     }
   }
 
@@ -69,15 +89,15 @@ export class PlanificacionObjetivosRegeditComponent implements OnInit {
     return Object.keys(this.procesosGroups) as Array<keyof typeof this.procesosGroups>;
   }
 
-  onSave() {
+  onGuardar(): void {
     if (this.formulario.invalid) {
-      this.toastr.warning('Por favor complete todos los campos obligatorios (*).', 'Validación');
+      this.toastr.warning('Por favor complete los campos obligatorios (*)', 'Formulario Incompleto');
       return;
     }
     this.dialogRef.close(this.formulario.value);
   }
 
-  onClose() {
+  onCancelar(): void {
     this.dialogRef.close(null);
   }
 }

@@ -1,263 +1,127 @@
-<div class="contenedor">
+<div class="contenedor sn-animate-in">
 
-  <!-- Header Buttons Row (Top) -->
-  <div class="top-buttons-row">
-    <button type="button" class="btn-tab" [class.active]="currentTab === 'consultas'" (click)="setTab('consultas')">
-      <mat-icon>search</mat-icon>
-      Consultas Puntuales
-    </button>
-    <button type="button" class="btn-tab" [class.active]="currentTab === 'monitorizaciones'" (click)="setTab('monitorizaciones')">
-      <mat-icon>visibility</mat-icon>
-      Monitorizaciones
-    </button>
-    <button type="button" class="btn-action" (click)="onNuevaConsulta()">
-      <mat-icon>add</mat-icon>
-      Nueva Consulta Puntual
-    </button>
-    <button type="button" class="btn-action" (click)="onExportarListado()">
-      <mat-icon>description</mat-icon>
-      Exportar Listado
+  <!-- BANNER NOTIFICACIÓN -->
+  <div class="banner-aviso">
+    <span>✦ Registro funcional. Pulsa <strong>Nuevo indicador</strong>, llena la especificación técnica y guarda. Persiste aunque recargues.</span>
+  </div>
+
+  <!-- ESTADÍSTICAS CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card border-left-purple">
+      <div class="stat-label">TOTAL</div>
+      <div class="stat-value text-white">{{ stats.total }}</div>
+      <div class="stat-desc">Indicadores registrados</div>
+    </div>
+    <div class="stat-card border-left-green">
+      <div class="stat-label">ACTIVOS</div>
+      <div class="stat-value text-green">{{ stats.activos }}</div>
+      <div class="stat-desc">En medición activa</div>
+    </div>
+    <div class="stat-card border-left-red">
+      <div class="stat-label">INACTIVOS</div>
+      <div class="stat-value text-red">{{ stats.inactivos }}</div>
+      <div class="stat-desc">Fuera de medición</div>
+    </div>
+  </div>
+
+  <!-- TÍTULO DE SECCIÓN Y BOTÓN AGREGAR -->
+  <div class="seccion-header">
+    <h2 class="seccion-titulo">INDICADORES REGISTRADOS</h2>
+    <button type="button" class="btn-agregar" (click)="onAgregar()">
+      <span>+ Nuevo indicador</span>
     </button>
   </div>
 
-  <!-- Search Group: Consultas Puntuales -->
-  <fieldset class="search-fieldset" *ngIf="currentTab === 'consultas'">
-    <legend class="search-legend">Filtros de Búsqueda</legend>
-    <div class="search-grid">
-      
-      <!-- Fila 1: Nombre Usuario, Fecha/Hora desde, Hasta -->
-      <div class="search-row">
-        <div class="search-field flex-2">
-          <label for="nombreUsuario">Nombre Usuario</label>
-          <input id="nombreUsuario" type="text" [(ngModel)]="filtroUsuario" placeholder="">
-        </div>
-        <div class="search-field flex-1">
-          <label for="fechaDesde">Fecha / Hora desde</label>
-          <input id="fechaDesde" type="date" [(ngModel)]="filtroFechaDesde">
-        </div>
-        <div class="search-field flex-1">
-          <label for="fechaHasta">Hasta</label>
-          <input id="fechaHasta" type="date" [(ngModel)]="filtroFechaHasta">
-        </div>
-      </div>
-
-      <!-- Fila 2: Resultado de la Revisión / Alerta, Selecciona Usuario, Filtrar -->
-      <div class="search-row align-end">
-        <div class="search-field flex-1">
-          <label for="resultado">Resultado de la Revisión / Alerta</label>
-          <select id="resultado" [(ngModel)]="filtroResultado">
-            <option *ngFor="let res of resultadosOptions" [value]="res">{{ res }}</option>
-          </select>
-        </div>
-        <div class="search-field flex-1">
-          <label for="seleccionaUsuario">Selecciona Usuario</label>
-          <select id="seleccionaUsuario" [(ngModel)]="filtroSeleccionaUsuario">
-            <option *ngFor="let usr of usuariosOptions" [value]="usr">{{ usr }}</option>
-          </select>
-        </div>
-        <div class="search-button-container">
-          <button type="button" class="btn-filtrar" (click)="onFiltrar()">Filtrar</button>
-        </div>
-      </div>
-
-    </div>
-  </fieldset>
-
-  <!-- Search Group: Monitorizaciones -->
-  <fieldset class="search-fieldset" *ngIf="currentTab === 'monitorizaciones'">
-    <legend class="search-legend">Filtros de Búsqueda</legend>
-    <div class="search-row align-end" style="justify-content: space-between; width: 100%;">
-      <div class="search-field" style="flex: 2; min-width: 180px;">
-        <label for="terminoBuscado">Término Buscado</label>
-        <input id="terminoBuscado" type="text" [(ngModel)]="filtroTermino" placeholder="">
-      </div>
-      <div class="search-field" style="flex: 1.5; min-width: 140px; margin-left: 10px;">
-        <label for="seleccionaUsuarioMon">Selecciona Usuario</label>
-        <select id="seleccionaUsuarioMon" [(ngModel)]="filtroSeleccionaUsuario">
-          <option *ngFor="let usr of usuariosOptions" [value]="usr">{{ usr }}</option>
-        </select>
-      </div>
-      <div class="search-field" style="flex: 1.5; min-width: 140px; margin-left: 10px;">
-        <label for="fechaInicio">Fecha / Hora Inicio</label>
-        <input id="fechaInicio" type="date" [(ngModel)]="filtroFechaInicio">
-      </div>
-      <div class="search-field" style="flex: 2; min-width: 180px; margin-left: 10px;">
-        <label for="resultadoMon">Resultado de la Monitorización</label>
-        <select id="resultadoMon" [(ngModel)]="filtroResultadoMonitorizacion">
-          <option *ngFor="let res of resultadosOptions" [value]="res">{{ res }}</option>
-        </select>
-      </div>
-      <div class="search-button-container" style="margin-left: 10px;">
-        <button type="button" class="btn-filtrar" (click)="onFiltrar()">Filtrar</button>
-      </div>
-    </div>
-  </fieldset>
-
-  <!-- KPI Cards Row -->
-  <div class="cards-container">
-    
-    <!-- Card 1 -->
-    <div class="status-card card-info">
-      <span class="card-number">{{ kpiConsultasActivas }}</span>
-      <span class="card-label">Consultas Activas</span>
-    </div>
-
-    <!-- Card 2 -->
-    <div class="status-card card-success">
-      <span class="card-number">{{ kpiMonitorizacionesActivas }}</span>
-      <span class="card-label">Monitorizaciones Activas</span>
-    </div>
-
-    <!-- Card 3 -->
-    <div class="status-card card-warning">
-      <span class="card-number">{{ kpiConsultasPositivasPendientes }}</span>
-      <span class="card-label">Consultas Positivas Pendientes Verificación</span>
-    </div>
-
-    <!-- Card 4 -->
-    <div class="status-card card-danger">
-      <span class="card-number">{{ kpiMonitorizacionesPositivas }}</span>
-      <span class="card-label">Monitorizaciones Positivas Pendientes Verificación</span>
-    </div>
-
+  <!-- BUSCADOR -->
+  <div class="buscador-container">
+    <input type="text"
+           (keyup)="aplicarFiltro($event)"
+           placeholder="Buscar por código, nombre, tipo, proceso..."
+           class="buscador-input">
   </div>
 
-  <!-- Table -->
-  <div class="table-container">
-    <table mat-table [dataSource]="dataSource" matSort class="tabla-wrapper">
+  <!-- CONTENEDOR DE TABLA PREMIUM -->
+  <div class="table-container shadow-premium">
+    <table mat-table [dataSource]="dataSource" matSort class="tabla">
 
-      <!-- Gestionar Resultados Monitorizacion -->
-      <ng-container matColumnDef="gestionarResultados">
-        <th mat-header-cell *matHeaderCellDef style="text-align: center; width: 140px;">Gestionar<br>Resultados<br>Monitorizacion</th>
-        <td mat-cell *matCellDef="let row" style="text-align: center;">
-          <button type="button" class="btn-action-icon gestionar" (click)="onGestionarResultados(row)" title="Gestionar Resultados Monitorizacion">
-            <mat-icon>settings</mat-icon>
-          </button>
+      <!-- Código -->
+      <ng-container matColumnDef="codigo">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px;">Código</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="code-badge">{{ row.codigo }}</span>
         </td>
       </ng-container>
 
-      <!-- Histórico Consultas -->
-      <ng-container matColumnDef="historicoConsultas">
-        <th mat-header-cell *matHeaderCellDef style="text-align: center; width: 100px;">Histórico<br>Consultas</th>
-        <td mat-cell *matCellDef="let row" style="text-align: center;">
-          <button type="button" class="btn-action-icon historico" (click)="onHistoricoConsultas(row)" title="Histórico Consultas">
-            <mat-icon>history</mat-icon>
-          </button>
-        </td>
+      <!-- Nombre -->
+      <ng-container matColumnDef="nombre">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 200px;">Nombre del Indicador</th>
+        <td mat-cell *matCellDef="let row" class="norma-cell">{{ row.nombre }}</td>
       </ng-container>
 
-      <!-- Ver Revisar -->
-      <ng-container matColumnDef="verRevisar">
-        <th mat-header-cell *matHeaderCellDef style="text-align: center; width: 80px;">Ver<br>Revisar</th>
-        <td mat-cell *matCellDef="let row" style="text-align: center;">
-          <button type="button" class="btn-action-icon ver" (click)="onVerRevisar(row)" title="Ver / Revisar">
-            <mat-icon>visibility</mat-icon>
-          </button>
-        </td>
-      </ng-container>
-
-      <!-- Fecha/Hora -->
-      <ng-container matColumnDef="fechaHora">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha/Hora</th>
-        <td mat-cell *matCellDef="let row" class="col-tabular">{{ row.fechaHora }}</td>
-      </ng-container>
-
-      <!-- Tipo Consulta -->
-      <ng-container matColumnDef="tipoConsulta">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo<br>Consulta</th>
+      <!-- Tipo -->
+      <ng-container matColumnDef="tipo">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 120px;">Tipo</th>
         <td mat-cell *matCellDef="let row">{{ row.tipo }}</td>
       </ng-container>
 
-      <!-- Resultado Revisión/Alerta -->
-      <ng-container matColumnDef="resultadoRevision">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Resultado Revisión/Alerta</th>
+      <!-- Proceso -->
+      <ng-container matColumnDef="proceso">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 140px;">Proceso</th>
+        <td mat-cell *matCellDef="let row" class="areas-cell">{{ row.proceso }}</td>
+      </ng-container>
+
+      <!-- Norma ISO -->
+      <ng-container matColumnDef="norma">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px;">Norma</th>
+        <td mat-cell *matCellDef="let row" class="areas-cell">{{ row.norma || '-' }}</td>
+      </ng-container>
+
+      <!-- Frecuencia -->
+      <ng-container matColumnDef="frecuencia">
+        <th mat-header-cell *matHeaderCellDef style="width: 120px;">Frecuencia</th>
+        <td mat-cell *matCellDef="let row">{{ row.frecuencia }}</td>
+      </ng-container>
+
+      <!-- Meta -->
+      <ng-container matColumnDef="meta">
+        <th mat-header-cell *matHeaderCellDef style="width: 120px;">Meta</th>
+        <td mat-cell *matCellDef="let row" style="font-weight: 600; color: #ffffff;">{{ row.meta }}</td>
+      </ng-container>
+
+      <!-- Estado -->
+      <ng-container matColumnDef="estado">
+        <th mat-header-cell *matHeaderCellDef style="width: 120px;">Estado</th>
         <td mat-cell *matCellDef="let row">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span [class]="row.resultado === 'Positivo' ? 'badge-positivo' : 'badge-negativo'" class="estado-badge">
-              {{ row.resultado }}
-            </span>
-            <span class="alerta-texto" *ngIf="row.alerta && row.alerta !== 'Sin Alertas'" [style.color]="row.resultado === 'Positivo' ? '#c00000' : '#475569'" style="font-size: 12px; font-weight: 500;">
-              {{ row.alerta }}
-            </span>
-          </div>
+          <span [class]="'badge-estado-' + getEstadoClass(row.estado)">
+            {{ row.estado || 'Inactivo' }}
+          </span>
         </td>
       </ng-container>
 
-      <!-- Resultado Validación -->
-      <ng-container matColumnDef="resultadoValidacion">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Resultado Validación</th>
-        <td mat-cell *matCellDef="let row">
-          <div class="validacion-container" style="display: flex; align-items: center; gap: 6px;">
-            <mat-icon [style.color]="row.verificado ? '#2e7d32' : '#c00000'">
-              {{ row.verificado ? 'check_circle' : 'pending' }}
-            </mat-icon>
-            <span [style.color]="row.verificado ? '#2e7d32' : '#c00000'" style="font-weight: 500; font-size: 12px;">
-              {{ row.verificado ? 'Verificado' : 'Pendiente' }}
-            </span>
-            <button type="button" class="btn-verify" style="margin-left: 8px;" *ngIf="!row.verificado" (click)="onVerificar(row)">
-              Verificar
+      <!-- Acciones -->
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef style="width: 110px; text-align: center;">Acciones</th>
+        <td mat-cell *matCellDef="let e">
+          <div class="actions-wrapper">
+            <button class="action-btn btn-edit" (click)="onEditar(e)" title="Editar">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button class="action-btn btn-delete" (click)="onEliminar(e)" title="Eliminar">
+              <mat-icon>delete</mat-icon>
             </button>
           </div>
         </td>
       </ng-container>
 
-      <!-- Eliminar -->
-      <ng-container matColumnDef="eliminar">
-        <th mat-header-cell *matHeaderCellDef style="text-align: center; width: 80px;">Eliminar</th>
-        <td mat-cell *matCellDef="let row" style="text-align: center;">
-          <button type="button" class="btn-action-icon eliminar" (click)="onEliminar(row)" title="Eliminar">
-            <mat-icon>delete</mat-icon>
-          </button>
-        </td>
-      </ng-container>
-
-      <!-- Monitorización -->
-      <ng-container matColumnDef="monitorizacion">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Monitorización</th>
-        <td mat-cell *matCellDef="let row">
-          <span [style.color]="row.resultado === 'Positivo' ? '#c00000' : '#475569'" style="font-weight: 500;">
-            {{ row.alerta }}
-          </span>
-        </td>
-      </ng-container>
-
-      <!-- Estado Monitorización -->
-      <ng-container matColumnDef="estadoMonitorizacion">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado Monitorización</th>
-        <td mat-cell *matCellDef="let row">
-          <span [class]="row.resultado === 'Positivo' ? 'badge-positivo' : 'badge-negativo'" class="estado-badge">
-            {{ row.resultado }}
-          </span>
-        </td>
-      </ng-container>
-
-      <!-- Fecha -->
-      <ng-container matColumnDef="fecha">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha</th>
-        <td mat-cell *matCellDef="let row" class="col-tabular">{{ row.fechaHora }}</td>
-      </ng-container>
-
-      <!-- Usuario Buscado -->
-      <ng-container matColumnDef="usuarioBuscado">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Usuario Buscado</th>
-        <td mat-cell *matCellDef="let row">{{ row.usuario }}</td>
-      </ng-container>
-
-      <!-- Persona Buscada -->
-      <ng-container matColumnDef="personaBuscada">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Persona Buscada</th>
-        <td mat-cell *matCellDef="let row" style="font-weight: 500;">{{ row.personaBuscada }}</td>
-      </ng-container>
-
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="fila"></tr>
 
     </table>
 
     <!-- Empty state -->
     <div *ngIf="dataSource.data.length === 0" class="empty-state">
-      <mat-icon>assignment_late</mat-icon>
-      <p>No se encontraron registros de analítica para esta selección.</p>
+      <mat-icon class="empty-icon">assignment_late</mat-icon>
+      <p>No se encontraron indicadores registrados.</p>
     </div>
   </div>
 

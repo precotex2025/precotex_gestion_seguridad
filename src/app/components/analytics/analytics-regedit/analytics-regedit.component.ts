@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 
 interface data {
@@ -10,18 +10,24 @@ interface data {
 }
 
 @Component({
-  selector: 'app-planificacion-objetivos-regedit',
+  selector: 'app-analytics-regedit',
   standalone: false,
-  templateUrl: './planificacion-objetivos-regedit.component.html',
-  styleUrls: ['./planificacion-objetivos-regedit.component.css']
+  templateUrl: './analytics-regedit.component.html',
+  styleUrls: ['./analytics-regedit.component.css']
 })
-export class PlanificacionObjetivosRegeditComponent implements OnInit {
+export class AnalyticsRegeditComponent implements OnInit {
 
   formulario!: FormGroup;
 
+  tiposOptions = ['Eficacia', 'Eficiencia', 'Efectividad'];
   normasOptions = ['ISO 9001:2015', 'ISO 45001:2018', 'ISO 14001:2015'];
-  frecuenciasOptions = ['Mensual', 'Trimestral', 'Semestral'];
-  estadosOptions = ['Planificado', 'Pendiente', 'Cumplido'];
+  estadosOptions = ['Activo', 'Inactivo'];
+  sedesOptions = ['Sede Central — Lima', 'Sede Ate', 'Sede San Juan', 'Sede Chorrillos', 'Todas'];
+  frecuenciasOptions = ['Diario', 'Semanal', 'Mensual', 'Trimestral'];
+  fuentesOptions = ['Reporte de producción', 'Reporte de calidad', 'Reporte SSOMA', 'Sistema ERP', 'Registro manual'];
+  unidadesOptions = ['Porcentaje (%)', 'Número', 'Días', 'kWh', 'Soles'];
+  tipometasOptions = ['Mayor o igual (≥)', 'Menor o igual (≤)', 'Igual (=)'];
+  sentidosOptions = ['↑ Sube es bueno', '↓ Baja es bueno'];
 
   procesosGroups = {
     'Soporte (SOP)': ['Sistemas', 'Mantenimiento General', 'Seguridad Patrimonial', 'SSOMA'],
@@ -43,21 +49,32 @@ export class PlanificacionObjetivosRegeditComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private toastr: ToastrService,
-    @Inject(MAT_DIALOG_DATA) public data: data,
-    public dialogRef: MatDialogRef<PlanificacionObjetivosRegeditComponent>
+    public dialogRef: MatDialogRef<AnalyticsRegeditComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: data
   ) {}
 
   ngOnInit(): void {
     this.formulario = this.fb.group({
-      objetivo: ['', Validators.required],
+      codigo: ['', Validators.required],
+      nombre: ['', Validators.required],
+      tipo: ['Eficacia', Validators.required],
+      norma: ['ISO 9001:2015', Validators.required],
+      responsable: ['', Validators.required],
+      respmed: ['', Validators.required],
+      estado: ['Activo', Validators.required],
+      sede: ['Todas', Validators.required],
       proceso: ['SSOMA', Validators.required],
-      norma: ['ISO 45001:2018', Validators.required],
-      indicador: ['', Validators.required],
+      areasacc: [''],
+      inicio: ['', Validators.required],
+      fin: ['', Validators.required],
+      frecuencia: ['Mensual', Validators.required],
+      fuente: ['Reporte de producción', Validators.required],
+      formula: ['', Validators.required],
+      unidad: ['Porcentaje (%)', Validators.required],
       base: [''],
       meta: ['', Validators.required],
-      frecuencia: ['Mensual', Validators.required],
-      estado: ['Planificado', Validators.required],
-      desc: ['']
+      tipometa: ['Mayor o igual (≥)', Validators.required],
+      sentido: ['↑ Sube es bueno', Validators.required]
     });
 
     if (this.data.Accion === 'U' && this.data.Datos) {
@@ -69,15 +86,15 @@ export class PlanificacionObjetivosRegeditComponent implements OnInit {
     return Object.keys(this.procesosGroups) as Array<keyof typeof this.procesosGroups>;
   }
 
-  onSave() {
+  onGuardar(): void {
     if (this.formulario.invalid) {
-      this.toastr.warning('Por favor complete todos los campos obligatorios (*).', 'Validación');
+      this.toastr.warning('Por favor complete los campos obligatorios (*)', 'Formulario Incompleto');
       return;
     }
     this.dialogRef.close(this.formulario.value);
   }
 
-  onClose() {
+  onCancelar(): void {
     this.dialogRef.close(null);
   }
 }

@@ -1,0 +1,157 @@
+/* ===================================================================
+   Programa Anual — CSS Styles
+   =================================================================== */
+
+.contenedor {
+  padding: 20px 24px 24px 24px;
+  max-width: 1440px;
+  margin: 0 auto;
+  background-color: #090d16;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* --- Banner Aviso --- */
+.banner-aviso {
+  background: #0f172a;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 8px;
+  padding: 14px 20px;
+  margin: 16px 0 24px 0;
+  color: #a5b4fc;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.banner-h {
+  font-weight: 700;
+  color: #f0576b;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+
+.banner-aviso strong {
+  color: #ffffff;
+}
+
+/* --- Legend --- */
+.legend-container {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: #94a3b8;
+  font-family: 'Inter', sans-serif;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.dot-realizada { background-color: #3ecf8e; }
+.dot-programada { background-color: #f0b429; }
+.dot-no-realizada { background-color: #f0576b; }
+
+/* --- Table Styles --- */
+.table-container {
+  background: #0b0f19;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  overflow-x: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.prog-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 820px;
+  font-size: 11px;
+  font-family: 'Inter', sans-serif;
+}
+
+.prog-table th, .prog-table td {
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 8px 6px;
+  text-align: center;
+  color: #94a3b8;
+}
+
+.prog-table th {
+  background: #1e293b;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.th-audit {
+  text-align: left !important;
+  width: 250px;
+}
+
+.td-audit {
+  text-align: left !important;
+  white-space: nowrap;
+  color: #ffffff;
+  padding: 8px 12px !important;
+}
+
+.audit-code {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-weight: 600;
+  color: #a5b4fc;
+}
+
+.audit-details {
+  display: block;
+  color: rgba(148, 163, 184, 0.5);
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+.td-month {
+  width: 50px;
+}
+
+.mk {
+  height: 9px;
+  border-radius: 6px;
+  width: 100%;
+}
+
+.mk-realizada { background-color: #3ecf8e; }
+.mk-programada { background-color: #f0b429; }
+.mk-no-realizada { background-color: #f0576b; }
+
+.td-empty {
+  text-align: center;
+  color: rgba(148, 163, 184, 0.4);
+  padding: 40px !important;
+}
+
+.tfoot-row {
+  background-color: rgba(30, 41, 59, 0.5);
+}
+
+.td-foot-label {
+  text-align: left !important;
+  color: rgba(148, 163, 184, 0.6) !important;
+  font-weight: 600;
+  padding-left: 12px !important;
+}
+
+.has-count {
+  color: #ffffff !important;
+  font-weight: 700;
+}

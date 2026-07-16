@@ -1,34 +1,30 @@
 /* ===================================================================
-   No Conformidades Modal — CSS Styles
+   Medicion Objetivos Regedit Modal — CSS Styles
    =================================================================== */
 
 .dialog-container {
+  width: 100%;
+  max-width: 100%;
   background-color: #0b0f19;
-  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 12px;
-  color: #cbd5e1;
-  font-family: 'Inter', sans-serif;
   overflow: hidden;
 }
 
-.banner-header {
-  background-color: #1e293b !important;
-  color: #ffffff;
-  padding: 12px 24px;
-  height: 56px;
+
+.dialog-header {
+  padding: 20px 24px 10px 24px;
   display: flex;
+  justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.titulo {
+.dialog-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.15rem;
   font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.flex-spacer {
-  flex: 1 1 auto;
+  color: #ffffff;
+  margin: 0;
 }
 
 .btn-close-header {
@@ -52,15 +48,23 @@
   overflow-y: auto;
 }
 
-.grid-2-cols {
+/* Grids based on mockup */
+.grid-4-cols {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2.5fr 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.grid-3-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 16px;
 }
 
 .form-section-item {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .form-label {
@@ -69,7 +73,7 @@
   color: rgba(148, 163, 184, 0.6);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .full-width-input {
@@ -121,18 +125,19 @@ select.full-width-input option {
 }
 
 .BtnGuardarPlan {
-  background: #3ecf8e !important;
-  color: #04210f !important;
+  background: #7c6cf0 !important;
+  color: #ffffff !important;
   font-weight: 700 !important;
   font-size: 0.8rem !important;
   padding: 8px 18px !important;
   border-radius: 6px !important;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(124, 108, 240, 0.3);
 }
 
 .BtnGuardarPlan:hover {
-  background: #2ebd7e !important;
+  background: #6352e0 !important;
   transform: translateY(-1px);
 }
 
@@ -151,4 +156,14 @@ select.full-width-input option {
 .BtnCancelarPlan:hover {
   background: rgba(255, 255, 255, 0.02) !important;
   color: #ffffff !important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 900px) {
+  .grid-4-cols {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .grid-3-cols {
+    grid-template-columns: 1fr;
+  }
 }

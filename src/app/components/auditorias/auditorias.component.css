@@ -1,9 +1,9 @@
 /* ===================================================================
-   Analytics Component — Premium Dashboard Styles
+   Auditorias Component — Premium Dashboard Styles
    =================================================================== */
 
 .contenedor {
-  padding: 20px 24px 24px 24px;
+  padding: 0;
   max-width: 1440px;
   margin: 0 auto;
   background-color: #090d16;
@@ -49,6 +49,7 @@
 
 .border-left-purple { border-left-color: #7c6cf0; }
 .border-left-green  { border-left-color: #3ecf8e; }
+.border-left-amber  { border-left-color: #f0b429; }
 .border-left-red    { border-left-color: #f0576b; }
 
 .stat-label {
@@ -77,6 +78,7 @@
 
 .text-white  { color: #ffffff; }
 .text-green  { color: #3ecf8e; }
+.text-yellow { color: #f0b429; }
 .text-red    { color: #f0576b; }
 
 /* --- Section Header & Add Button --- */
@@ -233,8 +235,35 @@
   font-size: 0.78rem !important;
 }
 
+/* --- Badges Tipo --- */
+.badge-tipo-interna {
+  background-color: rgba(124, 108, 240, 0.15);
+  color: #a99bff;
+  border: 1px solid rgba(124, 108, 240, 0.25);
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.badge-tipo-externa {
+  background-color: rgba(91, 141, 239, 0.15);
+  color: #7eb8ff;
+  border: 1px solid rgba(91, 141, 239, 0.25);
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
 /* --- Badges Estado --- */
-.badge-estado-activo {
+.badge-estado-realizada {
   background-color: rgba(62, 207, 142, 0.12);
   color: #3ecf8e;
   border: 1px solid rgba(62, 207, 142, 0.2);
@@ -247,7 +276,20 @@
   white-space: nowrap;
 }
 
-.badge-estado-inactivo {
+.badge-estado-programada {
+  background-color: rgba(240, 180, 41, 0.12);
+  color: #f0b429;
+  border: 1px solid rgba(240, 180, 41, 0.2);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.badge-estado-no-realizada {
   background-color: rgba(240, 87, 107, 0.12);
   color: #f0576b;
   border: 1px solid rgba(240, 87, 107, 0.2);
@@ -303,30 +345,6 @@
   font-size: 18px !important;
   width: 18px !important;
   height: 18px !important;
-}
-
-/* --- Empty State --- */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 40px;
-  color: rgba(148, 163, 184, 0.4);
-  text-align: center;
-}
-
-.empty-icon {
-  font-size: 48px !important;
-  width: 48px !important;
-  height: 48px !important;
-  margin-bottom: 16px;
-  color: rgba(148, 163, 184, 0.2) !important;
-}
-
-.empty-state p {
-  font-size: 0.88rem;
-  margin: 0;
 }
 
 /* --- Responsive Adjustments --- */

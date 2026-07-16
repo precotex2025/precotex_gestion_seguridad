@@ -1,23 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
-import { NgxSpinnerService } from 'ngx-spinner';
-import { ToastrService } from 'ngx-toastr';
 import { MatDialog } from '@angular/material/dialog';
+import Swal from 'sweetalert2';
+import { ToastrService } from 'ngx-toastr';
 import { PlanificarFormacionModalComponent } from './planificar-formacion-modal/planificar-formacion-modal.component';
 
-export interface AccionCorrectiva {
-  codigo: string;
-  textoLibre: string;
-  valoracionEficacia: string;
-  ano: string;
-  metodologia: string;
-  tipo: string;
-  estado: string;
-  sede: string;
-  personaResponsable: string;
-  puestoResponsable: string;
-  fechaPlanificada: string;
-}
+const STORAGE_KEY = 'precotex_noconf';
 
 @Component({
   selector: 'app-acciones-correctivas',
@@ -27,213 +15,188 @@ export interface AccionCorrectiva {
 })
 export class AccionesCorrectivasComponent implements OnInit {
 
-  dataSource = new MatTableDataSource<AccionCorrectiva>();
+  stats = {
+    total: 0,
+    completadas: 0,
+    enEjecucion: 0,
+    pendientes: 0,
+    vencidas: 0
+  };
+
   displayedColumns: string[] = [
-    'acciones',
-    'codigo',
-    'textoLibre',
-    'ano',
+    'nc',
     'tipo',
-    'metodologia',
+    'accion',
+    'proceso',
+    'responsable',
+    'inicio',
+    'limite',
     'estado',
-    'sede',
-    'personaResponsable',
-    'valoracionEficacia'
+    'acciones'
   ];
 
-  // Filtros
-  filtroTextoLibre: string = '';
-  filtroValoracionEficacia: string = 'Selecciona';
-  filtroAno: string = '2026';
-  filtroMetodologia: string = 'Selecciona';
-  filtroTipo: string = 'Selecciona';
-  filtroEstado: string = 'Selecciona';
-  filtroSede: string = 'Selecciona';
-  filtroPersonaResponsable: string = 'Selecciona';
-  filtroPuestoResponsable: string = 'Selecciona';
+  dataSource = new MatTableDataSource<any>();
 
-  // Opciones de combos
-  valoracionesOptions: string[] = ['Eficaz', 'No Eficaz', 'Pendiente de Valorar'];
-  anosOptions: string[] = ['2026', '2025', '2024'];
-  metodologiasOptions: string[] = ['Presencial', 'Online', 'Mixta'];
-  tiposOptions: string[] = ['Correctiva', 'Preventiva', 'Mejora'];
-  estadosOptions: string[] = ['Abierta', 'En Proceso', 'Cerrada', 'Anulada'];
-  sedesOptions: string[] = ['Sede Central', 'Planta Lurín', 'Planta Ate'];
-  personasOptions: string[] = ['Juan Pérez', 'María López', 'Carlos Gómez'];
-  puestosOptions: string[] = ['Supervisor SST', 'Gerente Operaciones', 'Jefe de Almacén'];
-
-  private originalAcciones: AccionCorrectiva[] = [
+  private readonly seedData = [
     {
-      codigo: 'AC-2026-001',
-      textoLibre: 'Capacitación en uso y mantenimiento de EPP para personal de almacén.',
-      valoracionEficacia: 'Eficaz',
-      ano: '2026',
-      metodologia: 'Presencial',
-      tipo: 'Correctiva',
-      estado: 'Cerrada',
-      sede: 'Sede Central',
-      personaResponsable: 'Juan Pérez',
-      puestoResponsable: 'Supervisor SST',
-      fechaPlanificada: '15/01/2026'
+      nc: 'NC-INT-2025-002',
+      tipo: 'Interna',
+      accion: 'Actualizar procedimiento costura v2.1',
+      proceso: 'Costura',
+      responsable: 'Carlos Ríos',
+      inicio: '2025-06-14',
+      limite: '2025-06-28',
+      estado: 'Completada',
+      desc: 'Actualización del procedimiento tras hallazgo.'
     },
     {
-      codigo: 'AC-2026-002',
-      textoLibre: 'Revisión y simulacro de evacuación en Planta Lurín.',
-      valoracionEficacia: 'Pendiente de Valorar',
-      ano: '2026',
-      metodologia: 'Mixta',
-      tipo: 'Preventiva',
-      estado: 'En Proceso',
-      sede: 'Planta Lurín',
-      personaResponsable: 'María López',
-      puestoResponsable: 'Gerente Operaciones',
-      fechaPlanificada: '20/03/2026'
+      nc: 'NC-EXT-2025-001',
+      tipo: 'Externa',
+      accion: 'Crear dashboard de indicadores',
+      proceso: 'Calidad',
+      responsable: 'Jordan Pinedo',
+      inicio: '2025-07-01',
+      limite: '2025-07-15',
+      estado: 'En ejecución',
+      desc: 'Implementar tablero visible de indicadores.'
     },
     {
-      codigo: 'AC-2026-003',
-      textoLibre: 'Inducción general sobre riesgos ergonómicos en oficinas.',
-      valoracionEficacia: 'No Eficaz',
-      ano: '2026',
-      metodologia: 'Online',
-      tipo: 'Mejora',
-      estado: 'Abierta',
-      sede: 'Sede Central',
-      personaResponsable: 'Carlos Gómez',
-      puestoResponsable: 'Jefe de Almacén',
-      fechaPlanificada: '10/02/2026'
+      nc: 'NC-INT-2025-003',
+      tipo: 'Interna',
+      accion: 'Retomar medición indicadores de calidad',
+      proceso: 'Calidad',
+      responsable: 'Rosa Chávez',
+      inicio: '2025-05-20',
+      limite: '2025-06-30',
+      estado: 'Vencida',
+      desc: 'Regularizar mediciones pendientes.'
     }
   ];
 
   constructor(
-    private spinner: NgxSpinnerService,
-    private toastr: ToastrService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
-    this.cargarDatos();
+    this.onListado();
   }
 
-  cargarDatos(): void {
-    this.dataSource.data = [...this.originalAcciones];
+  onListado(): void {
+    const local = localStorage.getItem(STORAGE_KEY);
+    if (local) {
+      const data = JSON.parse(local);
+      this.dataSource.data = data;
+      this.calculateStats(data);
+    } else {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.seedData));
+      this.dataSource.data = this.seedData;
+      this.calculateStats(this.seedData);
+    }
   }
 
-  onFiltrar(): void {
-    this.spinner.show();
-    setTimeout(() => {
-      let filtered = [...this.originalAcciones];
-
-      if (this.filtroTextoLibre) {
-        filtered = filtered.filter(a =>
-          a.textoLibre.toLowerCase().includes(this.filtroTextoLibre.toLowerCase()) ||
-          a.codigo.toLowerCase().includes(this.filtroTextoLibre.toLowerCase())
-        );
-      }
-
-      if (this.filtroValoracionEficacia && this.filtroValoracionEficacia !== 'Selecciona') {
-        filtered = filtered.filter(a => a.valoracionEficacia === this.filtroValoracionEficacia);
-      }
-
-      if (this.filtroAno) {
-        filtered = filtered.filter(a => a.ano === this.filtroAno);
-      }
-
-      if (this.filtroMetodologia && this.filtroMetodologia !== 'Selecciona') {
-        filtered = filtered.filter(a => a.metodologia === this.filtroMetodologia);
-      }
-
-      if (this.filtroTipo && this.filtroTipo !== 'Selecciona') {
-        filtered = filtered.filter(a => a.tipo === this.filtroTipo);
-      }
-
-      if (this.filtroEstado && this.filtroEstado !== 'Selecciona') {
-        filtered = filtered.filter(a => a.estado === this.filtroEstado);
-      }
-
-      if (this.filtroSede && this.filtroSede !== 'Selecciona') {
-        filtered = filtered.filter(a => a.sede === this.filtroSede);
-      }
-
-      if (this.filtroPersonaResponsable && this.filtroPersonaResponsable !== 'Selecciona') {
-        filtered = filtered.filter(a => a.personaResponsable === this.filtroPersonaResponsable);
-      }
-
-      this.dataSource.data = filtered;
-      this.spinner.hide();
-    }, 200);
-  }
-
-  onPlanificarNuevaFormacion(): void {
-    const dialogRef = this.dialog.open(PlanificarFormacionModalComponent, {
-      width: '1200px',
-      maxWidth: '95vw',
-      maxHeight: '95vh',
-      disableClose: true,
-      data: {}
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.spinner.show();
-        setTimeout(() => {
-          const nuevaAC: AccionCorrectiva = {
-            codigo: `AC-2026-0${this.originalAcciones.length + 1}`,
-            textoLibre: result.accionFormativa || 'Planificación de Acción Formativa',
-            valoracionEficacia: 'Pendiente de Valorar',
-            ano: '2026',
-            metodologia: result.metodologia || 'Presencial',
-            tipo: result.tipoFormacion || 'Correctiva',
-            estado: result.estado || 'Planificada',
-            sede: result.sedes.length > 0 ? result.sedes.join(', ') : 'Sede Central',
-            personaResponsable: 'Usuario Actual',
-            puestoResponsable: 'Administrador',
-            fechaPlanificada: new Date().toLocaleDateString()
-          };
-          this.originalAcciones.push(nuevaAC);
-          this.onFiltrar();
-          this.toastr.success('Nueva formación planificada y registrada con éxito.', 'Planificación Guardada');
-          this.spinner.hide();
-        }, 300);
-      }
-    });
-  }
-
-  onExportarPDF(): void {
-    this.toastr.success('Generando Plan de Formación en formato PDF...', 'Exportar PDF');
-  }
-
-  onExportarExcel(): void {
-    this.toastr.success('Generando Plan de Formación en formato Excel...', 'Exportar Excel');
-  }
-
-  onEditar(row: AccionCorrectiva): void {
-    this.toastr.info(`Editando acción correctiva: ${row.codigo}`, 'Editar');
-  }
-
-  onEliminar(row: AccionCorrectiva): void {
-    this.spinner.show();
-    setTimeout(() => {
-      this.originalAcciones = this.originalAcciones.filter(a => a.codigo !== row.codigo);
-      this.onFiltrar();
-      this.toastr.warning(`Acción correctiva eliminada: ${row.codigo}`, 'Eliminar');
-      this.spinner.hide();
-    }, 300);
+  calculateStats(data: any[]): void {
+    this.stats = {
+      total: data.length,
+      completadas: data.filter(d => d.estado === 'Completada').length,
+      enEjecucion: data.filter(d => d.estado === 'En ejecución').length,
+      pendientes: data.filter(d => d.estado === 'Pendiente').length,
+      vencidas: data.filter(d => d.estado === 'Vencida').length
+    };
   }
 
   getEstadoClass(estado: string): string {
-    switch (estado) {
-      case 'Abierta': return 'estado-abierta';
-      case 'En Proceso': return 'estado-proceso';
-      case 'Cerrada': return 'estado-cerrada';
-      default: return 'estado-anulada';
-    }
+    if (!estado) return 'pendiente';
+    const s = estado.toLowerCase().trim();
+    if (s.includes('completada')) return 'completada';
+    if (s.includes('ejecución') || s.includes('ejecucion')) return 'en-ejecucion';
+    if (s.includes('pendiente')) return 'pendiente';
+    if (s.includes('vencida')) return 'vencida';
+    return 'pendiente';
   }
 
-  getEficaciaClass(valoracion: string): string {
-    switch (valoracion) {
-      case 'Eficaz': return 'eficacia-eficaz';
-      case 'No Eficaz': return 'eficacia-no-eficaz';
-      default: return 'eficacia-pendiente';
-    }
+  getTipoClass(tipo: string): string {
+    return tipo === 'Externa' ? 'externa' : 'interna';
+  }
+
+  aplicarFiltro(event: Event): void {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = filterValue.trim().toLowerCase();
+  }
+
+  onAgregar(): void {
+    const dialogRef = this.dialog.open(PlanificarFormacionModalComponent, {
+      width: '680px',
+      disableClose: true,
+      data: {
+        Title: '::. Planificar acción correctiva .::',
+        Accion: 'I',
+        Datos: null
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(res => {
+      if (res) {
+        const local = localStorage.getItem(STORAGE_KEY);
+        const data = local ? JSON.parse(local) : [];
+        // Evitar duplicados de NC
+        if (data.some((d: any) => d.nc === res.nc)) {
+          this.toastr.warning('El código de NC ya existe.', 'Código Duplicado');
+          return;
+        }
+        data.unshift(res);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        this.toastr.success('Acción correctiva agregada correctamente.', '', { timeOut: 2500 });
+        this.onListado();
+      }
+    });
+  }
+
+  onEditar(item: any): void {
+    const dialogRef = this.dialog.open(PlanificarFormacionModalComponent, {
+      width: '680px',
+      disableClose: true,
+      data: {
+        Title: '::. Editar acción correctiva .::',
+        Accion: 'U',
+        Datos: item
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(res => {
+      if (res) {
+        const local = localStorage.getItem(STORAGE_KEY);
+        if (local) {
+          let data = JSON.parse(local);
+          data = data.map((d: any) => d.nc === item.nc ? res : d);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          this.toastr.success('Acción correctiva actualizada correctamente.', '', { timeOut: 2500 });
+          this.onListado();
+        }
+      }
+    });
+  }
+
+  onEliminar(item: any): void {
+    Swal.fire({
+      title: '¿Desea eliminar la acción correctiva?, Confirme',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí',
+      cancelButtonText: 'No'
+    }).then(result => {
+      if (result.isConfirmed) {
+        const local = localStorage.getItem(STORAGE_KEY);
+        if (local) {
+          let data = JSON.parse(local);
+          data = data.filter((d: any) => d.nc !== item.nc);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          this.toastr.success('Acción correctiva eliminada correctamente.', '', { timeOut: 2500 });
+          this.onListado();
+        }
+      }
+    });
   }
 }
