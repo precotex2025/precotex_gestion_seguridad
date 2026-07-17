@@ -1,0 +1,76 @@
+<div class="dialog-container">
+  
+  <div class="dialog-header">
+    <h2 class="dialog-title">{{ data.Accion === 'I' ? 'Nuevo registro' : 'Editar registro' }}</h2>
+    <button type="button" class="btn-close-header" (click)="onCancelar()" title="Cerrar">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <form [formGroup]="formulario" (ngSubmit)="onGuardar()">
+    
+    <mat-dialog-content class="form-content">
+      
+      <!-- Fila 1: 4 Columnas (Puesto/Cargo, Proceso, Usuario Asignado, Nivel) -->
+      <div class="grid-4-cols">
+        <div class="form-section-item">
+          <div class="form-label">Puesto / Cargo <span class="required">*</span></div>
+          <input type="text" formControlName="ctrol_puesto" class="full-width-input" placeholder="Ej. Supervisor de Calidad">
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Proceso <span class="required">*</span></div>
+          <select formControlName="ctrol_proceso" class="full-width-input">
+            <option value="" disabled selected>Seleccione un proceso...</option>
+            <optgroup *ngFor="let group of getProcesosKeys()" [label]="group">
+              <option *ngFor="let proc of procesosGroups[group]" [value]="proc">{{ proc }}</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Usuario Asignado</div>
+          <input type="text" formControlName="ctrol_usuario" class="full-width-input" placeholder="Nombre del colaborador">
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Nivel <span class="required">*</span></div>
+          <select formControlName="ctrol_nivel" class="full-width-input">
+            <option value="Gerencial">Gerencial</option>
+            <option value="Jefatura">Jefatura</option>
+            <option value="Operativo">Operativo</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Fila 2: 4 Columnas (Permisos, Estado, y 2 vacías para alineación) -->
+      <div class="grid-4-cols">
+        <div class="form-section-item">
+          <div class="form-label">Permisos <span class="required">*</span></div>
+          <select formControlName="ctrol_permisos" class="full-width-input">
+            <option value="Lectura">Lectura</option>
+            <option value="Lectura + descarga">Lectura + descarga</option>
+            <option value="Lectura + descarga + modificar">Lectura + descarga + modificar</option>
+          </select>
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Estado <span class="required">*</span></div>
+          <select formControlName="ctrol_estado" class="full-width-input">
+            <option value="Activo">Activo</option>
+            <option value="Sin permisos config.">Sin permisos config.</option>
+          </select>
+        </div>
+        <div class="form-section-item"></div>
+        <div class="form-section-item"></div>
+      </div>
+
+    </mat-dialog-content>
+
+    <mat-dialog-actions class="dialog-actions-row">
+      <button type="button" class="BtnCancelarPlan" mat-flat-button (click)="onCancelar()">
+        Cancelar
+      </button>
+      <button type="submit" class="BtnGuardarPlan" mat-flat-button>
+        Guardar
+      </button>
+    </mat-dialog-actions>
+    
+  </form>
+</div>

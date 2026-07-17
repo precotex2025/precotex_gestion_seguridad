@@ -58,6 +58,7 @@ import { PuestosComponent } from './components/puestos/puestos.component';
 import { PuestosRegeditComponent } from './components/puestos/puestos-regedit/puestos-regedit.component';
 import { PuestosFichaComponent } from './components/puestos/puestos-ficha/puestos-ficha.component';
 import { PuestosUsuariosComponent } from './components/puestos/puestos-usuarios/puestos-usuarios.component';
+import { PuestosUsuariosRegeditComponent } from './components/puestos/puestos-usuarios-regedit/puestos-usuarios-regedit.component';
 import { DocumentosControladosComponent } from './components/documentos-controlados/documentos-controlados.component';
 import { DocumentosNoControladosComponent } from './components/documentos-no-controlados/documentos-no-controlados.component';
 import { DocumentosControladosRegeditComponent } from './components/documentos-controlados/documentos-controlados-regedit/documentos-controlados-regedit.component';
@@ -123,6 +124,7 @@ import { MedicionObjetivosRegeditComponent } from './components/planificacion-ob
     PuestosRegeditComponent,
     PuestosFichaComponent,
     PuestosUsuariosComponent,
+    PuestosUsuariosRegeditComponent,
     DocumentosControladosComponent,
     DocumentosNoControladosComponent,
     DocumentosControladosRegeditComponent,

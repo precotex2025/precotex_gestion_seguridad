@@ -1,0 +1,158 @@
+/* ===================================================================
+   Puestos Usuarios Regedit Modal — CSS Styles
+   =================================================================== */
+
+.dialog-container {
+  width: 100%;
+  max-width: 100%;
+  background-color: #0b0f19;
+  border-radius: 12px;
+  color: #cbd5e1;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+}
+
+.dialog-header {
+  padding: 20px 24px 10px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dialog-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.btn-close-header {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.btn-close-header:hover {
+  color: #ffffff;
+}
+
+.form-content {
+  padding: 24px !important;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.grid-4-cols {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-section-item {
+  margin-bottom: 12px;
+}
+
+.form-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: rgba(148, 163, 184, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.required {
+  color: #f0576b;
+  margin-left: 2px;
+}
+
+.full-width-input {
+  width: 100%;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: #ffffff;
+  font-size: 0.82rem;
+  outline: none;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.full-width-input:focus {
+  border-color: #7c6cf0;
+  box-shadow: 0 0 0 2px rgba(124, 108, 240, 0.15);
+}
+
+select.full-width-input {
+  cursor: pointer;
+}
+
+select.full-width-input optgroup {
+  background: #0b0f19;
+  color: #7c6cf0;
+}
+
+select.full-width-input option {
+  background: #1e293b;
+  color: #ffffff;
+}
+
+.dialog-actions-row {
+  background-color: #090d16;
+  padding: 16px 24px !important;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin: 0 !important;
+}
+
+.BtnGuardarPlan {
+  background: #7c6cf0 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 0.8rem !important;
+  padding: 8px 18px !important;
+  border-radius: 6px !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(124, 108, 240, 0.3);
+}
+
+.BtnGuardarPlan:hover {
+  background: #6352e0 !important;
+  transform: translateY(-1px);
+}
+
+.BtnCancelarPlan {
+  background: transparent !important;
+  color: #cbd5e1 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  font-weight: 600 !important;
+  font-size: 0.8rem !important;
+  padding: 8px 18px !important;
+  border-radius: 6px !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.BtnCancelarPlan:hover {
+  background: rgba(255, 255, 255, 0.02) !important;
+  color: #ffffff !important;
+}
+
+@media (max-width: 900px) {
+  .grid-4-cols {
+    grid-template-columns: 1fr;
+  }
+}

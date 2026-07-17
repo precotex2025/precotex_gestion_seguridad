@@ -56,7 +56,7 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       proceso: [row?.proceso || 'Sistemas'],
       vig: [row?.vig || ''],
       estado: [row?.estado || 'Vigente'],
-      archivo: [row?.archivo || '']
+      archivo: [row?.archivo || '', Validators.required]
     });
 
     if (row?.archivo) {
@@ -72,9 +72,61 @@ export class DocumentosControladosRegeditComponent implements OnInit {
     const file = event.target.files[0];
     if (file) {
       this.fileName = file.name;
-      this.formulario.patchValue({
+      
+      // Parse file name (e.g. "PRO-ERP-OYM-003 Procedimiento de ACR.pdf")
+      const nameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+      const firstSpaceIdx = nameWithoutExt.indexOf(' ');
+      
+      let parsedCode = '';
+      let parsedName = '';
+      
+      if (firstSpaceIdx !== -1) {
+        parsedCode = nameWithoutExt.substring(0, firstSpaceIdx).trim();
+        parsedName = nameWithoutExt.substring(firstSpaceIdx + 1).trim();
+      } else {
+        parsedCode = nameWithoutExt.trim();
+      }
+
+      // Auto-populate Tipo de Documento based on parsed code prefix
+      let parsedTipo = '';
+      const prefix = parsedCode.split('-')[0]?.toUpperCase() || '';
+      if (prefix === 'PRO') {
+        parsedTipo = 'Procedimiento';
+      } else if (prefix === 'INS') {
+        parsedTipo = 'Instructivo';
+      } else if (prefix === 'FOR') {
+        parsedTipo = 'Formato';
+      } else if (prefix === 'MAN') {
+        parsedTipo = 'Manual';
+      } else if (prefix === 'PER') {
+        parsedTipo = 'Perfil de puesto';
+      }
+
+      // Auto-populate Formato based on file extension
+      let parsedFormato = '';
+      const dotIdx = file.name.lastIndexOf('.');
+      if (dotIdx !== -1) {
+        const ext = file.name.substring(dotIdx).toLowerCase();
+        if (ext === '.pdf') {
+          parsedFormato = 'PDF';
+        } else if (ext === '.doc' || ext === '.docx') {
+          parsedFormato = 'Word';
+        } else if (ext === '.xls' || ext === '.xlsx') {
+          parsedFormato = 'Excel';
+        }
+      }
+
+      // Build patching data
+      const patchData: any = {
         archivo: file.name
-      });
+      };
+      
+      if (parsedCode) patchData.codigo = parsedCode;
+      if (parsedName) patchData.nombre = parsedName;
+      if (parsedTipo) patchData.tipo = parsedTipo;
+      if (parsedFormato) patchData.formato = parsedFormato;
+
+      this.formulario.patchValue(patchData);
     }
   }
 

@@ -25,88 +25,9 @@
   <!-- TÍTULO DE SECCIÓN Y BOTÓN AGREGAR -->
   <div class="seccion-header">
     <h2 class="seccion-titulo">PUESTOS Y USUARIOS ASIGNADOS</h2>
-    <button type="button" class="btn-agregar-norma" (click)="onAgregar()" *ngIf="!showForm">
+    <button type="button" class="btn-agregar-norma" (click)="onAgregar()">
       <span>+ Nuevo puesto</span>
     </button>
-  </div>
-
-  <!-- INLINE FORM PANEL -->
-  <div class="form-panel shadow-premium" *ngIf="showForm">
-    <div class="form-panel-header">
-      <h3 class="form-panel-title">{{ isEditing ? 'Editar registro' : 'Nuevo registro' }}</h3>
-    </div>
-    <form [formGroup]="formulario" class="dialog-form">
-      <div class="form-grid-puestos">
-        <!-- Puesto / Cargo -->
-        <div class="row">
-          <label class="form-label">Puesto / Cargo <span class="required">*</span></label>
-          <div class="input-wrapper">
-            <input type="text" formControlName="ctrol_puesto" placeholder="Ej. Supervisor de Calidad" class="form-input">
-          </div>
-        </div>
-
-        <!-- Proceso -->
-        <div class="row">
-          <label class="form-label">Proceso <span class="required">*</span></label>
-          <div class="input-wrapper">
-            <select formControlName="ctrol_proceso" class="form-input select-input">
-              <option value="" disabled selected>Seleccione un proceso...</option>
-              <optgroup *ngFor="let group of getProcesosKeys()" [label]="group">
-                <option *ngFor="let proc of procesosGroups[group]" [value]="proc">{{ proc }}</option>
-              </optgroup>
-            </select>
-          </div>
-        </div>
-
-        <!-- Usuario Asignado -->
-        <div class="row">
-          <label class="form-label">Usuario Asignado</label>
-          <div class="input-wrapper">
-            <input type="text" formControlName="ctrol_usuario" placeholder="Nombre del colaborador" class="form-input">
-          </div>
-        </div>
-
-        <!-- Nivel -->
-        <div class="row">
-          <label class="form-label">Nivel <span class="required">*</span></label>
-          <div class="input-wrapper">
-            <select formControlName="ctrol_nivel" class="form-input select-input">
-              <option value="Gerencial">Gerencial</option>
-              <option value="Jefatura">Jefatura</option>
-              <option value="Operativo">Operativo</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Permisos -->
-        <div class="row">
-          <label class="form-label">Permisos <span class="required">*</span></label>
-          <div class="input-wrapper">
-            <select formControlName="ctrol_permisos" class="form-input select-input">
-              <option value="Lectura">Lectura</option>
-              <option value="Lectura + descarga">Lectura + descarga</option>
-              <option value="Lectura + descarga + modificar">Lectura + descarga + modificar</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Estado -->
-        <div class="row">
-          <label class="form-label">Estado <span class="required">*</span></label>
-          <div class="input-wrapper">
-            <select formControlName="ctrol_estado" class="form-input select-input">
-              <option value="Activo">Activo</option>
-              <option value="Sin permisos config.">Sin permisos config.</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-actions">
-        <button type="button" class="btn-secondary" (click)="onCancelar()">Cancelar</button>
-        <button type="button" class="btn-primary" (click)="onGuardar()">Guardar</button>
-      </div>
-    </form>
   </div>
 
   <!-- BUSCADOR -->
