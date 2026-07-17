@@ -55,9 +55,6 @@ import { MntoProcesosComponent } from './components/mnto-procesos/mnto-procesos.
 import { SedesRegeditComponent } from './components/mnto-sedes/sedes-regedit/sedes-regedit.component';
 import { ProcesosRegeditComponent } from './components/mnto-procesos/procesos-regedit/procesos-regedit.component';
 import { PuestosComponent } from './components/puestos/puestos.component';
-import { PuestosRegeditComponent } from './components/puestos/puestos-regedit/puestos-regedit.component';
-import { PuestosFichaComponent } from './components/puestos/puestos-ficha/puestos-ficha.component';
-import { PuestosUsuariosComponent } from './components/puestos/puestos-usuarios/puestos-usuarios.component';
 import { PuestosUsuariosRegeditComponent } from './components/puestos/puestos-usuarios-regedit/puestos-usuarios-regedit.component';
 import { DocumentosControladosComponent } from './components/documentos-controlados/documentos-controlados.component';
 import { DocumentosNoControladosComponent } from './components/documentos-no-controlados/documentos-no-controlados.component';
@@ -104,6 +101,10 @@ import { AnalyticsRegeditComponent } from './components/analytics/analytics-rege
 import { MedicionIndicadoresComponent } from './components/analytics/medicion-indicadores/medicion-indicadores.component';
 import { MedicionRegeditComponent } from './components/analytics/medicion-indicadores/medicion-regedit/medicion-regedit.component';
 import { MedicionObjetivosRegeditComponent } from './components/planificacion-objetivos/medicion-objetivos-regedit/medicion-objetivos-regedit.component';
+import { PortafolioMejoraComponent } from './components/portafolio-mejora/portafolio-mejora.component';
+import { PortafolioMejoraRegeditComponent } from './components/portafolio-mejora/portafolio-mejora-regedit/portafolio-mejora-regedit.component';
+import { ReqLegalComponent } from './components/req-legal/req-legal.component';
+import { ReqLegalRegeditComponent } from './components/req-legal/req-legal-regedit/req-legal-regedit.component';
 
 @NgModule({
   declarations: [
@@ -120,9 +121,6 @@ import { MedicionObjetivosRegeditComponent } from './components/planificacion-ob
     SedesRegeditComponent,
     ProcesosRegeditComponent,
     PuestosComponent,
-    PuestosRegeditComponent,
-    PuestosFichaComponent,
-    PuestosUsuariosComponent,
     PuestosUsuariosRegeditComponent,
     DocumentosControladosComponent,
     DocumentosNoControladosComponent,
@@ -167,7 +165,11 @@ import { MedicionObjetivosRegeditComponent } from './components/planificacion-ob
     AnalyticsRegeditComponent,
     MedicionIndicadoresComponent,
     MedicionRegeditComponent,
-    MedicionObjetivosRegeditComponent
+    MedicionObjetivosRegeditComponent,
+    PortafolioMejoraComponent,
+    PortafolioMejoraRegeditComponent,
+    ReqLegalComponent,
+    ReqLegalRegeditComponent
   ],
   imports: [
     BrowserModule     ,

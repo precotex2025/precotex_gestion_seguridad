@@ -151,9 +151,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
       this.activeModule = {
         title: 'Portafolio de Mejora',
         breadcrumb: 'Portafolio de Mejora · Gestión de Iniciativas',
-        tabs: [
-          { label: 'Iniciativas', route: '/principal/portafolioMejora' }
-        ]
+        tabs: []
       };
       this.activeSublink = url;
     } else if (url.includes('/principal/reqLegal')) {
@@ -161,9 +159,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
       this.activeModule = {
         title: 'Req. legal',
         breadcrumb: 'Req. Legal · Normativas y Leyes',
-        tabs: [
-          { label: 'Requisitos Legales', route: '/principal/reqLegal' }
-        ]
+        tabs: []
       };
       this.activeSublink = url;
     } else if (url.includes('/principal/ayuda')) {

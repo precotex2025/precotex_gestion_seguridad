@@ -1,0 +1,142 @@
+<div class="contenedor sn-animate-in">
+
+  <!-- BANNER NOTIFICACIÓN -->
+  <div class="banner-aviso">
+    <span>✦ Registro funcional. Pulsa <strong>Registrar iniciativa</strong>, llena el formulario y guarda. Persiste aunque recargues.</span>
+  </div>
+
+  <!-- ESTADÍSTICAS CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card border-left-purple">
+      <div class="stat-label">TOTAL</div>
+      <div class="stat-value text-white">{{ stats.total }}</div>
+      <div class="stat-desc">Iniciativas</div>
+    </div>
+    <div class="stat-card border-left-blue">
+      <div class="stat-label">EN PROCESO</div>
+      <div class="stat-value text-blue">{{ stats.enProceso }}</div>
+    </div>
+    <div class="stat-card border-left-green">
+      <div class="stat-label">CERRADO</div>
+      <div class="stat-value text-green">{{ stats.cerrado }}</div>
+    </div>
+    <div class="stat-card border-left-red">
+      <div class="stat-label">VENCIDO</div>
+      <div class="stat-value text-red">{{ stats.vencido }}</div>
+    </div>
+  </div>
+
+  <!-- DISPOSICIÓN PRINCIPAL: ÁRBOL + TABLA -->
+  <div class="doc-layout">
+    
+    <!-- PANEL IZQUIERDO: ÁRBOL DE PROCESOS -->
+    <div class="tree-panel">
+      <div class="tree-header">Estructura por proceso</div>
+      <div class="tree-nodes">
+        <div class="tree-node" [class.active]="selectedProceso === 'Todos'" (click)="selectProceso('Todos')">
+          <span>Todos</span>
+          <em class="node-count">{{ mejoraList.length }}</em>
+        </div>
+
+        <div *ngFor="let macro of getProcesosKeys()">
+          <div class="tree-group-title">{{ macro }}</div>
+          <div *ngFor="let proc of procesosGroups[macro]" 
+               class="tree-node" 
+               [class.active]="selectedProceso === proc" 
+               (click)="selectProceso(proc)">
+            <span>{{ proc }}</span>
+            <em class="node-count">{{ countProceso(proc) }}</em>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL DERECHO: LISTADO Y ACCIONES -->
+    <div class="table-panel">
+      <div class="seccion-header">
+        <h2 class="seccion-titulo">Portafolio de mejora</h2>
+        <button type="button" class="btn-agregar-norma" (click)="onAgregar()">
+          <span>+ Registrar iniciativa</span>
+        </button>
+      </div>
+
+      <div class="buscador-container">
+        <input type="text" 
+               (keyup)="buscar($event)" 
+               placeholder="Buscar..." 
+               class="buscador-input">
+      </div>
+
+      <div class="table-container shadow-premium">
+        <table mat-table [dataSource]="dataSource" matSort class="tabla">
+
+          <!-- Título -->
+          <ng-container matColumnDef="titulo">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 250px;">Título</th>
+            <td mat-cell *matCellDef="let row" class="norma-cell">{{ row.titulo }}</td>
+          </ng-container>
+
+          <!-- Herramienta -->
+          <ng-container matColumnDef="herramienta">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 110px;">Herramienta</th>
+            <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.herramienta }}</td>
+          </ng-container>
+
+          <!-- Proceso -->
+          <ng-container matColumnDef="proceso">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 140px;">Proceso</th>
+            <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.proceso }}</td>
+          </ng-container>
+
+          <!-- Sede -->
+          <ng-container matColumnDef="sede">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 120px;">Sede</th>
+            <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.sede }}</td>
+          </ng-container>
+
+          <!-- Apertura -->
+          <ng-container matColumnDef="apertura">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px;">Apertura</th>
+            <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.apertura | date:'dd/MM/yyyy' }}</td>
+          </ng-container>
+
+          <!-- Límite -->
+          <ng-container matColumnDef="limite">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px;">Límite</th>
+            <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.limite | date:'dd/MM/yyyy' }}</td>
+          </ng-container>
+
+          <!-- Estado -->
+          <ng-container matColumnDef="estado">
+            <th mat-header-cell *matHeaderCellDef style="width: 110px;">Estado</th>
+            <td mat-cell *matCellDef="let row">
+              <span [class]="'badge-estado-' + (row.estado === 'Cerrado' ? 'activo' : row.estado === 'En proceso' ? 'proceso' : 'sin-permisos')">
+                {{ row.estado }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Acciones -->
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef style="width: 100px; text-align: center;">Acciones</th>
+            <td mat-cell *matCellDef="let row">
+              <div class="actions-wrapper">
+                <button class="action-btn btn-edit" (click)="onEditar(row)" title="Editar">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button class="action-btn btn-delete" (click)="onEliminar(row)" title="Eliminar">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="fila"></tr>
+
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,116 @@
+<div class="contenedor sn-animate-in">
+
+  <!-- BANNER NOTIFICACIÓN -->
+  <div class="banner-aviso">
+    <span>✦ Registro funcional. Pulsa <strong>Nuevo requisito</strong>, llena el formulario y guarda. Persiste aunque recargues.</span>
+  </div>
+
+  <!-- ESTADÍSTICAS CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card border-left-purple">
+      <div class="stat-label">TOTAL REQUISITOS</div>
+      <div class="stat-value text-white">{{ stats.total }}</div>
+      <div class="stat-desc">Registrados</div>
+    </div>
+    <div class="stat-card border-left-green">
+      <div class="stat-label">CUMPLE</div>
+      <div class="stat-value text-green">{{ stats.cumple }}</div>
+    </div>
+    <div class="stat-card border-left-amber">
+      <div class="stat-label">EN PROCESO</div>
+      <div class="stat-value text-amber">{{ stats.enProceso }}</div>
+    </div>
+    <div class="stat-card border-left-red">
+      <div class="stat-label">NO CUMPLE</div>
+      <div class="stat-value text-red">{{ stats.noCumple }}</div>
+    </div>
+  </div>
+
+  <!-- CABECERA DE SECCIÓN Y BOTÓN -->
+  <div class="seccion-header">
+    <h2 class="seccion-titulo">Matriz de requisitos legales</h2>
+    <button type="button" class="btn-agregar-norma" (click)="onAgregar()">
+      <span>+ Nuevo requisito</span>
+    </button>
+  </div>
+
+  <!-- BUSCADOR -->
+  <div class="buscador-container">
+    <input type="text" 
+           (keyup)="buscar($event)" 
+           placeholder="Buscar..." 
+           class="buscador-input">
+  </div>
+
+  <!-- TABLA DE REGISTROS -->
+  <div class="table-container shadow-premium">
+    <table mat-table [dataSource]="dataSource" matSort class="tabla">
+
+      <!-- Requisito Legal -->
+      <ng-container matColumnDef="requisito">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 250px;">Requisito legal</th>
+        <td mat-cell *matCellDef="let row" class="norma-cell">{{ row.requisito }}</td>
+      </ng-container>
+
+      <!-- Ámbito -->
+      <ng-container matColumnDef="ambito">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px;">Ámbito</th>
+        <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.ambito }}</td>
+      </ng-container>
+
+      <!-- Entidad emisora -->
+      <ng-container matColumnDef="entidad">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 110px;">Entidad</th>
+        <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.entidad }}</td>
+      </ng-container>
+
+      <!-- Código de norma -->
+      <ng-container matColumnDef="norma">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 120px;">N° / Código</th>
+        <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.norma || '—' }}</td>
+      </ng-container>
+
+      <!-- Próxima evaluación -->
+      <ng-container matColumnDef="proxeval">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 110px;">Próxima Eval.</th>
+        <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.proxeval ? (row.proxeval | date:'dd/MM/yyyy') : '—' }}</td>
+      </ng-container>
+
+      <!-- Vencimiento -->
+      <ng-container matColumnDef="vencimiento">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 110px;">Vencimiento</th>
+        <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.vencimiento ? (row.vencimiento | date:'dd/MM/yyyy') : '—' }}</td>
+      </ng-container>
+
+      <!-- Estado -->
+      <ng-container matColumnDef="estado">
+        <th mat-header-cell *matHeaderCellDef style="width: 110px;">Estado</th>
+        <td mat-cell *matCellDef="let row">
+          <span [class]="'badge-estado-' + (row.estado === 'Cumple' ? 'activo' : row.estado === 'En proceso' ? 'proceso' : 'sin-permisos')">
+            {{ row.estado }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Acciones -->
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef style="width: 100px; text-align: center;">Acciones</th>
+        <td mat-cell *matCellDef="let row">
+          <div class="actions-wrapper">
+            <button class="action-btn btn-edit" (click)="onEditar(row)" title="Editar">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button class="action-btn btn-delete" (click)="onEliminar(row)" title="Eliminar">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="fila"></tr>
+
+    </table>
+  </div>
+
+</div>
