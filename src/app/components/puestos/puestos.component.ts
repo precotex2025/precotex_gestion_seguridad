@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatDialog } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
+import { PuestosUsuariosRegeditComponent } from './puestos-usuarios-regedit/puestos-usuarios-regedit.component';
 
 @Component({
   selector: 'app-puestos',
@@ -11,10 +12,6 @@ import Swal from 'sweetalert2';
   styleUrl: './puestos.component.css'
 })
 export class PuestosComponent implements OnInit {
-  formulario!: FormGroup;
-  showForm: boolean = false;
-  isEditing: boolean = false;
-  editingId: string | null = null;
   puestosList: any[] = [];
   searchText: string = '';
 
@@ -30,23 +27,6 @@ export class PuestosComponent implements OnInit {
     'acciones'
   ];
   dataSource = new MatTableDataSource<any>();
-
-  procesosGroups = {
-    'Soporte (SOP)': ['Sistemas', 'Mantenimiento General', 'Seguridad Patrimonial', 'SSOMA'],
-    'Auditoría Interna (AIO)': ['Auditoría Interna'],
-    'Control Patrimonial (CPT)': ['Control Patrimonial'],
-    'Ingeniería y Mejora Continua (IMC)': ['Organización y Métodos', 'Investigación, Desarrollo e Innovación', 'Certificaciones'],
-    'Administración y Finanzas (AFC)': ['Administración', 'Finanzas', 'Contabilidad y Costos', 'Tesorería'],
-    'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitaciones y Desarrollo', 'Comunicaciones', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
-    'Servicio de Estampado y Bordado (SEB)': ['Estampado', 'Bordado', 'Calidad Estampado y Bordado', 'Planeamiento y Programación de la Producción E&B'],
-    'Operaciones Manufactura (OPM)': ['Corte', 'Costura', 'Inspección', 'Acabados', 'Aseguramiento de la Calidad Manufactura', 'Consumos'],
-    'Operaciones Textil (OPT)': ['Tejeduría', 'Tintorería', 'Laboratorio de Color', 'Estampado Digital', 'Acabados Textil', 'Aseguramiento de Calidad Textil', 'Lavandería'],
-    'Balance de Materia (BM)': ['Balance de Materia'],
-    'Planeamiento y Control de la Producción (PCP)': ['PCP Textil', 'PCP Manufactura', 'PCP Estampado y Bordado'],
-    'Logística (LOG)': ['Almacén', 'Comercio Exterior', 'Logística', 'Transporte'],
-    'Gestión Comercial (GCOM)': ['Desarrollo de Producto', 'Desarrollo de Estampado y Bordado', 'Desarrollo Textil', 'Comercial Exportación de Prendas'],
-    'Gerencia General (GG)': ['Comercial Exportación de Telas', 'Comercial Venta Local Textil', 'Alianzas Estratégicas', 'Desarrollo de Negocios', 'Proyectos Gerenciales', 'Sistema de Gestión General', 'Gestión Estratégica']
-  };
 
   accesosList = [
     { n: 'Carlos Ríos', rol: 'Ger. Producción', acc: 'editó documento', t: 'hoy 09:14', c: 'blue' },
@@ -66,20 +46,11 @@ export class PuestosComponent implements OnInit {
   ];
 
   constructor(
-    private formBuilder: FormBuilder,
+    private dialog: MatDialog,
     private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
-    this.formulario = this.formBuilder.group({
-      ctrol_puesto: ['', Validators.required],
-      ctrol_proceso: ['', Validators.required],
-      ctrol_usuario: [''],
-      ctrol_nivel: ['Operativo', Validators.required],
-      ctrol_permisos: ['Lectura', Validators.required],
-      ctrol_estado: ['Activo', Validators.required]
-    });
-
     this.onListado();
   }
 
@@ -148,10 +119,6 @@ export class PuestosComponent implements OnInit {
     }
   }
 
-  getProcesosKeys() {
-    return Object.keys(this.procesosGroups) as Array<keyof typeof this.procesosGroups>;
-  }
-
   aplicarFiltro(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.searchText = filterValue;
@@ -159,91 +126,69 @@ export class PuestosComponent implements OnInit {
   }
 
   onAgregar() {
-    this.showForm = true;
-    this.isEditing = false;
-    this.editingId = null;
-    this.formulario.reset({
-      ctrol_puesto: '',
-      ctrol_proceso: '',
-      ctrol_usuario: '',
-      ctrol_nivel: 'Operativo',
-      ctrol_permisos: 'Lectura',
-      ctrol_estado: 'Activo'
+    const dialogRef = this.dialog.open(PuestosUsuariosRegeditComponent, {
+      width: '1150px',
+      maxWidth: '95vw',
+      panelClass: 'custom-large-dialog',
+      disableClose: true,
+      data: {
+        Title: 'Nuevo registro',
+        Accion: 'I',
+        Datos: null
+      }
     });
-  }
 
-  onCancelar() {
-    this.showForm = false;
-    this.isEditing = false;
-    this.editingId = null;
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const newItem = {
+          id: 'p-' + Date.now(),
+          puesto: (result.ctrol_puesto || '').trim(),
+          proceso: result.ctrol_proceso,
+          usuario: (result.ctrol_usuario || '').trim(),
+          nivel: result.ctrol_nivel,
+          permisos: result.ctrol_permisos,
+          estado: result.ctrol_estado
+        };
+        this.puestosList.push(newItem);
+        localStorage.setItem('precotex_puestos_usuarios', JSON.stringify(this.puestosList));
+        this.onListado();
+        this.toastr.success('Registro guardado correctamente.', '', { timeOut: 2000 });
+      }
+    });
   }
 
   onEditar(item: any) {
-    this.showForm = true;
-    this.isEditing = true;
-    this.editingId = item.id;
-    this.formulario.setValue({
-      ctrol_puesto: item.puesto,
-      ctrol_proceso: item.proceso,
-      ctrol_usuario: item.usuario || '',
-      ctrol_nivel: item.nivel,
-      ctrol_permisos: item.permisos,
-      ctrol_estado: item.estado
+    const dialogRef = this.dialog.open(PuestosUsuariosRegeditComponent, {
+      width: '1150px',
+      maxWidth: '95vw',
+      panelClass: 'custom-large-dialog',
+      disableClose: true,
+      data: {
+        Title: 'Editar registro',
+        Accion: 'U',
+        Datos: item
+      }
     });
-  }
 
-  onGuardar() {
-    if (this.formulario.invalid) {
-      this.toastr.warning('Por favor llene todos los campos obligatorios.', '', { timeOut: 2000 });
-      return;
-    }
-
-    const puesto = this.formulario.get('ctrol_puesto')?.value || '';
-    const proceso = this.formulario.get('ctrol_proceso')?.value || '';
-    const usuario = this.formulario.get('ctrol_usuario')?.value || '';
-    const nivel = this.formulario.get('ctrol_nivel')?.value || '';
-    const permisos = this.formulario.get('ctrol_permisos')?.value || '';
-    const estado = this.formulario.get('ctrol_estado')?.value || '';
-
-    try {
-      if (this.isEditing && this.editingId) {
-        const idx = this.puestosList.findIndex(p => p.id === this.editingId);
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const idx = this.puestosList.findIndex(p => p.id === item.id);
         if (idx !== -1) {
           this.puestosList[idx] = {
             ...this.puestosList[idx],
-            puesto: puesto.trim(),
-            proceso,
-            usuario: usuario.trim(),
-            nivel,
-            permisos,
-            estado
+            puesto: (result.ctrol_puesto || '').trim(),
+            proceso: result.ctrol_proceso,
+            usuario: (result.ctrol_usuario || '').trim(),
+            nivel: result.ctrol_nivel,
+            permisos: result.ctrol_permisos,
+            estado: result.ctrol_estado
           };
+          localStorage.setItem('precotex_puestos_usuarios', JSON.stringify(this.puestosList));
+          this.onListado();
+          this.toastr.success('Registro actualizado correctamente.', '', { timeOut: 2000 });
         }
-      } else {
-        const newItem = {
-          id: 'p-' + Date.now(),
-          puesto: puesto.trim(),
-          proceso,
-          usuario: usuario.trim(),
-          nivel,
-          permisos,
-          estado
-        };
-        this.puestosList.push(newItem);
       }
-
-      localStorage.setItem('precotex_puestos_usuarios', JSON.stringify(this.puestosList));
-      this.onListado();
-
-      this.toastr.success(`Registro ${this.isEditing ? 'actualizado' : 'guardado'} correctamente.`, '', {
-        timeOut: 2000
-      });
-
-      this.onCancelar();
-
-    } catch (e) {
-      this.toastr.error('Error al guardar datos.', '', { timeOut: 2000 });
-    }
+    });
   }
 
   onEliminar(item: any) {
