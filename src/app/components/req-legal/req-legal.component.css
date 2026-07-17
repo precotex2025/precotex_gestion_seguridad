@@ -1,0 +1,232 @@
+/* ===================================================================
+   Requisitos Legales — Styles
+   =================================================================== */
+
+.contenedor {
+  padding: 0;
+  background-color: transparent;
+}
+
+.banner-aviso {
+  background-color: rgba(124, 108, 240, 0.1);
+  border: 1px solid rgba(124, 108, 240, 0.2);
+  color: #a99bff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  background-color: #151827;
+  border: 1px solid #262b40;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.stat-label {
+  color: #8b90a8;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-top: 2px;
+  line-height: 1.2;
+}
+
+.stat-desc {
+  color: #5a6078;
+  font-size: 0.65rem;
+  margin-top: 2px;
+}
+
+.border-left-purple { border-left: 3px solid #7c6cf0; }
+.border-left-green { border-left: 3px solid #3ecf8e; }
+.border-left-amber { border-left: 3px solid #f0b429; }
+.border-left-red { border-left: 3px solid #f0576b; }
+
+.text-white { color: #ffffff; }
+.text-green { color: #3ecf8e; }
+.text-amber { color: #f0b429; }
+.text-red { color: #f0576b; }
+
+.seccion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.seccion-titulo {
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+
+.btn-agregar-norma {
+  background: #7c6cf0;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-agregar-norma:hover {
+  background-color: #8b7cf5;
+}
+
+.buscador-container {
+  margin-bottom: 10px;
+}
+
+.buscador-input {
+  width: 250px;
+  background-color: #151827;
+  border: 1px solid #262b40;
+  border-radius: 6px;
+  padding: 7px 10px;
+  color: #ffffff;
+  font-size: 0.72rem;
+  outline: none;
+}
+
+.buscador-input:focus {
+  border-color: #7c6cf0;
+}
+
+.table-container {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #262b40;
+}
+
+.tabla {
+  width: 100%;
+  background-color: #151827 !important;
+}
+
+.mat-mdc-header-cell {
+  background-color: #1b1f30 !important;
+  color: #8b90a8 !important;
+  font-size: 0.65rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  border-bottom: 1px solid #262b40 !important;
+  padding: 8px 12px !important;
+}
+
+.mat-mdc-cell {
+  color: #8b90a8 !important;
+  font-size: 0.72rem !important;
+  border-bottom: 1px solid #262b40 !important;
+  padding: 8px 12px !important;
+}
+
+.fila:hover {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+}
+
+.norma-cell {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+.desc-cell {
+  color: #8b90a8 !important;
+}
+
+.badge-estado-activo {
+  background-color: rgba(62, 207, 142, 0.15);
+  color: #3ecf8e;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.badge-estado-proceso {
+  background-color: rgba(240, 180, 41, 0.15);
+  color: #f0b429;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.badge-estado-sin-permisos {
+  background-color: rgba(240, 87, 107, 0.15);
+  color: #f0576b;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.actions-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.action-btn {
+  background: transparent;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn mat-icon {
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+}
+
+.btn-edit {
+  color: #5b8def;
+}
+
+.btn-edit:hover {
+  background-color: rgba(91, 141, 239, 0.15);
+}
+
+.btn-delete {
+  color: #f0576b;
+}
+
+.btn-delete:hover {
+  background-color: rgba(240, 87, 107, 0.15);
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

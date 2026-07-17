@@ -1,0 +1,110 @@
+<form class="dialog-form" [formGroup]="formulario" (ngSubmit)="onGuardar()">
+  <div class="dialog-header">
+    <div class="dialog-icon-container">
+      <span class="material-icons">gavel</span>
+    </div>
+    <div class="dialog-header-text">
+      <h2 class="dialog-title">{{ data.Accion === 'I' ? 'Nuevo requisito' : 'Editar requisito' }}</h2>
+      <p class="dialog-subtitle">Complete los detalles del requisito legal aplicable</p>
+    </div>
+  </div>
+
+  <div class="dialog-content">
+    
+    <!-- SECCIÓN 1: Identificación del Requisito -->
+    <div class="form-section-title">Identificación del Requisito</div>
+    
+    <!-- Fila 1: Requisito legal (Ancho completo) -->
+    <div class="form-row">
+      <div class="form-group full-width">
+        <label class="form-label">Requisito legal (*)</label>
+        <input type="text" formControlName="requisito" class="form-input" placeholder="Ej. Ley 29783 — Seguridad y Salud en el Trabajo">
+      </div>
+    </div>
+
+    <!-- Fila 2: Ámbito & Tipo de norma -->
+    <div class="form-row two-cols">
+      <div class="form-group">
+        <label class="form-label">Ámbito (*)</label>
+        <select formControlName="ambito" class="form-input">
+          <option *ngFor="let a of ambitos" [value]="a">{{ a }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tipo de norma (*)</label>
+        <select formControlName="tipo" class="form-input">
+          <option *ngFor="let t of tipos" [value]="t">{{ t }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Fila 3: Código de norma & Entidad emisora -->
+    <div class="form-row two-cols">
+      <div class="form-group">
+        <label class="form-label">N° / Código de norma</label>
+        <input type="text" formControlName="norma" class="form-input" placeholder="Ej. Ley 29783">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Entidad emisora (*)</label>
+        <select formControlName="entidad" class="form-input">
+          <option *ngFor="let e of entidades" [value]="e">{{ e }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Fila 4: Obligación específica (Ancho completo) -->
+    <div class="form-row">
+      <div class="form-group full-width">
+        <label class="form-label">Obligación específica</label>
+        <textarea formControlName="obligacion" class="form-input" placeholder="Qué exige y cómo aplica a Precotex…"></textarea>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 2: Cumplimiento y Seguimiento -->
+    <div class="form-section-title" style="margin-top: 20px;">Cumplimiento y Seguimiento</div>
+
+    <!-- Fila 5: Estado & Responsable -->
+    <div class="form-row two-cols">
+      <div class="form-group">
+        <label class="form-label">Estado de cumplimiento (*)</label>
+        <select formControlName="estado" class="form-input">
+          <option *ngFor="let est of estados" [value]="est">{{ est }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Responsable</label>
+        <input type="text" formControlName="responsable" class="form-input" placeholder="Área o responsable">
+      </div>
+    </div>
+
+    <!-- Fila 6: Última eval. & Próxima eval. -->
+    <div class="form-row two-cols">
+      <div class="form-group">
+        <label class="form-label">Última evaluación</label>
+        <input type="date" formControlName="evaluacion" class="form-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Próxima evaluación</label>
+        <input type="date" formControlName="proxeval" class="form-input">
+      </div>
+    </div>
+
+    <!-- Fila 7: Vencimiento & Evidencia -->
+    <div class="form-row two-cols">
+      <div class="form-group">
+        <label class="form-label">Vencimiento (Permiso/Licencia)</label>
+        <input type="date" formControlName="vencimiento" class="form-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Evidencia / Documento</label>
+        <input type="text" formControlName="evidencia" class="form-input" placeholder="Ej. CERT-ITSE-2025.pdf">
+      </div>
+    </div>
+
+  </div>
+
+  <div class="dialog-actions">
+    <button type="button" class="btn-ghost" (click)="onCancelar()">Cancelar</button>
+    <button type="submit" class="btn-primary" [disabled]="formulario.invalid">Guardar registro</button>
+  </div>
+</form>
