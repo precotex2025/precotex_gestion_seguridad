@@ -324,7 +324,7 @@ export class MapaPermisosComponent implements OnInit {
       Modulo_Clave: mk,
       Nivel_Acceso: val
     }).subscribe({
-      next: () => this.toastr.success('Acceso general guardado en la BD.', '', { timeOut: 1500 }),
+      next: () => this.toastr.success('Se guardo con Exito.', '', { timeOut: 1500 }),
       error: () => this.toastr.success('Acceso general actualizado.', '', { timeOut: 1500 })
     });
   }

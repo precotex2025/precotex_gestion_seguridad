@@ -74,21 +74,11 @@ export class PuestosComponent implements OnInit {
             estado: p.puesto_Caracteristicas || 'Activo',
             raw: p
           }));
+          this.puestosList = dbList;
+        } else {
+          const localData = localStorage.getItem('precotex_puestos_usuarios');
+          this.puestosList = localData ? JSON.parse(localData) : [];
         }
-
-        const localData = localStorage.getItem('precotex_puestos_usuarios');
-        let localList = localData ? JSON.parse(localData) : [];
-
-        // Combinar BD y local sin duplicados
-        const combinedMap = new Map<string, any>();
-        for (const item of [...dbList, ...localList]) {
-          const key = item.codigo_Puesto || item.id || item.puesto;
-          if (!combinedMap.has(key)) {
-            combinedMap.set(key, item);
-          }
-        }
-
-        this.puestosList = Array.from(combinedMap.values());
         this.calculateStats();
       },
       error: () => {
