@@ -32,25 +32,6 @@
         </div>
       </div>
 
-      <!-- Procesos que operan -->
-      <div class="row">
-        <label class="form-label">Procesos que operan</label>
-        <div class="checkbox-scroll-container">
-          <div *ngFor="let group of getProcesosKeys()" class="checkbox-group">
-            <h4 class="checkbox-group-title">{{ group }}</h4>
-            <div class="checkbox-grid">
-              <div *ngFor="let proceso of procesosGroups[group]" class="checkbox-item">
-                <input type="checkbox" 
-                       [id]="proceso" 
-                       [checked]="isProcesoSelected(proceso)" 
-                       (change)="onProcesoToggle(proceso, $any($event.target).checked)">
-                <label [for]="proceso">{{ proceso }}</label>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Estado / Ubicación (Distrito) -->
       <div class="row">
         <label class="form-label">Sede / Ubicación <span class="required">*</span></label>
@@ -63,6 +44,25 @@
             <option value="Ate">Ate</option>
             <option value="SJL">SJL</option>
           </select>
+        </div>
+      </div>
+
+      <!-- Procesos que operan -->
+      <div class="row">
+        <label class="form-label">PROCESOS QUE OPERAN</label>
+        <div class="checkbox-scroll-container">
+          <div *ngFor="let groupKey of getProcesosGroupKeys()" class="checkbox-group">
+            <h4 class="checkbox-group-title">{{ groupKey }}</h4>
+            <div class="checkbox-grid">
+              <div *ngFor="let proc of procesosAgrupados[groupKey]" class="checkbox-item">
+                <input type="checkbox" 
+                       [id]="'proc-' + proc.codigo_Proceso" 
+                       [checked]="isProcesoChecked(proc.codigo_Proceso)"
+                       (change)="onToggleProceso(proc.codigo_Proceso)">
+                <label [for]="'proc-' + proc.codigo_Proceso">{{ proc.proceso }}</label>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

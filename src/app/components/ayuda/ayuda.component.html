@@ -1,0 +1,166 @@
+<div class="ayuda-container">
+
+  <!-- TOP SEARCH BANNER -->
+  <div class="search-banner">
+    <div class="search-banner-icon">
+      <mat-icon>help_outline</mat-icon>
+    </div>
+    <div class="search-banner-body">
+      <h2>¿En qué podemos ayudarte?</h2>
+      <p class="search-subtitle">Busca en el manual, preguntas frecuentes o glosario</p>
+      <div class="search-input-wrapper">
+        <mat-icon class="search-icon">search</mat-icon>
+        <input 
+          type="text" 
+          [(ngModel)]="searchText" 
+          (input)="onSearchChange()" 
+          placeholder="Ej: cómo registrar una NC, subir documento, agregar indicador..."
+          class="search-input"
+        >
+      </div>
+    </div>
+    <div class="search-banner-meta">
+      <div class="version-tag">Portal Corporativo v1.0 · Julio 2025</div>
+      <div class="chips-group">
+        <span class="chip chip-green">14 módulos</span>
+        <span class="chip chip-violet">4 manuales</span>
+        <span class="chip chip-amber">18 FAQs</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: MANUALES DE USUARIO -->
+  <div class="section-header">
+    <h3 class="section-title">Manuales de usuario</h3>
+    <span class="section-subtitle">Solo O&M puede subir manuales</span>
+  </div>
+
+  <div class="manuales-grid">
+    <div *ngFor="let m of manuales" class="manual-card" [style.border-top-color]="m.color">
+      <div class="manual-header">
+        <div class="manual-icon-box" [style.background-color]="m.color + '22'" [style.color]="m.color">
+          <mat-icon>{{ m.icono }}</mat-icon>
+        </div>
+        <div class="manual-title-box">
+          <h4 class="manual-title">{{ m.titulo }}</h4>
+          <span class="manual-sub" [style.color]="m.color">{{ m.subtitulo }}</span>
+        </div>
+      </div>
+      <p class="manual-desc">{{ m.descripcion }}</p>
+      <div class="manual-footer">
+        <div class="manual-meta">
+          <span>{{ m.version }} · {{ m.fecha }}</span>
+          <small>Subido por: <b>{{ m.autor }}</b></small>
+        </div>
+        <button class="btn-download-pdf" [style.border-color]="m.color + '55'" [style.color]="m.color" (click)="onDescargarManual(m)">
+          <mat-icon>picture_as_pdf</mat-icon>
+          Descargar PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DROPZONE: SUBIR NUEVO MANUAL -->
+  <div class="upload-dropzone" (click)="onSubirManual()">
+    <div class="dropzone-icon-box">
+      <mat-icon>cloud_upload</mat-icon>
+    </div>
+    <div class="dropzone-text">
+      <h4>Subir nuevo manual</h4>
+      <p>PDF · máx. 20MB · Solo O&M</p>
+    </div>
+  </div>
+
+  <!-- SECTION: PREGUNTAS FRECUENTES -->
+  <div class="panel-section margin-top-lg">
+    <div class="section-header border-bottom">
+      <h3 class="section-title">Preguntas frecuentes</h3>
+      <span class="faq-count" *ngIf="filteredFaqs.length > 0">{{ filteredFaqs.length }} resultado(s)</span>
+    </div>
+
+    <div class="faq-list">
+      <div *ngFor="let f of filteredFaqs" class="faq-item">
+        <div class="faq-question">
+          <mat-icon class="faq-q-icon">help</mat-icon>
+          <span>{{ f.pregunta }}</span>
+        </div>
+        <div class="faq-answer">
+          {{ f.respuesta }}
+        </div>
+      </div>
+      <div *ngIf="filteredFaqs.length === 0" class="faq-empty">
+        <mat-icon>search_off</mat-icon>
+        <p>Sin resultados para "{{ searchText }}". Intenta buscar con otros términos.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: ESTADÍSTICAS Y CONSULTAS -->
+  <div class="panel-section margin-top-md">
+    <div class="section-header border-bottom">
+      <h3 class="section-title">Manuales y consultas más frecuentes</h3>
+      <span class="section-subtitle">Últimos 30 días</span>
+    </div>
+
+    <div class="stats-grid">
+      <!-- LEFT: MANUALES MÁS DESCARGADOS -->
+      <div class="stats-col">
+        <div class="col-title">Manuales más descargados</div>
+        <div *ngFor="let item of manualesDescargados" class="bar-stat-item">
+          <div class="bar-stat-label">
+            <span class="stat-name">{{ item.nombre }}</span>
+            <span class="stat-value" [style.color]="item.color">{{ item.cantidad }} descargas</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" [style.width.%]="(item.cantidad / item.max) * 100" [style.background-color]="item.color"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: PREGUNTAS MÁS BUSCADAS -->
+      <div class="stats-col">
+        <div class="col-title">Preguntas más buscadas</div>
+        <div *ngFor="let item of preguntasBuscadas" class="top-faq-item">
+          <span class="top-faq-q">{{ item.pregunta }}</span>
+          <span class="top-faq-count">{{ item.busquedas }} búsquedas</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM SUPPORT CARDS -->
+  <div class="support-cards-grid margin-top-md">
+    <!-- CONTACTAR O&M -->
+    <div class="support-card">
+      <div class="support-info">
+        <div class="support-icon-box icon-purple">
+          <mat-icon>email</mat-icon>
+        </div>
+        <div>
+          <h4>Contactar a O&M</h4>
+          <p>¿Tienes una consulta sobre el uso del portal?</p>
+        </div>
+      </div>
+      <button class="btn-support btn-purple" (click)="onContactarOyM()">
+        Escribir correo
+      </button>
+    </div>
+
+    <!-- REPORTAR A SISTEMAS -->
+    <div class="support-card">
+      <div class="support-info">
+        <div class="support-icon-box icon-red">
+          <mat-icon>bug_report</mat-icon>
+        </div>
+        <div>
+          <h4>Reportar un problema</h4>
+          <p>¿Algo no funciona bien? Repórtalo a Sistemas.</p>
+        </div>
+      </div>
+      <button class="btn-support btn-red" (click)="onReportarSistemas()">
+        Reportar
+      </button>
+    </div>
+  </div>
+
+</div>

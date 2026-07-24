@@ -38,15 +38,15 @@
         <!-- Opciones Checkbox & Link -->
         <div class="login-options">
           <label class="custom-checkbox">
-            <input type="checkbox">
+            <input type="checkbox" formControlName="recordarme">
             <span>Recordarme</span>
           </label>
           <a href="javascript:void(0)" class="forgot-link">¿Olvidó su contraseña?</a>
         </div>
 
         <!-- Botón Ingresar -->
-        <button type="submit" class="btn-login-submit">
-          Ingresar
+        <button type="submit" class="btn-login-submit" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Ingresando...' : 'Ingresar' }}
         </button>
 
       </form>
@@ -69,10 +69,10 @@
     
     <div class="mesh-logo-container">
       <div class="mesh-shield">
-        <mat-icon>security</mat-icon>
+        <mat-icon>verified_user</mat-icon>
       </div>
-      <h1 class="mesh-title">Precotex Seguridad</h1>
-      <p class="mesh-subtitle">Sistema de Gestión de Seguridad y Salud en el Trabajo</p>
+      <h1 class="mesh-title">Smul</h1>
+      <p class="mesh-subtitle">Portal Corporativo de Gestión Documentaria</p>
     </div>
 
     <!-- Dots pattern -->

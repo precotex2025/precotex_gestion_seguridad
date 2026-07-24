@@ -4,8 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
 import { AnalyticsRegeditComponent } from './analytics-regedit/analytics-regedit.component';
-
-const STORAGE_KEY = 'precotex_indicadores';
+import { IndicadoresService } from '../../services/indicadores.service';
 
 @Component({
   selector: 'app-analytics',
@@ -35,78 +34,10 @@ export class AnalyticsComponent implements OnInit {
 
   dataSource = new MatTableDataSource<any>();
 
-  private readonly seedData = [
-    {
-      codigo: 'IND-COS-001',
-      nombre: '% eficiencia de línea',
-      tipo: 'Eficacia',
-      norma: 'ISO 9001:2015',
-      responsable: 'Jefe Costura',
-      respmed: 'Supervisor',
-      estado: 'Activo',
-      sede: 'Sede Ate',
-      proceso: 'Costura',
-      areasacc: 'Costura, Gerencia',
-      inicio: '2025-01-01',
-      fin: '2025-12-31',
-      frecuencia: 'Diario',
-      fuente: 'Reporte de producción',
-      formula: '(Piezas conformes / Piezas producidas) × 100',
-      unidad: 'Porcentaje (%)',
-      base: '79%',
-      meta: '≥85%',
-      tipometa: 'Mayor o igual (≥)',
-      sentido: '↑ Sube es bueno'
-    },
-    {
-      codigo: 'IND-COR-001',
-      nombre: '% merma de tela',
-      tipo: 'Eficiencia',
-      norma: 'ISO 9001:2015',
-      responsable: 'Jefe Corte',
-      respmed: 'Supervisor',
-      estado: 'Activo',
-      sede: 'Sede Central — Lima',
-      proceso: 'Corte',
-      areasacc: 'Corte',
-      inicio: '2025-01-01',
-      fin: '2025-12-31',
-      frecuencia: 'Semanal',
-      fuente: 'Reporte de producción',
-      formula: '(Tela desperdiciada / Tela total) × 100',
-      unidad: 'Porcentaje (%)',
-      base: '12%',
-      meta: '≤8%',
-      tipometa: 'Menor o igual (≤)',
-      sentido: '↓ Baja es bueno'
-    },
-    {
-      codigo: 'IND-SSO-001',
-      nombre: 'N° inspecciones realizadas vs prog.',
-      tipo: 'Efectividad',
-      norma: 'ISO 45001:2018',
-      responsable: 'Jefe SSOMA',
-      respmed: 'Jefe SSOMA',
-      estado: 'Activo',
-      sede: 'Todas',
-      proceso: 'SSOMA',
-      areasacc: 'SSOMA',
-      inicio: '2025-01-01',
-      fin: '2025-12-31',
-      frecuencia: 'Mensual',
-      fuente: 'Reporte SSOMA',
-      formula: '(Inspecciones realizadas / Programadas) × 100',
-      unidad: 'Porcentaje (%)',
-      base: '80%',
-      meta: '=100%',
-      tipometa: 'Igual (=)',
-      sentido: '↑ Sube es bueno'
-    }
-  ];
-
   constructor(
     private dialog: MatDialog,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private indicadoresService: IndicadoresService
   ) {}
 
   ngOnInit(): void {
@@ -114,23 +45,42 @@ export class AnalyticsComponent implements OnInit {
   }
 
   onListado(): void {
-    const local = localStorage.getItem(STORAGE_KEY);
-    if (local) {
-      const data = JSON.parse(local);
-      this.dataSource.data = data;
-      this.calculateStats(data);
-    } else {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.seedData));
-      this.dataSource.data = this.seedData;
-      this.calculateStats(this.seedData);
-    }
+    this.indicadoresService.getListadoIndicadores().subscribe({
+      next: (res: any) => {
+        if (res && res.success && res.elements) {
+          const mapped = res.elements.map((item: any) => ({
+            codigo: item.codigo,
+            nombre: item.nombre,
+            tipo: item.tipo || 'Eficiencia',
+            proceso: item.nombre_Proceso || item.codigo_Proceso || 'General',
+            codigoProceso: item.codigo_Proceso,
+            norma: item.norma || 'ISO 9001:2015',
+            frecuencia: item.frecuencia || 'Mensual',
+            unidad: item.unidad_Medida || '%',
+            meta: item.meta !== null && item.meta !== undefined ? item.meta.toString() : '0',
+            estado: 'Activo',
+            idIndicador: item.id_Indicador
+          }));
+          this.dataSource.data = mapped;
+          this.calculateStats(mapped);
+        } else {
+          this.dataSource.data = [];
+          this.calculateStats([]);
+        }
+      },
+      error: (err) => {
+        console.error('Error al listar Indicadores:', err);
+        this.dataSource.data = [];
+        this.calculateStats([]);
+      }
+    });
   }
 
   calculateStats(data: any[]): void {
     this.stats = {
       total: data.length,
-      activos: data.filter(d => d.estado === 'Activo').length,
-      inactivos: data.filter(d => d.estado === 'Inactivo').length
+      activos: data.filter(d => (d.estado || '').toLowerCase().includes('activo')).length,
+      inactivos: data.filter(d => (d.estado || '').toLowerCase().includes('inactivo')).length
     };
   }
 
@@ -158,16 +108,33 @@ export class AnalyticsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(res => {
       if (res) {
-        const local = localStorage.getItem(STORAGE_KEY);
-        const data = local ? JSON.parse(local) : [];
-        if (data.some((d: any) => d.codigo === res.codigo)) {
-          this.toastr.warning('El código del indicador ya existe.', 'Código Duplicado');
-          return;
-        }
-        data.unshift(res);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        this.toastr.success('Indicador guardado correctamente.', '', { timeOut: 2500 });
-        this.onListado();
+        // Formatear valor numérico de meta
+        const numericMeta = parseFloat(String(res.meta).replace(/[^0-9.]/g, '')) || 0;
+
+        const payload = {
+          Accion: 'I',
+          Codigo: res.codigo,
+          Nombre: res.nombre,
+          Codigo_Proceso: res.proceso || '001',
+          Unidad_Medida: res.unidad || '%',
+          Meta: numericMeta,
+          Frecuencia: res.frecuencia || 'Mensual',
+          Usuario_Registro: 'SISTEMAS'
+        };
+
+        this.indicadoresService.postIndicadorMnto(payload).subscribe({
+          next: (response: any) => {
+            if (response.success) {
+              this.toastr.success('Indicador registrado en la BD correctamente.', '', { timeOut: 2500 });
+              this.onListado();
+            } else {
+              this.toastr.error(response.message || 'Error al registrar', 'Error BD');
+            }
+          },
+          error: (err) => {
+            this.toastr.error(err.error?.message || err.message, 'Error Servidor');
+          }
+        });
       }
     });
   }
@@ -185,14 +152,32 @@ export class AnalyticsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(res => {
       if (res) {
-        const local = localStorage.getItem(STORAGE_KEY);
-        if (local) {
-          let data = JSON.parse(local);
-          data = data.map((d: any) => d.codigo === item.codigo ? res : d);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-          this.toastr.success('Indicador actualizado correctamente.', '', { timeOut: 2500 });
-          this.onListado();
-        }
+        const numericMeta = parseFloat(String(res.meta).replace(/[^0-9.]/g, '')) || 0;
+
+        const payload = {
+          Accion: 'U',
+          Codigo: item.codigo,
+          Nombre: res.nombre,
+          Codigo_Proceso: res.proceso || '001',
+          Unidad_Medida: res.unidad || '%',
+          Meta: numericMeta,
+          Frecuencia: res.frecuencia || 'Mensual',
+          Usuario_Registro: 'SISTEMAS'
+        };
+
+        this.indicadoresService.postIndicadorMnto(payload).subscribe({
+          next: (response: any) => {
+            if (response.success) {
+              this.toastr.success('Indicador actualizado en la BD correctamente.', '', { timeOut: 2500 });
+              this.onListado();
+            } else {
+              this.toastr.error(response.message || 'Error al actualizar', 'Error BD');
+            }
+          },
+          error: (err) => {
+            this.toastr.error(err.error?.message || err.message, 'Error Servidor');
+          }
+        });
       }
     });
   }
@@ -208,14 +193,25 @@ export class AnalyticsComponent implements OnInit {
       cancelButtonText: 'No'
     }).then(result => {
       if (result.isConfirmed) {
-        const local = localStorage.getItem(STORAGE_KEY);
-        if (local) {
-          let data = JSON.parse(local);
-          data = data.filter((d: any) => d.codigo !== item.codigo);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-          this.toastr.success('Indicador eliminado correctamente.', '', { timeOut: 2500 });
-          this.onListado();
-        }
+        const payload = {
+          Accion: 'D',
+          Codigo: item.codigo,
+          Usuario_Registro: 'SISTEMAS'
+        };
+
+        this.indicadoresService.postIndicadorMnto(payload).subscribe({
+          next: (response: any) => {
+            if (response.success) {
+              this.toastr.success('Indicador eliminado correctamente.', '', { timeOut: 2500 });
+              this.onListado();
+            } else {
+              this.toastr.error(response.message || 'Error al eliminar', 'Error BD');
+            }
+          },
+          error: (err) => {
+            this.toastr.error(err.error?.message || err.message, 'Error Servidor');
+          }
+        });
       }
     });
   }

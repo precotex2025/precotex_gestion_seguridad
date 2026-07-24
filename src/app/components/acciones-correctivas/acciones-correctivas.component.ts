@@ -4,8 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
 import { PlanificarFormacionModalComponent } from './planificar-formacion-modal/planificar-formacion-modal.component';
-
-const STORAGE_KEY = 'precotex_noconf';
+import { NoConformidadService } from '../../services/no-conformidad.service';
 
 @Component({
   selector: 'app-acciones-correctivas',
@@ -37,45 +36,10 @@ export class AccionesCorrectivasComponent implements OnInit {
 
   dataSource = new MatTableDataSource<any>();
 
-  private readonly seedData = [
-    {
-      nc: 'NC-INT-2025-002',
-      tipo: 'Interna',
-      accion: 'Actualizar procedimiento costura v2.1',
-      proceso: 'Costura',
-      responsable: 'Carlos Ríos',
-      inicio: '2025-06-14',
-      limite: '2025-06-28',
-      estado: 'Completada',
-      desc: 'Actualización del procedimiento tras hallazgo.'
-    },
-    {
-      nc: 'NC-EXT-2025-001',
-      tipo: 'Externa',
-      accion: 'Crear dashboard de indicadores',
-      proceso: 'Calidad',
-      responsable: 'Jordan Pinedo',
-      inicio: '2025-07-01',
-      limite: '2025-07-15',
-      estado: 'En ejecución',
-      desc: 'Implementar tablero visible de indicadores.'
-    },
-    {
-      nc: 'NC-INT-2025-003',
-      tipo: 'Interna',
-      accion: 'Retomar medición indicadores de calidad',
-      proceso: 'Calidad',
-      responsable: 'Rosa Chávez',
-      inicio: '2025-05-20',
-      limite: '2025-06-30',
-      estado: 'Vencida',
-      desc: 'Regularizar mediciones pendientes.'
-    }
-  ];
-
   constructor(
     private dialog: MatDialog,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private noConformidadService: NoConformidadService
   ) {}
 
   ngOnInit(): void {
@@ -83,35 +47,53 @@ export class AccionesCorrectivasComponent implements OnInit {
   }
 
   onListado(): void {
-    const local = localStorage.getItem(STORAGE_KEY);
-    if (local) {
-      const data = JSON.parse(local);
-      this.dataSource.data = data;
-      this.calculateStats(data);
-    } else {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.seedData));
-      this.dataSource.data = this.seedData;
-      this.calculateStats(this.seedData);
-    }
+    this.noConformidadService.getListadoNoConformidades().subscribe({
+      next: (res: any) => {
+        if (res.success && res.elements) {
+          const mapped = res.elements.map((item: any) => ({
+            nc: item.nc,
+            tipo: item.tipo,
+            accion: item.accion,
+            proceso: item.proceso,
+            responsable: item.responsable,
+            inicio: item.fecha_Inicio ? item.fecha_Inicio.split('T')[0] : '',
+            limite: item.fecha_Limite ? item.fecha_Limite.split('T')[0] : '',
+            estado: item.estado,
+            desc: item.descripcion,
+            codigoAuditoria: item.codigo_Auditoria
+          }));
+          this.dataSource.data = mapped;
+          this.calculateStats(mapped);
+        } else {
+          this.dataSource.data = [];
+          this.calculateStats([]);
+        }
+      },
+      error: (err) => {
+        console.error('Error al listar No Conformidades:', err);
+        this.dataSource.data = [];
+        this.calculateStats([]);
+      }
+    });
   }
 
   calculateStats(data: any[]): void {
     this.stats = {
       total: data.length,
-      completadas: data.filter(d => d.estado === 'Completada').length,
-      enEjecucion: data.filter(d => d.estado === 'En ejecución').length,
-      pendientes: data.filter(d => d.estado === 'Pendiente').length,
-      vencidas: data.filter(d => d.estado === 'Vencida').length
+      completadas: data.filter(d => (d.estado || '').toLowerCase().includes('completad')).length,
+      enEjecucion: data.filter(d => (d.estado || '').toLowerCase().includes('ejecuci')).length,
+      pendientes: data.filter(d => (d.estado || '').toLowerCase().includes('pendient')).length,
+      vencidas: data.filter(d => (d.estado || '').toLowerCase().includes('vencid')).length
     };
   }
 
   getEstadoClass(estado: string): string {
     if (!estado) return 'pendiente';
     const s = estado.toLowerCase().trim();
-    if (s.includes('completada')) return 'completada';
-    if (s.includes('ejecución') || s.includes('ejecucion')) return 'en-ejecucion';
-    if (s.includes('pendiente')) return 'pendiente';
-    if (s.includes('vencida')) return 'vencida';
+    if (s.includes('completad')) return 'completada';
+    if (s.includes('ejecuci')) return 'en-ejecucion';
+    if (s.includes('pendient')) return 'pendiente';
+    if (s.includes('vencid')) return 'vencida';
     return 'pendiente';
   }
 
@@ -137,17 +119,34 @@ export class AccionesCorrectivasComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(res => {
       if (res) {
-        const local = localStorage.getItem(STORAGE_KEY);
-        const data = local ? JSON.parse(local) : [];
-        // Evitar duplicados de NC
-        if (data.some((d: any) => d.nc === res.nc)) {
-          this.toastr.warning('El código de NC ya existe.', 'Código Duplicado');
-          return;
-        }
-        data.unshift(res);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        this.toastr.success('Acción correctiva agregada correctamente.', '', { timeOut: 2500 });
-        this.onListado();
+        const payload = {
+          Accion: 'I',
+          NC: res.nc,
+          Tipo: res.tipo,
+          Accion_Desc: res.accion,
+          Proceso: res.proceso,
+          Responsable: res.responsable,
+          Fecha_Inicio: res.inicio,
+          Fecha_Limite: res.limite,
+          Estado: res.estado,
+          Descripcion: res.desc || '',
+          Codigo_Auditoria: res.codigoAuditoria || '',
+          Cod_Usuario: 'SISTEMAS'
+        };
+
+        this.noConformidadService.postProcesoMntoNoConformidad(payload).subscribe({
+          next: (response: any) => {
+            if (response.success) {
+              this.toastr.success('Acción correctiva registrada en la BD correctamente.', '', { timeOut: 2500 });
+              this.onListado();
+            } else {
+              this.toastr.error(response.message || 'Error al registrar', 'Error BD');
+            }
+          },
+          error: (err) => {
+            this.toastr.error(err.error?.message || err.message, 'Error Servidor');
+          }
+        });
       }
     });
   }
@@ -165,14 +164,34 @@ export class AccionesCorrectivasComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(res => {
       if (res) {
-        const local = localStorage.getItem(STORAGE_KEY);
-        if (local) {
-          let data = JSON.parse(local);
-          data = data.map((d: any) => d.nc === item.nc ? res : d);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-          this.toastr.success('Acción correctiva actualizada correctamente.', '', { timeOut: 2500 });
-          this.onListado();
-        }
+        const payload = {
+          Accion: 'U',
+          NC: item.nc,
+          Tipo: res.tipo,
+          Accion_Desc: res.accion,
+          Proceso: res.proceso,
+          Responsable: res.responsable,
+          Fecha_Inicio: res.inicio,
+          Fecha_Limite: res.limite,
+          Estado: res.estado,
+          Descripcion: res.desc || '',
+          Codigo_Auditoria: res.codigoAuditoria || '',
+          Cod_Usuario: 'SISTEMAS'
+        };
+
+        this.noConformidadService.postProcesoMntoNoConformidad(payload).subscribe({
+          next: (response: any) => {
+            if (response.success) {
+              this.toastr.success('Acción correctiva actualizada en la BD correctamente.', '', { timeOut: 2500 });
+              this.onListado();
+            } else {
+              this.toastr.error(response.message || 'Error al actualizar', 'Error BD');
+            }
+          },
+          error: (err) => {
+            this.toastr.error(err.error?.message || err.message, 'Error Servidor');
+          }
+        });
       }
     });
   }
@@ -188,14 +207,25 @@ export class AccionesCorrectivasComponent implements OnInit {
       cancelButtonText: 'No'
     }).then(result => {
       if (result.isConfirmed) {
-        const local = localStorage.getItem(STORAGE_KEY);
-        if (local) {
-          let data = JSON.parse(local);
-          data = data.filter((d: any) => d.nc !== item.nc);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-          this.toastr.success('Acción correctiva eliminada correctamente.', '', { timeOut: 2500 });
-          this.onListado();
-        }
+        const payload = {
+          Accion: 'D',
+          NC: item.nc,
+          Cod_Usuario: 'SISTEMAS'
+        };
+
+        this.noConformidadService.postProcesoMntoNoConformidad(payload).subscribe({
+          next: (response: any) => {
+            if (response.success) {
+              this.toastr.success('Acción correctiva eliminada correctamente.', '', { timeOut: 2500 });
+              this.onListado();
+            } else {
+              this.toastr.error(response.message || 'Error al eliminar', 'Error BD');
+            }
+          },
+          error: (err) => {
+            this.toastr.error(err.error?.message || err.message, 'Error Servidor');
+          }
+        });
       }
     });
   }

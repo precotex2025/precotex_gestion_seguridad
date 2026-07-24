@@ -649,7 +649,48 @@
   color: #cbd5e1;
 }
 
+/* Status Pills */
+.status-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.status-pill.status-success {
+  background-color: rgba(62, 207, 142, 0.15);
+  color: #3ecf8e;
+  border: 1px solid rgba(62, 207, 142, 0.3);
+}
+
+.status-pill.status-info {
+  background-color: rgba(91, 141, 239, 0.15);
+  color: #5b8def;
+  border: 1px solid rgba(91, 141, 239, 0.3);
+}
+
+.status-pill.status-warning {
+  background-color: rgba(240, 180, 41, 0.15);
+  color: #f0b429;
+  border: 1px solid rgba(240, 180, 41, 0.3);
+}
+
+.status-pill.status-danger {
+  background-color: rgba(240, 87, 107, 0.15);
+  color: #f0576b;
+  border: 1px solid rgba(240, 87, 107, 0.3);
+}
+
 /* --- PrimeNG Table & Paginator overrides --- */
+::ng-deep .p-datatable,
+::ng-deep .p-datatable .p-datatable-table,
+::ng-deep .p-datatable .p-datatable-tbody {
+  background-color: #151827 !important;
+}
+
 ::ng-deep .p-datatable .p-datatable-thead > tr > th {
   background: #1b1f30 !important;
   color: #5a6078 !important;
@@ -661,20 +702,41 @@
   border-bottom: 1px solid #262b40 !important;
 }
 
+::ng-deep .p-datatable .p-datatable-tbody > tr {
+  background-color: #151827 !important;
+  color: #8b90a8 !important;
+}
+
+::ng-deep .p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(even) {
+  background-color: #1a1e30 !important;
+}
+
 ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
-  background: #151827 !important;
+  background-color: transparent !important;
   color: #8b90a8 !important;
   padding: 10px 16px !important;
   border-bottom: 1px solid #262b40 !important;
   font-size: 0.8rem !important;
 }
 
-::ng-deep .p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(even) > td {
-  background: rgba(255, 255, 255, 0.015) !important;
+::ng-deep .p-datatable .p-datatable-tbody > tr:hover,
+::ng-deep .p-datatable .p-datatable-tbody > tr.p-highlight,
+::ng-deep .p-datatable .p-datatable-tbody > tr:focus,
+::ng-deep .p-datatable .p-datatable-tbody > tr[aria-selected="true"] {
+  background-color: rgba(124, 108, 240, 0.14) !important;
 }
 
-::ng-deep .p-datatable .p-datatable-tbody > tr:hover > td {
-  background: rgba(255, 255, 255, 0.03) !important;
+::ng-deep .p-datatable .p-datatable-tbody > tr:hover > td,
+::ng-deep .p-datatable .p-datatable-tbody > tr.p-highlight > td,
+::ng-deep .p-datatable .p-datatable-tbody > tr:focus > td,
+::ng-deep .p-datatable .p-datatable-tbody > tr[aria-selected="true"] > td {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+::ng-deep .p-datatable .p-datatable-tbody > tr:hover .activity-action,
+::ng-deep .p-datatable .p-datatable-tbody > tr:hover .user-cell span,
+::ng-deep .p-datatable .p-datatable-tbody > tr:hover .date-cell {
   color: #ffffff !important;
 }
 

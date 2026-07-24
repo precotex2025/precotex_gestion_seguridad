@@ -1,85 +1,101 @@
 <form class="dialog-form" [formGroup]="formulario" (ngSubmit)="onGuardar()">
+  
+  <!-- CABECERA -->
   <div class="dialog-header">
     <div class="dialog-icon-container">
       <span class="material-icons">trending_up</span>
     </div>
     <div class="dialog-header-text">
-      <h2 class="dialog-title">{{ data.Accion === 'I' ? 'Registrar iniciativa' : 'Editar iniciativa' }}</h2>
-      <p class="dialog-subtitle">Complete los detalles de la iniciativa de mejora</p>
+      <h2 class="dialog-title">{{ data.Accion === 'I' ? 'Registrar nueva iniciativa' : 'Editar iniciativa' }}</h2>
+      <p class="dialog-subtitle">Complete los detalles de la iniciativa de mejora según el documento</p>
     </div>
   </div>
 
   <div class="dialog-content">
-    
-    <!-- Fila 1: Título (Ancho completo) -->
-    <div class="form-row">
-      <div class="form-group full-width">
-        <label class="form-label">Título (*)</label>
-        <input type="text" formControlName="titulo" class="form-input" placeholder="Ej. Reprocesos en costura línea 3">
-      </div>
-    </div>
 
-    <!-- Fila 2: Proceso & Sede -->
+    <!-- FILA 1: SEDE & PROCESO -->
     <div class="form-row two-cols">
       <div class="form-group">
-        <label class="form-label">Proceso (*)</label>
-        <select formControlName="proceso" class="form-input">
-          <optgroup *ngFor="let macro of getProcesosKeys()" [label]="macro">
-            <option *ngFor="let proc of procesosGroups[macro]" [value]="proc">{{ proc }}</option>
-          </optgroup>
-        </select>
-      </div>
-      <div class="form-group">
         <label class="form-label">Sede (*)</label>
-        <select formControlName="sede" class="form-input">
+        <select formControlName="sede" class="form-input" (change)="onSedeChange($any($event.target).value)">
           <option *ngFor="let s of sedes" [value]="s">{{ s }}</option>
         </select>
       </div>
-    </div>
-
-    <!-- Fila 3: Herramienta & Proveniente -->
-    <div class="form-row two-cols">
       <div class="form-group">
-        <label class="form-label">Herramienta (*)</label>
-        <select formControlName="herramienta" class="form-input">
-          <option *ngFor="let h of herramientas" [value]="h">{{ h }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Proveniente de (*)</label>
-        <select formControlName="proveniente" class="form-input">
-          <option *ngFor="let p of provenientes" [value]="p">{{ p }}</option>
+        <label class="form-label">Proceso — <span class="note-purple">carga según sede</span> (*)</label>
+        <select formControlName="proceso" class="form-input">
+          <option *ngFor="let p of procesosActuales" [value]="p">{{ p }}</option>
         </select>
       </div>
     </div>
 
-    <!-- Fila 4: Apertura & Límite -->
-    <div class="form-row two-cols">
+    <!-- FILA 2: HERRAMIENTA A USAR (TARJETAS SELECCIONABLES) -->
+    <div class="form-group full-width margin-bottom-14">
+      <label class="form-label">Herramienta a usar (*)</label>
+      <div class="herramientas-cards">
+        <button type="button" 
+                *ngFor="let item of herramientasOpts" 
+                class="herr-btn" 
+                [class.active]="herramientaSeleccionada === item.key"
+                [style.--card-color]="item.color"
+                (click)="selectHerramienta(item.key)">
+          <div class="herr-title" [style.color]="herramientaSeleccionada === item.key ? item.color : '#e7e9f2'">
+            {{ item.label }}
+          </div>
+          <div class="herr-sub">{{ item.sub }}</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- FILA 3: TÍTULO / DESCRIPCIÓN BREVE -->
+    <div class="form-row margin-bottom-14">
+      <div class="form-group full-width">
+        <label class="form-label">Título / descripción breve (*)</label>
+        <input type="text" 
+               formControlName="titulo" 
+               class="form-input" 
+               placeholder="Se jala automáticamente del documento Excel subido">
+      </div>
+    </div>
+
+    <!-- FILA 4: 3 FECHAS (OCURRENCIA, LÍMITE, REGISTRO) -->
+    <div class="form-row three-cols margin-bottom-14">
       <div class="form-group">
-        <label class="form-label">Apertura (*)</label>
+        <label class="form-label">F. ocurrencia <span class="faint-tag">auto</span> (*)</label>
         <input type="date" formControlName="apertura" class="form-input">
       </div>
       <div class="form-group">
-        <label class="form-label">Límite (*)</label>
+        <label class="form-label">F. límite <span class="faint-tag">auto</span> (*)</label>
         <input type="date" formControlName="limite" class="form-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">F. registro <span class="faint-tag">auto</span></label>
+        <input type="date" formControlName="registro" class="form-input readonly-input" readonly>
       </div>
     </div>
 
-    <!-- Fila 5: Estado -->
-    <div class="form-row two-cols">
-      <div class="form-group">
-        <label class="form-label">Estado (*)</label>
-        <select formControlName="estado" class="form-input">
-          <option *ngFor="let est of estados" [value]="est">{{ est }}</option>
-        </select>
+    <!-- FILA 5: ZONA DRAG & DROP SUBIR EXCEL -->
+    <div class="upload-zone" (click)="excelFileInput.click()">
+      <div class="upload-icon">
+        <span class="material-icons">cloud_upload</span>
       </div>
-      <div class="form-group"></div>
+      <div class="upload-title">Subir archivo Excel (5W-2H o ACR)</div>
+      <div class="upload-sub">Solo .xlsx / .xls · máx. 10MB</div>
+      <div class="upload-filename" [class.has-file]="archivoNombre">
+        {{ archivoNombre ? archivoNombre : 'Ningún archivo seleccionado' }}
+      </div>
+      <input #excelFileInput 
+             type="file" 
+             accept=".xlsx,.xls" 
+             style="display:none" 
+             (change)="onFileChange($event)">
     </div>
 
   </div>
 
+  <!-- ACCIONES FOOTER -->
   <div class="dialog-actions">
     <button type="button" class="btn-ghost" (click)="onCancelar()">Cancelar</button>
-    <button type="submit" class="btn-primary" [disabled]="formulario.invalid">Guardar registro</button>
+    <button type="submit" class="btn-primary" [disabled]="formulario.invalid">Registrar</button>
   </div>
 </form>

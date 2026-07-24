@@ -4,8 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
 import { PlanificacionObjetivosRegeditComponent } from './planificacion-objetivos-regedit/planificacion-objetivos-regedit.component';
-
-const STORAGE_KEY = 'precotex_objetivos';
+import { ObjetivosService } from '../../services/objetivos.service';
 
 @Component({
   selector: 'app-planificacion-objetivos',
@@ -36,48 +35,10 @@ export class PlanificacionObjetivosComponent implements OnInit {
 
   dataSource = new MatTableDataSource<any>();
 
-  private readonly seedData = [
-    {
-      id: 'OBJ-001',
-      objetivo: 'Reducir defectos de calidad',
-      proceso: 'Calidad',
-      norma: 'ISO 9001:2015',
-      indicador: '% piezas defectuosas',
-      base: '12%',
-      meta: '≤10%',
-      frecuencia: 'Mensual',
-      estado: 'Planificado',
-      desc: 'Reforzar control en primera inspección.'
-    },
-    {
-      id: 'OBJ-002',
-      objetivo: 'Cero accidentes en planta',
-      proceso: 'SSOMA',
-      norma: 'ISO 45001:2018',
-      indicador: 'N° accidentes',
-      base: '2 en 2024',
-      meta: '0',
-      frecuencia: 'Trimestral',
-      estado: 'Planificado',
-      desc: 'Programa de prevención y capacitación.'
-    },
-    {
-      id: 'OBJ-003',
-      objetivo: 'Reducir merma de tela',
-      proceso: 'Corte',
-      norma: 'ISO 9001:2015',
-      indicador: 'Sin definir',
-      base: '18%',
-      meta: '≤8%',
-      frecuencia: 'Mensual',
-      estado: 'Pendiente',
-      desc: 'Optimizar tendido de tela.'
-    }
-  ];
-
   constructor(
     private dialog: MatDialog,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private objetivosService: ObjetivosService
   ) {}
 
   ngOnInit(): void {
@@ -85,33 +46,52 @@ export class PlanificacionObjetivosComponent implements OnInit {
   }
 
   onListado(): void {
-    const local = localStorage.getItem(STORAGE_KEY);
-    if (local) {
-      const data = JSON.parse(local);
-      this.dataSource.data = data;
-      this.calculateStats(data);
-    } else {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.seedData));
-      this.dataSource.data = this.seedData;
-      this.calculateStats(this.seedData);
-    }
+    this.objetivosService.getListadoObjetivos().subscribe({
+      next: (res: any) => {
+        if (res && res.success && res.elements) {
+          const mapped = res.elements.map((item: any) => ({
+            id: item.id_Objetivo,
+            codigo: item.codigo,
+            objetivo: item.nombre,
+            proceso: item.proceso || 'General',
+            norma: item.norma || 'ISO 9001:2015',
+            indicador: item.indicador || '% cumplimiento',
+            base: item.base || '0%',
+            meta: item.meta !== null && item.meta !== undefined ? item.meta.toString() : '0',
+            frecuencia: item.frecuencia || 'Mensual',
+            estado: 'Planificado',
+            desc: item.nombre
+          }));
+          this.dataSource.data = mapped;
+          this.calculateStats(mapped);
+        } else {
+          this.dataSource.data = [];
+          this.calculateStats([]);
+        }
+      },
+      error: (err) => {
+        console.error('Error al listar Objetivos:', err);
+        this.dataSource.data = [];
+        this.calculateStats([]);
+      }
+    });
   }
 
   calculateStats(data: any[]): void {
     this.stats = {
       total: data.length,
-      cumplidos: data.filter(d => d.estado === 'Cumplido').length,
-      planificados: data.filter(d => d.estado === 'Planificado').length,
-      pendientes: data.filter(d => d.estado === 'Pendiente').length
+      cumplidos: data.filter(d => (d.estado || '').toLowerCase().includes('cumplid')).length,
+      planificados: data.filter(d => (d.estado || '').toLowerCase().includes('planificad')).length,
+      pendientes: data.filter(d => (d.estado || '').toLowerCase().includes('pendient')).length
     };
   }
 
   getEstadoClass(estado: string): string {
-    if (!estado) return 'planificado';
+    if (!estado) return 'pendiente';
     const s = estado.toLowerCase().trim();
-    if (s.includes('cumplido')) return 'cumplido';
-    if (s.includes('pendiente')) return 'pendiente';
-    return 'planificado';
+    if (s.includes('cumplid')) return 'cumplido';
+    if (s.includes('planificad')) return 'planificado';
+    return 'pendiente';
   }
 
   aplicarFiltro(event: Event): void {
@@ -124,7 +104,7 @@ export class PlanificacionObjetivosComponent implements OnInit {
       width: '680px',
       disableClose: true,
       data: {
-        Title: '::. Registrar objetivo planificado .::',
+        Title: '::. Registrar objetivo .::',
         Accion: 'I',
         Datos: null
       }
@@ -132,16 +112,31 @@ export class PlanificacionObjetivosComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(res => {
       if (res) {
-        const local = localStorage.getItem(STORAGE_KEY);
-        const data = local ? JSON.parse(local) : [];
-        const newRecord = {
-          id: 'OBJ-' + Date.now(),
-          ...res
+        const numericMeta = parseFloat(String(res.meta).replace(/[^0-9.]/g, '')) || 0;
+        const generatedCode = 'OBJ-' + Date.now().toString().slice(-4);
+
+        const payload = {
+          Accion: 'I',
+          Codigo: res.codigo || generatedCode,
+          Nombre: res.objetivo || res.nombre,
+          Proceso: res.proceso || 'General',
+          Meta: numericMeta,
+          Usuario_Registro: 'SISTEMAS'
         };
-        data.unshift(newRecord);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        this.toastr.success('Objetivo guardado correctamente.', '', { timeOut: 2500 });
-        this.onListado();
+
+        this.objetivosService.postObjetivoMnto(payload).subscribe({
+          next: (response: any) => {
+            if (response.success) {
+              this.toastr.success('Objetivo registrado en la BD correctamente.', '', { timeOut: 2500 });
+              this.onListado();
+            } else {
+              this.toastr.error(response.message || 'Error al registrar', 'Error BD');
+            }
+          },
+          error: (err) => {
+            this.toastr.error(err.error?.message || err.message, 'Error Servidor');
+          }
+        });
       }
     });
   }
@@ -151,7 +146,7 @@ export class PlanificacionObjetivosComponent implements OnInit {
       width: '680px',
       disableClose: true,
       data: {
-        Title: '::. Editar objetivo planificado .::',
+        Title: '::. Editar objetivo .::',
         Accion: 'U',
         Datos: item
       }
@@ -159,14 +154,30 @@ export class PlanificacionObjetivosComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(res => {
       if (res) {
-        const local = localStorage.getItem(STORAGE_KEY);
-        if (local) {
-          let data = JSON.parse(local);
-          data = data.map((d: any) => d.id === item.id ? { id: item.id, ...res } : d);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-          this.toastr.success('Objetivo actualizado correctamente.', '', { timeOut: 2500 });
-          this.onListado();
-        }
+        const numericMeta = parseFloat(String(res.meta).replace(/[^0-9.]/g, '')) || 0;
+
+        const payload = {
+          Accion: 'U',
+          Codigo: item.codigo,
+          Nombre: res.objetivo || res.nombre,
+          Proceso: res.proceso || 'General',
+          Meta: numericMeta,
+          Usuario_Registro: 'SISTEMAS'
+        };
+
+        this.objetivosService.postObjetivoMnto(payload).subscribe({
+          next: (response: any) => {
+            if (response.success) {
+              this.toastr.success('Objetivo actualizado en la BD correctamente.', '', { timeOut: 2500 });
+              this.onListado();
+            } else {
+              this.toastr.error(response.message || 'Error al actualizar', 'Error BD');
+            }
+          },
+          error: (err) => {
+            this.toastr.error(err.error?.message || err.message, 'Error Servidor');
+          }
+        });
       }
     });
   }
@@ -182,14 +193,25 @@ export class PlanificacionObjetivosComponent implements OnInit {
       cancelButtonText: 'No'
     }).then(result => {
       if (result.isConfirmed) {
-        const local = localStorage.getItem(STORAGE_KEY);
-        if (local) {
-          let data = JSON.parse(local);
-          data = data.filter((d: any) => d.id !== item.id);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-          this.toastr.success('Objetivo eliminado correctamente.', '', { timeOut: 2500 });
-          this.onListado();
-        }
+        const payload = {
+          Accion: 'D',
+          Codigo: item.codigo,
+          Usuario_Registro: 'SISTEMAS'
+        };
+
+        this.objetivosService.postObjetivoMnto(payload).subscribe({
+          next: (response: any) => {
+            if (response.success) {
+              this.toastr.success('Objetivo eliminado correctamente.', '', { timeOut: 2500 });
+              this.onListado();
+            } else {
+              this.toastr.error(response.message || 'Error al eliminar', 'Error BD');
+            }
+          },
+          error: (err) => {
+            this.toastr.error(err.error?.message || err.message, 'Error Servidor');
+          }
+        });
       }
     });
   }

@@ -52,49 +52,23 @@ export class NormasComponent implements OnInit {
   };
   
   onListado(): void {
-    const localNormas = localStorage.getItem('precotex_normas');
-    if (localNormas) {
-      const data = JSON.parse(localNormas);
-      this.dataSource.data = data;
-      this.calculateStats(data);
-    } else {
-      // Default initial mock data matching Image 1 exactly
-      const initialNorms = [
-        {
-          codigo_Norma: 'N-001',
-          norma: 'ISO 9001:2015',
-          categoria: 'Calidad',
-          fechaVencimiento: '2027-12-31',
-          fechaAuditoria: '2026-06-15',
-          estado: 'Vigente',
-          descripcion: 'Sistema de gestión de calidad para los procesos clave de producción y servicios.',
-          flg_Activo: 'True'
-        },
-        {
-          codigo_Norma: 'N-002',
-          norma: 'ISO 45001:2018',
-          categoria: 'Seguridad y Salud',
-          fechaVencimiento: '2027-08-20',
-          fechaAuditoria: '2026-05-10',
-          estado: 'Vigente',
-          descripcion: 'Sistema de gestión de seguridad y salud en el trabajo para la prevención de riesgos laborales.',
-          flg_Activo: 'True'
-        },
-        {
-          codigo_Norma: 'N-003',
-          norma: 'ISO 14001:2015',
-          categoria: 'Medio Ambiente',
-          fechaVencimiento: '2026-08-30',
-          fechaAuditoria: '2025-08-30',
-          estado: 'Por vencer',
-          descripcion: 'Sistema de gestión ambiental para el control de residuos y eficiencia energética.',
-          flg_Activo: 'True'
+    this.SpinnerService.show();
+    this.serviceNorma.getListadoNormas('1').subscribe({
+      next: (res: any) => {
+        this.SpinnerService.hide();
+        if (res.success) {
+          const data = res.data || res.elements;
+          this.dataSource.data = data;
+          this.calculateStats(data);
+        } else {
+          this.toastr.error('Error al obtener los datos de la base de datos.', '', { timeOut: 2500 });
         }
-      ];
-      localStorage.setItem('precotex_normas', JSON.stringify(initialNorms));
-      this.dataSource.data = initialNorms;
-      this.calculateStats(initialNorms);
-    }
+      },
+      error: (err: any) => {
+        this.SpinnerService.hide();
+        this.toastr.error('Error al conectarse al servicio.', '', { timeOut: 2500 });
+      }
+    });
   }
 
   calculateStats(normas: any[]): void {
@@ -149,16 +123,28 @@ export class NormasComponent implements OnInit {
       cancelButtonText: 'No'
     }).then((result) => {    
       if (result.isConfirmed) {
-        const localNormas = localStorage.getItem('precotex_normas');
-        if (localNormas) {
-          let data = JSON.parse(localNormas);
-          data = data.filter((n: any) => n.codigo_Norma !== item.codigo_Norma);
-          localStorage.setItem('precotex_normas', JSON.stringify(data));
-          this.toastr.success('Norma eliminada correctamente.', '', {
-            timeOut: 2500,
-          });
-          this.onListado();
-        }
+        this.SpinnerService.show();
+        const data = {
+          codigo_Norma: item.codigo_Norma,
+          accion: 'D',
+          cod_Usuario: 'admin' // TODO: Get from auth
+        };
+        
+        this.serviceNorma.postProcesoMntoNormas(data).subscribe({
+          next: (res: any) => {
+            this.SpinnerService.hide();
+            if (res.success) {
+              this.toastr.success(res.message, '', { timeOut: 2500 });
+              this.onListado();
+            } else {
+              this.toastr.error(res.message, '', { timeOut: 2500 });
+            }
+          },
+          error: (err: any) => {
+            this.SpinnerService.hide();
+            this.toastr.error('Error al conectarse al servicio.', '', { timeOut: 2500 });
+          }
+        });
       }
     });      
   }

@@ -149,7 +149,7 @@
                 </td>
                 <td class="date-cell">{{ act.fecha.substring(5) }}</td>
                 <td>
-                  <p-tag [value]="act.estado" [severity]="getSeverityClass(act.severidad)" [rounded]="true"></p-tag>
+                  <span class="status-pill" [ngClass]="'status-' + act.severidad">{{ act.estado }}</span>
                 </td>
               </tr>
             </ng-template>

@@ -163,13 +163,11 @@ export class LayoutComponent implements OnInit, OnDestroy {
       };
       this.activeSublink = url;
     } else if (url.includes('/principal/ayuda')) {
-      this.currentModule = 'Ayuda';
+      this.currentModule = 'Centro de ayuda';
       this.activeModule = {
-        title: 'Ayuda',
-        breadcrumb: 'Ayuda · Soporte',
-        tabs: [
-          { label: 'Centro de Ayuda', route: '/principal/ayuda' }
-        ]
+        title: 'Centro de ayuda',
+        breadcrumb: 'Centro de ayuda · Ayuda y soporte',
+        tabs: []
       };
       this.activeSublink = url;
     } else {
@@ -199,6 +197,18 @@ export class LayoutComponent implements OnInit, OnDestroy {
   }
 
   onLogout(): void {
+    // Limpiar variables globales
+    GlobalVariable.vusu = '';
+    GlobalVariable.vcodtra = '';
+    GlobalVariable.vtiptra = '';
+    GlobalVariable.vCod_Rol = 0;
+
+    // Limpiar sesion de localStorage
+    localStorage.removeItem('vusu');
+    localStorage.removeItem('vcodtra');
+    localStorage.removeItem('vtiptra');
+    localStorage.removeItem('vCod_Rol');
+
     this.router.navigate(['/login']);
   }
 }
