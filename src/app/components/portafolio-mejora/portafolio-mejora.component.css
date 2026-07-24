@@ -1,5 +1,5 @@
 /* ===================================================================
-   Portafolio de Mejora — Styles
+   Portafolio de Mejora — Styles Completo según Prototipo Oficial
    =================================================================== */
 
 .contenedor {
@@ -7,63 +7,294 @@
   background-color: transparent;
 }
 
-.banner-aviso {
-  background-color: rgba(124, 108, 240, 0.1);
-  border: 1px solid rgba(124, 108, 240, 0.2);
-  color: #a99bff;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 0.72rem;
+.margin-bottom-16 {
   margin-bottom: 16px;
-  font-weight: 500;
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+/* TOP HEADER Y BOTONES DE ACCIÓN */
+.top-header-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 16px;
 }
 
-.stat-card {
-  background-color: #151827;
-  border: 1px solid #262b40;
-  border-radius: 12px;
-  padding: 12px 14px;
-}
-
-.stat-label {
-  color: #8b90a8;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+.main-title {
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  margin: 0;
   text-transform: uppercase;
 }
 
-.stat-value {
-  font-size: 1.6rem;
+.header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-ghost-header {
+  background: transparent;
+  color: #8b90a8;
+  border: 1px solid #262b40;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-ghost-header:hover {
+  color: #ffffff;
+  border-color: #5a6078;
+  background-color: rgba(27, 31, 48, 0.5);
+}
+
+.btn-primary-header {
+  background: #7c6cf0;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 12.5px;
   font-weight: 700;
-  margin-top: 2px;
-  line-height: 1.2;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-.stat-desc {
+.btn-primary-header:hover {
+  background-color: #8b7cf5;
+}
+
+/* DRAWER ARCHIVOS SUBIDOS */
+.archivos-subidos-panel {
+  background-color: #151827;
+  border: 1px solid #262b40;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.archivos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.archivos-title {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.btn-ghost-sm {
+  background: transparent;
+  border: 1px solid #262b40;
+  border-radius: 6px;
+  color: #8b90a8;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.archivo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #262b40;
+}
+
+.archivo-item:last-child {
+  border-bottom: none;
+}
+
+.archivo-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: rgba(124, 108, 240, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7c6cf0;
+}
+
+.archivo-info {
+  flex: 1;
+}
+
+.archivo-name {
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.archivo-sub {
   color: #5a6078;
-  font-size: 0.65rem;
+  font-size: 11px;
   margin-top: 2px;
 }
 
-.border-left-purple { border-left: 3px solid #7c6cf0; }
-.border-left-blue { border-left: 3px solid #5b8def; }
-.border-left-green { border-left: 3px solid #3ecf8e; }
-.border-left-red { border-left: 3px solid #f0576b; }
+.btn-download-sm {
+  background-color: rgba(62, 207, 142, 0.15);
+  border: 1px solid rgba(62, 207, 142, 0.3);
+  color: #3ecf8e;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
 
-.text-white { color: #ffffff; }
-.text-blue { color: #5b8def; }
-.text-green { color: #3ecf8e; }
-.text-red { color: #f0576b; }
+/* PANEL TARJETA CONTENEDOR */
+.panel-card {
+  background-color: #151827;
+  border: 1px solid #262b40;
+  border-radius: 12px;
+  padding: 16px 20px;
+}
 
-/* 2-Column Layout */
+.panel-card-head {
+  margin-bottom: 14px;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-card-title {
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.panel-card-sub {
+  color: #5a6078;
+  font-size: 10.5px;
+}
+
+/* DISTRIBUCIÓN Y DONUT */
+.distribution-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.donut-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-tool-block {
+  text-align: center;
+  min-width: 100px;
+}
+
+.tool-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin: 0 auto 6px;
+}
+
+.dot-green { background-color: #3ecf8e; }
+.dot-orange { background-color: #f0b429; }
+.dot-purple { background-color: #7c6cf0; }
+
+.tool-val {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.val-green { color: #3ecf8e; }
+.val-orange { color: #f0b429; }
+.val-purple { color: #7c6cf0; }
+
+.tool-name {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.tool-sub {
+  color: #5a6078;
+  font-size: 11px;
+}
+
+/* GRID DE ANALÍTICA (2 PANELES) */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.bar-label {
+  width: 130px;
+  color: #8b90a8;
+  font-size: 11.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar-track {
+  flex: 1;
+  height: 9px;
+  border-radius: 5px;
+  background-color: #1b1f30;
+  overflow: hidden;
+  display: flex;
+}
+
+.bar-seg {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.seg-green { background-color: #3ecf8e; }
+.seg-orange { background-color: #f0b429; }
+.seg-purple { background-color: #7c6cf0; }
+
+.bar-count {
+  width: 65px;
+  text-align: right;
+  color: #5a6078;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.meta-count {
+  width: 44px;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* DISPOSICIÓN ÁRBOL + TABLA */
 .doc-layout {
   display: grid;
   grid-template-columns: 215px 1fr;
@@ -155,32 +386,16 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .seccion-titulo {
   color: #ffffff;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin: 0;
-}
-
-.btn-agregar-norma {
-  background: #7c6cf0;
-  border: none;
-  border-radius: 8px;
-  color: #ffffff;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 8px 14px;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-}
-
-.btn-agregar-norma:hover {
-  background-color: #8b7cf5;
 }
 
 .buscador-container {
@@ -240,6 +455,22 @@
   font-weight: 600 !important;
 }
 
+.file-tag {
+  font-size: 10px;
+  color: #a99bff;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 3px;
+  font-weight: 400;
+}
+
+.file-tag .text-icon {
+  font-size: 12px;
+  width: 12px;
+  height: 12px;
+}
+
 .desc-cell {
   color: #8b90a8 !important;
 }
@@ -296,6 +527,14 @@
   height: 15px;
 }
 
+.btn-download {
+  color: #3ecf8e;
+}
+
+.btn-download:hover {
+  background-color: rgba(62, 207, 142, 0.15);
+}
+
 .btn-edit {
   color: #5b8def;
 }
@@ -314,8 +553,8 @@
 
 /* Responsive adjustments */
 @media (max-width: 900px) {
-  .stats-grid {
-    grid-template-columns: 1fr 1fr;
+  .analytics-grid {
+    grid-template-columns: 1fr;
   }
   .doc-layout {
     grid-template-columns: 1fr;

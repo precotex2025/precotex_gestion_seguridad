@@ -5,8 +5,7 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
 import { MatSnackBar } from '@angular/material/snack-bar';
-
-const STORAGE_KEY = 'precotex_auditorias';
+import { AuditoriasService } from '../../../services/auditorias.service';
 
 interface data {
   Title  : string;
@@ -25,10 +24,11 @@ export class AuditoriasRegeditComponent implements OnInit {
   formulario!: FormGroup;
 
   constructor(
-    private formBuilder    : FormBuilder,
-    private SpinnerService : NgxSpinnerService,
-    private toastr         : ToastrService,
-    private matSnackBar    : MatSnackBar,
+    private formBuilder       : FormBuilder,
+    private SpinnerService    : NgxSpinnerService,
+    private toastr            : ToastrService,
+    private matSnackBar       : MatSnackBar,
+    private auditoriasService : AuditoriasService,
     @Inject(MAT_DIALOG_DATA) public data: data,
     public dialogRef: MatDialogRef<AuditoriasRegeditComponent>,
   ) {}
@@ -88,9 +88,6 @@ export class AuditoriasRegeditComponent implements OnInit {
       return;
     }
 
-    const local = localStorage.getItem(STORAGE_KEY) || '[]';
-    let auditorias = JSON.parse(local);
-
     const sTitle = this.data.Accion === 'I' ? 'Registrar' : 'Actualizar';
 
     Swal.fire({
@@ -103,54 +100,40 @@ export class AuditoriasRegeditComponent implements OnInit {
       cancelButtonText: 'No'
     }).then(result => {
       if (result.isConfirmed) {
+        let sCodigo = '';
         if (this.data.Accion === 'I') {
-          // Generar código AUD-INT/EXT-YYYY-XXX
           const year = new Date().getFullYear();
           const tipoCode = sTipo === 'Externa' ? 'EXT' : 'INT';
-          const maxNum = auditorias.length > 0
-            ? Math.max(...auditorias.map((a: any) => {
-                const parts = (a.codigo_Auditoria || '').split('-');
-                const num = parseInt(parts[parts.length - 1]);
-                return isNaN(num) ? 0 : num;
-              }))
-            : 0;
-          const newCode = `AUD-${tipoCode}-${year}-${String(maxNum + 1).padStart(3, '0')}`;
-
-          const newRec = {
-            codigo_Auditoria : newCode,
-            tipo             : sTipo,
-            norma            : sNorma,
-            responsable      : sResponsable,
-            areas            : sAreas,
-            inicio           : sInicio,
-            fin              : sFin,
-            frecuencia       : sFrecuencia,
-            estado           : sEstado,
-            alcance          : sAlcance,
-          };
-          auditorias.push(newRec);
+          const randomNum = Math.floor(Math.random() * 900) + 100;
+          sCodigo = `AUD-${tipoCode}-${year}-${randomNum}`;
         } else {
-          const sCodigo = this.formulario.get('ctrol_codigo')?.value;
-          const idx = auditorias.findIndex((a: any) => a.codigo_Auditoria === sCodigo);
-          if (idx !== -1) {
-            auditorias[idx] = {
-              ...auditorias[idx],
-              tipo        : sTipo,
-              norma       : sNorma,
-              responsable : sResponsable,
-              areas       : sAreas,
-              inicio      : sInicio,
-              fin         : sFin,
-              frecuencia  : sFrecuencia,
-              estado      : sEstado,
-              alcance     : sAlcance,
-            };
-          }
+          sCodigo = String(this.formulario.get('ctrol_codigo')?.value || '');
         }
 
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(auditorias));
-        this.toastr.success('Auditoría guardada correctamente.', '', { timeOut: 2500 });
-        this.dialogRef.close(true);
+        const requestData = {
+          Accion: this.data.Accion,
+          Codigo_Auditoria: sCodigo,
+          Tipo: sTipo,
+          Norma: sNorma,
+          Responsable: sResponsable,
+          Areas: sAreas,
+          Fecha_Inicio: sInicio || null,
+          Fecha_Fin: sFin || null,
+          Frecuencia: sFrecuencia,
+          Alcance: sAlcance,
+          Estado: sEstado,
+          Cod_Usuario: 'SISTEMAS'
+        };
+
+        this.auditoriasService.postProcesoMntoAuditoria(requestData).subscribe({
+          next: (res: any) => {
+            this.toastr.success(res.message || 'Auditoría guardada en la BD con éxito.', '', { timeOut: 2500 });
+            this.dialogRef.close(true);
+          },
+          error: () => {
+            this.toastr.error('Error al guardar auditoría en la BD', '', { timeOut: 2500 });
+          }
+        });
       }
     });
   }

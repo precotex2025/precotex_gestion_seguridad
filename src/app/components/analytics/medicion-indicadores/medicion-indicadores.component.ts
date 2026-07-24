@@ -4,8 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
 import { MedicionRegeditComponent } from './medicion-regedit/medicion-regedit.component';
-
-const STORAGE_KEY = 'precotex_mediciones_ind';
+import { IndicadoresService } from '../../../services/indicadores.service';
 
 @Component({
   selector: 'app-medicion-indicadores',
@@ -36,45 +35,10 @@ export class MedicionIndicadoresComponent implements OnInit {
 
   dataSource = new MatTableDataSource<any>();
 
-  private readonly seedData = [
-    {
-      id: 'MED-001',
-      indicador: '% eficiencia de línea',
-      sede: 'Huachipa 1',
-      proceso: 'Costura',
-      meta: '≥85%',
-      valor: '87%',
-      periodo: 'Junio 2025',
-      semaforo: 'En meta',
-      obs: ''
-    },
-    {
-      id: 'MED-002',
-      indicador: '% merma de tela',
-      sede: 'Huachipa 1',
-      proceso: 'Corte',
-      meta: '≤8%',
-      valor: '15%',
-      periodo: 'Junio 2025',
-      semaforo: 'Crítico',
-      obs: 'Revisar tendido de tela.'
-    },
-    {
-      id: 'MED-003',
-      indicador: '% piezas aprobadas 1er control',
-      sede: 'Huachipa 2',
-      proceso: 'Calidad',
-      meta: '≥95%',
-      valor: '91%',
-      periodo: 'Junio 2025',
-      semaforo: 'En riesgo',
-      obs: ''
-    }
-  ];
-
   constructor(
     private dialog: MatDialog,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private indicadoresService: IndicadoresService
   ) {}
 
   ngOnInit(): void {
@@ -82,34 +46,55 @@ export class MedicionIndicadoresComponent implements OnInit {
   }
 
   onListado(): void {
-    const local = localStorage.getItem(STORAGE_KEY);
-    if (local) {
-      const data = JSON.parse(local);
-      this.dataSource.data = data;
-      this.calculateStats(data);
-    } else {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.seedData));
-      this.dataSource.data = this.seedData;
-      this.calculateStats(this.seedData);
-    }
+    this.indicadoresService.getListadoIndicadorMediciones().subscribe({
+      next: (res: any) => {
+        if (res && res.success && res.elements) {
+          const mapped = res.elements.map((item: any) => ({
+            id: item.id_Medicion,
+            idMedicion: item.id_Medicion,
+            idIndicador: item.id_Indicador,
+            codigoIndicador: item.codigo_Indicador,
+            indicador: item.nombre_Indicador || item.codigo_Indicador,
+            sede: 'Todas',
+            proceso: item.nombre_Proceso || 'General',
+            meta: item.meta !== null && item.meta !== undefined ? item.meta.toString() + (item.unidad_Medida || '%') : '0%',
+            valor: item.valor_Obtenido !== null && item.valor_Obtenido !== undefined ? item.valor_Obtenido.toString() + '%' : '0%',
+            valorNumerico: item.valor_Obtenido,
+            periodo: item.periodo,
+            semaforo: item.semaforo || 'En meta',
+            obs: item.comentario
+          }));
+          this.dataSource.data = mapped;
+          this.calculateStats(mapped);
+        } else {
+          this.dataSource.data = [];
+          this.calculateStats([]);
+        }
+      },
+      error: (err) => {
+        console.error('Error al listar mediciones:', err);
+        this.dataSource.data = [];
+        this.calculateStats([]);
+      }
+    });
   }
 
   calculateStats(data: any[]): void {
     this.stats = {
       total: data.length,
-      enMeta: data.filter(d => d.semaforo === 'En meta').length,
-      enRiesgo: data.filter(d => d.semaforo === 'En riesgo').length,
-      criticos: data.filter(d => d.semaforo === 'Crítico').length
+      enMeta: data.filter(d => (d.semaforo || '').toLowerCase().includes('meta')).length,
+      enRiesgo: data.filter(d => (d.semaforo || '').toLowerCase().includes('riesgo')).length,
+      criticos: data.filter(d => (d.semaforo || '').toLowerCase().includes('crítico') || (d.semaforo || '').toLowerCase().includes('critico')).length
     };
   }
 
   getSemaforoClass(semaforo: string): string {
-    if (!semaforo) return 'pendiente';
+    if (!semaforo) return 'en-meta';
     const s = semaforo.toLowerCase().trim();
-    if (s.includes('meta')) return 'completada';
-    if (s.includes('riesgo')) return 'en-ejecucion';
-    if (s.includes('crítico') || s.includes('critico')) return 'vencida';
-    return 'pendiente';
+    if (s.includes('meta')) return 'en-meta';
+    if (s.includes('riesgo')) return 'en-riesgo';
+    if (s.includes('crítico') || s.includes('critico')) return 'critico';
+    return 'en-meta';
   }
 
   getSemaforoColor(semaforo: string): string {
@@ -134,7 +119,7 @@ export class MedicionIndicadoresComponent implements OnInit {
 
   getSparklinePoints(id: string): string {
     let x = 0;
-    const str = id || 'xyz';
+    const str = String(id || 'xyz');
     for (let i = 0; i < str.length; i++) {
       x = (x * 31 + str.charCodeAt(i)) >>> 0;
     }
@@ -173,16 +158,31 @@ export class MedicionIndicadoresComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(res => {
       if (res) {
-        const local = localStorage.getItem(STORAGE_KEY);
-        const data = local ? JSON.parse(local) : [];
-        const newRecord = {
-          id: 'MED-' + Date.now(),
-          ...res
+        const numericVal = parseFloat(String(res.valor).replace(/[^0-9.]/g, '')) || 0;
+
+        const payload = {
+          Accion: 'I',
+          Id_Indicador: res.idIndicador || null,
+          Codigo_Indicador: res.codigoIndicador || 'HCP-ABO-001',
+          Periodo: res.periodo || 'Ene-2026',
+          Valor_Obtenido: numericVal,
+          Comentario: res.obs || '',
+          Usuario_Registro: 'SISTEMAS'
         };
-        data.unshift(newRecord);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        this.toastr.success('Medición guardada correctamente.', '', { timeOut: 2500 });
-        this.onListado();
+
+        this.indicadoresService.postProcesoMntoIndicadorMedicion(payload).subscribe({
+          next: (response: any) => {
+            if (response.success) {
+              this.toastr.success('Medición registrada en la BD correctamente.', '', { timeOut: 2500 });
+              this.onListado();
+            } else {
+              this.toastr.error(response.message || 'Error al registrar', 'Error BD');
+            }
+          },
+          error: (err) => {
+            this.toastr.error(err.error?.message || err.message, 'Error Servidor');
+          }
+        });
       }
     });
   }
@@ -200,14 +200,32 @@ export class MedicionIndicadoresComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(res => {
       if (res) {
-        const local = localStorage.getItem(STORAGE_KEY);
-        if (local) {
-          let data = JSON.parse(local);
-          data = data.map((d: any) => d.id === item.id ? { id: item.id, ...res } : d);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-          this.toastr.success('Medición actualizada correctamente.', '', { timeOut: 2500 });
-          this.onListado();
-        }
+        const numericVal = parseFloat(String(res.valor).replace(/[^0-9.]/g, '')) || 0;
+
+        const payload = {
+          Accion: 'U',
+          Id_Medicion: item.idMedicion || item.id,
+          Id_Indicador: res.idIndicador || item.idIndicador,
+          Codigo_Indicador: res.codigoIndicador || item.codigoIndicador,
+          Periodo: res.periodo || 'Ene-2026',
+          Valor_Obtenido: numericVal,
+          Comentario: res.obs || '',
+          Usuario_Registro: 'SISTEMAS'
+        };
+
+        this.indicadoresService.postProcesoMntoIndicadorMedicion(payload).subscribe({
+          next: (response: any) => {
+            if (response.success) {
+              this.toastr.success('Medición actualizada en la BD correctamente.', '', { timeOut: 2500 });
+              this.onListado();
+            } else {
+              this.toastr.error(response.message || 'Error al actualizar', 'Error BD');
+            }
+          },
+          error: (err) => {
+            this.toastr.error(err.error?.message || err.message, 'Error Servidor');
+          }
+        });
       }
     });
   }
@@ -223,14 +241,25 @@ export class MedicionIndicadoresComponent implements OnInit {
       cancelButtonText: 'No'
     }).then(result => {
       if (result.isConfirmed) {
-        const local = localStorage.getItem(STORAGE_KEY);
-        if (local) {
-          let data = JSON.parse(local);
-          data = data.filter((d: any) => d.id !== item.id);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-          this.toastr.success('Medición eliminada correctamente.', '', { timeOut: 2500 });
-          this.onListado();
-        }
+        const payload = {
+          Accion: 'D',
+          Id_Medicion: item.idMedicion || item.id,
+          Usuario_Registro: 'SISTEMAS'
+        };
+
+        this.indicadoresService.postProcesoMntoIndicadorMedicion(payload).subscribe({
+          next: (response: any) => {
+            if (response.success) {
+              this.toastr.success('Medición eliminada correctamente.', '', { timeOut: 2500 });
+              this.onListado();
+            } else {
+              this.toastr.error(response.message || 'Error al eliminar', 'Error BD');
+            }
+          },
+          error: (err) => {
+            this.toastr.error(err.error?.message || err.message, 'Error Servidor');
+          }
+        });
       }
     });
   }

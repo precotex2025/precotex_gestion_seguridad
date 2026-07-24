@@ -2,6 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
+import { ProcesosService } from '../../../services/procesos.service';
 
 interface DialogData {
   Title: string;
@@ -20,10 +21,7 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
 
   readonly tiposOptions = ['Seguridad', 'Calidad', 'Ambiental'];
   
-  readonly procesosGroups: { [key: string]: string[] } = {
-    'Administrativo / Soporte': ['Sistemas', 'Servicios Compartidos', 'Recursos Humanos', 'Finanzas', 'SSOMA'],
-    'Operaciones / Producción': ['Operaciones', 'Comercial', 'Calidad', 'Logística', 'Corte', 'Costura', 'Tintorería']
-  };
+  procesosGroups: { [key: string]: string[] } = {};
 
   readonly nivelesOptions = ['Alto', 'Medio', 'Bajo'];
   readonly estadosOptions = ['Controlado', 'En seguimiento', 'Sin control'];
@@ -32,10 +30,16 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
     private fb: FormBuilder,
     private toastr: ToastrService,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
-    public dialogRef: MatDialogRef<EvaluacionRiesgosRegeditComponent>
+    public dialogRef: MatDialogRef<EvaluacionRiesgosRegeditComponent>,
+    private procesosService: ProcesosService
   ) { }
 
   ngOnInit(): void {
+    this.procesosService.getProcesosAgrupados().subscribe({
+      next: (groups: any) => {
+        this.procesosGroups = groups;
+      }
+    });
     this.formulario = this.fb.group({
       codigo: ['', Validators.required],
       tipo: ['Seguridad', Validators.required],
@@ -44,11 +48,22 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
       nivel: ['Medio', Validators.required],
       responsable: ['', Validators.required],
       revision: ['', Validators.required],
-      estado: ['En seguimiento', Validators.required]
+      estado: ['En seguimiento', Validators.required],
+      medidacontrol: ['']
     });
 
     if (this.data.Accion === 'U' && this.data.Datos) {
-      this.formulario.patchValue(this.data.Datos);
+      this.formulario.patchValue({
+        codigo: this.data.Datos.codigo,
+        tipo: this.data.Datos.tipo,
+        descbrief: this.data.Datos.descbrief,
+        proceso: this.data.Datos.proceso,
+        nivel: this.data.Datos.nivel,
+        responsable: this.data.Datos.responsable,
+        revision: this.data.Datos.revision,
+        estado: this.data.Datos.estado,
+        medidacontrol: this.data.Datos.medidacontrol || ''
+      });
     }
   }
 

@@ -106,6 +106,7 @@ import { PortafolioMejoraComponent } from './components/portafolio-mejora/portaf
 import { PortafolioMejoraRegeditComponent } from './components/portafolio-mejora/portafolio-mejora-regedit/portafolio-mejora-regedit.component';
 import { ReqLegalComponent } from './components/req-legal/req-legal.component';
 import { ReqLegalRegeditComponent } from './components/req-legal/req-legal-regedit/req-legal-regedit.component';
+import { AyudaComponent } from './components/ayuda/ayuda.component';
 
 @NgModule({
   declarations: [
@@ -167,7 +168,8 @@ import { ReqLegalRegeditComponent } from './components/req-legal/req-legal-reged
     PortafolioMejoraComponent,
     PortafolioMejoraRegeditComponent,
     ReqLegalComponent,
-    ReqLegalRegeditComponent
+    ReqLegalRegeditComponent,
+    AyudaComponent
   ],
   imports: [
     BrowserModule     ,

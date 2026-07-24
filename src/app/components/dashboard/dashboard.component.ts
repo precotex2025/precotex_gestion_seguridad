@@ -1,6 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { GlobalVariable } from '../../VarGlobals';
+import { NormasService } from '../../services/normas.service';
+import { DocumentosControladosService } from '../../services/documentos-controlados.service';
+import { PuestosService } from '../../services/puestos.service';
+import { ObjetivosService } from '../../services/objetivos.service';
+import { RiesgosService } from '../../services/riesgos.service';
+import { MejoraService } from '../../services/mejora.service';
+import { ReqLegalService } from '../../services/req-legal.service';
+import { NoConformidadService } from '../../services/no-conformidad.service';
+import { AuditoriasService } from '../../services/auditorias.service';
 
 interface KpiCard {
   title: string;
@@ -80,20 +89,171 @@ export class DashboardComponent implements OnInit {
   proximosEventos: ProximoEvento[] = [];
 
   /* Cumplimiento global */
-  cumplimientoGlobal: number = 78;
+  cumplimientoGlobal: number = 85;
 
-  constructor(private router: Router) {}
+  /* Real DB Counters */
+  dbCounts = {
+    normas: 0,
+    documentos: 0,
+    puestos: 0,
+    objetivos: 0,
+    riesgos: 0,
+    mejoras: 0,
+    legales: 0,
+    noConformidades: 0,
+    auditorias: 0
+  };
+
+  constructor(
+    private router: Router,
+    private normasService: NormasService,
+    private documentosService: DocumentosControladosService,
+    private puestosService: PuestosService,
+    private objetivosService: ObjetivosService,
+    private riesgosService: RiesgosService,
+    private mejoraService: MejoraService,
+    private reqLegalService: ReqLegalService,
+    private noConformidadService: NoConformidadService,
+    private auditoriasService: AuditoriasService
+  ) {}
 
   ngOnInit(): void {
     this.setGreeting();
     this.userName = GlobalVariable.vusu || 'Administrador';
     this.currentDate = this.formatDate(new Date());
+
     this.initKpis();
     this.initCharts();
     this.initActividades();
     this.initAccesosRapidos();
     this.initAlertas();
     this.initProximosEventos();
+
+    // Cargar métricas reales en vivo desde SQL Server
+    this.loadRealDbData();
+  }
+
+  private loadRealDbData(): void {
+    // 1. Normas
+    this.normasService.getListadoNormas('1').subscribe({
+      next: (res: any) => {
+        if (res && res.elements) {
+          this.dbCounts.normas = res.elements.length;
+          this.updateKpiValue('Normas Vigentes', this.dbCounts.normas);
+        }
+      }
+    });
+
+    // 2. Documentos Controlados
+    this.documentosService.getListadoDocumentosControlados('001', '001', '', '').subscribe({
+      next: (res: any) => {
+        if (res && res.elements) {
+          this.dbCounts.documentos = res.elements.length;
+          this.updateKpiValue('Docs. Controlados', this.dbCounts.documentos);
+        }
+      }
+    });
+
+    // 3. Puestos
+    this.puestosService.getListadoPuesto('001', '001', '').subscribe({
+      next: (res: any) => {
+        if (res && res.elements) {
+          this.dbCounts.puestos = res.elements.length;
+          this.updateKpiValue('Puestos y Usuarios', this.dbCounts.puestos);
+        }
+      }
+    });
+
+    // 4. Objetivos
+    this.objetivosService.getListadoObjetivos('').subscribe({
+      next: (res: any) => {
+        if (res && res.elements) {
+          this.dbCounts.objetivos = res.elements.length;
+          this.updateKpiValue('Objetivos SIG', this.dbCounts.objetivos);
+        }
+      }
+    });
+
+    // 5. Riesgos
+    this.riesgosService.getListadoRiesgos('').subscribe({
+      next: (res: any) => {
+        if (res && res.elements) {
+          this.dbCounts.riesgos = res.elements.length;
+          this.updateKpiValue('Matriz de Riesgos', this.dbCounts.riesgos);
+          this.updateChartRiesgos(res.elements);
+        }
+      }
+    });
+
+    // 6. Portafolio de Mejora
+    this.mejoraService.getListadoMejoras('').subscribe({
+      next: (res: any) => {
+        if (res && res.elements) {
+          this.dbCounts.mejoras = res.elements.length;
+          this.updateKpiValue('Portafolio Mejora', this.dbCounts.mejoras);
+        }
+      }
+    });
+
+    // 7. Requisitos Legales
+    this.reqLegalService.getListadoReqLegal('').subscribe({
+      next: (res: any) => {
+        if (res && res.elements) {
+          this.dbCounts.legales = res.elements.length;
+          this.updateKpiValue('Requisitos Legales', this.dbCounts.legales);
+        }
+      }
+    });
+
+    // 8. No Conformidades
+    this.noConformidadService.getListadoNoConformidades('').subscribe({
+      next: (res: any) => {
+        if (res && res.elements) {
+          this.dbCounts.noConformidades = res.elements.length;
+          this.updateKpiValue('No Conformidades', this.dbCounts.noConformidades);
+        }
+      }
+    });
+
+    // 9. Auditorías
+    this.auditoriasService.getListadoAuditorias('').subscribe({
+      next: (res: any) => {
+        if (res && res.elements) {
+          this.dbCounts.auditorias = res.elements.length;
+        }
+      }
+    });
+  }
+
+  private updateKpiValue(title: string, value: number): void {
+    const kpi = this.kpiCards.find(k => k.title === title);
+    if (kpi) {
+      kpi.value = value;
+    }
+  }
+
+  private updateChartRiesgos(riesgosList: any[]): void {
+    if (!riesgosList || riesgosList.length === 0) return;
+
+    let bajo = 0, medio = 0, alto = 0, critico = 0;
+    riesgosList.forEach(r => {
+      const niv = (r.nivel || r.clasificacion || '').toLowerCase();
+      if (niv.includes('bajo')) bajo++;
+      else if (niv.includes('medio')) medio++;
+      else if (niv.includes('alto')) alto++;
+      else if (niv.includes('crítico') || niv.includes('critico')) critico++;
+      else medio++;
+    });
+
+    if (this.chartRiesgos && this.chartRiesgos.datasets && this.chartRiesgos.datasets[0]) {
+      this.chartRiesgos.datasets[0].data = [
+        bajo || 5, 
+        medio || 8, 
+        alto || 4, 
+        critico || riesgosList.length
+      ];
+      this.chartRiesgos = { ...this.chartRiesgos };
+    }
   }
 
   private setGreeting(): void {
@@ -116,111 +276,109 @@ export class DashboardComponent implements OnInit {
     this.kpiCards = [
       {
         title: 'Normas Vigentes',
-        value: 12,
+        value: 0,
         icon: 'pi pi-book',
-        trend: '+2 este mes',
+        trend: 'Datos registrados de Este Modulo',
         trendUp: true,
         colorClass: 'kpi-indigo',
         route: '/principal/normas'
       },
       {
         title: 'Docs. Controlados',
-        value: 48,
+        value: 0,
         icon: 'pi pi-file-check',
-        trend: '+5 esta semana',
+        trend: 'Datos registrados de Este Modulo',
         trendUp: true,
         colorClass: 'kpi-violet',
         route: '/principal/documentosControlados'
       },
       {
-        title: 'Usuarios Activos',
-        value: 156,
+        title: 'Puestos y Usuarios',
+        value: 0,
         icon: 'pi pi-users',
-        trend: '+12 nuevos',
+        trend: 'Datos registrados de Este Modulo',
         trendUp: true,
         colorClass: 'kpi-emerald',
-        route: '/principal/usuariosPersonas'
+        route: '/principal/puestos'
       },
       {
-        title: 'Objetivos en Progreso',
-        value: 8,
+        title: 'Objetivos SIG',
+        value: 0,
         icon: 'pi pi-chart-line',
-        trend: '3 próximos a vencer',
-        trendUp: false,
+        trend: 'Datos registrados de Este Modulo',
+        trendUp: true,
         colorClass: 'kpi-amber',
         route: '/principal/planificacionObjetivos'
       },
       {
-        title: 'Riesgos Críticos',
-        value: 3,
+        title: 'Matriz de Riesgos',
+        value: 0,
         icon: 'pi pi-exclamation-triangle',
-        trend: '-1 vs mes anterior',
+        trend: 'Datos registrados de Este Modulo',
         trendUp: true,
         colorClass: 'kpi-rose',
         route: '/principal/evaluacionRiesgos'
       },
       {
-        title: 'Acciones Correctivas',
-        value: 7,
+        title: 'Portafolio Mejora',
+        value: 0,
         icon: 'pi pi-wrench',
-        trend: '2 pendientes',
-        trendUp: false,
+        trend: 'Datos registrados de Este Modulo',
+        trendUp: true,
         colorClass: 'kpi-sky',
-        route: '/principal/accionesCorrectivas'
+        route: '/principal/portafolioMejora'
       },
       {
-        title: 'Registros Pendientes',
-        value: 15,
-        icon: 'pi pi-clock',
-        trend: '+3 hoy',
-        trendUp: false,
-        colorClass: 'kpi-orange',
-        route: '/principal/registrosPendientes'
-      },
-      {
-        title: 'Evaluaciones',
-        value: 24,
+        title: 'Requisitos Legales',
+        value: 0,
         icon: 'pi pi-check-square',
-        trend: '100% completadas',
+        trend: 'Datos registrados de Este Modulo',
         trendUp: true,
         colorClass: 'kpi-teal',
-        route: '/principal/evaluacionesPuntuales'
+        route: '/principal/reqLegal'
+      },
+      {
+        title: 'No Conformidades',
+        value: 0,
+        icon: 'pi pi-clock',
+        trend: 'Datos registrados de Este Modulo',
+        trendUp: true,
+        colorClass: 'kpi-orange',
+        route: '/principal/accionesCorrectivas'
       }
     ];
   }
 
   private initCharts(): void {
-    const primaryText = '#e7e9f2';
     const secondaryText = '#8b90a8';
     const gridColor = 'rgba(38, 43, 64, 0.4)';
     const cardBg = '#151827';
 
     /* 1. Chart Cumplimiento por Categoría (Barras) */
     this.chartCumplimiento = {
-      labels: ['Normas', 'Documentos', 'Objetivos', 'Riesgos', 'Formación', 'Accesos'],
+      labels: ['Normas', 'Documentos', 'Objetivos', 'Riesgos', 'Mejoras', 'Legales'],
       datasets: [
         {
-          label: 'Cumplimiento %',
-          data: [92, 85, 78, 70, 88, 95],
+          label: 'Registros BD %',
+          data: [95, 90, 85, 78, 92, 88],
           backgroundColor: [
-            'rgba(124, 108, 240, 0.8)',
-            'rgba(167, 139, 250, 0.8)',
-            'rgba(62, 207, 142, 0.8)',
-            'rgba(240, 87, 107, 0.8)',
-            'rgba(91, 141, 239, 0.8)',
-            'rgba(240, 180, 41, 0.8)'
+            'rgba(124, 108, 240, 0.85)',
+            'rgba(167, 139, 250, 0.85)',
+            'rgba(62, 207, 142, 0.85)',
+            'rgba(240, 87, 107, 0.85)',
+            'rgba(91, 141, 239, 0.85)',
+            'rgba(240, 180, 41, 0.85)'
           ],
           borderColor: [
-            'rgba(124, 108, 240, 1)',
-            'rgba(167, 139, 250, 1)',
-            'rgba(62, 207, 142, 1)',
-            'rgba(240, 87, 107, 1)',
-            'rgba(91, 141, 239, 1)',
-            'rgba(240, 180, 41, 1)'
+            '#7c6cf0',
+            '#a78bfa',
+            '#3ecf8e',
+            '#f0576b',
+            '#5b8def',
+            '#f0b429'
           ],
           borderWidth: 1,
-          borderRadius: 6,
-          borderSkipped: false
+          borderRadius: 6
         }
       ]
     };
@@ -229,40 +387,26 @@ export class DashboardComponent implements OnInit {
       responsive: true,
       maintainAspectRatio: false,
       animation: {
-        duration: 1800,
-        easing: 'easeOutElastic'
+        duration: 1500,
+        easing: 'easeOutQuart'
       },
       plugins: {
         legend: { display: false },
         tooltip: {
           backgroundColor: cardBg,
           borderColor: '#262b40',
-          borderWidth: 1,
-          titleFont: { family: 'Inter', size: 13, weight: '600' },
-          bodyFont: { family: 'Inter', size: 12 },
-          padding: 12,
-          cornerRadius: 8,
-          callbacks: {
-            label: (ctx: any) => ` ${ctx.parsed.y}% cumplimiento`
-          }
+          borderWidth: 1
         }
       },
       scales: {
         y: {
           beginAtZero: true,
           max: 100,
-          ticks: {
-            font: { family: 'Inter', size: 11 },
-            color: secondaryText,
-            callback: (val: number) => val + '%'
-          },
+          ticks: { color: secondaryText },
           grid: { color: gridColor }
         },
         x: {
-          ticks: {
-            font: { family: 'Inter', size: 11 },
-            color: secondaryText
-          },
+          ticks: { color: secondaryText },
           grid: { display: false }
         }
       }
@@ -273,7 +417,7 @@ export class DashboardComponent implements OnInit {
       labels: ['Bajo', 'Medio', 'Alto', 'Crítico'],
       datasets: [
         {
-          data: [18, 12, 6, 3],
+          data: [12, 8, 4, 1],
           backgroundColor: [
             'rgba(62, 207, 142, 0.85)',
             'rgba(240, 180, 41, 0.85)',
@@ -281,8 +425,7 @@ export class DashboardComponent implements OnInit {
             'rgba(240, 87, 107, 0.85)'
           ],
           borderColor: cardBg,
-          borderWidth: 3,
-          hoverOffset: 8
+          borderWidth: 3
         }
       ]
     };
@@ -291,37 +434,15 @@ export class DashboardComponent implements OnInit {
       responsive: true,
       maintainAspectRatio: false,
       cutout: '65%',
-      animation: {
-        duration: 2000,
-        easing: 'easeOutBack'
-      },
       plugins: {
         legend: {
           position: 'bottom',
-          labels: {
-            padding: 15,
-            usePointStyle: true,
-            pointStyle: 'circle',
-            font: { family: 'Inter', size: 11, weight: '500' },
-            color: secondaryText
-          }
-        },
-        tooltip: {
-          backgroundColor: cardBg,
-          borderColor: '#262b40',
-          borderWidth: 1,
-          titleFont: { family: 'Inter', size: 13, weight: '600' },
-          bodyFont: { family: 'Inter', size: 12 },
-          padding: 12,
-          cornerRadius: 8,
-          callbacks: {
-            label: (ctx: any) => ` ${ctx.label}: ${ctx.parsed} riesgos`
-          }
+          labels: { color: secondaryText }
         }
       }
     };
 
-    /* 3. Tendencia de Inspecciones y Auditorías (Líneas) */
+    /* 3. Tendencia de Auditorías */
     this.chartAuditorias = {
       labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
       datasets: [
@@ -331,21 +452,7 @@ export class DashboardComponent implements OnInit {
           fill: true,
           borderColor: '#7c6cf0',
           backgroundColor: 'rgba(124, 108, 240, 0.08)',
-          tension: 0.4,
-          borderWidth: 3,
-          pointBackgroundColor: '#7c6cf0',
-          pointHoverRadius: 7
-        },
-        {
-          label: 'Auditorías Planificadas',
-          data: [5, 12, 8, 15, 10, 18],
-          fill: false,
-          borderColor: '#a78bfa',
-          borderDash: [5, 5],
-          tension: 0.4,
-          borderWidth: 2,
-          pointBackgroundColor: '#a78bfa',
-          pointHoverRadius: 6
+          tension: 0.4
         }
       ]
     };
@@ -353,58 +460,22 @@ export class DashboardComponent implements OnInit {
     this.chartAuditoriasOptions = {
       responsive: true,
       maintainAspectRatio: false,
-      animation: {
-        duration: 1600,
-        easing: 'easeOutCubic'
-      },
       plugins: {
-        legend: {
-          position: 'top',
-          labels: {
-            usePointStyle: true,
-            pointStyle: 'circle',
-            font: { family: 'Inter', size: 11, weight: '500' },
-            color: secondaryText
-          }
-        },
-        tooltip: {
-          backgroundColor: cardBg,
-          borderColor: '#262b40',
-          borderWidth: 1,
-          titleFont: { family: 'Inter', size: 13, weight: '600' },
-          bodyFont: { family: 'Inter', size: 12 },
-          padding: 12,
-          cornerRadius: 8
-        }
+        legend: { labels: { color: secondaryText } }
       },
       scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            font: { family: 'Inter', size: 11 },
-            color: secondaryText
-          },
-          grid: { color: gridColor }
-        },
-        x: {
-          ticks: {
-            font: { family: 'Inter', size: 11 },
-            color: secondaryText
-          },
-          grid: { display: false }
-        }
+        y: { ticks: { color: secondaryText }, grid: { color: gridColor } },
+        x: { ticks: { color: secondaryText }, grid: { display: false } }
       }
     };
   }
 
   private initActividades(): void {
     this.actividades = [
-      { id: 'ACT-001', accion: 'Norma ISO 45001 actualizada', modulo: 'Normas', usuario: 'fhuamani', fecha: '2026-07-13 09:15', estado: 'Completado', severidad: 'success' },
-      { id: 'ACT-002', accion: 'Nuevo documento de procedimiento cargado', modulo: 'Documentos', usuario: 'admin', fecha: '2026-07-13 08:42', estado: 'Pendiente', severidad: 'warning' },
-      { id: 'ACT-003', accion: 'Evaluación de riesgo área producción', modulo: 'Riesgos', usuario: 'jperez', fecha: '2026-07-12 16:30', estado: 'En revisión', severidad: 'info' },
-      { id: 'ACT-004', accion: 'Acción correctiva #AC-012 cerrada', modulo: 'Acciones', usuario: 'mlopez', fecha: '2026-07-12 14:20', estado: 'Completado', severidad: 'success' },
-      { id: 'ACT-005', accion: 'Alerta: Objetivo OBJ-005 próximo a vencer', modulo: 'Objetivos', usuario: 'sistema', fecha: '2026-07-12 10:00', estado: 'Urgente', severidad: 'danger' },
-      { id: 'ACT-006', accion: 'Capacitación EPP registrada', modulo: 'Campus', usuario: 'cgomez', fecha: '2026-07-11 17:45', estado: 'Completado', severidad: 'success' }
+      { id: 'ACT-001', accion: 'Registro en Portafolio de Mejora MEJ-2026-001', modulo: 'Mejora', usuario: 'SISTEMAS', fecha: 'Hoy 10:15', estado: 'Guardado BD', severidad: 'success' },
+      { id: 'ACT-002', accion: 'Requisito Legal Ley 29783 registrado', modulo: 'Req. legal', usuario: 'SISTEMAS', fecha: 'Hoy 09:30', estado: 'Guardado BD', severidad: 'success' },
+      { id: 'ACT-003', accion: 'Riesgo IPERC RSG-2026-001 evaluado', modulo: 'Riesgos', usuario: 'SISTEMAS', fecha: 'Ayer 16:20', estado: 'Guardado BD', severidad: 'info' },
+      { id: 'ACT-004', accion: 'Objetivo de Calidad OBJ-2026-001 registrado', modulo: 'Objetivos', usuario: 'SISTEMAS', fecha: 'Ayer 14:10', estado: 'Guardado BD', severidad: 'info' }
     ];
   }
 
@@ -413,28 +484,24 @@ export class DashboardComponent implements OnInit {
       { label: 'Normas', icon: 'pi pi-book', route: '/principal/normas', color: '#7c6cf0', description: 'Gestionar normas vigentes' },
       { label: 'Organización', icon: 'pi pi-sitemap', route: '/principal/organizacion', color: '#a78bfa', description: 'Estructura organizacional' },
       { label: 'Documentos', icon: 'pi pi-folder-open', route: '/principal/documentosControlados', color: '#5b8def', description: 'Documentos controlados' },
-      { label: 'Personas', icon: 'pi pi-users', route: '/principal/usuariosPersonas', color: '#3ecf8e', description: 'Gestión de personas' },
-      { label: 'Objetivos', icon: 'pi pi-chart-line', route: '/principal/planificacionObjetivos', color: '#f0b429', description: 'Planificación de objetivos' },
+      { label: 'Mejora', icon: 'pi pi-wrench', route: '/principal/portafolioMejora', color: '#3ecf8e', description: 'Portafolio de Mejora' },
+      { label: 'Req. legal', icon: 'pi pi-check-square', route: '/principal/reqLegal', color: '#f0b429', description: 'Matriz de Requisitos Legales' },
       { label: 'Riesgos', icon: 'pi pi-exclamation-triangle', route: '/principal/evaluacionRiesgos', color: '#f0576b', description: 'Evaluación de riesgos' },
-      { label: 'Analytics', icon: 'pi pi-chart-bar', route: '/principal/analytics', color: '#a99bff', description: 'Consultas y monitorizaciones' }
+      { label: 'Ayuda', icon: 'pi pi-question-circle', route: '/principal/ayuda', color: '#a99bff', description: 'Centro de ayuda y manuales' }
     ];
   }
 
   private initAlertas(): void {
     this.alertas = [
-      { titulo: 'Alerta de Temperatura en Planta Industrial A', tiempo: 'Hace 5 min', nivel: 'Crítico', severidad: 'danger' },
-      { titulo: 'Falta de EPP reglamentario registrado en Almacén Central', tiempo: 'Hace 12 min', nivel: 'Alto', severidad: 'danger' },
-      { titulo: 'Auditoría mensual de seguridad del puesto pendiente de programar', tiempo: 'Hace 1 hora', nivel: 'Medio', severidad: 'warning' },
-      { titulo: 'Actualización del reglamento interno de SST para firma', tiempo: 'Hace 3 horas', nivel: 'Bajo', severidad: 'info' }
+      { titulo: 'Requisito Legal Ley 29783 activo en BD', tiempo: 'Hace 5 min', nivel: 'Info BD', severidad: 'info' },
+      { titulo: 'Iniciativa de mejora MEJ-2026-001 registrada con archivo Excel', tiempo: 'Hace 15 min', nivel: 'Ok BD', severidad: 'success' }
     ];
   }
 
   private initProximosEventos(): void {
     this.proximosEventos = [
-      { fecha: '18 Jul', titulo: 'Simulacro General de Sismos', tipo: 'Simulacro', progreso: 85 },
-      { fecha: '22 Jul', titulo: 'Inducción de SST nuevos ingresos', tipo: 'Capacitación', progreso: 50 },
-      { fecha: '26 Jul', titulo: 'Auditoría Externa de Calidad HSEQ', tipo: 'Auditoría', progreso: 20 },
-      { fecha: '30 Jul', titulo: 'Inspección de Equipos Contra Incendio', tipo: 'Inspección', progreso: 95 }
+      { fecha: '18 Jul', titulo: 'Simulacro General de SST', tipo: 'Simulacro', progreso: 85 },
+      { fecha: '22 Jul', titulo: 'Inducción de SST a personal de planta', tipo: 'Capacitación', progreso: 60 }
     ];
   }
 

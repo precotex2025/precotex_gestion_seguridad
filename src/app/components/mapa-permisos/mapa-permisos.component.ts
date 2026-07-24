@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
+import { PermisosService } from '../../services/permisos.service';
+import { PuestosService } from '../../services/puestos.service';
 
 @Component({
   selector: 'app-mapa-permisos',
@@ -181,31 +183,85 @@ export class MapaPermisosComponent implements OnInit {
     'Eliminar / Obsoletar': '#f0576b'
   };
 
-  constructor(private toastr: ToastrService) { }
+  constructor(
+    private toastr: ToastrService,
+    private permisosService: PermisosService,
+    private puestosService: PuestosService
+  ) { }
 
 
   ngOnInit(): void {
     this.loadPolicy();
     this.loadFineAcc();
     this.loadGeneralAcc();
+    this.loadPuestos();
+  }
 
-    const localPuestos = localStorage.getItem('precotex_puestos_usuarios');
-    if (localPuestos) {
-      this.puestosList = JSON.parse(localPuestos);
-    } else {
-      this.puestosList = [
-        { id: 'p-1', puesto: 'Gerente de Producción', usuario: 'Carlos Ríos', nivel: 'Gerencial', estado: 'Activo' },
-        { id: 'p-2', puesto: 'Jefe de SSOMA', usuario: 'Ana Torres', nivel: 'Jefatura', estado: 'Activo' },
-        { id: 'p-3', puesto: 'Asistente de Costura', usuario: '', nivel: 'Operativo', estado: 'Sin permisos config.' }
-      ];
-    }
+  loadPuestos() {
+    this.puestosService.getListadoPuesto('001', '', '').subscribe({
+      next: (res: any) => {
+        let dbList: any[] = [];
+        if (res && res.success && res.elements && res.elements.length > 0) {
+          dbList = res.elements.map((p: any) => ({
+            id: p.denominacion ? p.denominacion.trim() : p.codigo_Puesto,
+            codigo_Puesto: p.codigo_Puesto,
+            puesto: p.denominacion ? p.denominacion.trim() : '',
+            usuario: p.puesto_Funciones || '—',
+            nivel: p.nivelRiesgo || p.codigo_Nivel_Riesgo || 'Operativo',
+            estado: p.puesto_Caracteristicas || 'Activo'
+          }));
+        }
 
-    if (this.puestosList.length > 0) {
-      this.selectedUserId = this.puestosList[0].id;
-    }
+        const localPuestos = localStorage.getItem('precotex_puestos_usuarios');
+        const localList = localPuestos ? JSON.parse(localPuestos) : [];
+
+        const combinedMap = new Map<string, any>();
+        for (const item of [...dbList, ...localList]) {
+          const key = item.puesto || item.denominacion || item.id || item.codigo_Puesto;
+          if (!combinedMap.has(key)) {
+            combinedMap.set(key, { ...item, id: key });
+          }
+        }
+
+        this.puestosList = Array.from(combinedMap.values());
+        if (this.puestosList.length > 0 && !this.selectedUserId) {
+          this.selectedUserId = this.puestosList[0].id;
+        }
+      },
+      error: () => {
+        const localPuestos = localStorage.getItem('precotex_puestos_usuarios');
+        this.puestosList = localPuestos ? JSON.parse(localPuestos) : [
+          { id: 'p-1', puesto: 'Gerente de Producción', usuario: 'Carlos Ríos', nivel: 'Gerencial', estado: 'Activo' },
+          { id: 'p-2', puesto: 'Jefe de SSOMA', usuario: 'Ana Torres', nivel: 'Jefatura', estado: 'Activo' },
+          { id: 'p-3', puesto: 'Asistente de Costura', usuario: '', nivel: 'Operativo', estado: 'Sin permisos config.' }
+        ];
+        if (this.puestosList.length > 0 && !this.selectedUserId) {
+          this.selectedUserId = this.puestosList[0].id;
+        }
+      }
+    });
   }
 
   loadGeneralAcc() {
+    this.permisosService.getPermisosUsuarioModulo('').subscribe({
+      next: (res: any) => {
+        if (res && res.success && res.elements && res.elements.length > 0) {
+          res.elements.forEach((row: any) => {
+            if (!this.accObj[row.codigo_Puesto_Usuario]) {
+              this.accObj[row.codigo_Puesto_Usuario] = {};
+            }
+            this.accObj[row.codigo_Puesto_Usuario][row.modulo_Clave] = row.nivel_Acceso;
+          });
+          this.saveGeneralAcc();
+        } else {
+          this.readLocalGeneralAcc();
+        }
+      },
+      error: () => this.readLocalGeneralAcc()
+    });
+  }
+
+  private readLocalGeneralAcc() {
     const local = localStorage.getItem('precotex:puestos:accesos');
     if (local) {
       try {
@@ -222,6 +278,14 @@ export class MapaPermisosComponent implements OnInit {
     localStorage.setItem('precotex:puestos:accesos', JSON.stringify(this.accObj));
   }
 
+  getSelectedPuestoName(uid: string): string {
+    const item = this.puestosList.find(p => p.id === uid || p.codigo_Puesto === uid || p.puesto === uid);
+    if (item && item.puesto) {
+      return item.puesto.trim();
+    }
+    return uid;
+  }
+
   accDefault(nivel: string, mk: string): string {
     if (nivel === 'Gerencial' || nivel === 'Jefatura') {
       return 'Editar';
@@ -230,19 +294,39 @@ export class MapaPermisosComponent implements OnInit {
   }
 
   accGet(uid: string, nivel: string, mk: string): string {
+    const puestoNombre = this.getSelectedPuestoName(uid);
     if (this.accObj[uid] && this.accObj[uid][mk]) {
       return this.accObj[uid][mk];
+    }
+    if (this.accObj[puestoNombre] && this.accObj[puestoNombre][mk]) {
+      return this.accObj[puestoNombre][mk];
     }
     return this.accDefault(nivel, mk);
   }
 
   setAcceso(uid: string, mk: string, val: string) {
+    const puestoNombre = this.getSelectedPuestoName(uid);
+
     if (!this.accObj[uid]) {
       this.accObj[uid] = {};
     }
     this.accObj[uid][mk] = val;
+
+    if (!this.accObj[puestoNombre]) {
+      this.accObj[puestoNombre] = {};
+    }
+    this.accObj[puestoNombre][mk] = val;
+
     this.saveGeneralAcc();
-    this.toastr.success('Acceso general actualizado.', '', { timeOut: 1500 });
+
+    this.permisosService.postGuardarUsuarioModulo({
+      Codigo_Puesto_Usuario: puestoNombre,
+      Modulo_Clave: mk,
+      Nivel_Acceso: val
+    }).subscribe({
+      next: () => this.toastr.success('Acceso general guardado en la BD.', '', { timeOut: 1500 }),
+      error: () => this.toastr.success('Acceso general actualizado.', '', { timeOut: 1500 })
+    });
   }
 
   accColor(v: string): string {
@@ -252,7 +336,53 @@ export class MapaPermisosComponent implements OnInit {
   }
 
 
+  normLvl(l: string): string {
+    if (!l) return 'ger';
+    const lower = l.toLowerCase();
+    if (lower.startsWith('ger')) return 'ger';
+    if (lower.startsWith('jef')) return 'jef';
+    if (lower.startsWith('ope')) return 'ope';
+    return lower;
+  }
+
   loadPolicy() {
+    this.permisosService.getPoliticas().subscribe({
+      next: (res: any) => {
+        const loadedPerms: any = JSON.parse(JSON.stringify(this.permsDefault));
+
+        if (res && res.success && res.elements && res.elements.length > 0) {
+          res.elements.forEach((row: any) => {
+            const m = row.modulo;
+            const lKey = this.normLvl(row.nivel);
+            const a = row.accion;
+
+            if (!loadedPerms[m]) {
+              loadedPerms[m] = { ger: [], jef: [], ope: [] };
+            }
+            if (!loadedPerms[m][lKey]) {
+              loadedPerms[m][lKey] = [];
+            }
+
+            const idx = loadedPerms[m][lKey].indexOf(a);
+            if (row.flg_Permitido) {
+              if (idx < 0) {
+                loadedPerms[m][lKey].push(a);
+              }
+            } else {
+              if (idx >= 0) {
+                loadedPerms[m][lKey].splice(idx, 1);
+              }
+            }
+          });
+        }
+        this.perms = loadedPerms;
+        this.savePolicy();
+      },
+      error: () => this.readLocalPolicy()
+    });
+  }
+
+  private readLocalPolicy() {
     const local = localStorage.getItem('precotex:permisos_politica');
     if (local) {
       try {
@@ -270,24 +400,36 @@ export class MapaPermisosComponent implements OnInit {
   }
 
   togglePol(mod: string, lvl: string, act: string) {
+    const lKey = this.normLvl(lvl);
     if (!this.perms[mod]) {
       this.perms[mod] = { ger: [], jef: [], ope: [] };
     }
-    if (!this.perms[mod][lvl]) {
-      this.perms[mod][lvl] = [];
+    if (!this.perms[mod][lKey]) {
+      this.perms[mod][lKey] = [];
     }
-    const idx = this.perms[mod][lvl].indexOf(act);
+    const idx = this.perms[mod][lKey].indexOf(act);
     if (idx >= 0) {
-      this.perms[mod][lvl].splice(idx, 1);
+      this.perms[mod][lKey].splice(idx, 1);
     } else {
-      this.perms[mod][lvl].push(act);
+      this.perms[mod][lKey].push(act);
     }
     this.savePolicy();
-    this.toastr.success('Política de nivel actualizada.', '', { timeOut: 1500 });
+
+    const isAllowed = this.isPolActive(mod, lKey, act);
+    this.permisosService.postGuardarPolitica({
+      Modulo: mod,
+      Nivel: lKey,
+      Accion: act,
+      Flg_Permitido: isAllowed
+    }).subscribe({
+      next: () => this.toastr.success('Política de nivel guardada en la BD.', '', { timeOut: 1500 }),
+      error: () => this.toastr.success('Política de nivel actualizada.', '', { timeOut: 1500 })
+    });
   }
 
   isPolActive(mod: string, lvl: string, act: string): boolean {
-    return this.perms[mod] && this.perms[mod][lvl] && this.perms[mod][lvl].includes(act);
+    const lKey = this.normLvl(lvl);
+    return this.perms[mod] && this.perms[mod][lKey] && this.perms[mod][lKey].includes(act);
   }
 
   resetPolitica() {
@@ -298,6 +440,27 @@ export class MapaPermisosComponent implements OnInit {
 
   // Override / Ajuste Fino
   loadFineAcc() {
+    this.permisosService.getPermisosUsuarioDetalle('').subscribe({
+      next: (res: any) => {
+        if (res && res.success && res.elements && res.elements.length > 0) {
+          res.elements.forEach((row: any) => {
+            const uid = row.codigo_Puesto_Usuario;
+            if (!this.accFine[uid]) {
+              this.accFine[uid] = {};
+            }
+            const key = this.finoKey(row.modulo, row.contenido, row.accion);
+            this.accFine[uid][key] = row.flg_Permitido ? 1 : 0;
+          });
+          this.saveFineAcc();
+        } else {
+          this.readLocalFineAcc();
+        }
+      },
+      error: () => this.readLocalFineAcc()
+    });
+  }
+
+  private readLocalFineAcc() {
     const local = localStorage.getItem('precotex:puestos:accesos_fino');
     if (local) {
       try {
@@ -327,12 +490,31 @@ export class MapaPermisosComponent implements OnInit {
   }
 
   toggleFinoCheckbox(uid: string, mod: string, cont: string, acc: string, checked: boolean) {
+    const puestoNombre = this.getSelectedPuestoName(uid);
+    const key = this.finoKey(mod, cont, acc);
+
     if (!this.accFine[uid]) {
       this.accFine[uid] = {};
     }
-    this.accFine[uid][this.finoKey(mod, cont, acc)] = checked ? 1 : 0;
+    this.accFine[uid][key] = checked ? 1 : 0;
+
+    if (!this.accFine[puestoNombre]) {
+      this.accFine[puestoNombre] = {};
+    }
+    this.accFine[puestoNombre][key] = checked ? 1 : 0;
+
     this.saveFineAcc();
-    this.toastr.success('Permiso específico actualizado.', '', { timeOut: 1500 });
+
+    this.permisosService.postGuardarUsuarioDetalle({
+      Codigo_Puesto_Usuario: puestoNombre,
+      Modulo: mod,
+      Contenido: cont,
+      Accion: acc,
+      Flg_Permitido: checked
+    }).subscribe({
+      next: () => this.toastr.success('Permiso específico guardado en la BD.', '', { timeOut: 1500 }),
+      error: () => this.toastr.success('Permiso específico actualizado.', '', { timeOut: 1500 })
+    });
   }
 
   resetFino() {
@@ -356,7 +538,7 @@ export class MapaPermisosComponent implements OnInit {
   }
 
   getSelectedUser() {
-    return this.puestosList.find(u => u.id === this.selectedUserId) || this.puestosList[0];
+    return this.puestosList.find(u => u.id === this.selectedUserId || u.puesto === this.selectedUserId) || this.puestosList[0];
   }
 
   getModulesKeys() {

@@ -1,6 +1,13 @@
 /* ===================================================================
-   Login Component — Premium Split-Screen Styles
+   Login Component — Premium Glassmorphic & Dark Theme Styles
    =================================================================== */
+
+:host {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
 
 .login-wrapper {
   display: flex;
@@ -8,80 +15,126 @@
   width: 100vw;
   overflow: hidden;
   font-family: 'Inter', sans-serif;
-  background-color: #f8fafc;
+  background-color: #030712; /* Fondo ultra oscuro */
+  position: relative;
+}
+
+/* Luces ambientales de fondo (Glowing ambient shapes) */
+.login-wrapper::before,
+.login-wrapper::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.15;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Luz azul/violeta arriba izquierda */
+.login-wrapper::before {
+  width: 400px;
+  height: 400px;
+  background: #6366f1;
+  top: -10%;
+  left: -5%;
+}
+
+/* Luz rosa/púrpura abajo centro */
+.login-wrapper::after {
+  width: 500px;
+  height: 500px;
+  background: #a855f7;
+  bottom: -15%;
+  left: 20%;
 }
 
 /* ==========================================
-   LEFT PANEL: FORM
+   LEFT PANEL: GLASS FORM CARD
    ========================================== */
 .login-left-panel {
-  width: 42%;
+  width: 45%;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 40px;
-  background-color: #ffffff;
-  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.02);
-  z-index: 10;
+  position: relative;
+  z-index: 5;
   box-sizing: border-box;
 }
 
+/* Tarjeta Glassmorphic */
 .login-card {
-  width: 360px;
+  width: 400px;
   max-width: 100%;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 45px 40px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
 }
 
 .login-title {
-  font-size: 1.6rem;
+  font-size: 1.65rem;
   font-weight: 800;
-  color: #0f172a;
-  margin-bottom: 28px;
+  color: #ffffff;
+  margin-bottom: 30px;
   letter-spacing: -0.03em;
   text-align: left;
+  background: linear-gradient(to right, #ffffff, #cbd5e1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 22px;
 }
 
 .input-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .input-label {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(148, 163, 184, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-/* --- Input Field Wrapper --- */
+/* --- Input Wrapper (Glass style) --- */
 .input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  padding: 0 14px;
-  height: 44px;
-  transition: all 0.2s ease;
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 0 16px;
+  height: 48px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
 }
 
 .input-wrapper:focus-within {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  border-color: #6366f1;
+  background: rgba(30, 41, 59, 0.5);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
 .form-input {
   background: transparent;
   border: none;
-  color: #0f172a;
-  font-size: 0.88rem;
+  color: #f8fafc;
+  font-size: 0.9rem;
   font-family: 'Inter', sans-serif;
   width: 100%;
   outline: none;
@@ -89,7 +142,7 @@
 }
 
 .form-input::placeholder {
-  color: #94a3b8;
+  color: rgba(148, 163, 184, 0.4);
 }
 
 /* --- Clear / Toggle Buttons --- */
@@ -110,90 +163,91 @@
   font-size: 16px !important;
   width: 16px !important;
   height: 16px !important;
-  color: #94a3b8;
-  transition: color 0.15s;
+  color: rgba(148, 163, 184, 0.5);
+  transition: color 0.2s;
 }
 
 .clear-btn:hover mat-icon {
-  color: #475569;
+  color: #ffffff;
 }
 
 .toggle-icon {
-  color: #94a3b8;
+  color: rgba(148, 163, 184, 0.5);
   font-size: 18px !important;
   width: 18px !important;
   height: 18px !important;
-  transition: color 0.15s;
+  transition: color 0.2s;
 }
 
 .toggle-password-btn:hover .toggle-icon {
-  color: #475569;
+  color: #ffffff;
 }
 
-/* --- Checkbox & Recover Link --- */
+/* --- Checkbox & Link --- */
 .login-options {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.8rem;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 .custom-checkbox {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #475569;
+  color: rgba(148, 163, 184, 0.8);
   cursor: pointer;
   font-weight: 500;
+  user-select: none;
 }
 
 .custom-checkbox input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: #3b82f6;
+  accent-color: #6366f1;
   cursor: pointer;
   border-radius: 4px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(30, 41, 59, 0.5);
 }
 
 .forgot-link {
-  color: #3b82f6;
+  color: #818cf8;
   text-decoration: none;
   font-weight: 600;
-  transition: color 0.15s;
+  transition: color 0.2s;
 }
 
 .forgot-link:hover {
-  color: #2563eb;
-  text-decoration: underline;
+  color: #a5b4fc;
 }
 
-/* --- Submit Button --- */
+/* --- Submit Button (Premium Gradient glow) --- */
 .btn-login-submit {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 44px;
-  background: #3b82f6;
+  height: 48px;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   color: #ffffff;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.92rem;
+  font-weight: 700;
   font-family: 'Inter', sans-serif;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-  transition: all 0.2s ease;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
-  margin-top: 8px;
+  margin-top: 10px;
   box-sizing: border-box;
 }
 
 .btn-login-submit:hover {
-  background: #2563eb;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+  background: linear-gradient(135deg, #818cf8, #6366f1);
 }
 
 .btn-login-submit:active {
@@ -201,28 +255,34 @@
 }
 
 /* ==========================================
-   RIGHT PANEL: COLORFUL MESH
+   RIGHT PANEL: COLORFUL MESH & BRANDING
    ========================================== */
 .login-right-panel {
-  width: 58%;
+  width: 55%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  padding: 80px;
+  padding: 80px 100px;
   position: relative;
   box-sizing: border-box;
-  
-  /* Vibrant mesh gradient background */
-  background: linear-gradient(135deg, #f59e0b, #ec4899, #3b82f6, #10b981);
-  background-size: 400% 400%;
-  animation: gradientAnimation 12s ease infinite;
+  background: radial-gradient(circle at 80% 20%, #1e1b4b 0%, #030712 100%);
+  overflow: hidden;
 }
 
-@keyframes gradientAnimation {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+/* Luz rosa en esquina inferior derecha */
+.login-right-panel::before {
+  content: "";
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: #db2777;
+  border-radius: 50%;
+  filter: blur(140px);
+  bottom: -20%;
+  right: -10%;
+  opacity: 0.15;
+  pointer-events: none;
 }
 
 .circles-overlay {
@@ -232,13 +292,14 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
+  opacity: 0.7;
 }
 
 .svg-circles {
   position: absolute;
   top: 0;
   right: 0;
-  width: 55%;
+  width: 60%;
   height: auto;
 }
 
@@ -248,7 +309,7 @@
   left: 8%;
   width: 160px;
   height: 120px;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.2) 1.5px, transparent 1.5px);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1.5px, transparent 1.5px);
   background-size: 16px 16px;
   pointer-events: none;
 }
@@ -258,43 +319,49 @@
   position: relative;
   z-index: 5;
   color: #ffffff;
-  max-width: 480px;
+  max-width: 500px;
 }
 
 .mesh-shield {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 14px;
-  margin-bottom: 24px;
+  width: 64px;
+  height: 64px;
+  background: rgba(99, 102, 241, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 16px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px 0 rgba(99, 102, 241, 0.15);
 }
 
 .mesh-shield mat-icon {
-  color: #ffffff;
-  font-size: 28px !important;
-  width: 28px !important;
-  height: 28px !important;
+  color: #a5b4fc;
+  font-size: 32px !important;
+  width: 32px !important;
+  height: 32px !important;
 }
 
 .mesh-title {
-  font-size: 2.2rem;
-  font-weight: 800;
-  margin: 0 0 12px 0;
-  letter-spacing: -0.03em;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  font-size: 3rem;
+  font-weight: 900;
+  margin: 0 0 16px 0;
+  letter-spacing: -0.04em;
+  background: linear-gradient(to right, #ffffff, #c7d2fe);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
 }
 
 .mesh-subtitle {
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 500;
   margin: 0;
-  line-height: 1.5;
-  opacity: 0.9;
+  line-height: 1.6;
+  color: #94a3b8;
 }
 
 /* ==========================================
@@ -303,7 +370,8 @@
 @media (max-width: 992px) {
   .login-left-panel {
     width: 100%;
-    background-color: #f8fafc;
+    background-color: #030712;
+    padding: 24px;
   }
   
   .login-right-panel {
@@ -311,14 +379,10 @@
   }
 
   .login-card {
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 16px;
-    padding: 40px 32px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 40px 28px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   }
 }
-
-
-
-

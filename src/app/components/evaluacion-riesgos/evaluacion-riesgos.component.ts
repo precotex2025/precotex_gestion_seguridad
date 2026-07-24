@@ -2,7 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
+import Swal from 'sweetalert2';
 import { EvaluacionRiesgosRegeditComponent } from './evaluacion-riesgos-regedit/evaluacion-riesgos-regedit.component';
+import { RiesgosService } from '../../services/riesgos.service';
 
 export interface RiesgoItem {
   id: number;
@@ -14,6 +16,7 @@ export interface RiesgoItem {
   estado: string; // 'Controlado' | 'En seguimiento' | 'Sin control'
   responsable: string;
   revision: string; // YYYY-MM-DD
+  medidacontrol?: string;
 }
 
 @Component({
@@ -40,48 +43,11 @@ export class EvaluacionRiesgosComponent implements OnInit {
   readonly nivelesOptions = ['Alto', 'Medio', 'Bajo'];
   readonly estadosOptions = ['Controlado', 'En seguimiento', 'Sin control'];
 
-  private readonly STORAGE_KEY = 'precotex_riesgos_declarados';
-
-  private readonly seedData: RiesgoItem[] = [
-    {
-      id: 1,
-      codigo: 'RSG-2025-012',
-      tipo: 'Seguridad',
-      descbrief: 'Falla eléctrica en planta de corte por sobrecarga',
-      proceso: 'Corte',
-      nivel: 'Alto',
-      estado: 'Sin control',
-      responsable: 'Luis Mamani',
-      revision: '2025-08-01'
-    },
-    {
-      id: 2,
-      codigo: 'RSG-2025-025',
-      tipo: 'Calidad',
-      descbrief: 'Variabilidad de tallas en costura',
-      proceso: 'Costura',
-      nivel: 'Medio',
-      estado: 'Controlado',
-      responsable: 'Rosa Chávez',
-      revision: '2025-07-10'
-    },
-    {
-      id: 3,
-      codigo: 'RSG-2025-031',
-      tipo: 'Ambiental',
-      descbrief: 'Derrame de químicos en tintorería',
-      proceso: 'Tintorería',
-      nivel: 'Medio',
-      estado: 'En seguimiento',
-      responsable: 'Pedro Salas',
-      revision: '2025-09-05'
-    }
-  ];
-
   constructor(
     private fb: FormBuilder,
     private dialog: MatDialog,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private riesgosService: RiesgosService
   ) { }
 
   ngOnInit(): void {
@@ -96,31 +62,43 @@ export class EvaluacionRiesgosComponent implements OnInit {
   }
 
   cargarDatos(): void {
-    const raw = localStorage.getItem(this.STORAGE_KEY);
-    if (raw) {
-      try {
-        this.riesgos = JSON.parse(raw);
-      } catch (e) {
-        this.riesgos = [...this.seedData];
-        this.guardarEnStorage();
+    this.riesgosService.getListadoRiesgos().subscribe({
+      next: (res: any) => {
+        if (res && res.success && res.elements) {
+          this.riesgos = res.elements.map((item: any) => ({
+            id: item.id_Riesgo,
+            codigo: item.codigo,
+            tipo: item.tipo,
+            descbrief: item.descripcion_Breve,
+            proceso: item.proceso,
+            nivel: item.nivel,
+            estado: item.estado,
+            responsable: item.responsable,
+            revision: item.fecha_Revision ? item.fecha_Revision.split('T')[0] : '',
+            medidacontrol: item.medida_Control || ''
+          }));
+          this.actualizarContadores();
+          this.onBuscar();
+        } else {
+          this.riesgos = [];
+          this.actualizarContadores();
+          this.riesgosFiltrados = [];
+        }
+      },
+      error: (err) => {
+        console.error('Error al listar Riesgos:', err);
+        this.riesgos = [];
+        this.actualizarContadores();
+        this.riesgosFiltrados = [];
       }
-    } else {
-      this.riesgos = [...this.seedData];
-      this.guardarEnStorage();
-    }
-    this.actualizarContadores();
-    this.riesgosFiltrados = [...this.riesgos];
-  }
-
-  guardarEnStorage(): void {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.riesgos));
+    });
   }
 
   actualizarContadores(): void {
     this.cantTotal = this.riesgos.length;
-    this.cantControlado = this.riesgos.filter(r => r.estado === 'Controlado').length;
-    this.cantEnSeguimiento = this.riesgos.filter(r => r.estado === 'En seguimiento').length;
-    this.cantSinControl = this.riesgos.filter(r => r.estado === 'Sin control').length;
+    this.cantControlado = this.riesgos.filter(r => (r.estado || '').toLowerCase() === 'controlado').length;
+    this.cantEnSeguimiento = this.riesgos.filter(r => (r.estado || '').toLowerCase().includes('seguimiento')).length;
+    this.cantSinControl = this.riesgos.filter(r => (r.estado || '').toLowerCase().includes('sin control')).length;
   }
 
   onBuscar(): void {
@@ -162,16 +140,33 @@ export class EvaluacionRiesgosComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        const nuevoId = this.riesgos.length > 0 ? Math.max(...this.riesgos.map(r => r.id)) + 1 : 1;
-        const nuevoItem: RiesgoItem = {
-          id: nuevoId,
-          ...result
+        const payload = {
+          Accion: 'I',
+          Codigo: result.codigo,
+          Tipo: result.tipo,
+          Descripcion_Breve: result.descbrief,
+          Proceso: result.proceso,
+          Nivel: result.nivel,
+          Estado: result.estado,
+          Responsable: result.responsable,
+          Fecha_Revision: result.revision,
+          Medida_Control: result.medidacontrol,
+          Usuario_Registro: 'SISTEMAS'
         };
-        this.riesgos.push(nuevoItem);
-        this.guardarEnStorage();
-        this.actualizarContadores();
-        this.onBuscar();
-        this.toastr.success('Riesgo declarado correctamente.', 'Registrado');
+
+        this.riesgosService.postProcesoMntoRiesgo(payload).subscribe({
+          next: (res: any) => {
+            if (res && res.success) {
+              this.toastr.success('Riesgo declarado y guardado en BD.', 'Registrado');
+              this.cargarDatos();
+            } else {
+              this.toastr.error(res.message || 'Error al guardar el riesgo.', 'Error BD');
+            }
+          },
+          error: (err) => {
+            this.toastr.error(err.error?.message || err.message, 'Error Servidor');
+          }
+        });
       }
     });
   }
@@ -191,29 +186,69 @@ export class EvaluacionRiesgosComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        const index = this.riesgos.findIndex(r => r.id === item.id);
-        if (index !== -1) {
-          this.riesgos[index] = {
-            id: item.id,
-            ...result
-          };
-          this.guardarEnStorage();
-          this.actualizarContadores();
-          this.onBuscar();
-          this.toastr.success('Riesgo declarado actualizado.', 'Actualizado');
-        }
+        const payload = {
+          Accion: 'U',
+          Codigo: item.codigo,
+          Tipo: result.tipo,
+          Descripcion_Breve: result.descbrief,
+          Proceso: result.proceso,
+          Nivel: result.nivel,
+          Estado: result.estado,
+          Responsable: result.responsable,
+          Fecha_Revision: result.revision,
+          Medida_Control: result.medidacontrol,
+          Usuario_Registro: 'SISTEMAS'
+        };
+
+        this.riesgosService.postProcesoMntoRiesgo(payload).subscribe({
+          next: (res: any) => {
+            if (res && res.success) {
+              this.toastr.success('Riesgo actualizado en BD.', 'Actualizado');
+              this.cargarDatos();
+            } else {
+              this.toastr.error(res.message || 'Error al actualizar el riesgo.', 'Error BD');
+            }
+          },
+          error: (err) => {
+            this.toastr.error(err.error?.message || err.message, 'Error Servidor');
+          }
+        });
       }
     });
   }
 
   onDelete(item: RiesgoItem): void {
-    if (confirm(`¿Está seguro de eliminar el riesgo con código "${item.codigo}"?`)) {
-      this.riesgos = this.riesgos.filter(r => r.id !== item.id);
-      this.guardarEnStorage();
-      this.actualizarContadores();
-      this.onBuscar();
-      this.toastr.warning(`Riesgo "${item.codigo}" eliminado.`, 'Eliminado');
-    }
+    Swal.fire({
+      title: `¿Está seguro de eliminar el riesgo "${item.codigo}"?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const payload = {
+          Accion: 'D',
+          Codigo: item.codigo,
+          Usuario_Registro: 'SISTEMAS'
+        };
+
+        this.riesgosService.postProcesoMntoRiesgo(payload).subscribe({
+          next: (res: any) => {
+            if (res && res.success) {
+              this.toastr.warning(`Riesgo "${item.codigo}" eliminado.`, 'Eliminado');
+              this.cargarDatos();
+            } else {
+              this.toastr.error(res.message || 'Error al eliminar.', 'Error BD');
+            }
+          },
+          error: (err) => {
+            this.toastr.error(err.error?.message || err.message, 'Error Servidor');
+          }
+        });
+      }
+    });
   }
 
   formatearFecha(fechaStr: string): string {

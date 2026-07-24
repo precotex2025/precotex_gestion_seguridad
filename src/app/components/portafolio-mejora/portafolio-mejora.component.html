@@ -1,29 +1,133 @@
 <div class="contenedor sn-animate-in">
 
-  <!-- BANNER NOTIFICACIÓN -->
-  <div class="banner-aviso">
-    <span>✦ Registro funcional. Pulsa <strong>Registrar iniciativa</strong>, llena el formulario y guarda. Persiste aunque recargues.</span>
+  <!-- CABECERA SUPERIOR Y BOTONES -->
+  <div class="top-header-panel">
+    <h1 class="main-title">PORTAFOLIO DE MEJORA</h1>
+    <div class="header-actions">
+      <button type="button" class="btn-ghost-header" (click)="onToggleArchivosSubidos()">Archivos subidos</button>
+      <button type="button" class="btn-ghost-header" (click)="onExportarPDF()">Exportar PDF</button>
+      <button type="button" class="btn-ghost-header" (click)="onExportarExcel()">Exportar Excel</button>
+      <button type="button" class="btn-primary-header" (click)="onAgregar()">+ Registrar incidencia / iniciativa</button>
+    </div>
   </div>
 
-  <!-- ESTADÍSTICAS CARDS -->
-  <div class="stats-grid">
-    <div class="stat-card border-left-purple">
-      <div class="stat-label">TOTAL</div>
-      <div class="stat-value text-white">{{ stats.total }}</div>
-      <div class="stat-desc">Iniciativas</div>
+  <!-- PANEL DRAWER: ARCHIVOS SUBIDOS -->
+  <div *ngIf="mostrarArchivosSubidos" class="archivos-subidos-panel sn-animate-in">
+    <div class="archivos-header">
+      <h3 class="archivos-title">Archivos subidos ({{ archivosAdjuntosList.length }})</h3>
+      <button type="button" class="btn-ghost-sm" (click)="onToggleArchivosSubidos()">Cerrar</button>
     </div>
-    <div class="stat-card border-left-blue">
-      <div class="stat-label">EN PROCESO</div>
-      <div class="stat-value text-blue">{{ stats.enProceso }}</div>
+    <div class="archivos-body">
+      <div *ngIf="!archivosAdjuntosList.length" class="empty-archivos">
+        No hay archivos subidos registrados.
+      </div>
+      <div *ngFor="let item of archivosAdjuntosList" class="archivo-item">
+        <div class="archivo-icon-box">
+          <span class="material-icons">description</span>
+        </div>
+        <div class="archivo-info">
+          <div class="archivo-name">{{ item.archivo }}</div>
+          <div class="archivo-sub">{{ item.titulo }} · {{ item.herramienta }} · {{ item.sede }}</div>
+        </div>
+        <button type="button" class="btn-download-sm" (click)="onDescargarArchivo(item)">Bajar</button>
+      </div>
     </div>
-    <div class="stat-card border-left-green">
-      <div class="stat-label">CERRADO</div>
-      <div class="stat-value text-green">{{ stats.cerrado }}</div>
+  </div>
+
+  <!-- SECCIÓN 1: DISTRIBUCIÓN DEL PORTAFOLIO (DONUT + CONTADORES) -->
+  <div class="panel-card margin-bottom-16">
+    <div class="panel-card-head">
+      <h2 class="panel-card-title">DISTRIBUCIÓN DEL PORTAFOLIO</h2>
     </div>
-    <div class="stat-card border-left-red">
-      <div class="stat-label">VENCIDO</div>
-      <div class="stat-value text-red">{{ stats.vencido }}</div>
+    <div class="distribution-container">
+      
+      <!-- GRÁFICO DONUT SVG -->
+      <div class="donut-box">
+        <svg width="140" height="140" viewBox="0 0 42 42" class="donut-svg">
+          <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#1b1f30" stroke-width="5"/>
+          <!-- Segmento 1: 5W-2H (Verde) -->
+          <circle *ngIf="pct5W2H > 0" cx="21" cy="21" r="15.9155" fill="none" stroke="#3ecf8e" stroke-width="5" 
+                  [attr.stroke-dasharray]="pct5W2H + ' ' + (100 - pct5W2H)" stroke-dashoffset="25"/>
+          <!-- Segmento 2: ACR (Naranja) -->
+          <circle *ngIf="pctACR > 0" cx="21" cy="21" r="15.9155" fill="none" stroke="#f0b429" stroke-width="5" 
+                  [attr.stroke-dasharray]="pctACR + ' ' + (100 - pctACR)" [attr.stroke-dashoffset]="offsetACR"/>
+          <!-- Segmento 3: Iniciativa (Púrpura) -->
+          <circle *ngIf="pctIniciativas > 0" cx="21" cy="21" r="15.9155" fill="none" stroke="#7c6cf0" stroke-width="5" 
+                  [attr.stroke-dasharray]="pctIniciativas + ' ' + (100 - pctIniciativas)" [attr.stroke-dashoffset]="offsetIniciativas"/>
+          <!-- Texto Central -->
+          <text x="21" y="20.5" text-anchor="middle" font-size="8" font-weight="800" fill="#ffffff">{{ stats.total }}</text>
+          <text x="21" y="26" text-anchor="middle" font-size="2.6" fill="#8b90a8">total</text>
+        </svg>
+      </div>
+
+      <!-- TARJETAS ESTADÍSTICAS POR HERRAMIENTA -->
+      <div class="stat-tool-block">
+        <div class="tool-dot dot-green"></div>
+        <div class="tool-val val-green">{{ count5W2H }}</div>
+        <div class="tool-name">5W-2H</div>
+        <div class="tool-sub">{{ pct5W2H }}% del total</div>
+      </div>
+
+      <div class="stat-tool-block">
+        <div class="tool-dot dot-orange"></div>
+        <div class="tool-val val-orange">{{ countACR }}</div>
+        <div class="tool-name">ACR</div>
+        <div class="tool-sub">{{ pctACR }}% del total</div>
+      </div>
+
+      <div class="stat-tool-block">
+        <div class="tool-dot dot-purple"></div>
+        <div class="tool-val val-purple">{{ countIniciativas }}</div>
+        <div class="tool-name">Iniciativas</div>
+        <div class="tool-sub">{{ pctIniciativas }}% del total</div>
+      </div>
+
     </div>
+  </div>
+
+  <!-- SECCIÓN 2: ANALÍTICA (REGISTROS POR PROCESO Y META VS REAL) -->
+  <div class="analytics-grid margin-bottom-16">
+    
+    <!-- PANEL IZQUIERDO: REGISTROS POR PROCESO -->
+    <div class="panel-card">
+      <div class="panel-card-head flex-between">
+        <h2 class="panel-card-title">REGISTROS POR PROCESO</h2>
+        <span class="panel-card-sub">5W-2H · ACR · Iniciativa</span>
+      </div>
+      <div class="panel-card-body">
+        <div *ngFor="let proc of procesosUnicos" class="bar-row">
+          <div class="bar-label">{{ proc }}</div>
+          <div class="bar-track">
+            <div *ngIf="getProcesoBreakdown(proc).pct5 > 0" class="bar-seg seg-green" [style.width.%]="getProcesoBreakdown(proc).pct5"></div>
+            <div *ngIf="getProcesoBreakdown(proc).pctA > 0" class="bar-seg seg-orange" [style.width.%]="getProcesoBreakdown(proc).pctA"></div>
+            <div *ngIf="getProcesoBreakdown(proc).pctI > 0" class="bar-seg seg-purple" [style.width.%]="getProcesoBreakdown(proc).pctI"></div>
+          </div>
+          <div class="bar-count">
+            {{ getProcesoBreakdown(proc).n5 }} · {{ getProcesoBreakdown(proc).na }} · {{ getProcesoBreakdown(proc).ni }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL DERECHO: META VS REAL -->
+    <div class="panel-card">
+      <div class="panel-card-head flex-between">
+        <h2 class="panel-card-title">META VS REAL</h2>
+        <span class="panel-card-sub">Meta mensual (demo)</span>
+      </div>
+      <div class="panel-card-body">
+        <div *ngFor="let proc of procesosUnicos" class="bar-row">
+          <div class="bar-label">{{ proc }}</div>
+          <div class="bar-track">
+            <div class="bar-seg" [style.width.%]="getMetaInfo(proc).pct" [style.background-color]="getMetaInfo(proc).color"></div>
+          </div>
+          <div class="meta-count" [style.color]="getMetaInfo(proc).color">
+            {{ getMetaInfo(proc).real }}/{{ getMetaInfo(proc).meta }}{{ getMetaInfo(proc).cumple ? ' ✓' : '' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- DISPOSICIÓN PRINCIPAL: ÁRBOL + TABLA -->
@@ -54,16 +158,13 @@
     <!-- PANEL DERECHO: LISTADO Y ACCIONES -->
     <div class="table-panel">
       <div class="seccion-header">
-        <h2 class="seccion-titulo">Portafolio de mejora</h2>
-        <button type="button" class="btn-agregar-norma" (click)="onAgregar()">
-          <span>+ Registrar iniciativa</span>
-        </button>
+        <h2 class="seccion-titulo">Detalle del Portafolio</h2>
       </div>
 
       <div class="buscador-container">
         <input type="text" 
                (keyup)="buscar($event)" 
-               placeholder="Buscar..." 
+               placeholder="Buscar por título..." 
                class="buscador-input">
       </div>
 
@@ -73,7 +174,12 @@
           <!-- Título -->
           <ng-container matColumnDef="titulo">
             <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 250px;">Título</th>
-            <td mat-cell *matCellDef="let row" class="norma-cell">{{ row.titulo }}</td>
+            <td mat-cell *matCellDef="let row" class="norma-cell">
+              {{ row.titulo }}
+              <div *ngIf="row.archivo" class="file-tag">
+                <span class="material-icons text-icon">description</span> {{ row.archivo }}
+              </div>
+            </td>
           </ng-container>
 
           <!-- Herramienta -->
@@ -118,9 +224,12 @@
 
           <!-- Acciones -->
           <ng-container matColumnDef="acciones">
-            <th mat-header-cell *matHeaderCellDef style="width: 100px; text-align: center;">Acciones</th>
+            <th mat-header-cell *matHeaderCellDef style="width: 120px; text-align: center;">Acciones</th>
             <td mat-cell *matCellDef="let row">
               <div class="actions-wrapper">
+                <button *ngIf="row.archivo" class="action-btn btn-download" (click)="onDescargarArchivo(row)" title="Descargar archivo adjunto">
+                  <mat-icon>file_download</mat-icon>
+                </button>
                 <button class="action-btn btn-edit" (click)="onEditar(row)" title="Editar">
                   <mat-icon>edit</mat-icon>
                 </button>

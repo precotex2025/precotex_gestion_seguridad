@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { ToastrService } from 'ngx-toastr';
+import { ObjetivosService } from '../../../services/objetivos.service';
 
 interface data {
   Title: string;
@@ -67,7 +68,8 @@ export class PlanificacionObjetivosMedicionComponent implements OnInit {
     private formBuilder: FormBuilder,
     private toastr: ToastrService,
     @Inject(MAT_DIALOG_DATA) public data: data,
-    public dialogRef: MatDialogRef<PlanificacionObjetivosMedicionComponent>
+    public dialogRef: MatDialogRef<PlanificacionObjetivosMedicionComponent>,
+    private objetivosService: ObjetivosService
   ) {}
 
   ngOnInit(): void {
@@ -88,39 +90,39 @@ export class PlanificacionObjetivosMedicionComponent implements OnInit {
       ctrol_resultado: ['']
     });
 
-    this.onListarMock();
+    this.onListar();
   }
 
-  onListarMock() {
-    this.dataSource.data = [
-      {
-        id: 1,
-        objetivo: 'Reducir accidentes laborales',
-        reqMedicionSegPeriodico: 'Sí',
-        frecuencia: 'Mensual',
-        cumplimiento: '95%',
-        norma: 'ISO 45001',
-        tipoObjetivo: 'Estratégico',
-        valores: 'Meta: < 2',
-        fechaInicio: '01/01/2026',
-        fechaFin: '31/12/2026'
+  onListar() {
+    this.objetivosService.getListadoObjetivoMediciones().subscribe({
+      next: (res: any) => {
+        if (res && res.success && res.elements && res.elements.length > 0) {
+          const mapped = res.elements.map((item: any) => ({
+            id: item.id_Obj_Medicion,
+            objetivo: item.nombre_Objetivo || item.codigo_Objetivo,
+            reqMedicionSegPeriodico: 'Sí',
+            frecuencia: 'Mensual',
+            cumplimiento: item.valor !== null && item.valor !== undefined ? item.valor.toString() + '%' : '0%',
+            norma: 'ISO 9001:2015',
+            tipoObjetivo: 'Estratégico',
+            valores: 'Meta: ' + (item.meta || '0'),
+            fechaInicio: '01/01/2026',
+            fechaFin: '31/12/2026'
+          }));
+          this.dataSource.data = mapped;
+        } else {
+          this.dataSource.data = [];
+        }
       },
-      {
-        id: 2,
-        objetivo: 'Capacitación en seguridad',
-        reqMedicionSegPeriodico: 'Sí',
-        frecuencia: 'Trimestral',
-        cumplimiento: '100%',
-        norma: 'ISO 45001',
-        tipoObjetivo: 'Operativo',
-        valores: 'Meta: 100%',
-        fechaInicio: '01/01/2026',
-        fechaFin: '31/12/2026'
+      error: (err) => {
+        console.error('Error al listar mediciones de objetivos:', err);
+        this.dataSource.data = [];
       }
-    ];
+    });
   }
 
   onFiltrar() {
+    this.onListar();
     this.toastr.success('Filtros aplicados correctamente.', 'Éxito');
   }
 
@@ -133,6 +135,19 @@ export class PlanificacionObjetivosMedicionComponent implements OnInit {
   }
 
   onDelete(row: any) {
-    this.toastr.warning(`Eliminando medición para: "${row.objetivo}"`, 'Advertencia');
+    const payload = {
+      Accion: 'D',
+      Id_Obj_Medicion: row.id,
+      Usuario_Registro: 'SISTEMAS'
+    };
+
+    this.objetivosService.postProcesoMntoObjetivoMedicion(payload).subscribe({
+      next: (res: any) => {
+        if (res.success) {
+          this.toastr.success('Medición eliminada correctamente.', 'Éxito');
+          this.onListar();
+        }
+      }
+    });
   }
 }

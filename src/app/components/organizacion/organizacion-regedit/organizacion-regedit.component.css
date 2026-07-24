@@ -8,6 +8,8 @@
   border-radius: 12px;
   font-family: 'Inter', sans-serif;
   color: #f1f5f9;
+  max-height: 85vh;
+  overflow-y: auto;
 }
 
 /* --- Header --- */

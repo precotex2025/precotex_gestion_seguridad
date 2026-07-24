@@ -5,6 +5,9 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { OrganizacionRegeditComponent } from './organizacion-regedit/organizacion-regedit.component';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
+import { SedesService } from '../../services/sedes.service';
+import { ProcesosService } from '../../services/procesos.service';
+import { GlobalVariable } from '../../VarGlobals';
 
 @Component({
   selector: 'app-organizacion',
@@ -27,11 +30,14 @@ export class OrganizacionComponent implements OnInit {
   };
 
   organigramaNombre: string | null = null;
+  sUsuario: string = GlobalVariable.vusu;
 
   constructor(
     private dialog              : MatDialog             ,
     private SpinnerService      : NgxSpinnerService     ,
     private toastr              : ToastrService         ,
+    private sedesService        : SedesService          ,
+    private procesosService      : ProcesosService
   ) {}
 
   displayedColumns: string[] = [
@@ -49,30 +55,65 @@ export class OrganizacionComponent implements OnInit {
   }
 
   onListado(){
-    const localSedes = localStorage.getItem('precotex_sedes');
-    if (localSedes) {
-      const data = JSON.parse(localSedes);
-      this.dataSource.data = data;
-      this.calculateStats(data);
-    } else {
-      const defaultSedes = [
-        { id: 's-001', nombre: 'Huachipa 1', direccion: 'Av. Los Frutales 123, Huachipa', procesos: 'Costura, Corte, Organización y Métodos', estado: 'Huachipa' },
-        { id: 's-002', nombre: 'Huachipa 2', direccion: 'Av. Los Frutales 456, Huachipa', procesos: 'Costura, Estampado', estado: 'Huachipa' },
-        { id: 's-003', nombre: 'Independencia', direccion: 'Av. Túpac Amaru 1200', procesos: 'SSOMA, Costura', estado: 'Independencia' },
-        { id: 's-004', nombre: 'Santa Cecilia', direccion: 'Calle Santa Cecilia 340, SJL', procesos: 'Logística, Almacén', estado: 'SJL' }
-      ];
-      localStorage.setItem('precotex_sedes', JSON.stringify(defaultSedes));
-      this.dataSource.data = defaultSedes;
-      this.calculateStats(defaultSedes);
-    }
+    this.SpinnerService.show();
+    this.sedesService.getListadoSedes('001', '1').subscribe({
+      next: (response: any) => {
+        if (response && response.success && response.elements) {
+          const sedes = response.elements;
+          this.procesosService.getListadoProcesos('001', '1').subscribe({
+            next: (procRes: any) => {
+              const allProcs = (procRes && procRes.success && procRes.elements) ? procRes.elements : [];
+              
+              const mappedData = sedes.map((sede: any) => {
+                const sProcs = allProcs.filter((p: any) => p.codigo_Sede === sede.codigo_Sede);
+                return {
+                  id: sede.codigo_Sede,
+                  nombre: sede.denominacion,
+                  direccion: sede.direccion,
+                  estado: sede.localidad || 'Indefinido',
+                  procesosCount: sProcs.length,
+                  procesosNombres: sProcs.map((p: any) => p.proceso).join(', '),
+                  raw: sede
+                };
+              });
+              this.dataSource.data = mappedData;
+              this.calculateStats(mappedData);
+              this.SpinnerService.hide();
+            },
+            error: () => {
+              const mappedData = sedes.map((sede: any) => ({
+                id: sede.codigo_Sede,
+                nombre: sede.denominacion,
+                direccion: sede.direccion,
+                estado: sede.localidad || 'Indefinido',
+                procesosCount: 0,
+                procesosNombres: '',
+                raw: sede
+              }));
+              this.dataSource.data = mappedData;
+              this.calculateStats(mappedData);
+              this.SpinnerService.hide();
+            }
+          });
+        } else {
+          this.dataSource.data = [];
+          this.calculateStats([]);
+          this.SpinnerService.hide();
+        }
+      },
+      error: (error: any) => {
+        this.SpinnerService.hide();
+        this.toastr.error('Error al cargar sedes.', 'Error');
+      }
+    });
   }
 
   calculateStats(sedes: any[]): void {
     this.stats = {
       total: sedes.length,
-      huachipa: sedes.filter(s => s.estado === 'Huachipa').length,
-      independencia: sedes.filter(s => s.estado === 'Independencia').length,
-      ate: sedes.filter(s => s.estado === 'Ate').length
+      huachipa: sedes.filter(s => s.estado && s.estado.toLowerCase().includes('huachipa')).length,
+      independencia: sedes.filter(s => s.estado && s.estado.toLowerCase().includes('independencia')).length,
+      ate: sedes.filter(s => s.estado && s.estado.toLowerCase().includes('ate')).length
     };
   }
 
@@ -93,7 +134,8 @@ export class OrganizacionComponent implements OnInit {
 
   onAgregar(){
     let dialogRef = this.dialog.open(OrganizacionRegeditComponent, {
-      width: '600px',
+      width: '750px',
+      maxHeight: '90vh',
       disableClose: true,
       panelClass: 'my-class',
       data: {
@@ -111,13 +153,14 @@ export class OrganizacionComponent implements OnInit {
 
   onEditar(item: any){
     let dialogRef = this.dialog.open(OrganizacionRegeditComponent, {
-      width: '600px',
+      width: '750px',
+      maxHeight: '90vh',
       disableClose: true,
       panelClass: 'my-class',
       data: {
          Title  : "::. Editar sede .::",
          Accion : "U",
-         Datos  : item
+         Datos  : item.raw
       }
     });
     dialogRef.afterClosed().subscribe((res) => {
@@ -138,23 +181,38 @@ export class OrganizacionComponent implements OnInit {
       cancelButtonText: 'No'
     }).then((result) => {    
       if (result.isConfirmed) {
-        try {
-          const localSedes = localStorage.getItem('precotex_sedes');
-          if (localSedes) {
-            let data = JSON.parse(localSedes);
-            data = data.filter((s: any) => s.id !== item.id);
-            localStorage.setItem('precotex_sedes', JSON.stringify(data));
-            
-            this.toastr.success('Sede eliminada correctamente.', '', {
-              timeOut: 2500,
-            });
-            this.onListado();
+        this.SpinnerService.show();
+        
+        item.raw.flg_Activo = '0'; // Soft delete
+        item.raw.cod_Usuario = this.sUsuario;
+
+        this.sedesService.postProcesoMntoSedes({
+          Accion: 'D',
+          Codigo_Sede: item.raw.codigo_Sede,
+          Codigo_Organizacion: item.raw.codigo_Organizacion || '001',
+          Denominacion: item.raw.denominacion || '',
+          Acronimo: item.raw.acronimo || '',
+          Direccion: item.raw.direccion || '',
+          Localidad: item.raw.localidad || '',
+          Provincia: item.raw.provincia || '',
+          Pais: item.raw.pais || '',
+          Flg_Activo: '0',
+          Cod_Usuario: this.sUsuario
+        }).subscribe({
+          next: (res: any) => {
+            this.SpinnerService.hide();
+            if (res.codeResult === 200 || res.codeResult === 201) {
+              this.toastr.success(res.message, '', { timeOut: 2500 });
+              this.onListado();
+            } else {
+              this.toastr.error(res.message, '', { timeOut: 2500 });
+            }
+          },
+          error: (err: any) => {
+            this.SpinnerService.hide();
+            this.toastr.error('Error al eliminar la sede.', '', { timeOut: 2500 });
           }
-        } catch (e) {
-          this.toastr.error('Error al eliminar la sede.', '', {
-            timeOut: 2500,
-          });
-        }
+        });
       }
     });      
   }

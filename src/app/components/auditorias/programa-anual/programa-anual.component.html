@@ -3,7 +3,7 @@
   <!-- BANNER NOTIFICACIÓN / AVISO -->
   <div class="banner-aviso">
     <div class="banner-h">⚠ Alertas del programa</div>
-    <span>Este reporte se arma solo con las auditorías de la pestaña <strong>Planificación de auditoría</strong>. Cada barra se ubica en el mes de su fecha de inicio.</span>
+    <span>Este reporte se arma solo con las auditorías de la pestaña <strong>Planificación de auditoría</strong>. Cada barra abarca el rango desde la fecha de inicio hasta la fecha de fin.</span>
   </div>
 
   <!-- LEYENDA -->
@@ -31,9 +31,11 @@
             </small>
           </td>
           <td *ngFor="let mes of meses; let idx = index" class="td-month">
-            <div *ngIf="getMesIndex(audit.inicio) === idx"
+            <div *ngIf="isInRange(audit, idx)"
                  [class]="'mk mk-' + getEstadoClass(audit.estado)"
-                 [title]="audit.estado">
+                 [class.mk-start]="isStartMonth(audit, idx)"
+                 [class.mk-end]="isEndMonth(audit, idx)"
+                 [title]="audit.estado + ' (' + audit.inicio + ' al ' + audit.fin + ')'">
             </div>
           </td>
         </tr>

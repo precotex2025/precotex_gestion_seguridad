@@ -81,9 +81,6 @@ export class NormasRegeditComponent implements OnInit {
       return;
     }
 
-    const localNormas = localStorage.getItem('precotex_normas') || '[]';
-    let normas = JSON.parse(localNormas);
-
     const sTitle = this.data.Accion === 'I' ? 'Registrar' : 'Actualizar';
 
     Swal.fire({
@@ -96,46 +93,45 @@ export class NormasRegeditComponent implements OnInit {
       cancelButtonText: 'No'
     }).then((result) => {
       if (result.isConfirmed) {
-        if (this.data.Accion === 'I') {
-          // Generate a custom code N-00X
-          const newIdNum = normas.length > 0 ? (Math.max(...normas.map((n: any) => {
-            const numPart = parseInt(n.codigo_Norma.replace('N-', ''));
-            return isNaN(numPart) ? 0 : numPart;
-          })) + 1) : 1;
-          const newCode = 'N-' + String(newIdNum).padStart(3, '0');
-
-          const newNorma = {
-            codigo_Norma: newCode,
-            norma: sNorma,
-            categoria: sCategoria,
-            fechaVencimiento: sFechaVencimiento,
-            fechaAuditoria: sFechaAuditoria,
-            estado: sEstado,
-            descripcion: sDescripcion,
-            flg_Activo: 'True'
-          };
-          normas.push(newNorma);
-        } else {
-          const sCodigoNorma = this.formulario.get('ctrol_codigo')?.value;
-          const idx = normas.findIndex((n: any) => n.codigo_Norma === sCodigoNorma);
-          if (idx !== -1) {
-            normas[idx] = {
-              ...normas[idx],
-              norma: sNorma,
-              categoria: sCategoria,
-              fechaVencimiento: sFechaVencimiento,
-              fechaAuditoria: sFechaAuditoria,
-              estado: sEstado,
-              descripcion: sDescripcion
-            };
-          }
+        this.SpinnerService.show();
+        
+        let fechaV = null;
+        if (sFechaVencimiento) {
+          fechaV = new Date(sFechaVencimiento);
+        }
+        let fechaA = null;
+        if (sFechaAuditoria) {
+          fechaA = new Date(sFechaAuditoria);
         }
 
-        localStorage.setItem('precotex_normas', JSON.stringify(normas));
-        this.toastr.success('Norma guardada correctamente.', '', {
-          timeOut: 2500,
+        const data = {
+          codigo_Norma: this.data.Accion === 'I' ? '' : this.formulario.get('ctrol_codigo')?.value,
+          norma: sNorma,
+          categoria: sCategoria,
+          fechaVencimiento: fechaV,
+          fechaAuditoria: fechaA,
+          estado: sEstado,
+          descripcion: sDescripcion,
+          flg_Activo: '1',
+          cod_Usuario: 'admin', // TODO: Get from auth
+          accion: this.data.Accion
+        };
+
+        this.serviceNorma.postProcesoMntoNormas(data).subscribe({
+          next: (res: any) => {
+            this.SpinnerService.hide();
+            if (res.success) {
+              this.toastr.success(res.message, '', { timeOut: 2500 });
+              this.dialogRef.close(true);
+            } else {
+              this.toastr.error(res.message, '', { timeOut: 2500 });
+            }
+          },
+          error: (err: any) => {
+            this.SpinnerService.hide();
+            this.toastr.error('Error al conectarse al servicio.', '', { timeOut: 2500 });
+          }
         });
-        this.dialogRef.close(true);
       }
     });
   }

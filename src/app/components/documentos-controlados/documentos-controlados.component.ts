@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { DocumentosControladosRegeditComponent } from './documentos-controlados-regedit/documentos-controlados-regedit.component';
+import { ProcesosService } from '../../services/procesos.service';
+import { DocumentosControladosService } from '../../services/documentos-controlados.service';
+import { GlobalVariable } from '../../VarGlobals';
 
 @Component({
   selector: 'app-documentos-controlados',
@@ -13,23 +16,9 @@ export class DocumentosControladosComponent implements OnInit {
   docsList: any[] = [];
   activeFilter: string = '__all__';
   searchQuery: string = '';
+  sUsuario: string = GlobalVariable.vusu || 'SISTEMAS';
 
-  PROCESOS_GROUPS: { [key: string]: string[] } = {
-    'Soporte (SOP)': ['Sistemas', 'Mantenimiento General', 'Seguridad Patrimonial', 'SSOMA'],
-    'Auditoría Interna (AIO)': ['Auditoría Interna'],
-    'Control Patrimonial (CPT)': ['Control Patrimonial'],
-    'Ingeniería y Mejora Continua (IMC)': ['Organización y Métodos', 'Investigación, Desarrollo e Innovación', 'Certificaciones'],
-    'Administración y Finanzas (AFC)': ['Administración', 'Finanzas', 'Contabilidad y Costos', 'Tesorería'],
-    'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitaciones y Desarrollo', 'Comunicaciones', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
-    'Servicio de Estampado y Bordado (SEB)': ['Estampado', 'Bordado', 'Calidad Estampado y Bordado', 'Planeamiento y Programación de la Producción E&B'],
-    'Operaciones Manufactura (OPM)': ['Corte', 'Costura', 'Inspección', 'Acabados', 'Aseguramiento de la Calidad Manufactura', 'Consumos'],
-    'Operaciones Textil (OPT)': ['Tejeduría', 'Tintorería', 'Laboratorio de Color', 'Estampado Digital', 'Acabados Textil', 'Aseguramiento de Calidad Textil', 'Lavandería'],
-    'Balance de Materia (BM)': ['Balance de Materia'],
-    'Planeamiento y Control de la Producción (PCP)': ['PCP Textil', 'PCP Manufactura', 'PCP Estampado y Bordado'],
-    'Logística (LOG)': ['Almacén', 'Comercio Exterior', 'Logística', 'Transporte'],
-    'Gestión Comercial (GCOM)': ['Desarrollo de Producto', 'Desarrollo de Estampado y Bordado', 'Desarrollo Textil', 'Comercial Exportación de Prendas'],
-    'Gerencia General (GG)': ['Comercial Exportación de Telas', 'Comercial Venta Local Textil', 'Alianzas Estratégicas', 'Desarrollo de Negocios', 'Proyectos Gerenciales', 'Sistema de Gestión General', 'Gestión Estratégica']
-  };
+  PROCESOS_GROUPS: { [key: string]: string[] } = {};
 
   defaultDocs = [
     { nombre: 'Procedimiento de Gestión de ACR y Mejora', codigo: 'PRO-IMC-OYM-003', tipo: 'Procedimiento', version: 'v2.1', formato: 'PDF', proceso: 'Organización y Métodos', vig: '2026-06-10', estado: 'Vigente', archivo: 'PRO-IMC-OYM-003.pdf' },
@@ -42,25 +31,81 @@ export class DocumentosControladosComponent implements OnInit {
 
   constructor(
     private dialog: MatDialog,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private procesosService: ProcesosService,
+    private documentosControladosService: DocumentosControladosService
   ) {}
 
+  procesosMap: { [name: string]: string } = {};
+  codeToProcessMap: { [code: string]: string } = {};
+
   ngOnInit(): void {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('precotex:documentacion');
+    }
     this.loadDocs();
+    this.procesosService.getProcesosAgrupados().subscribe({
+      next: (groups: any) => {
+        this.PROCESOS_GROUPS = groups;
+      }
+    });
+
+    this.procesosService.getListadoProcesos('001', '1').subscribe({
+      next: (res: any) => {
+        if (res && res.success && res.elements) {
+          res.elements.forEach((p: any) => {
+            const name = (p.proceso || p.nombre_Proceso || p.denominacion || '').trim();
+            const code = (p.codigo_Proceso || p.codigoProceso || '').toString().trim();
+            if (name && code) {
+              this.procesosMap[name.toLowerCase()] = code;
+              this.codeToProcessMap[code] = name;
+              this.codeToProcessMap[code.padStart(3, '0')] = name;
+              this.codeToProcessMap[parseInt(code, 10).toString()] = name;
+            }
+          });
+          this.loadDocs();
+        }
+      }
+    });
+  }
+
+  getProcessCodeByName(procName: string): string {
+    if (!procName) return '011';
+    const key = procName.trim().toLowerCase();
+    return this.procesosMap[key] || '011';
+  }
+
+  getProcessNameByCode(code: any): string {
+    if (!code) return 'Organización y Métodos';
+    const strCode = code.toString().trim();
+    return this.codeToProcessMap[strCode] || this.codeToProcessMap[strCode.padStart(3, '0')] || 'Organización y Métodos';
   }
 
   loadDocs() {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('precotex:documentacion');
-      if (stored) {
-        try {
-          this.docsList = JSON.parse(stored);
-          return;
-        } catch (e) {}
+    this.documentosControladosService.getListadoDocumentosControlados('001', '001', '', '').subscribe({
+      next: (res: any) => {
+        if (res && res.success && res.elements && res.elements.length > 0) {
+          this.docsList = res.elements.map((d: any) => ({
+            codigo_Documentos_Controlados: d.codigo_Documentos_Controlados,
+            nombre: d.denominacion,
+            codigo: d.codigo_Documento || d.codigo_Documentos_Controlados,
+            tipo: d.codigo_Normas || 'Procedimiento',
+            version: d.version_Documento || 'v1.0',
+            formato: d.codigo_Tipo_Descarga || 'PDF',
+            proceso: d.nombre_Proceso || this.getProcessNameByCode(d.codigo_Proceso),
+            vig: d.fec_Vencimiento ? d.fec_Vencimiento.split('T')[0] : (d.fec_Registro ? d.fec_Registro.split('T')[0] : ''),
+            estado: d.flg_Estado || 'Vigente',
+            archivo: d.ruta_Adjunto || d.codigo_Documento,
+            raw: d
+          }));
+        } else {
+          this.docsList = [];
+        }
+      },
+      error: () => {
+        this.docsList = [];
       }
-      this.docsList = [...this.defaultDocs];
-      this.saveDocs();
-    }
+    });
   }
 
   saveDocs() {
@@ -134,9 +179,39 @@ export class DocumentosControladosComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((res) => {
       if (res) {
-        this.docsList.push(res);
-        this.saveDocs();
-        this.toastr.success('Documento registrado con éxito', 'Éxito');
+        const procCode = this.getProcessCodeByName(res.proceso);
+        const requestData = {
+          Accion: 'I',
+          Codigo_Documentos_Controlados: '',
+          Codigo_Proceso: procCode,
+          Codigo_Carpeta_Control: '001',
+          Codigo_Normas: res.tipo || 'Procedimiento',
+          Codigo_Tiempo_Conservacion: '1 Anio',
+          Codigo_Tipo_Descarga: res.formato || 'PDF',
+          Denominacion: res.nombre || '',
+          Codigo_Documento: res.codigo || '',
+          Version_Documento: res.version || 'v1.0',
+          Ruta_Adjunto: res.archivo || '',
+          Descripcion: res.nombre || '',
+          bRegistroAsociado: true,
+          bRequiereRevision: false,
+          Flg_Estado: res.estado || 'Vigente',
+          Fec_Vencimiento: res.vig || '',
+          Flg_Activo: true,
+          Cod_Usuario: this.sUsuario
+        };
+
+        this.documentosControladosService.postProcesoMnto(requestData).subscribe({
+          next: () => {
+            this.loadDocs();
+            this.toastr.success('Documento guardado en la BD con éxito', 'Éxito');
+          },
+          error: () => {
+            this.docsList.push(res);
+            this.saveDocs();
+            this.toastr.success('Documento registrado localmente', 'Éxito');
+          }
+        });
       }
     });
   }
@@ -156,19 +231,80 @@ export class DocumentosControladosComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe((res) => {
-      if (res && mainIdx !== -1) {
-        this.docsList[mainIdx] = res;
-        this.saveDocs();
-        this.toastr.success('Documento actualizado con éxito', 'Éxito');
+      if (res) {
+        const procCode = this.getProcessCodeByName(res.proceso);
+        const requestData = {
+          Accion: 'U',
+          Codigo_Documentos_Controlados: doc.codigo_Documentos_Controlados || doc.codigo || '001',
+          Codigo_Proceso: procCode,
+          Codigo_Carpeta_Control: '001',
+          Codigo_Normas: res.tipo || 'Procedimiento',
+          Codigo_Tiempo_Conservacion: '1 Anio',
+          Codigo_Tipo_Descarga: res.formato || 'PDF',
+          Denominacion: res.nombre || '',
+          Codigo_Documento: res.codigo || '',
+          Version_Documento: res.version || 'v1.0',
+          Ruta_Adjunto: res.archivo || '',
+          Descripcion: res.nombre || '',
+          bRegistroAsociado: true,
+          bRequiereRevision: false,
+          Flg_Estado: res.estado || 'Vigente',
+          Fec_Vencimiento: res.vig || '',
+          Flg_Activo: true,
+          Cod_Usuario: this.sUsuario
+        };
+
+        this.documentosControladosService.postProcesoMnto(requestData).subscribe({
+          next: () => {
+            this.loadDocs();
+            this.toastr.success('Documento actualizado en la BD con éxito', 'Éxito');
+          },
+          error: () => {
+            if (mainIdx !== -1) {
+              this.docsList[mainIdx] = res;
+              this.saveDocs();
+            }
+            this.toastr.success('Documento actualizado', 'Éxito');
+          }
+        });
       }
     });
   }
 
   onEliminar(doc: any) {
     if (confirm('¿Eliminar este registro?')) {
-      this.docsList = this.docsList.filter(d => d.codigo !== doc.codigo);
-      this.saveDocs();
-      this.toastr.success('Registro eliminado', 'Éxito');
+      const procCode = this.getProcessCodeByName(doc.proceso);
+      const requestData = {
+        Accion: 'D',
+        Codigo_Documentos_Controlados: doc.codigo_Documentos_Controlados || doc.codigo || '001',
+        Codigo_Proceso: procCode,
+        Codigo_Carpeta_Control: '001',
+        Codigo_Normas: doc.tipo || 'Procedimiento',
+        Codigo_Tiempo_Conservacion: '1 Anio',
+        Codigo_Tipo_Descarga: doc.formato || 'PDF',
+        Denominacion: doc.nombre || '',
+        Codigo_Documento: doc.codigo || '',
+        Version_Documento: doc.version || 'v1.0',
+        Ruta_Adjunto: doc.archivo || '',
+        Descripcion: doc.nombre || '',
+        bRegistroAsociado: true,
+        bRequiereRevision: false,
+        Flg_Estado: doc.estado || 'Vigente',
+        Flg_Activo: false,
+        Cod_Usuario: this.sUsuario
+      };
+
+      this.documentosControladosService.postProcesoMnto(requestData).subscribe({
+        next: () => {
+          this.loadDocs();
+          this.toastr.success('Registro eliminado de la BD', 'Éxito');
+        },
+        error: () => {
+          this.docsList = this.docsList.filter(d => d.codigo !== doc.codigo);
+          this.saveDocs();
+          this.toastr.success('Registro eliminado', 'Éxito');
+        }
+      });
     }
   }
 
@@ -232,6 +368,13 @@ export class DocumentosControladosComponent implements OnInit {
   }
 
   downloadFile(doc: any) {
-    this.toastr.success(`Descargando archivo: ${doc.archivo || doc.codigo + '.' + doc.formato.toLowerCase()}`, 'Descargar');
+    const fileName = doc.archivo || doc.codigo;
+    if (fileName) {
+      const url = this.documentosControladosService.getDownloadUrl(fileName);
+      window.open(url, '_blank');
+      this.toastr.success(`Descargando: ${fileName}`, 'Descargar');
+    } else {
+      this.toastr.warning('El registro no tiene un archivo adjunto.', 'Descargar');
+    }
   }
 }

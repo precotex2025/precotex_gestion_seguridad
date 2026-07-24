@@ -60,18 +60,29 @@
         </div>
       </div>
 
-      <!-- Fila 5: Estado -->
-      <div class="form-section-item">
-        <div class="form-label">Estado (*):</div>
-        <select formControlName="estado" class="full-width-input">
-          <option *ngFor="let est of estadosOptions" [value]="est">{{ est }}</option>
-        </select>
+      <!-- Fila 5: Estado & Auditoría Vinculada -->
+      <div class="grid-2-cols">
+        <div class="form-section-item">
+          <div class="form-label">Estado (*):</div>
+          <select formControlName="estado" class="full-width-input">
+            <option *ngFor="let est of estadosOptions" [value]="est">{{ est }}</option>
+          </select>
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Auditoría Vinculada:</div>
+          <select formControlName="codigoAuditoria" class="full-width-input">
+            <option value="">-- Sin auditoría --</option>
+            <option *ngFor="let aud of auditoriasList" [value]="aud.codigo_Auditoria">
+              {{ aud.codigo_Auditoria }} ({{ aud.tipo }} - {{ aud.norma }})
+            </option>
+          </select>
+        </div>
       </div>
 
       <!-- Fila 6: Descripción de la Acción -->
       <div class="form-section-item">
         <div class="form-label">Descripción de la Acción:</div>
-        <textarea formControlName="desc" rows="4" class="full-width-input textarea-desc" placeholder="Describe la acción para eliminar la causa raíz..."></textarea>
+        <textarea formControlName="desc" rows="3" class="full-width-input textarea-desc" placeholder="Describe la acción para eliminar la causa raíz..."></textarea>
       </div>
 
     </mat-dialog-content>

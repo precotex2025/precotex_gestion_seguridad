@@ -4,8 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { AuditoriasRegeditComponent } from './auditorias-regedit/auditorias-regedit.component';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
-
-const STORAGE_KEY = 'precotex_auditorias';
+import { AuditoriasService } from '../../services/auditorias.service';
 
 @Component({
   selector: 'app-auditorias',
@@ -37,72 +36,10 @@ export class AuditoriasComponent implements OnInit {
 
   dataSource = new MatTableDataSource<any>();
 
-  private readonly seedData = [
-    {
-      codigo_Auditoria: 'AUD-INT-2025-001',
-      tipo: 'Interna',
-      norma: 'ISO 9001:2015',
-      responsable: 'Juan Pérez',
-      areas: 'Costura, Calidad',
-      inicio: '2025-01-15',
-      fin: '2025-01-16',
-      frecuencia: 'Semestral',
-      estado: 'Realizada',
-      alcance: 'Auditoría interna de procesos de costura y calidad.'
-    },
-    {
-      codigo_Auditoria: 'AUD-EXT-2025-001',
-      tipo: 'Externa',
-      norma: 'ISO 45001:2018',
-      responsable: 'Ana Torres',
-      areas: 'Todas',
-      inicio: '2025-03-20',
-      fin: '2025-03-22',
-      frecuencia: 'Anual',
-      estado: 'Realizada',
-      alcance: 'Auditoría externa Bureau Veritas.'
-    },
-    {
-      codigo_Auditoria: 'AUD-INT-2025-004',
-      tipo: 'Interna',
-      norma: 'ISO 9001:2015',
-      responsable: 'Jordan Pinedo',
-      areas: 'Corte, Logística',
-      inicio: '2025-05-05',
-      fin: '2025-05-06',
-      frecuencia: 'Trimestral',
-      estado: 'No realizada',
-      alcance: 'Auditoría interna de corte y logística.'
-    },
-    {
-      codigo_Auditoria: 'AUD-INT-2025-006',
-      tipo: 'Interna',
-      norma: 'ISO 9001:2015',
-      responsable: 'Juan Pérez',
-      areas: 'Costura, Calidad',
-      inicio: '2025-07-15',
-      fin: '2025-07-17',
-      frecuencia: 'Semestral',
-      estado: 'Programada',
-      alcance: 'Auditoría interna programada.'
-    },
-    {
-      codigo_Auditoria: 'AUD-EXT-2025-003',
-      tipo: 'Externa',
-      norma: 'ISO 45001:2018',
-      responsable: 'Ana Torres',
-      areas: 'SSOMA, Producción',
-      inicio: '2025-07-29',
-      fin: '2025-08-01',
-      frecuencia: 'Anual',
-      estado: 'Programada',
-      alcance: 'Auditoría externa Bureau Veritas.'
-    }
-  ];
-
   constructor(
     private dialog : MatDialog,
     private toastr : ToastrService,
+    private auditoriasService : AuditoriasService
   ) {}
 
   ngOnInit(): void {
@@ -110,16 +47,33 @@ export class AuditoriasComponent implements OnInit {
   }
 
   onListado(): void {
-    const local = localStorage.getItem(STORAGE_KEY);
-    if (local) {
-      const data = JSON.parse(local);
-      this.dataSource.data = data;
-      this.calculateStats(data);
-    } else {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.seedData));
-      this.dataSource.data = this.seedData;
-      this.calculateStats(this.seedData);
-    }
+    this.auditoriasService.getListadoAuditorias('').subscribe({
+      next: (res: any) => {
+        if (res && res.success && res.elements) {
+          const list = res.elements.map((d: any) => ({
+            codigo_Auditoria: d.codigo_Auditoria,
+            tipo: d.tipo,
+            norma: d.norma,
+            responsable: d.responsable,
+            areas: d.areas,
+            inicio: d.fecha_Inicio ? d.fecha_Inicio.split('T')[0] : '',
+            fin: d.fecha_Fin ? d.fecha_Fin.split('T')[0] : '',
+            frecuencia: d.frecuencia,
+            estado: d.estado,
+            alcance: d.alcance
+          }));
+          this.dataSource.data = list;
+          this.calculateStats(list);
+        } else {
+          this.dataSource.data = [];
+          this.calculateStats([]);
+        }
+      },
+      error: () => {
+        this.dataSource.data = [];
+        this.calculateStats([]);
+      }
+    });
   }
 
   calculateStats(data: any[]): void {
@@ -188,14 +142,20 @@ export class AuditoriasComponent implements OnInit {
       cancelButtonText: 'No'
     }).then(result => {
       if (result.isConfirmed) {
-        const local = localStorage.getItem(STORAGE_KEY);
-        if (local) {
-          let data = JSON.parse(local);
-          data = data.filter((d: any) => d.codigo_Auditoria !== item.codigo_Auditoria);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-          this.toastr.success('Auditoría eliminada correctamente.', '', { timeOut: 2500 });
-          this.onListado();
-        }
+        const payload = {
+          Accion: 'D',
+          Codigo_Auditoria: item.codigo_Auditoria,
+          Cod_Usuario: 'SISTEMAS'
+        };
+        this.auditoriasService.postProcesoMntoAuditoria(payload).subscribe({
+          next: () => {
+            this.toastr.success('Auditoría eliminada correctamente en la BD.', '', { timeOut: 2500 });
+            this.onListado();
+          },
+          error: () => {
+            this.toastr.error('Error al eliminar auditoría en la BD.', '', { timeOut: 2500 });
+          }
+        });
       }
     });
   }
