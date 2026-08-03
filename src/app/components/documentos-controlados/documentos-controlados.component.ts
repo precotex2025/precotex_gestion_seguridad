@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { DocumentosControladosRegeditComponent } from './documentos-controlados-regedit/documentos-controlados-regedit.component';
+import { DocumentosControladosLoteComponent } from './documentos-controlados-lote/documentos-controlados-lote.component';
 import { ProcesosService } from '../../services/procesos.service';
 import { DocumentosControladosService } from '../../services/documentos-controlados.service';
 import { GlobalVariable } from '../../VarGlobals';
@@ -309,32 +310,17 @@ export class DocumentosControladosComponent implements OnInit {
   }
 
   onCargarLote() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.multiple = true;
-    input.onchange = (e: any) => {
-      const files = e.target.files;
-      if (files && files.length > 0) {
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i];
-          const ext = file.name.split('.').pop()?.toUpperCase() || 'PDF';
-          this.docsList.push({
-            nombre: file.name.substring(0, file.name.lastIndexOf('.')),
-            codigo: 'LOTE-' + Math.floor(1000 + Math.random() * 9000),
-            tipo: 'Procedimiento',
-            version: 'v1.0',
-            formato: ext === 'XLSX' || ext === 'XLS' ? 'Excel' : ext === 'DOC' || ext === 'DOCX' ? 'Word' : 'PDF',
-            proceso: 'Sistemas',
-            vig: new Date().toISOString().split('T')[0],
-            estado: 'Vigente',
-            archivo: file.name
-          });
-        }
-        this.saveDocs();
-        this.toastr.success(files.length + ' documento(s) cargado(s)', 'Éxito');
+    let dialogRef = this.dialog.open(DocumentosControladosLoteComponent, {
+      width: '600px',
+      maxHeight: '90vh',
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe((res) => {
+      if (res && res.success) {
+        this.loadDocs();
       }
-    };
-    input.click();
+    });
   }
 
   exportExcel() {

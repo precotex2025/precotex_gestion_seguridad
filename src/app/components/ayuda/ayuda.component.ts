@@ -15,6 +15,7 @@ interface Manual {
   icono: string;
   archivo?: string;
   descargas: number;
+  flg_Activo?: boolean;
 }
 
 interface Faq {
@@ -84,20 +85,23 @@ export class AyudaComponent implements OnInit {
     this.ayudaService.getListadoManuales().subscribe({
       next: (res: any) => {
         if (res && res.success && res.elements) {
-          this.manuales = res.elements.map((item: any) => ({
-            id: item.id_Manual,
-            codigo: item.codigo,
-            titulo: item.titulo,
-            subtitulo: item.subtitulo || 'Guía de Usuario',
-            descripcion: item.descripcion || '',
-            autor: item.autor || 'O&M',
-            fecha: item.fecha_Publicacion || 'Julio 2025',
-            version: item.version || 'v1.0',
-            color: item.color || '#7c6cf0',
-            icono: item.icono || 'menu_book',
-            archivo: item.archivo || '',
-            descargas: item.descargas || 0
-          }));
+          this.manuales = res.elements
+            .filter((item: any) => item.flg_Activo !== false && item.flg_Activo !== 0)
+            .map((item: any) => ({
+              id: item.id_Manual,
+              codigo: item.codigo,
+              titulo: item.titulo,
+              subtitulo: item.subtitulo || 'Guía de Usuario',
+              descripcion: item.descripcion || '',
+              autor: item.autor || 'O&M',
+              fecha: item.fecha_Publicacion || 'Julio 2025',
+              version: item.version || 'v1.0',
+              color: item.color || '#7c6cf0',
+              icono: item.icono || 'menu_book',
+              archivo: item.archivo || '',
+              descargas: item.descargas || 0,
+              flg_Activo: item.flg_Activo
+            }));
         } else {
           this.manuales = [];
         }
@@ -221,11 +225,59 @@ export class AyudaComponent implements OnInit {
     input.click();
   }
 
+  onEliminarManual(m: Manual): void {
+    if (confirm(`¿Está seguro de que desea eliminar el manual "${m.titulo}"?`)) {
+      const payload = {
+        Accion: 'D',
+        Id_Manual: m.id
+      };
+
+      this.ayudaService.postManualMnto(payload).subscribe({
+        next: (res: any) => {
+          if (res && res.success) {
+            this.toastr.success(`Manual "${m.titulo}" eliminado correctamente.`, 'Eliminado');
+            this.onListadoManuales();
+          } else {
+            this.toastr.error(res?.message || 'No se pudo eliminar el manual.', 'Error');
+          }
+        },
+        error: (err) => {
+          console.error(err);
+          this.toastr.error('Ocurrió un error al intentar eliminar el manual.', 'Error');
+        }
+      });
+    }
+  }
+
   onContactarOyM(): void {
-    window.location.href = 'mailto:organizacionymetodos@precotex.pe?subject=Consulta%20Portal%20SIG%20Precotex';
+    const email = 'privera@precotexperu.com';
+    const subject = encodeURIComponent('Consulta Portal SIG Precotex');
+    window.location.href = `mailto:${email}?subject=${subject}`;
+    
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(email).then(() => {
+        this.toastr.success('Abriendo Outlook. Correo copiado al portapapeles: ' + email, 'Contacto O&M');
+      }).catch(() => {
+        this.toastr.info('Abriendo Outlook para enviar correo a: ' + email, 'Contacto O&M');
+      });
+    } else {
+      this.toastr.info('Abriendo Outlook para enviar correo a: ' + email, 'Contacto O&M');
+    }
   }
 
   onReportarSistemas(): void {
-    this.toastr.success('Reporte enviado a Soporte de Sistemas.', 'Ticket Generado');
+  const email = 'fhuamani@precotexperu.com';
+    const subject = encodeURIComponent('Reportar un problema');
+    window.location.href = `mailto:${email}?subject=${subject}`;
+    
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(email).then(() => {
+        this.toastr.success('Abriendo Outlook. Correo copiado al portapapeles: ' + email, 'Contacto Sitemas');
+      }).catch(() => {
+        this.toastr.info('Abriendo Outlook para enviar correo a: ' + email, 'Contacto Sistemas');
+      });
+    } else {
+      this.toastr.info('Abriendo Outlook para enviar correo a: ' + email, 'Contacto Sistemas');
+    }
   }
 }

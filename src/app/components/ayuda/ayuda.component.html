@@ -45,6 +45,9 @@
           <h4 class="manual-title">{{ m.titulo }}</h4>
           <span class="manual-sub" [style.color]="m.color">{{ m.subtitulo }}</span>
         </div>
+        <button class="btn-delete-manual" (click)="onEliminarManual(m)" title="Eliminar manual">
+          <mat-icon>delete</mat-icon>
+        </button>
       </div>
       <p class="manual-desc">{{ m.descripcion }}</p>
       <div class="manual-footer">

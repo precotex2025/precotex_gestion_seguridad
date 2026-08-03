@@ -547,3 +547,29 @@
 .btn-red:hover {
   background-color: rgba(240, 87, 107, 0.15);
 }
+
+.btn-delete-manual {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
+  opacity: 0.6;
+}
+
+.btn-delete-manual:hover {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  opacity: 1;
+}
+
+.btn-delete-manual mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
