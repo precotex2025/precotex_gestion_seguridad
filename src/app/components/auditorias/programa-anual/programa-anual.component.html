@@ -1,55 +1,65 @@
 <div class="contenedor sn-animate-in">
 
-  <!-- BANNER NOTIFICACIÓN / AVISO -->
-  <div class="banner-aviso">
-    <div class="banner-h">⚠ Alertas del programa</div>
-    <span>Este reporte se arma solo con las auditorías de la pestaña <strong>Planificación de auditoría</strong>. Cada barra abarca el rango desde la fecha de inicio hasta la fecha de fin.</span>
+  <!-- BANNER NOTIFICACIÓN DISCRETO COLAPSABLE -->
+  <div class="banner-aviso-collapsible" *ngIf="mostrarBanner">
+    <div class="banner-info-left">
+      <mat-icon class="banner-info-icon">date_range</mat-icon>
+      <span>Cronograma anual y Diagrama de Gantt. Cada barra visualiza el rango proyectado de inicio a fin con el estado actual de la auditoría.</span>
+    </div>
+    <button type="button" class="btn-close-banner" (click)="cerrarBanner()" title="Cerrar aviso">
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
 
-  <!-- LEYENDA -->
-  <div class="legend-container">
-    <span class="legend-item"><i class="dot dot-realizada"></i>Realizada</span>
-    <span class="legend-item"><i class="dot dot-programada"></i>Programada</span>
-    <span class="legend-item"><i class="dot dot-no-realizada"></i>No realizada</span>
+  <!-- LEYENDA PREMIUM DE BARRAS DE GANTT -->
+  <div class="legend-container-gantt">
+    <span class="legend-item"><i class="dot dot-realizada"></i>Realizada (Completada)</span>
+    <span class="legend-item"><i class="dot dot-programada"></i>Programada (Próxima)</span>
+    <span class="legend-item"><i class="dot dot-no-realizada"></i>No realizada (Pendiente)</span>
   </div>
 
-  <!-- MATRIZ MENSUAL -->
+  <!-- MATRIZ MENSUAL - DIAGRAMA DE GANTT PREMIUM -->
   <div class="table-container shadow-premium">
     <table class="prog-table">
       <thead>
         <tr>
-          <th class="th-audit">Auditoría</th>
-          <th *ngFor="let mes of meses">{{ mes }}</th>
+          <th class="th-audit">Auditoría / Norma</th>
+          <th *ngFor="let mes of meses" class="th-month-header">{{ mes }}</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let audit of auditorias">
+        <tr *ngFor="let audit of auditorias" class="gantt-row">
           <td class="td-audit">
-            <span class="audit-code">{{ audit.codigo_Auditoria }}</span>
-            <small class="audit-details">
+            <span class="audit-code font-mono text-purple">{{ audit.codigo_Auditoria }}</span>
+            <span class="audit-details">
               {{ audit.tipo }} • {{ audit.norma }} • {{ audit.areas || '' }}
-            </small>
+            </span>
           </td>
-          <td *ngFor="let mes of meses; let idx = index" class="td-month">
+
+          <td *ngFor="let mes of meses; let idx = index" class="td-month dashed-grid-cell">
             <div *ngIf="isInRange(audit, idx)"
-                 [class]="'mk mk-' + getEstadoClass(audit.estado)"
+                 class="gantt-pill-bar"
+                 [ngClass]="'gantt-bar-' + getEstadoClass(audit.estado)"
                  [class.mk-start]="isStartMonth(audit, idx)"
                  [class.mk-end]="isEndMonth(audit, idx)"
-                 [title]="audit.estado + ' (' + audit.inicio + ' al ' + audit.fin + ')'">
+                 [matTooltip]="getGanttTooltip(audit)"
+                 matTooltipPosition="above">
             </div>
           </td>
         </tr>
+
         <tr *ngIf="auditorias.length === 0">
           <td colspan="13" class="td-empty">
-            Sin auditorías registradas.
+            <mat-icon class="empty-icon">event_busy</mat-icon>
+            <p>Sin auditorías registradas en el programa anual.</p>
           </td>
         </tr>
       </tbody>
       <tfoot>
         <tr class="tfoot-row">
-          <td class="td-foot-label">Auditorías por mes</td>
-          <td *ngFor="let count of counts" [class.has-count]="count > 0">
-            {{ count > 0 ? count : '' }}
+          <td class="td-foot-label">Total auditorías por mes</td>
+          <td *ngFor="let count of counts" class="td-foot-count" [class.has-count]="count > 0">
+            {{ count > 0 ? count : '—' }}
           </td>
         </tr>
       </tfoot>

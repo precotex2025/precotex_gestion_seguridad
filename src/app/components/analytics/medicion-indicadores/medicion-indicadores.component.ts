@@ -117,7 +117,34 @@ export class MedicionIndicadoresComponent implements OnInit {
     return Math.round((count / total) * 100);
   }
 
-  getSparklinePoints(id: string): string {
+  mostrarBanner: boolean = true;
+  drawerOpen: boolean = false;
+  selectedMedicion: any = null;
+
+  cerrarBanner(): void {
+    this.mostrarBanner = false;
+  }
+
+  openDrawer(row?: any): void {
+    this.selectedMedicion = row || (this.dataSource.data.length > 0 ? this.dataSource.data[0] : null);
+    this.drawerOpen = true;
+  }
+
+  closeDrawer(): void {
+    this.drawerOpen = false;
+    this.selectedMedicion = null;
+  }
+
+  getProgressPercent(row: any): number {
+    if (!row) return 0;
+    const val = parseFloat(String(row.valor || '0').replace(/[^0-9.]/g, '')) || 0;
+    const meta = parseFloat(String(row.meta || '100').replace(/[^0-9.]/g, '')) || 100;
+    if (meta === 0) return 100;
+    const pct = Math.round((val / meta) * 100);
+    return Math.min(Math.max(pct, 0), 100);
+  }
+
+  getSparklinePoints(id: string): { x: number, y: number }[] {
     let x = 0;
     const str = String(id || 'xyz');
     for (let i = 0; i < str.length; i++) {
@@ -127,17 +154,39 @@ export class MedicionIndicadoresComponent implements OnInit {
       x = (x * 1103515245 + 12345) & 0x7fffffff;
       return x / 0x7fffffff;
     };
-    const n = 9;
-    const w = 78;
-    const h = 24;
-    const pad = 3;
-    const pts: number[] = [];
-    for (let i = 0; i < n; i++) {
-      pts.push(0.2 + rnd() * 0.7);
-    }
+    const n = 6;
+    const w = 84;
+    const h = 28;
+    const pad = 4;
+    const pts: { x: number, y: number }[] = [];
     const step = (w - pad * 2) / (n - 1);
-    const path = pts.map((p, i) => `${(pad + i * step).toFixed(1)},${(h - pad - p * (h - pad * 2)).toFixed(1)}`).join(' ');
+    for (let i = 0; i < n; i++) {
+      const px = pad + i * step;
+      const py = h - pad - (0.25 + rnd() * 0.65) * (h - pad * 2);
+      pts.push({ x: px, y: py });
+    }
+    return pts;
+  }
+
+  getSparklineLinePath(id: string): string {
+    const pts = this.getSparklinePoints(id);
+    if (!pts || pts.length === 0) return 'M 0 20 L 80 20';
+    let path = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+    for (let i = 1; i < pts.length; i++) {
+      const prev = pts[i - 1];
+      const curr = pts[i];
+      const cx = (prev.x + curr.x) / 2;
+      path += ` C ${cx.toFixed(1)} ${prev.y.toFixed(1)}, ${cx.toFixed(1)} ${curr.y.toFixed(1)}, ${curr.x.toFixed(1)} ${curr.y.toFixed(1)}`;
+    }
     return path;
+  }
+
+  getSparklineAreaPath(id: string): string {
+    const linePath = this.getSparklineLinePath(id);
+    const pts = this.getSparklinePoints(id);
+    const lastX = pts[pts.length - 1].x.toFixed(1);
+    const firstX = pts[0].x.toFixed(1);
+    return `${linePath} L ${lastX} 28 L ${firstX} 28 Z`;
   }
 
   aplicarFiltro(event: Event): void {

@@ -59,6 +59,7 @@ import { PuestosUsuariosRegeditComponent } from './components/puestos/puestos-us
 import { DocumentosControladosComponent } from './components/documentos-controlados/documentos-controlados.component';
 import { DocumentosNoControladosComponent } from './components/documentos-no-controlados/documentos-no-controlados.component';
 import { DocumentosControladosRegeditComponent } from './components/documentos-controlados/documentos-controlados-regedit/documentos-controlados-regedit.component';
+import { DocumentosControladosLoteComponent } from './components/documentos-controlados/documentos-controlados-lote/documentos-controlados-lote.component';
 import { UsuariosPersonasComponent } from './components/usuarios-personas/usuarios-personas.component';
 import { UsuariosPersonasRegeditComponent } from './components/usuarios-personas/usuarios-personas-regedit/usuarios-personas-regedit.component';
 import { DocumentacionPersonasComponent } from './components/documentacion-personas/documentacion-personas.component';
@@ -127,6 +128,7 @@ import { AyudaComponent } from './components/ayuda/ayuda.component';
     DocumentosControladosComponent,
     DocumentosNoControladosComponent,
     DocumentosControladosRegeditComponent,
+    DocumentosControladosLoteComponent,
     UsuariosPersonasComponent,
     UsuariosPersonasRegeditComponent,
     DocumentacionPersonasComponent,

@@ -1,0 +1,92 @@
+<div class="dialog-lote">
+  <div class="dialog-header">
+    <div class="dialog-icon-container">
+      <span class="material-icons text-purple">cloud_upload</span>
+    </div>
+    <div class="dialog-header-text">
+      <h2 class="dialog-title">Carga de Documentos en Lote</h2>
+      <p class="dialog-subtitle">Selecciona el área de destino y los archivos que vas a registrar en el sistema</p>
+    </div>
+  </div>
+
+  <div class="dialog-content">
+    <!-- SELECCIÓN DE ÁREA / PROCESO -->
+    <div class="form-row">
+      <div class="form-group full-width">
+        <label class="form-label font-bold text-white">Proceso / Área Destino (*)</label>
+        <select [(ngModel)]="selectedProceso" class="form-input" [disabled]="isUploading">
+          <option value="" disabled selected>-- Seleccione un proceso --</option>
+          <optgroup *ngFor="let macro of getMacroProcesses()" [label]="macro">
+            <option *ngFor="let proc of PROCESOS_GROUPS[macro]" [value]="proc">{{ proc }}</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+
+    <!-- ZONA DRAG & DROP / FILE SELECTOR -->
+    <div class="form-row" *ngIf="!isUploading">
+      <div class="form-group full-width">
+        <label class="form-label font-bold text-white">Archivos a Cargar (*)</label>
+        <div class="file-uploader-box">
+          <label class="btn-uploader">
+            <span class="material-icons">folder_open</span>
+            <strong>Seleccionar múltiples archivos...</strong>
+            <input type="file" multiple (change)="onFilesSelected($event)" style="display: none;">
+          </label>
+          <p class="uploader-info">PDF, Word o Excel · Carga masiva</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- LISTADO DE ARCHIVOS SELECCIONADOS -->
+    <div class="files-preview-section" *ngIf="filesList.length > 0">
+      <div class="section-title-wrapper">
+        <span class="text-white font-bold">Documentos en cola ({{ filesList.length }})</span>
+      </div>
+
+      <div class="files-scroll-container">
+        <div *ngFor="let item of filesList; let i = index" class="file-item-row" 
+             [class.uploaded-bg]="item.isUploaded" 
+             [class.error-bg]="item.isError">
+          <div class="file-icon-box" 
+               [class.excel-icon]="item.formato === 'Excel'"
+               [class.word-icon]="item.formato === 'Word'">
+            <span class="material-icons">
+              {{ item.formato === 'Excel' ? 'grid_on' : item.formato === 'Word' ? 'description' : 'picture_as_pdf' }}
+            </span>
+          </div>
+
+          <div class="file-item-details">
+            <div class="file-main-info">
+              <input type="text" [(ngModel)]="item.codigo" class="file-input-inline code-input" placeholder="Código" [disabled]="isUploading">
+              <input type="text" [(ngModel)]="item.nombre" class="file-input-inline name-input" placeholder="Nombre" [disabled]="isUploading">
+            </div>
+            
+            <div class="file-sub-info">
+              <span class="badge-format">{{ item.formato }}</span>
+              <select [(ngModel)]="item.tipo" class="select-inline" [disabled]="isUploading">
+                <option *ngFor="let t of tipos" [value]="t">{{ t }}</option>
+              </select>
+              <span class="status-label" [class.uploaded-text]="item.isUploaded" [class.error-text]="item.isError">
+                {{ item.progressMessage }}
+              </span>
+            </div>
+          </div>
+
+          <button type="button" class="btn-remove-file" (click)="removeFile(i)" *ngIf="!isUploading" title="Quitar de la lista">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog-actions">
+    <button type="button" class="btn-ghost" (click)="onClose()" [disabled]="isUploading">Cancelar y volver</button>
+    <button type="button" class="btn-primary" (click)="onUploadLote()" [disabled]="isUploading || filesList.length === 0 || !selectedProceso">
+      <span class="material-icons" *ngIf="!isUploading">cloud_upload</span>
+      <span class="spinner" *ngIf="isUploading"></span>
+      {{ isUploading ? 'Subiendo lote...' : 'Iniciar carga masiva' }}
+    </button>
+  </div>
+</div>

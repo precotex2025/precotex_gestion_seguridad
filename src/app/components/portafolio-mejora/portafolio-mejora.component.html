@@ -214,19 +214,20 @@
 
           <!-- Estado -->
           <ng-container matColumnDef="estado">
-            <th mat-header-cell *matHeaderCellDef style="width: 110px;">Estado</th>
+            <th mat-header-cell *matHeaderCellDef style="width: 130px;">Estado</th>
             <td mat-cell *matCellDef="let row">
-              <span [class]="'badge-estado-' + (row.estado === 'Cerrado' ? 'activo' : row.estado === 'En proceso' ? 'proceso' : 'sin-permisos')">
-                {{ row.estado }}
+              <span class="soft-badge" [ngClass]="row.estado === 'Cerrado' || row.estado === 'Implementado' ? 'soft-badge-vigente' : (row.estado === 'En proceso' ? 'soft-badge-blue' : 'soft-badge-revision')">
+                <span class="glowing-dot"></span>
+                <span>{{ row.estado || 'En proceso' }}</span>
               </span>
             </td>
           </ng-container>
 
-          <!-- Acciones -->
+          <!-- Acciones con Hover Fade-In -->
           <ng-container matColumnDef="acciones">
             <th mat-header-cell *matHeaderCellDef style="width: 120px; text-align: center;">Acciones</th>
-            <td mat-cell *matCellDef="let row">
-              <div class="actions-wrapper">
+            <td mat-cell *matCellDef="let row" class="acciones-cell">
+              <div class="actions-wrapper hover-fade">
                 <button *ngIf="row.archivo" class="action-btn btn-download" (click)="onDescargarArchivo(row)" title="Descargar archivo adjunto">
                   <mat-icon>file_download</mat-icon>
                 </button>

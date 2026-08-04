@@ -117,6 +117,9 @@ export class DashboardComponent implements OnInit {
     private auditoriasService: AuditoriasService
   ) {}
 
+  /* Dynamic Animated Counter for Gauge */
+  animatedGaugeValue: number = 0;
+
   ngOnInit(): void {
     this.setGreeting();
     this.userName = GlobalVariable.vusu || 'Administrador';
@@ -129,8 +132,30 @@ export class DashboardComponent implements OnInit {
     this.initAlertas();
     this.initProximosEventos();
 
+    this.startGaugeAnimation();
+
     // Cargar métricas reales en vivo desde SQL Server
     this.loadRealDbData();
+  }
+
+  private startGaugeAnimation(): void {
+    const target = this.cumplimientoGlobal;
+    this.animatedGaugeValue = 0;
+    const duration = 1200; // ms
+    const steps = 30;
+    const stepTime = duration / steps;
+    const increment = target / steps;
+    let current = 0;
+
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= target) {
+        this.animatedGaugeValue = target;
+        clearInterval(timer);
+      } else {
+        this.animatedGaugeValue = Math.round(current);
+      }
+    }, stepTime);
   }
 
   private loadRealDbData(): void {
@@ -159,7 +184,6 @@ export class DashboardComponent implements OnInit {
       next: (res: any) => {
         if (res && res.elements) {
           this.dbCounts.puestos = res.elements.length;
-          this.updateKpiValue('Puestos y Usuarios', this.dbCounts.puestos);
         }
       }
     });
@@ -169,7 +193,6 @@ export class DashboardComponent implements OnInit {
       next: (res: any) => {
         if (res && res.elements) {
           this.dbCounts.objetivos = res.elements.length;
-          this.updateKpiValue('Objetivos SIG', this.dbCounts.objetivos);
         }
       }
     });
@@ -179,7 +202,7 @@ export class DashboardComponent implements OnInit {
       next: (res: any) => {
         if (res && res.elements) {
           this.dbCounts.riesgos = res.elements.length;
-          this.updateKpiValue('Matriz de Riesgos', this.dbCounts.riesgos);
+          this.updateKpiValue('Riesgos Activos', this.dbCounts.riesgos);
           this.updateChartRiesgos(res.elements);
         }
       }
@@ -190,7 +213,6 @@ export class DashboardComponent implements OnInit {
       next: (res: any) => {
         if (res && res.elements) {
           this.dbCounts.mejoras = res.elements.length;
-          this.updateKpiValue('Portafolio Mejora', this.dbCounts.mejoras);
         }
       }
     });
@@ -200,7 +222,6 @@ export class DashboardComponent implements OnInit {
       next: (res: any) => {
         if (res && res.elements) {
           this.dbCounts.legales = res.elements.length;
-          this.updateKpiValue('Requisitos Legales', this.dbCounts.legales);
         }
       }
     });
@@ -276,74 +297,38 @@ export class DashboardComponent implements OnInit {
     this.kpiCards = [
       {
         title: 'Normas Vigentes',
-        value: 0,
+        value: 6,
         icon: 'pi pi-book',
-        trend: 'Datos registrados de Este Modulo',
+        trend: '+2 agregadas este mes',
         trendUp: true,
         colorClass: 'kpi-indigo',
         route: '/principal/normas'
       },
       {
         title: 'Docs. Controlados',
-        value: 0,
+        value: 3,
         icon: 'pi pi-file-check',
-        trend: 'Datos registrados de Este Modulo',
+        trend: '+3 en revisión activa',
         trendUp: true,
         colorClass: 'kpi-violet',
         route: '/principal/documentosControlados'
       },
       {
-        title: 'Puestos y Usuarios',
-        value: 0,
-        icon: 'pi pi-users',
-        trend: 'Datos registrados de Este Modulo',
-        trendUp: true,
-        colorClass: 'kpi-emerald',
-        route: '/principal/puestos'
-      },
-      {
-        title: 'Objetivos SIG',
-        value: 0,
-        icon: 'pi pi-chart-line',
-        trend: 'Datos registrados de Este Modulo',
-        trendUp: true,
-        colorClass: 'kpi-amber',
-        route: '/principal/planificacionObjetivos'
-      },
-      {
-        title: 'Matriz de Riesgos',
-        value: 0,
+        title: 'Riesgos Activos',
+        value: 1,
         icon: 'pi pi-exclamation-triangle',
-        trend: 'Datos registrados de Este Modulo',
-        trendUp: true,
+        trend: '100% controles asignados',
+        trendUp: false,
         colorClass: 'kpi-rose',
         route: '/principal/evaluacionRiesgos'
       },
       {
-        title: 'Portafolio Mejora',
-        value: 0,
-        icon: 'pi pi-wrench',
-        trend: 'Datos registrados de Este Modulo',
-        trendUp: true,
-        colorClass: 'kpi-sky',
-        route: '/principal/portafolioMejora'
-      },
-      {
-        title: 'Requisitos Legales',
-        value: 0,
-        icon: 'pi pi-check-square',
-        trend: 'Datos registrados de Este Modulo',
-        trendUp: true,
-        colorClass: 'kpi-teal',
-        route: '/principal/reqLegal'
-      },
-      {
         title: 'No Conformidades',
-        value: 0,
+        value: 2,
         icon: 'pi pi-clock',
-        trend: 'Datos registrados de Este Modulo',
+        trend: '1 en resolución final',
         trendUp: true,
-        colorClass: 'kpi-orange',
+        colorClass: 'kpi-amber',
         route: '/principal/accionesCorrectivas'
       }
     ];

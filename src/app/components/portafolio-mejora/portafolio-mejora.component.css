@@ -155,10 +155,78 @@
 
 /* PANEL TARJETA CONTENEDOR */
 .panel-card {
-  background-color: #151827;
-  border: 1px solid #262b40;
-  border-radius: 12px;
-  padding: 16px 20px;
+  background: #1a1a24;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 3px solid #7c6cf0;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+/* Soft Badges */
+.soft-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.glowing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.soft-badge-vigente {
+  background: rgba(62, 207, 142, 0.12);
+  color: #3ecf8e;
+  border: 1px solid rgba(62, 207, 142, 0.2);
+}
+.soft-badge-vigente .glowing-dot {
+  background: #3ecf8e;
+  box-shadow: 0 0 6px #3ecf8e;
+}
+
+.soft-badge-blue {
+  background: rgba(91, 141, 239, 0.12);
+  color: #5b8def;
+  border: 1px solid rgba(91, 141, 239, 0.2);
+}
+.soft-badge-blue .glowing-dot {
+  background: #5b8def;
+  box-shadow: 0 0 6px #5b8def;
+}
+
+.soft-badge-revision {
+  background: rgba(240, 180, 41, 0.12);
+  color: #f0b429;
+  border: 1px solid rgba(240, 180, 41, 0.2);
+}
+.soft-badge-revision .glowing-dot {
+  background: #f0b429;
+  box-shadow: 0 0 6px #f0b429;
+}
+
+.acciones-cell {
+  position: relative;
+}
+
+.actions-wrapper.hover-fade {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+::ng-deep .mat-mdc-row:hover .actions-wrapper.hover-fade {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .panel-card-head {

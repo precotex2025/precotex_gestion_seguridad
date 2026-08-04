@@ -1,99 +1,141 @@
-
-
-
 <div class="contenedor sn-animate-in">
 
-  <!-- BANNER NOTIFICACIÓN -->
-  <div class="banner-aviso">
-    <span>✦ Registro funcional. Pulsa <strong>Agregar norma</strong>, llena el formulario y guarda. Persiste aunque recargues.</span>
-  </div>
-
-  <!-- ESTADÍSTICAS CARDS -->
-  <div class="stats-grid">
-    <div class="stat-card border-left-purple">
-      <div class="stat-label">TOTAL</div>
-      <div class="stat-value text-white">{{ stats.total }}</div>
-      <div class="stat-desc">Registros</div>
+  <!-- BANNER NOTIFICACIÓN DISCRETO COLAPSABLE -->
+  <div class="banner-aviso-collapsible" *ngIf="mostrarBanner">
+    <div class="banner-info-left">
+      <mat-icon class="banner-info-icon">info</mat-icon>
+      <span>Registro funcional. Pulsa <strong>+ Agregar norma</strong> para registrar o actualizar las certificaciones de la organización.</span>
     </div>
-    <div class="stat-card border-left-green">
-      <div class="stat-label">VIGENTE</div>
-      <div class="stat-value text-green">{{ stats.vigente }}</div>
-    </div>
-    <div class="stat-card border-left-amber">
-      <div class="stat-label">EN REVISIÓN</div>
-      <div class="stat-value text-yellow">{{ stats.enRevision }}</div>
-    </div>
-    <div class="stat-card border-left-red">
-      <div class="stat-label">POR VENCER</div>
-      <div class="stat-value text-red">{{ stats.porVencer }}</div>
-    </div>
-  </div>
-
-  <!-- TÍTULO DE SECCIÓN Y BOTÓN AGREGAR -->
-  <div class="seccion-header">
-    <h2 class="seccion-titulo">NORMAS Y CERTIFICACIONES</h2>
-    <button type="button" class="btn-agregar-norma" (click)="onAgregar()">
-      <span>+ Agregar norma</span>
+    <button type="button" class="btn-close-banner" (click)="cerrarBanner()" title="Cerrar aviso">
+      <mat-icon>close</mat-icon>
     </button>
   </div>
 
-  <!-- BUSCADOR -->
-  <div class="buscador-container">
-    <input type="text" 
-           (keyup)="aplicarFiltro($event)" 
-           placeholder="Buscar..." 
-           class="buscador-input">
+  <!-- ESTADÍSTICAS COMPACTAS CON TOP-GLOW E ICONOS MARCA DE AGUA -->
+  <div class="stats-grid-compact">
+    
+    <div class="stat-card-compact glow-border-total">
+      <div class="stat-watermark">
+        <mat-icon>verified_user</mat-icon>
+      </div>
+      <div class="stat-card-content">
+        <span class="stat-card-title">TOTAL</span>
+        <span class="stat-card-number text-white">{{ stats.total }}</span>
+        <span class="stat-card-sub">Registros</span>
+      </div>
+    </div>
+
+    <div class="stat-card-compact glow-border-green">
+      <div class="stat-watermark">
+        <mat-icon>shield</mat-icon>
+      </div>
+      <div class="stat-card-content">
+        <span class="stat-card-title">VIGENTES</span>
+        <span class="stat-card-number text-green">{{ stats.vigente }}</span>
+        <span class="stat-card-sub">Certificados al día</span>
+      </div>
+    </div>
+
+    <div class="stat-card-compact glow-border-amber">
+      <div class="stat-watermark">
+        <mat-icon>hourglass_empty</mat-icon>
+      </div>
+      <div class="stat-card-content">
+        <span class="stat-card-title">EN REVISIÓN</span>
+        <span class="stat-card-number text-yellow">{{ stats.enRevision }}</span>
+        <span class="stat-card-sub">En auditoría</span>
+      </div>
+    </div>
+
+    <div class="stat-card-compact glow-border-red">
+      <div class="stat-watermark">
+        <mat-icon>warning</mat-icon>
+      </div>
+      <div class="stat-card-content">
+        <span class="stat-card-title">POR VENCER</span>
+        <span class="stat-card-number text-red">{{ stats.porVencer }}</span>
+        <span class="stat-card-sub">Atención requerida</span>
+      </div>
+    </div>
+
   </div>
 
-  <!-- CONTENEDOR DE TABLA PREMIUM -->
+  <!-- BARRA DE HERRAMIENTAS INTEGRADA EN 1 SOLA FILA -->
+  <div class="integrated-toolbar">
+    <div class="toolbar-title-section">
+      <h2 class="seccion-titulo">NORMAS Y CERTIFICACIONES</h2>
+      <span class="results-badge">{{ dataSource.filteredData.length }} Normas</span>
+    </div>
+
+    <div class="toolbar-actions-section">
+      <!-- Buscador Inline Integrado -->
+      <div class="inline-search-box">
+        <mat-icon class="search-icon">search</mat-icon>
+        <input type="text" 
+               (keyup)="aplicarFiltro($event)" 
+               placeholder="Buscar norma, ámbito o descripción..." 
+               class="inline-search-input">
+      </div>
+
+      <button type="button" class="btn-agregar-norma-premium" (click)="onAgregar()">
+        <mat-icon>add</mat-icon>
+        <span>Agregar norma</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTENEDOR DE TABLA PREMIUM HETEROGÉNEO -->
   <div class="table-container shadow-premium">
     <table mat-table [dataSource]="dataSource" matSort class="tabla">
 
       <!-- Norma / Certificación -->
       <ng-container matColumnDef="norma">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 220px;">Norma / Certificación</th>
-        <td mat-cell *matCellDef="let row" class="norma-cell">{{ row.norma }}</td>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 230px;">Norma / Certificación</th>
+        <td mat-cell *matCellDef="let row" class="norma-cell-title">{{ row.norma }}</td>
       </ng-container>
 
       <!-- Categoría / Ámbito -->
       <ng-container matColumnDef="categoria">
         <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px;">Categoría / Ámbito</th>
-        <td mat-cell *matCellDef="let row">{{ row.categoria || 'Otros' }}</td>
+        <td mat-cell *matCellDef="let row" class="cat-cell">{{ row.categoria || 'Otros' }}</td>
       </ng-container>
 
       <!-- Fecha Vencimiento -->
       <ng-container matColumnDef="fechaVencimiento">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px;">Fecha Vencimiento</th>
-        <td mat-cell *matCellDef="let row" class="col-tabular">{{ row.fechaVencimiento ? (row.fechaVencimiento | date:'dd/MM/yyyy') : '-' }}</td>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 140px;">Fecha Vencimiento</th>
+        <td mat-cell *matCellDef="let row" class="col-tabular date-text">{{ row.fechaVencimiento ? (row.fechaVencimiento | date:'dd/MM/yyyy') : '-' }}</td>
       </ng-container>
 
       <!-- Última Auditoría -->
       <ng-container matColumnDef="fechaAuditoria">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px;">Última Auditoría</th>
-        <td mat-cell *matCellDef="let row" class="col-tabular">{{ row.fechaAuditoria ? (row.fechaAuditoria | date:'dd/MM/yyyy') : '-' }}</td>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 140px;">Última Auditoría</th>
+        <td mat-cell *matCellDef="let row" class="col-tabular date-text">{{ row.fechaAuditoria ? (row.fechaAuditoria | date:'dd/MM/yyyy') : '-' }}</td>
       </ng-container>
 
-      <!-- Estado -->
+      <!-- Estado (Soft Badges con Glowing Dot) -->
       <ng-container matColumnDef="estado">
-        <th mat-header-cell *matHeaderCellDef style="width: 140px;">Estado</th>
+        <th mat-header-cell *matHeaderCellDef style="width: 150px;">Estado</th>
         <td mat-cell *matCellDef="let row">
-          <span [class]="'badge-estado-' + getEstadoClass(row.estado)">
-            {{ row.estado || 'Vigente' }}
+          <span class="soft-badge" [ngClass]="'soft-badge-' + getEstadoClass(row.estado)">
+            <span class="glowing-dot"></span>
+            <span class="badge-text">{{ row.estado || 'Vigente' }}</span>
           </span>
         </td>
       </ng-container>    
 
-      <!-- Descripción -->
+      <!-- Descripción con Truncado Seguro y Tooltip -->
       <ng-container matColumnDef="descripcion">
-        <th mat-header-cell *matHeaderCellDef style="min-width: 250px;">Descripción</th>
-        <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.descripcion }}</td>
+        <th mat-header-cell *matHeaderCellDef style="min-width: 240px;">Descripción</th>
+        <td mat-cell *matCellDef="let row" class="desc-cell-truncated" [matTooltip]="row.descripcion" matTooltipPosition="above">
+          {{ row.descripcion }}
+        </td>
       </ng-container>
 
-      <!-- Acciones -->
+      <!-- Acciones con Hover Fade-In -->
       <ng-container matColumnDef="acciones">
-        <th mat-header-cell *matHeaderCellDef style="width: 110px; text-align: center;">Acciones</th>
-        <td mat-cell *matCellDef="let e">
-          <div class="actions-wrapper">
+        <th mat-header-cell *matHeaderCellDef style="width: 100px; text-align: center;">Acciones</th>
+        <td mat-cell *matCellDef="let e" class="acciones-cell">
+          <div class="actions-wrapper hover-fade">
             <button class="action-btn btn-edit" (click)="onEditar(e)" title="Editar">
               <mat-icon>edit</mat-icon>
             </button>

@@ -200,3 +200,99 @@ html {
   width: 1150px !important;
   max-width: 95vw !important;
 }
+
+/* --- Standard Circular Table Action Buttons --- */
+.action-btn {
+  border: none !important;
+  background: transparent;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer;
+  transition: all 0.2s ease !important;
+  padding: 0 !important;
+  margin: 0 2px;
+}
+
+.btn-edit, .btn-action-edit, .btn-action-editar {
+  color: #f0b429 !important;
+  background: rgba(240, 180, 41, 0.12) !important;
+}
+
+.btn-edit:hover, .btn-action-edit:hover, .btn-action-editar:hover {
+  background: rgba(240, 180, 41, 0.25) !important;
+  transform: scale(1.08);
+}
+
+.btn-delete, .btn-action-delete, .btn-action-eliminar {
+  color: #f0576b !important;
+  background: rgba(240, 87, 107, 0.12) !important;
+}
+
+.btn-delete:hover, .btn-action-delete:hover, .btn-action-eliminar:hover {
+  background: rgba(240, 87, 107, 0.25) !important;
+  transform: scale(1.08);
+}
+
+.action-btn mat-icon, .action-btn span, .btn-action-edit span, .btn-action-delete span {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  line-height: 18px !important;
+}
+
+/* ===================================================================
+   GLOBAL HIGH-CONTRAST ENTERPRISE TABLE STYLING OVERRIDE
+   =================================================================== */
+.mat-mdc-table, table.tabla, table.riesgos-table, table.tabla-wrapper, .mat-table {
+  background: #1a1a24 !important;
+  color: #f8fafc !important;
+  border-collapse: collapse !important;
+  width: 100% !important;
+}
+
+.mat-mdc-header-row, tr.mat-mdc-header-row, table.tabla thead tr, table.riesgos-table thead tr, .mat-header-row {
+  background: #151827 !important;
+}
+
+.mat-mdc-header-cell, th, table.tabla th, table.riesgos-table th, .mat-header-cell {
+  color: #94a3b8 !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: #151827 !important;
+  padding: 12px 16px !important;
+}
+
+.mat-mdc-cell, td, table.tabla td, table.riesgos-table td, .mat-cell {
+  color: #cbd5e1 !important;
+  font-size: 0.82rem !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  padding: 12px 16px !important;
+}
+
+.mat-mdc-row:hover, tr.fila:hover, tr.row-expandable:hover, .mat-row:hover {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Semantic Cell Colors */
+.norma-cell, .norma-cell-title, .title-cell, .doc-title-text, td.norma-cell, td.norma-cell-title {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+.cat-cell, .desc-cell, .process-cell, .simple-type-text, td.cat-cell, td.desc-cell, td.process-cell, td.simple-type-text {
+  color: #cbd5e1 !important;
+}
+
+.code-cell, .code-badge-font, td.code-cell, td.code-badge-font {
+  color: #a78bfa !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-weight: 700 !important;
+}

@@ -11,6 +11,19 @@ export class ProgramaAnualComponent implements OnInit {
   auditorias: any[] = [];
   meses: string[] = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
   counts: number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  mostrarBanner: boolean = true;
+
+  cerrarBanner(): void {
+    this.mostrarBanner = false;
+  }
+
+  getGanttTooltip(audit: any): string {
+    const resp = audit.responsable || 'Sin asignar';
+    const norma = audit.norma || 'General';
+    const dates = (audit.inicio || '—') + ' al ' + (audit.fin || '—');
+    const estado = audit.estado || 'Programada';
+    return `Responsable: ${resp} • ${norma} • ${estado} (${dates})`;
+  }
 
   constructor(private auditoriasService: AuditoriasService) {}
 

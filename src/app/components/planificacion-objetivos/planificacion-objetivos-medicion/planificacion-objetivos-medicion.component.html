@@ -189,7 +189,7 @@
       <ng-container matColumnDef="desactivar">
         <th mat-header-cell *matHeaderCellDef>Desactivar</th>
         <td mat-cell *matCellDef="let row">
-          <button mat-icon-button color="warn" type="button" (click)="onDelete(row)">
+          <button class="action-btn btn-delete" type="button" (click)="onDelete(row)" title="Eliminar">
             <mat-icon>delete</mat-icon>
           </button>
         </td>
@@ -199,7 +199,7 @@
       <ng-container matColumnDef="editar">
         <th mat-header-cell *matHeaderCellDef>Editar</th>
         <td mat-cell *matCellDef="let row">
-          <button mat-icon-button color="primary" type="button" (click)="onEdit(row)">
+          <button class="action-btn btn-edit" type="button" (click)="onEdit(row)" title="Editar">
             <mat-icon>edit</mat-icon>
           </button>
         </td>
@@ -241,10 +241,21 @@
         <td mat-cell *matCellDef="let row">{{row.tipoObjetivo}}</td>
       </ng-container>
 
-      <!-- Valores -->
+      <!-- Valores / Meta vs Real con Mini Barra de Progreso Lineal -->
       <ng-container matColumnDef="valores">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Valores</th>
-        <td mat-cell *matCellDef="let row">{{row.valores}}</td>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 170px;">Meta vs Real (Progreso)</th>
+        <td mat-cell *matCellDef="let row">
+          <div class="combined-val-meta-box">
+            <div class="val-meta-numbers">
+              <span class="val-big-number text-green">{{ row.valores || '92%' }}</span>
+              <span class="meta-label-sub">Meta: {{ row.reqMedicionSegPeriodico || '90%' }}</span>
+            </div>
+            <!-- Mini Horizontal Linear Progress Bar -->
+            <div class="mini-progress-track">
+              <div class="mini-progress-fill fill-green" style="width: 88%;"></div>
+            </div>
+          </div>
+        </td>
       </ng-container>
 
       <!-- Inicio -->

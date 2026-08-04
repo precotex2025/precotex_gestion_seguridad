@@ -21,6 +21,21 @@ export class PlanificacionObjetivosComponent implements OnInit {
     pendientes: 0
   };
 
+  mostrarBanner: boolean = true;
+
+  cerrarBanner(): void {
+    this.mostrarBanner = false;
+  }
+
+  openMedicionModal(): void {
+    const dialogRef = this.dialog.open(PlanificacionObjetivosRegeditComponent, {
+      width: '90vw',
+      maxWidth: '1200px',
+      disableClose: false,
+      data: { Title: '::. Medición de Objetivos .::' }
+    });
+  }
+
   displayedColumns: string[] = [
     'objetivo',
     'proceso',

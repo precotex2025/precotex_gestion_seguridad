@@ -66,6 +66,12 @@ export class LoginComponent implements OnInit {
               localStorage.removeItem('remembered_user');
             }
 
+            // Limpiar cache de permisos anterior
+            localStorage.removeItem('precotex:puestos:accesos');
+            localStorage.removeItem('precotex:puestos:listado');
+            localStorage.removeItem('precotex:puestos:accesos_fino');
+            localStorage.removeItem('precotex:usuario:proceso');
+
             this.toastr.success(`Bienvenido al sistema, ${GlobalVariable.vusu}.`, 'Acceso Correcto');
             this.router.navigate(['/principal']);
           } else {

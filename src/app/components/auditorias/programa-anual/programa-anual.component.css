@@ -1,168 +1,237 @@
 /* ===================================================================
-   Programa Anual — CSS Styles
+   Programa Anual (Gantt Chart) — Enterprise Premium Redesign
    =================================================================== */
 
 .contenedor {
-  padding: 20px 24px 24px 24px;
-  max-width: 1440px;
-  margin: 0 auto;
-  background-color: #090d16;
-  min-height: 100vh;
-  box-sizing: border-box;
-}
-
-/* --- Banner Aviso --- */
-.banner-aviso {
-  background: #0f172a;
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  border-radius: 8px;
-  padding: 14px 20px;
-  margin: 16px 0 24px 0;
-  color: #a5b4fc;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.banner-h {
-  font-weight: 700;
-  color: #f0576b;
-  margin-bottom: 6px;
-  font-size: 0.9rem;
-}
-
-.banner-aviso strong {
-  color: #ffffff;
-}
-
-/* --- Legend --- */
-.legend-container {
+  padding: 0;
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Collapsible Banner */
+.banner-aviso-collapsible {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid #6366f1;
+  border-radius: 10px;
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  backdrop-filter: blur(8px);
+}
+
+.banner-info-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: #cbd5e1;
+}
+
+.banner-info-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  color: #818cf8;
+}
+
+.btn-close-banner {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+}
+
+.btn-close-banner:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-close-banner mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* Legend Container */
+.legend-container-gantt {
+  display: flex;
+  gap: 20px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
-  font-size: 12px;
+  font-size: 0.76rem;
   color: #94a3b8;
-  font-family: 'Inter', sans-serif;
+  background: #151827;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 10px 16px;
 }
 
 .legend-item {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 6px;
 }
 
 .dot {
-  width: 11px;
-  height: 11px;
-  border-radius: 3px;
-  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
 }
 
-.dot-realizada { background-color: #3ecf8e; }
-.dot-programada { background-color: #f0b429; }
-.dot-no-realizada { background-color: #f0576b; }
+.dot-realizada    { background: #3ecf8e; box-shadow: 0 0 6px #3ecf8e; }
+.dot-programada   { background: #f0b429; box-shadow: 0 0 6px #f0b429; }
+.dot-no-realizada { background: #f0576b; box-shadow: 0 0 6px #f0576b; }
 
-/* --- Table Styles --- */
+/* Table Container & Gantt Architecture */
 .table-container {
-  background: #0b0f19;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  background: #1a1a24;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
   overflow-x: auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .prog-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 820px;
-  font-size: 11px;
-  font-family: 'Inter', sans-serif;
-}
-
-.prog-table th, .prog-table td {
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 8px 6px;
-  text-align: center;
-  color: #94a3b8;
 }
 
 .prog-table th {
-  background: #1e293b;
+  background: #151827;
   color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .th-audit {
-  text-align: left !important;
-  width: 250px;
+  text-align: left;
+  min-width: 250px;
+}
+
+.th-month-header {
+  text-align: center;
+  width: 60px;
+  border-right: 1px dashed rgba(255, 255, 255, 0.05);
+}
+
+.gantt-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  height: 48px;
+  transition: background 0.15s ease;
+}
+
+.gantt-row:hover {
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .td-audit {
-  text-align: left !important;
-  white-space: nowrap;
-  color: #ffffff;
-  padding: 8px 12px !important;
+  padding: 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .audit-code {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-weight: 600;
-  color: #a5b4fc;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 .audit-details {
-  display: block;
-  color: rgba(148, 163, 184, 0.5);
-  font-size: 10px;
-  margin-top: 2px;
+  font-size: 0.72rem;
+  color: #94a3b8;
 }
 
-.td-month {
-  width: 50px;
-  padding: 8px 0 !important;
+.dashed-grid-cell {
+  border-right: 1px dashed rgba(255, 255, 255, 0.05);
+  padding: 0 !important;
+  vertical-align: middle;
 }
 
-.mk {
-  height: 9px;
-  border-radius: 0;
-  width: 100%;
+/* Gantt Neon Pill Bars */
+.gantt-pill-bar {
+  height: 18px;
+  margin: 0 -1px;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
 }
 
-.mk-start {
-  border-top-left-radius: 6px;
-  border-bottom-left-radius: 6px;
+.gantt-pill-bar.mk-start {
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+  margin-left: 4px;
 }
 
-.mk-end {
-  border-top-right-radius: 6px;
-  border-bottom-right-radius: 6px;
+.gantt-pill-bar.mk-end {
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+  margin-right: 4px;
 }
 
-.mk-realizada { background-color: #3ecf8e; }
-.mk-programada { background-color: #f0b429; }
-.mk-no-realizada { background-color: #f0576b; }
-
-.td-empty {
-  text-align: center;
-  color: rgba(148, 163, 184, 0.4);
-  padding: 40px !important;
+/* Gradients & Neon Drop Shadows */
+.gantt-bar-realizada {
+  background: linear-gradient(90deg, #3ecf8e 0%, #10b981 100%);
+  box-shadow: 0 0 10px rgba(62, 207, 142, 0.45);
 }
 
+.gantt-bar-programada {
+  background: linear-gradient(90deg, #f0b429 0%, #f59e0b 100%);
+  box-shadow: 0 0 10px rgba(240, 180, 41, 0.45);
+}
+
+.gantt-bar-no-realizada {
+  background: linear-gradient(90deg, #f0576b 0%, #ef4444 100%);
+  box-shadow: 0 0 10px rgba(240, 87, 107, 0.45);
+}
+
+.gantt-pill-bar:hover {
+  transform: scaleY(1.25);
+  z-index: 5;
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.6);
+}
+
+/* Footer Summary */
 .tfoot-row {
-  background-color: rgba(30, 41, 59, 0.5);
+  background: #151827;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .td-foot-label {
-  text-align: left !important;
-  color: rgba(148, 163, 184, 0.6) !important;
-  font-weight: 600;
-  padding-left: 12px !important;
+  padding: 12px 14px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #f8fafc;
 }
 
-.has-count {
-  color: #ffffff !important;
+.td-foot-count {
+  text-align: center;
+  font-size: 0.76rem;
+  color: #64748b;
+  border-right: 1px dashed rgba(255, 255, 255, 0.05);
+}
+
+.td-foot-count.has-count {
+  color: #a78bfa;
   font-weight: 700;
+}
+
+.td-empty {
+  text-align: center;
+  padding: 40px !important;
+  color: #64748b;
+}
+
+.empty-icon {
+  font-size: 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+  margin-bottom: 6px;
 }

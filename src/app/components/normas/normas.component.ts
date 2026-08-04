@@ -29,6 +29,12 @@ export class NormasComponent implements OnInit {
     porVencer: 0
   };
 
+  mostrarBanner: boolean = true;
+
+  cerrarBanner(): void {
+    this.mostrarBanner = false;
+  }
+
   constructor(
     private dialog            : MatDialog             ,
     private serviceNorma      : NormasService         ,
