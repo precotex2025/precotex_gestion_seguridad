@@ -35,6 +35,34 @@ export class EvaluacionRiesgosComponent implements OnInit {
   cantEnSeguimiento = 0;
   cantSinControl = 0;
 
+  expandedRow: string | null = null;
+  mostrarBanner: boolean = true;
+
+  cerrarBanner(): void {
+    this.mostrarBanner = false;
+  }
+
+  toggleRow(codigo: string, event?: Event): void {
+    if (event) event.stopPropagation();
+    if (this.expandedRow === codigo) {
+      this.expandedRow = null;
+    } else {
+      this.expandedRow = codigo;
+    }
+  }
+
+  isRowExpanded(codigo: string): boolean {
+    return this.expandedRow === codigo;
+  }
+
+  getNivelHeatmapClass(nivel: string): string {
+    if (!nivel) return 'heatmap-bajo';
+    const n = nivel.toLowerCase().trim();
+    if (n.includes('alt') || n.includes('crític') || n.includes('critic')) return 'heatmap-alto';
+    if (n.includes('med')) return 'heatmap-medio';
+    return 'heatmap-bajo';
+  }
+
   readonly tiposOptions = ['Seguridad', 'Calidad', 'Ambiental'];
   readonly procesosOptions = [
     'Sistemas', 'Servicios Compartidos', 'Recursos Humanos', 'Finanzas', 'SSOMA',

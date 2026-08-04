@@ -1,41 +1,65 @@
 <div class="contenedor sn-animate-in">
 
-  <!-- BANNER EXPLICATIVO -->
-  <div class="banner-aviso">
-    <span>✦ Registro funcional. Pulsa <strong>Nuevo documento</strong>, llena el formulario y guarda. Se mantiene aunque recargues la página.</span>
+  <!-- BANNER NOTIFICACIÓN DISCRETO COLAPSABLE -->
+  <div class="banner-aviso-collapsible" *ngIf="mostrarBanner">
+    <div class="banner-info-left">
+      <mat-icon class="banner-info-icon">folder_special</mat-icon>
+      <span>Biblioteca de documentos controlados. Explora el árbol documental por macroproceso o haz clic en cualquier documento para abrir la <strong>Vista Previa Rápida (Quick View)</strong>.</span>
+    </div>
+    <button type="button" class="btn-close-banner" (click)="cerrarBanner()" title="Cerrar aviso">
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
 
   <div class="doc-layout">
-    <!-- PANEL IZQUIERDO: ESTRUCTURA DOCUMENTAL -->
-    <div class="tree-panel shadow-premium">
-      <div class="tree-header">Estructura documental</div>
+    <!-- PANEL IZQUIERDO: ESTRUCTURA DOCUMENTAL ESTILO FILE MANAGER -->
+    <div class="tree-panel-filemanager">
+      <div class="tree-header-row">
+        <mat-icon class="tree-header-icon">snippet_folder</mat-icon>
+        <span class="tree-header-title">ESTRUCTURA DOCUMENTAL</span>
+      </div>
       
-      <div class="tree-node" 
+      <div class="tree-node-item root-node" 
            [class.active]="activeFilter === '__all__'" 
-           (click)="setFilter('__all__')"
-           style="font-weight: 700;">
-        <span>Todos los procesos</span>
-        <em class="badge-count">{{ docsList.length }}</em>
+           (click)="setFilter('__all__')">
+        <div class="node-left">
+          <mat-icon class="folder-icon root-icon">folder_shared</mat-icon>
+          <span class="node-name">Todos los procesos</span>
+        </div>
+        <span class="mini-count-pill">{{ docsList.length }}</span>
       </div>
 
       <div class="tree-groups-container">
         <div *ngFor="let macro of getMacroProcesses()" class="macro-group-wrapper">
-          <div class="tree-node macro-node" 
+          
+          <!-- Macroprocess Accordion Node -->
+          <div class="tree-node-item macro-node" 
                [class.active]="activeFilter === 'macro:' + macro"
                (click)="setFilter('macro:' + macro)">
-            <span>{{ macro }}</span>
-            <em class="badge-count">{{ getMacroCount(macro) }}</em>
+            <div class="node-left">
+              <button type="button" class="accordion-arrow-btn" (click)="toggleMacro(macro, $event)">
+                <mat-icon class="arrow-icon" [class.rotated]="!isMacroExpanded(macro)">keyboard_arrow_down</mat-icon>
+              </button>
+              <mat-icon class="folder-icon macro-folder">folder</mat-icon>
+              <span class="node-name">{{ macro }}</span>
+            </div>
+            <span class="mini-count-pill">{{ getMacroCount(macro) }}</span>
           </div>
           
-          <div class="sub-nodes-container">
+          <!-- Subprocesses Animated Container -->
+          <div class="sub-nodes-container" [class.collapsed]="!isMacroExpanded(macro)">
             <div *ngFor="let proc of PROCESOS_GROUPS[macro]" 
-                 class="tree-node process-node"
+                 class="tree-node-item process-node"
                  [class.active]="activeFilter === proc"
                  (click)="setFilter(proc)">
-              <span>{{ proc }}</span>
-              <em class="badge-count">{{ getProcessCount(proc) }}</em>
+              <div class="node-left">
+                <mat-icon class="folder-icon process-folder">insert_drive_file</mat-icon>
+                <span class="node-name">{{ proc }}</span>
+              </div>
+              <span class="mini-count-pill">{{ getProcessCount(proc) }}</span>
             </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -43,117 +67,266 @@
     <!-- PANEL DERECHO: DETALLES Y LISTA -->
     <div class="details-panel">
       
-      <!-- CUADROS DE ESTADÍSTICAS -->
-      <div class="stats-grid">
-        <div class="stat-card border-left-purple">
-          <div class="stat-value text-white">{{ getStatCount('Total') }}</div>
-          <div class="stat-label">Total Documentos</div>
+      <!-- CUADROS DE ESTADÍSTICAS COMPACTOS CON TOP GLOW -->
+      <div class="stats-grid-compact">
+        
+        <div class="stat-card-compact glow-border-total">
+          <div class="stat-watermark"><mat-icon>description</mat-icon></div>
+          <div class="stat-card-content">
+            <span class="stat-card-title">TOTAL DOCUMENTOS</span>
+            <span class="stat-card-number text-white">{{ getStatCount('Total') }}</span>
+            <span class="stat-card-sub">En catálogo</span>
+          </div>
         </div>
-        <div class="stat-card border-left-green">
-          <div class="stat-value text-green">{{ getStatCount('Vigente') }}</div>
-          <div class="stat-label">Vigentes</div>
+
+        <div class="stat-card-compact glow-border-green">
+          <div class="stat-watermark"><mat-icon>verified</mat-icon></div>
+          <div class="stat-card-content">
+            <span class="stat-card-title">VIGENTES</span>
+            <span class="stat-card-number text-green">{{ getStatCount('Vigente') }}</span>
+            <span class="stat-card-sub">En regla</span>
+          </div>
         </div>
-        <div class="stat-card border-left-amber">
-          <div class="stat-value text-amber">{{ getStatCount('Por vencer') }}</div>
-          <div class="stat-label">Por Vencer</div>
+
+        <div class="stat-card-compact glow-border-amber">
+          <div class="stat-watermark"><mat-icon>history_toggle_off</mat-icon></div>
+          <div class="stat-card-content">
+            <span class="stat-card-title">POR VENCER</span>
+            <span class="stat-card-number text-yellow">{{ getStatCount('Por vencer') }}</span>
+            <span class="stat-card-sub">Revisión requerida</span>
+          </div>
         </div>
-        <div class="stat-card border-left-red">
-          <div class="stat-value text-red">{{ getStatCount('Obsoleto') }}</div>
-          <div class="stat-label">Obsoletos</div>
+
+        <div class="stat-card-compact glow-border-red">
+          <div class="stat-watermark"><mat-icon>folder_off</mat-icon></div>
+          <div class="stat-card-content">
+            <span class="stat-card-title">OBSOLETOS</span>
+            <span class="stat-card-number text-red">{{ getStatCount('Obsoleto') }}</span>
+            <span class="stat-card-sub">Versiones archivadas</span>
+          </div>
         </div>
+
       </div>
 
-      <!-- CONTROLES Y ACCIONES -->
-      <div class="controls-bar shadow-premium">
-        <div class="search-box">
-          <span class="material-icons search-icon">search</span>
+      <!-- BARRA DE HERRAMIENTAS Y ACCIONES CON GHOST BUTTONS -->
+      <div class="integrated-toolbar">
+        <div class="inline-search-box">
+          <mat-icon class="search-icon">search</mat-icon>
           <input type="text" 
                  [(ngModel)]="searchQuery" 
                  placeholder="Buscar por código, nombre, tipo..." 
-                 class="search-input">
+                 class="inline-search-input">
         </div>
         
-        <div class="actions-buttons">
-          <button type="button" class="btn-primary" (click)="onAgregar()">
-            <span class="material-icons">add</span> Nuevo documento
+        <div class="toolbar-actions-section">
+          <!-- Primary Solid Glow Button -->
+          <button type="button" class="btn-primary-glow" (click)="onAgregar()" *ngIf="canCreate">
+            <mat-icon>add</mat-icon>
+            <span>Nuevo documento</span>
           </button>
-          <button type="button" class="btn-secondary" (click)="onCargarLote()">
-            <span class="material-icons">upload_file</span> Cargar lote
+
+          <!-- Ghost Buttons -->
+          <button type="button" class="btn-ghost-action" (click)="onCargarLote()" *ngIf="canCreate">
+            <mat-icon>upload_file</mat-icon>
+            <span>Cargar lote</span>
           </button>
-          <button type="button" class="btn-excel" (click)="exportExcel()">
-            <span class="material-icons">grid_on</span> Excel
+          
+          <button type="button" class="btn-ghost-action" (click)="exportExcel()">
+            <mat-icon class="icon-excel-btn">grid_on</mat-icon>
+            <span>Excel</span>
           </button>
-          <button type="button" class="btn-pdf" (click)="exportPDF()">
-            <span class="material-icons">picture_as_pdf</span> PDF
+          
+          <button type="button" class="btn-ghost-action" (click)="exportPDF()">
+            <mat-icon class="icon-pdf-btn">picture_as_pdf</mat-icon>
+            <span>PDF</span>
           </button>
         </div>
       </div>
 
-      <!-- TABLA DE DOCUMENTOS -->
+      <!-- TABLA DE DOCUMENTOS PREMIUM -->
       <div class="table-container shadow-premium">
         <table class="tabla">
           <thead>
             <tr>
-              <th style="width: 95px;">Código</th>
-              <th>Nombre del documento</th>
-              <th style="width: 95px;">Tipo</th>
-              <th style="width: 60px; text-align: center;">Versión</th>
-              <th style="width: 70px; text-align: center;">Formato</th>
-              <th>Proceso</th>
-              <th style="width: 90px; text-align: center;">Vigencia</th>
-              <th style="width: 90px; text-align: center;">Estado</th>
-              <th style="width: 60px; text-align: center;">Archivo</th>
-              <th style="width: 80px; text-align: center;">Acciones</th>
+              <th style="min-width: 155px; width: 155px; white-space: nowrap;">Código</th>
+              <th style="min-width: 250px;">Nombre del documento</th>
+              <th style="min-width: 135px; width: 135px; white-space: nowrap;">Tipo</th>
+              <th style="min-width: 80px; width: 80px; text-align: center;">Versión</th>
+              <th style="min-width: 100px; width: 100px; text-align: center;">Formato</th>
+              <th style="min-width: 180px;">Proceso</th>
+              <th style="min-width: 110px; width: 110px; text-align: center;">Vigencia</th>
+              <th style="min-width: 120px; width: 120px; text-align: center;">Estado</th>
+              <th style="min-width: 70px; width: 70px; text-align: center;">Archivo</th>
+              <th style="min-width: 100px; width: 100px; text-align: center;">Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let doc of filteredDocs; let i = index" class="fila">
-              <td class="code-cell font-mono text-purple">{{ doc.codigo }}</td>
-              <td class="name-cell font-bold text-white">{{ doc.nombre }}</td>
-              <td><span class="doc-type-badge">{{ doc.tipo }}</span></td>
-              <td style="text-align: center;"><span class="version-label">{{ doc.version }}</span></td>
-              <td style="text-align: center;">
-                <span class="format-badge" 
-                      [class.excel-bg]="doc.formato === 'Excel'"
-                      [class.word-bg]="doc.formato === 'Word'"
-                      [class.pdf-bg]="doc.formato === 'PDF'">
-                  {{ doc.formato }}
+              <td class="code-cell font-mono text-purple" style="min-width: 155px; width: 155px; white-space: nowrap;">{{ doc.codigo }}</td>
+              
+              <!-- Quick View Clickable Name -->
+              <td class="name-cell-quickview" (click)="openQuickView(doc)" title="Ver vista previa rápida" style="min-width: 250px;">
+                <span class="doc-title-text">{{ doc.nombre }}</span>
+              </td>
+
+              <!-- Soft Badge for Type -->
+              <td style="min-width: 135px; width: 135px;">
+                <span class="soft-badge soft-badge-type">
+                  {{ doc.tipo }}
                 </span>
               </td>
-              <td class="process-cell">{{ doc.proceso }}</td>
-              <td style="text-align: center;" class="date-cell">{{ doc.vig || '-' }}</td>
-              <td style="text-align: center;">
-                <span class="status-badge"
-                      [class.status-green]="doc.estado === 'Vigente'"
-                      [class.status-amber]="doc.estado === 'Por vencer'"
-                      [class.status-red]="doc.estado === 'Obsoleto'">
-                  {{ doc.estado }}
+
+              <td style="min-width: 80px; width: 80px; text-align: center;">
+                <span class="version-label">{{ doc.version }}</span>
+              </td>
+              
+              <!-- Official Color Iconography for File Formats -->
+              <td style="min-width: 100px; width: 100px; text-align: center;">
+                <div class="format-icon-badge" [title]="'Formato ' + doc.formato">
+                  <mat-icon *ngIf="doc.formato === 'Word'" class="icon-format icon-word">description</mat-icon>
+                  <mat-icon *ngIf="doc.formato === 'Excel'" class="icon-format icon-excel">grid_on</mat-icon>
+                  <mat-icon *ngIf="doc.formato === 'PDF'" class="icon-format icon-pdf">picture_as_pdf</mat-icon>
+                  <span class="format-text">{{ doc.formato }}</span>
+                </div>
+              </td>
+
+              <td class="process-cell" style="min-width: 180px;">{{ doc.proceso }}</td>
+              <td style="min-width: 110px; width: 110px; text-align: center;" class="date-cell">{{ doc.vig || '-' }}</td>
+              
+              <!-- Soft Badge for Status -->
+              <td style="min-width: 120px; width: 120px; text-align: center;">
+                <span class="soft-badge" 
+                      [ngClass]="doc.estado === 'Vigente' ? 'soft-badge-vigente' : (doc.estado === 'Por vencer' ? 'soft-badge-revision' : 'soft-badge-porvencer')">
+                  <span class="glowing-dot"></span>
+                  <span>{{ doc.estado }}</span>
                 </span>
               </td>
-              <td style="text-align: center;">
-                <button type="button" class="btn-download" (click)="downloadFile(doc)" title="Descargar archivo">
-                  <span class="material-icons">download</span>
+
+              <!-- Highlighted Download Button -->
+              <td style="min-width: 70px; width: 70px; text-align: center;">
+                <button type="button" class="btn-download-highlight" (click)="downloadFile(doc)" title="Descargar archivo" *ngIf="canDownload">
+                  <mat-icon>download</mat-icon>
                 </button>
               </td>
-              <td style="text-align: center;">
-                <div class="actions-wrapper">
-                  <button type="button" class="btn-action-edit" (click)="onEditar(doc, i)" title="Editar registro">
-                    <span class="material-icons">edit</span>
+
+              <!-- Hover Fade-In Actions -->
+              <td style="min-width: 100px; width: 100px; text-align: center;" class="acciones-cell">
+                <div class="actions-wrapper hover-fade">
+                  <button class="action-btn btn-edit" (click)="onEditar(doc, i)" title="Editar registro" *ngIf="canEdit">
+                    <mat-icon>edit</mat-icon>
                   </button>
-                  <button type="button" class="btn-action-delete" (click)="onEliminar(doc)" title="Eliminar registro">
-                    <span class="material-icons">delete</span>
+                  <button class="action-btn btn-delete" (click)="onEliminar(doc)" title="Eliminar registro" *ngIf="canDelete">
+                    <mat-icon>delete</mat-icon>
                   </button>
                 </div>
               </td>
             </tr>
+
             <tr *ngIf="filteredDocs.length === 0">
               <td colspan="10" class="empty-row">
-                <span class="material-icons empty-icon">folder_off</span>
+                <mat-icon class="empty-icon">folder_off</mat-icon>
                 <p>No se encontraron documentos en esta selección.</p>
               </td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       SLIDE-OVER DRAWER FOR QUICK VIEW (VISTA PREVIA RÁPIDA)
+       =================================================================== -->
+  <div class="slide-over-backdrop" *ngIf="quickViewOpen" (click)="closeQuickView()"></div>
+
+  <div class="slide-over-drawer" [class.drawer-active]="quickViewOpen">
+    <div class="drawer-header">
+      <div class="drawer-title-box">
+        <div class="file-icon-avatar" [ngClass]="'format-avatar-' + selectedDoc?.formato">
+          <mat-icon *ngIf="selectedDoc?.formato === 'Word'">description</mat-icon>
+          <mat-icon *ngIf="selectedDoc?.formato === 'Excel'">grid_on</mat-icon>
+          <mat-icon *ngIf="selectedDoc?.formato === 'PDF'">picture_as_pdf</mat-icon>
+        </div>
+        <div>
+          <span class="drawer-code-badge">{{ selectedDoc?.codigo }}</span>
+          <h2 class="drawer-doc-name">{{ selectedDoc?.nombre }}</h2>
+        </div>
+      </div>
+      <button type="button" class="drawer-close-btn" (click)="closeQuickView()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="drawer-body" *ngIf="selectedDoc">
+      
+      <!-- Primary Big Download Button inside Drawer -->
+      <button type="button" class="drawer-download-primary" (click)="downloadFile(selectedDoc)">
+        <mat-icon>download</mat-icon>
+        <span>Descargar {{ selectedDoc.archivo || (selectedDoc.codigo + '.' + selectedDoc.formato.toLowerCase()) }}</span>
+      </button>
+
+      <!-- Document Metadata Cards -->
+      <div class="doc-meta-grid">
+        
+        <div class="meta-card">
+          <span class="meta-label">Proceso / Área</span>
+          <span class="meta-value-text">{{ selectedDoc.proceso }}</span>
+        </div>
+
+        <div class="meta-card">
+          <span class="meta-label">Tipo de Documento</span>
+          <span class="meta-value-text">{{ selectedDoc.tipo }}</span>
+        </div>
+
+        <div class="meta-card">
+          <span class="meta-label">Versión Actual</span>
+          <span class="meta-value-text font-mono">{{ selectedDoc.version }}</span>
+        </div>
+
+        <div class="meta-card">
+          <span class="meta-label">Estado del Registro</span>
+          <span class="soft-badge" [ngClass]="selectedDoc.estado === 'Vigente' ? 'soft-badge-vigente' : 'soft-badge-revision'">
+            <span class="glowing-dot"></span>
+            <span>{{ selectedDoc.estado }}</span>
+          </span>
+        </div>
+
+        <div class="meta-card">
+          <span class="meta-label">Fecha de Vigencia</span>
+          <span class="meta-value-text">{{ selectedDoc.vig || '—' }}</span>
+        </div>
+
+        <div class="meta-card">
+          <span class="meta-label">Responsable</span>
+          <span class="meta-value-text">{{ sUsuario }}</span>
+        </div>
+
+      </div>
+
+      <!-- Revision History List -->
+      <div class="version-history-box">
+        <h4 class="history-title">Historial de Versiones y Revisiones</h4>
+        
+        <div class="history-timeline">
+          <div class="history-item">
+            <div class="history-bullet active-bullet"></div>
+            <div class="history-content">
+              <span class="history-ver">{{ selectedDoc.version }} (Versión Vigente)</span>
+              <span class="history-date">Actualizado recientemente</span>
+              <p class="history-note">Aprobado y publicado para la organización.</p>
+            </div>
+          </div>
+
+          <div class="history-item">
+            <div class="history-bullet"></div>
+            <div class="history-content">
+              <span class="history-ver">v1.0 (Versión Inicial)</span>
+              <span class="history-date">2025-01-15</span>
+              <p class="history-note">Creación y registro inicial del documento en el portal.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
     </div>

@@ -14,10 +14,20 @@
       </div>
     </div>
 
+    <!-- Quick Search Bar in Sidebar -->
+    <div class="sidebar-search-box">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input type="text" [(ngModel)]="sidebarFilterText" placeholder="Buscar módulo..." class="sidebar-search-input">
+      <button type="button" *ngIf="sidebarFilterText" (click)="sidebarFilterText = ''" class="clear-search-btn">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
     <mat-nav-list (click)="onNavListClick($event)">
 
       <!-- INICIO -->
-      <a mat-list-item routerLink="/principal" [class.active-link]="currentUrl === '/principal' || currentUrl === '/principal/'" class="nav-item">
+      <a *ngIf="matchesSidebar('Inicio')" mat-list-item routerLink="/principal" [class.active-link]="currentUrl === '/principal' || currentUrl === '/principal/'" class="nav-item">
+        <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Inicio</span>
       </a>
@@ -25,67 +35,78 @@
       <span class="nav-section-label">GESTIÓN</span>
 
       <!-- ORGANIZACION -->
-      <a mat-list-item routerLink="/principal/normas" [class.active-link]="currentModule === 'Organización'" class="nav-item">
+      <a *ngIf="matchesSidebar('Organización')" mat-list-item routerLink="/principal/normas" [class.active-link]="currentModule === 'Organización'" class="nav-item">
+        <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Organización</span>
       </a>
 
       <!-- PUESTOS -->
-      <a *ngIf="isAdmin()" mat-list-item routerLink="/principal/puestos" [class.active-link]="currentModule === 'Puestos'" class="nav-item">
+      <a *ngIf="isAdmin() && matchesSidebar('Puestos')" mat-list-item routerLink="/principal/puestos" [class.active-link]="currentModule === 'Puestos'" class="nav-item">
+        <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Puestos</span>
       </a>
 
       <!-- DOCUMENTACION -->
-      <a *ngIf="hasAccess('documentacion')" mat-list-item routerLink="/principal/documentosControlados" [class.active-link]="currentModule === 'Documentación'" class="nav-item">
+      <a *ngIf="hasAccess('documentacion') && matchesSidebar('Documentación')" mat-list-item routerLink="/principal/documentosControlados" [class.active-link]="currentModule === 'Documentación'" class="nav-item">
+        <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Documentación</span>
       </a>
 
       <!-- AUDITORIAS -->
-      <a *ngIf="hasAccess('auditorias')" mat-list-item routerLink="/principal/auditorias" [class.active-link]="currentModule === 'Auditorías'" class="nav-item">
+      <a *ngIf="hasAccess('auditorias') && matchesSidebar('Auditorías')" mat-list-item routerLink="/principal/auditorias" [class.active-link]="currentModule === 'Auditorías'" class="nav-item">
+        <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Auditorías</span>
       </a>
 
       <!-- NO CONFORMIDADES -->
-      <a *ngIf="hasAccess('noconf')" mat-list-item routerLink="/principal/accionesCorrectivas" [class.active-link]="currentModule === 'No conformidades'" class="nav-item">
+      <a *ngIf="hasAccess('noconf') && matchesSidebar('No conformidades')" mat-list-item routerLink="/principal/accionesCorrectivas" [class.active-link]="currentModule === 'No conformidades'" class="nav-item">
+        <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">No conformidades</span>
       </a>
 
       <!-- INDICADORES -->
-      <a *ngIf="hasAccess('indicadores')" mat-list-item routerLink="/principal/analytics" [class.active-link]="currentModule === 'Indicadores'" class="nav-item">
+      <a *ngIf="hasAccess('indicadores') && matchesSidebar('Indicadores')" mat-list-item routerLink="/principal/analytics" [class.active-link]="currentModule === 'Indicadores'" class="nav-item">
+        <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Indicadores</span>
       </a>
 
       <!-- OBJETIVOS -->
-      <a *ngIf="hasAccess('objetivos')" mat-list-item routerLink="/principal/planificacionObjetivos" [class.active-link]="currentModule === 'Objetivos'" class="nav-item">
+      <a *ngIf="hasAccess('objetivos') && matchesSidebar('Objetivos')" mat-list-item routerLink="/principal/planificacionObjetivos" [class.active-link]="currentModule === 'Objetivos'" class="nav-item">
+        <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Objetivos</span>
       </a>
 
       <!-- RIESGOS -->
-      <a *ngIf="hasAccess('riesgos')" mat-list-item routerLink="/principal/evaluacionRiesgos" [class.active-link]="currentModule === 'Riesgos'" class="nav-item">
+      <a *ngIf="hasAccess('riesgos') && matchesSidebar('Riesgos')" mat-list-item routerLink="/principal/evaluacionRiesgos" [class.active-link]="currentModule === 'Riesgos'" class="nav-item">
+        <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Riesgos</span>
       </a>
 
       <!-- PORTAFOLIO DE MEJORA -->
-      <a *ngIf="hasAccess('mejora')" mat-list-item routerLink="/principal/portafolioMejora" [class.active-link]="currentModule === 'Portafolio de Mejora'" class="nav-item">
+      <a *ngIf="hasAccess('mejora') && matchesSidebar('Portafolio de Mejora')" mat-list-item routerLink="/principal/portafolioMejora" [class.active-link]="currentModule === 'Portafolio de Mejora'" class="nav-item">
+        <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Portafolio de Mejora</span>
       </a>
 
       <!-- REQ. LEGAL -->
-      <a *ngIf="hasAccess('legal')" mat-list-item routerLink="/principal/reqLegal" [class.active-link]="currentModule === 'Req. legal'" class="nav-item">
+      <a *ngIf="hasAccess('legal') && matchesSidebar('Req. legal')" mat-list-item routerLink="/principal/reqLegal" [class.active-link]="currentModule === 'Req. legal'" class="nav-item">
+        <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Req. legal</span>
       </a>
 
       <!-- AYUDA -->
-      <a mat-list-item routerLink="/principal/ayuda" [class.active-link]="currentModule === 'Centro de ayuda'" class="nav-item">
+      <a *ngIf="matchesSidebar('Centro de ayuda')" mat-list-item routerLink="/principal/ayuda" [class.active-link]="currentModule === 'Centro de ayuda'" class="nav-item">
+        <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Centro de ayuda</span>
       </a>

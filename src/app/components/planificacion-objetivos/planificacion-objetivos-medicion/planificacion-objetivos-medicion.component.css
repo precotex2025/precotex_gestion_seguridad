@@ -98,7 +98,52 @@
 .tabla-wrapper {
   margin-top: 15px;
   border: 1px solid #cbd5e1;
-  background-color: white;
+  background: #151827;
+  color: white;
+}
+
+.combined-val-meta-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.val-meta-numbers {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.val-big-number {
+  font-size: 0.95rem;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.text-green { color: #3ecf8e; }
+
+.meta-label-sub {
+  font-size: 0.68rem;
+  color: #64748b;
+}
+
+.mini-progress-track {
+  width: 100%;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.mini-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.fill-green {
+  background: linear-gradient(90deg, #3ecf8e 0%, #10b981 100%);
+  box-shadow: 0 0 8px rgba(62, 207, 142, 0.4);
 }
 
 .dialog-actions {

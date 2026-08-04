@@ -21,6 +21,12 @@ export class AuditoriasComponent implements OnInit {
     noRealizadas: 0
   };
 
+  mostrarBanner: boolean = true;
+
+  cerrarBanner(): void {
+    this.mostrarBanner = false;
+  }
+
   displayedColumns: string[] = [
     'codigo',
     'tipo',

@@ -42,8 +42,58 @@ export class AccionesCorrectivasComponent implements OnInit {
     private noConformidadService: NoConformidadService
   ) {}
 
+  // View mode, banner & Drawer states
+  vistaActual: 'kanban' | 'tabla' = 'kanban';
+  mostrarBanner: boolean = true;
+  drawerOpen: boolean = false;
+  selectedNc: any = null;
+
+  cerrarBanner(): void {
+    this.mostrarBanner = false;
+  }
+
+  setVista(v: 'kanban' | 'tabla'): void {
+    this.vistaActual = v;
+  }
+
+  initials(name: string): string {
+    if (!name) return 'NC';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.substring(0, 2).toUpperCase();
+  }
+
+  openNcDrawer(item: any): void {
+    this.selectedNc = item;
+    this.drawerOpen = true;
+  }
+
+  closeNcDrawer(): void {
+    this.drawerOpen = false;
+    this.selectedNc = null;
+  }
+
+  getKanbanByEstado(estadoStr: string): any[] {
+    const list = this.dataSource.filteredData || this.dataSource.data || [];
+    return list.filter(item => {
+      const st = (item.estado || 'Pendiente').toLowerCase();
+      if (estadoStr === 'Pendiente') return st.includes('pendiente') || st.includes('por iniciar');
+      if (estadoStr === 'En Ejecución') return st.includes('ejecución') || st.includes('ejecucion') || st.includes('proceso');
+      if (estadoStr === 'Completada') return st.includes('completada') || st.includes('cerrada') || st.includes('éxito');
+      if (estadoStr === 'Vencida') return st.includes('vencida') || st.includes('expirado');
+      return false;
+    });
+  }
+
   ngOnInit(): void {
     this.onListado();
+  }
+
+  moverEstado(item: any, nuevoEstado: string, event?: Event): void {
+    if (event) event.stopPropagation();
+    item.estado = nuevoEstado;
+    this.calculateStats(this.dataSource.data);
+    this.toastr.success(`Acción ${item.nc} movida a ${nuevoEstado}`, 'Kanban Actualizado');
   }
 
   onListado(): void {

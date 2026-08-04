@@ -1,128 +1,146 @@
 <div class="contenedor sn-animate-in">
 
-  <!-- BANNER EXPLICATIVO -->
-  <div class="banner-aviso">
-    <span>✦ Matriz de roles y niveles de acceso del portal. Arriba, la <strong>política por nivel</strong> (editable, útil para reuniones). Abajo, los <strong>accesos detallados por usuario</strong>, que puedes ajustar uno por uno.</span>
+  <!-- BANNER NOTIFICACIÓN DISCRETO COLAPSABLE -->
+  <div class="banner-aviso-collapsible" *ngIf="mostrarBanner">
+    <div class="banner-info-left">
+      <mat-icon class="banner-info-icon">security</mat-icon>
+      <span>Matriz de seguridad y políticas de acceso. Configura la política general por nivel o haz clic en cualquier colaborador para abrir el <strong>Panel Lateral Deslizante</strong> y ajustar sus permisos en vivo.</span>
+    </div>
+    <button type="button" class="btn-close-banner" (click)="cerrarBanner()" title="Cerrar aviso">
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
 
-  <!-- TARJETAS DE ROLES -->
-  <div class="roles-grid">
-    <div class="role-card border-purple">
-      <div class="role-title">Gerencial</div>
-      <div class="role-scope text-purple">Gerencia · todas las áreas</div>
-      <div class="role-desc">Ve todo el portal consolidado, <strong>aprueba</strong> y exporta. Edita política, objetivos y matriz legal. No hace la carga operativa diaria.</div>
+  <!-- TARJETAS DE ROLES COMPACTAS (LANDSCAPE LAYOUT) -->
+  <div class="roles-landscape-grid">
+    <div class="role-card-landscape border-purple">
+      <div class="role-header-row">
+        <mat-icon class="role-icon color-purple">admin_panel_settings</mat-icon>
+        <span class="role-title">Gerencial</span>
+        <span class="role-scope-pill scope-purple">Todas las áreas</span>
+      </div>
+      <p class="role-desc-compact">Ve todo el portal consolidado, aprueba y exporta. Edita políticas y matriz legal.</p>
     </div>
-    <div class="role-card border-green">
-      <div class="role-title">Jefatura</div>
-      <div class="role-scope text-green">Jefe de proceso · su área</div>
-      <div class="role-desc"><strong>Registra, edita y cierra</strong> en los módulos de su proceso. <strong>Designa</strong> a los usuarios operativos de su área. Es el paso inicial del portal.</div>
+
+    <div class="role-card-landscape border-green">
+      <div class="role-header-row">
+        <mat-icon class="role-icon color-green">supervisor_account</mat-icon>
+        <span class="role-title">Jefatura</span>
+        <span class="role-scope-pill scope-green">Su proceso / área</span>
+      </div>
+      <p class="role-desc-compact">Registra, edita y cierra en sus módulos. Designa y gestiona usuarios operativos de su área.</p>
     </div>
-    <div class="role-card border-blue">
-      <div class="role-title">Operativo</div>
-      <div class="role-scope text-blue">Usuario · su área</div>
-      <div class="role-desc"><strong>Ve y registra</strong> lo asignado (declara NC, sube 5W-2H/ACR, registra mediciones). No elimina, no aprueba, no gestiona usuarios.</div>
+
+    <div class="role-card-landscape border-blue">
+      <div class="role-header-row">
+        <mat-icon class="role-icon color-blue">person</mat-icon>
+        <span class="role-title">Operativo</span>
+        <span class="role-scope-pill scope-blue">Su área asignada</span>
+      </div>
+      <p class="role-desc-compact">Ve y registra lo asignado (declara NC, sube formatos, mediciones). No aprueba ni elimina.</p>
     </div>
   </div>
 
-  <!-- BANNER FLUJO DE DESIGNACIÓN -->
-  <div class="banner-designacion">
-    <span><strong>Flujo de designación:</strong> paso inicial se cargan Gerencias y Jefaturas ➔ cada Jefatura ve su proceso ➔ luego cada Jefatura designa a sus usuarios Operativos, que heredan el acceso de su área.</span>
-  </div>
-
-  <!-- SECCIÓN 1: POLÍTICA POR NIVEL -->
+  <!-- SECCIÓN 1: POLÍTICA POR NIVEL CON HOVER HIGHLIGHTING -->
   <div class="panel-section shadow-premium" style="margin-top: 24px;">
     <div class="panel-section-header">
       <div>
-        <h3 class="panel-section-title">Política por nivel (editable)</h3>
-        <p class="panel-section-subtitle">Haz clic en cada acción para activarla o desactivarla por nivel. Cambia la regla general de todos los usuarios de ese nivel (se guarda al instante).</p>
+        <h3 class="panel-section-title">Política por nivel (Matriz interactiva)</h3>
+        <p class="panel-section-subtitle">Pasa el ratón sobre cualquier casilla para ver el cruce por fila y columna. Haz clic en los micro-chips para cambiar la política general.</p>
       </div>
-      <button type="button" class="btn-ghost-danger" (click)="resetPolitica()">Restablecer política</button>
+      <button type="button" class="btn-ghost-danger" (click)="resetPolitica()">
+        <mat-icon style="font-size: 16px; width: 16px; height: 16px;">refresh</mat-icon>
+        Restablecer política
+      </button>
     </div>
 
     <div class="table-container">
-      <table class="tabla">
+      <table class="tabla matrix-table">
         <thead>
           <tr>
-            <th style="min-width: 200px; color: #94a3b8;">Módulo</th>
-            <th style="color: #94a3b8;">Gerencial</th>
-            <th style="color: #94a3b8;">Jefatura</th>
-            <th style="color: #94a3b8;">Operativo</th>
+            <th style="min-width: 220px; color: #94a3b8;">Módulos del Sistema</th>
+            <th [class.col-active]="hoveredCol === 'ger'" style="color: #94a3b8; text-align: center;">Gerencial</th>
+            <th [class.col-active]="hoveredCol === 'jef'" style="color: #94a3b8; text-align: center;">Jefatura</th>
+            <th [class.col-active]="hoveredCol === 'ope'" style="color: #94a3b8; text-align: center;">Operativo</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let mod of getModulesKeys()" class="fila">
+          <tr *ngFor="let mod of getModulesKeys()" class="fila" [class.row-active]="hoveredRow === mod">
             <td class="module-cell font-bold text-white">{{ mod }}</td>
             
-            <!-- Gerencial -->
-            <td>
-              <div class="chips-container">
+            <!-- Gerencial Cell -->
+            <td [class.cell-highlight]="hoveredRow === mod && hoveredCol === 'ger'"
+                (mouseenter)="setHoveredCell(mod, 'ger')"
+                (mouseleave)="clearHoveredCell()">
+              <div class="micro-chips-wrapper">
                 <span *ngFor="let act of appl[mod]" 
                       (click)="togglePol(mod, 'ger', act)" 
-                      [style.color]="isPolActive(mod, 'ger', act) ? getChipColor(act) : 'rgba(148, 163, 184, 0.35)'"
-                      [style.background]="isPolActive(mod, 'ger', act) ? getChipColor(act) + '22' : 'transparent'"
-                      [style.borderColor]="isPolActive(mod, 'ger', act) ? 'transparent' : 'rgba(148, 163, 184, 0.15)'"
-                      class="chip-permiso" 
-                      title="Clic para activar/desactivar">
+                      [class.chip-active]="isPolActive(mod, 'ger', act)"
+                      [style.color]="isPolActive(mod, 'ger', act) ? getChipColor(act) : 'rgba(148, 163, 184, 0.4)'"
+                      [style.background]="isPolActive(mod, 'ger', act) ? getChipColor(act) + '18' : 'rgba(255, 255, 255, 0.02)'"
+                      [style.borderColor]="isPolActive(mod, 'ger', act) ? getChipColor(act) + '44' : 'rgba(255, 255, 255, 0.06)'"
+                      class="micro-chip" 
+                      [title]="'Gerencial - ' + act">
+                  <i *ngIf="isPolActive(mod, 'ger', act)" class="pi pi-check micro-check"></i>
                   {{ act }}
                 </span>
               </div>
             </td>
 
-            <!-- Jefatura -->
-            <td>
-              <div class="chips-container">
+            <!-- Jefatura Cell -->
+            <td [class.cell-highlight]="hoveredRow === mod && hoveredCol === 'jef'"
+                (mouseenter)="setHoveredCell(mod, 'jef')"
+                (mouseleave)="clearHoveredCell()">
+              <div class="micro-chips-wrapper">
                 <span *ngFor="let act of appl[mod]" 
                       (click)="togglePol(mod, 'jef', act)" 
-                      [style.color]="isPolActive(mod, 'jef', act) ? getChipColor(act) : 'rgba(148, 163, 184, 0.35)'"
-                      [style.background]="isPolActive(mod, 'jef', act) ? getChipColor(act) + '22' : 'transparent'"
-                      [style.borderColor]="isPolActive(mod, 'jef', act) ? 'transparent' : 'rgba(148, 163, 184, 0.15)'"
-                      class="chip-permiso" 
-                      title="Clic para activar/desactivar">
+                      [class.chip-active]="isPolActive(mod, 'jef', act)"
+                      [style.color]="isPolActive(mod, 'jef', act) ? getChipColor(act) : 'rgba(148, 163, 184, 0.4)'"
+                      [style.background]="isPolActive(mod, 'jef', act) ? getChipColor(act) + '18' : 'rgba(255, 255, 255, 0.02)'"
+                      [style.borderColor]="isPolActive(mod, 'jef', act) ? getChipColor(act) + '44' : 'rgba(255, 255, 255, 0.06)'"
+                      class="micro-chip" 
+                      [title]="'Jefatura - ' + act">
+                  <i *ngIf="isPolActive(mod, 'jef', act)" class="pi pi-check micro-check"></i>
                   {{ act }}
                 </span>
               </div>
             </td>
 
-            <!-- Operativo -->
-            <td>
-              <div class="chips-container">
+            <!-- Operativo Cell -->
+            <td [class.cell-highlight]="hoveredRow === mod && hoveredCol === 'ope'"
+                (mouseenter)="setHoveredCell(mod, 'ope')"
+                (mouseleave)="clearHoveredCell()">
+              <div class="micro-chips-wrapper">
                 <span *ngFor="let act of appl[mod]" 
                       (click)="togglePol(mod, 'ope', act)" 
-                      [style.color]="isPolActive(mod, 'ope', act) ? getChipColor(act) : 'rgba(148, 163, 184, 0.35)'"
-                      [style.background]="isPolActive(mod, 'ope', act) ? getChipColor(act) + '22' : 'transparent'"
-                      [style.borderColor]="isPolActive(mod, 'ope', act) ? 'transparent' : 'rgba(148, 163, 184, 0.15)'"
-                      class="chip-permiso" 
-                      title="Clic para activar/desactivar">
+                      [class.chip-active]="isPolActive(mod, 'ope', act)"
+                      [style.color]="isPolActive(mod, 'ope', act) ? getChipColor(act) : 'rgba(148, 163, 184, 0.4)'"
+                      [style.background]="isPolActive(mod, 'ope', act) ? getChipColor(act) + '18' : 'rgba(255, 255, 255, 0.02)'"
+                      [style.borderColor]="isPolActive(mod, 'ope', act) ? getChipColor(act) + '44' : 'rgba(255, 255, 255, 0.06)'"
+                      class="micro-chip" 
+                      [title]="'Operativo - ' + act">
+                  <i *ngIf="isPolActive(mod, 'ope', act)" class="pi pi-check micro-check"></i>
                   {{ act }}
                 </span>
               </div>
             </td>
-          </tr>
-          <!-- Scope Row -->
-          <tr class="fila row-alcance">
-            <td class="module-cell font-bold text-white">Alcance</td>
-            <td class="scope-text">Todas las áreas y sedes</td>
-            <td class="scope-text">Solo su proceso / área</td>
-            <td class="scope-text">Su área, según lo asignado</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- LEYENDAS GENERALES DE ACCIONES (Debajo de Alcance) -->
-    <div class="legend-general shadow-premium" style="margin-top: 16px; margin-bottom: 0;">
+    <!-- Leyendas -->
+    <div class="legend-general shadow-premium" style="margin-top: 16px;">
       <span><i class="dot dot-blue"></i>Ver</span>
       <span><i class="dot dot-green"></i>Registrar</span>
       <span><i class="dot dot-yellow"></i>Editar</span>
       <span><i class="dot dot-red"></i>Eliminar</span>
       <span><i class="dot dot-purple"></i>Aprobar</span>
       <span><i class="dot dot-gray"></i>Exportar</span>
-      <span><i class="dot dot-purple-light"></i>Usuarios</span>
-      <span><i class="dot dot-gray"></i>Descargar</span>
     </div>
   </div>
 
-  <!-- SECCIÓN 2: ACCESOS POR USUARIO (POR MÓDULO) -->
+  <!-- SECCIÓN 2: ACCESOS POR USUARIO (TABLA INTERACTIVA CON SELECTORES) -->
   <div class="panel-section shadow-premium" style="margin-top: 28px;">
     <div class="panel-section-header">
       <div>
@@ -135,18 +153,26 @@
       <table class="tabla">
         <thead>
           <tr>
-            <th style="min-width: 220px; color: #94a3b8;">USUARIO</th>
-            <th *ngFor="let pm of pmodsList" style="text-align: center; color: #94a3b8;">{{ pm.l }}</th>
+            <th style="min-width: 240px; color: #94a3b8;">USUARIO</th>
+            <th *ngFor="let pm of pmodsList" style="text-align: center; color: #94a3b8; font-size: 0.74rem;">{{ pm.l }}</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let u of puestosList" class="fila">
-            <td class="user-cell">
-              <div class="user-cell-puesto">{{ u.puesto }}</div>
-              <div class="user-cell-meta">{{ u.usuario || '—' }} · {{ u.nivel }}</div>
+            <!-- Info de usuario -->
+            <td class="user-row-clickable" (click)="openDrawer(u)">
+              <div class="user-avatar-cell">
+                <div class="avatar-circle-gradient">
+                  {{ initials(u.usuario || u.puesto) }}
+                </div>
+                <div class="user-cell-meta">
+                  <span class="user-full-name">{{ u.puesto }}</span>
+                  <span class="user-login-sub">{{ u.usuario || '— Sin usuario asignado —' }}</span>
+                </div>
+              </div>
             </td>
-            
-            <td *ngFor="let pm of pmodsList" style="text-align: center;">
+            <!-- Celdas de módulos con selectores -->
+            <td *ngFor="let pm of pmodsList" style="text-align: center; vertical-align: middle;">
               <select [value]="accGet(u.id, u.nivel, pm.k)" 
                       (change)="setAcceso(u.id, pm.k, $any($event.target).value)"
                       [style.color]="accColor(accGet(u.id, u.nivel, pm.k))"
@@ -169,78 +195,128 @@
     </div>
   </div>
 
-  <!-- SECCIÓN 3: DETALLE POR CONTENIDO Y ACCIÓN -->
+  <!-- SECCIÓN 3: ACCESOS POR COLABORADOR (DETALLE Y AJUSTES SLIDE-OVER) -->
   <div class="panel-section shadow-premium" style="margin-top: 28px;">
     <div class="panel-section-header">
       <div>
-        <h3 class="panel-section-title">DETALLE POR CONTENIDO Y ACCIÓN</h3>
-        <p class="panel-section-subtitle">Elige un usuario y un módulo para afinar el permiso a nivel de cada contenido y de cada acción. Marca o desmarca; parte de lo que hereda por su nivel.</p>
+        <h3 class="panel-section-title">ACCESOS POR COLABORADOR</h3>
+        <p class="panel-section-subtitle">Haz clic en cualquier colaborador para desplegar el <strong>Panel Lateral Slide-Over</strong> y ajustar permisos finos en tiempo real con toggles interactivos.</p>
       </div>
     </div>
 
-    <!-- Dropdowns Grid -->
-    <div class="dropdowns-grid">
-      <div class="row">
-        <label class="form-label">Puesto / Colaborador</label>
-        <div class="input-wrapper">
-          <select [(ngModel)]="selectedUserId" class="form-input select-input">
-            <option *ngFor="let u of puestosList" [value]="u.id">
-              {{ u.puesto }} {{ u.usuario ? ' — ' + u.usuario : '' }}
-            </option>
-          </select>
-        </div>
-      </div>
-
-      <div class="row">
-        <label class="form-label">Módulo del Sistema</label>
-        <div class="input-wrapper">
-          <select [(ngModel)]="selectedModule" class="form-input select-input">
-            <option *ngFor="let m of getModulesKeys()" [value]="m">{{ m }}</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="row button-row">
-        <button type="button" class="btn-ghost-danger btn-reset-fino" (click)="resetFino()">
-          Restablecer a su nivel
-        </button>
-      </div>
-    </div>
-
-    <!-- Fine Tuning Table Grid -->
-    <div class="table-container" style="margin-top: 24px;" *ngIf="getSelectedUser()">
+    <div class="table-container">
       <table class="tabla">
         <thead>
           <tr>
-            <th style="min-width: 250px; color: #94a3b8;">Contenido / Acción</th>
-            <th style="text-align: center; width: 240px; color: #94a3b8;">Permiso de {{ getSelectedUser()?.usuario || getSelectedUser()?.puesto }}</th>
-            <th style="width: 240px; color: #94a3b8;">Por su nivel ({{ getSelectedUser()?.nivel }})</th>
+            <th style="min-width: 250px; color: #94a3b8;">COLABORADOR / PUESTO</th>
+            <th style="width: 140px; color: #94a3b8;">NIVEL</th>
+            <th style="min-width: 220px; color: #94a3b8;">RESUMEN DE PERMISOS</th>
+            <th style="width: 160px; text-align: center; color: #94a3b8;">CONFIGURACIÓN</th>
           </tr>
         </thead>
-        <tbody *ngFor="let group of getGroupedTreeForSelectedModule()">
-          <!-- Subheader Row -->
-          <tr>
-            <td colspan="3" class="subheader-cell">{{ group.name }}</td>
-          </tr>
-          <!-- Action Rows -->
-          <tr *ngFor="let item of group.items" class="fila">
-            <td class="action-cell">{{ item.acc }}</td>
-            <td style="text-align: center;">
-              <label class="checkbox-label" [style.color]="finoGet(selectedUserId, getSelectedUser()?.nivel, selectedModule, group.name, item.acc, [item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)]) ? '#3ecf8e' : 'rgba(148, 163, 184, 0.45)'">
-                <input type="checkbox" 
-                       [checked]="finoGet(selectedUserId, getSelectedUser()?.nivel, selectedModule, group.name, item.acc, [item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)])" 
-                       (change)="toggleFinoCheckbox(selectedUserId, selectedModule, group.name, item.acc, $any($event.target).checked)">
-                <span>{{ finoGet(selectedUserId, getSelectedUser()?.nivel, selectedModule, group.name, item.acc, [item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)]) ? 'Permitido' : 'Sin acceso' }}</span>
-              </label>
+        <tbody>
+          <tr *ngFor="let u of puestosList" class="fila user-row-clickable" (click)="openDrawer(u)">
+            <td>
+              <div class="user-avatar-cell">
+                <div class="avatar-circle-gradient">
+                  {{ initials(u.usuario || u.puesto) }}
+                </div>
+                <div class="user-cell-meta">
+                  <span class="user-full-name">{{ u.puesto }}</span>
+                  <span class="user-login-sub">{{ u.usuario || '— Sin usuario asignado —' }}</span>
+                </div>
+              </div>
             </td>
-            <td class="inherited-text" [style.color]="[item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)] ? '#3ecf8e' : 'rgba(148, 163, 184, 0.45)'">
-              {{ [item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)] ? 'Hereda: permitido' : 'Hereda: sin acceso' }}
+            <td>
+              <span class="soft-badge soft-badge-vigente">
+                <span class="glowing-dot"></span> {{ u.nivel }}
+              </span>
+            </td>
+            <td>
+              <span class="permissions-summary-text">
+                <mat-icon class="icon-small">tune</mat-icon> Permisos de nivel {{ u.nivel }}
+              </span>
+            </td>
+            <td style="text-align: center;">
+              <button type="button" class="btn-config-drawer" (click)="openDrawer(u); $event.stopPropagation()">
+                <mat-icon>tune</mat-icon>
+                <span>Ajustar</span>
+              </button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+  </div>
 
+  <!-- ===================================================================
+       SLIDE-OVER DRAWER FOR USER PERMISSION DETAILS (GLASSMORPHISM)
+       =================================================================== -->
+  <div class="slide-over-backdrop" *ngIf="drawerOpen" (click)="closeDrawer()"></div>
+
+  <div class="slide-over-drawer" [class.drawer-active]="drawerOpen">
+    <div class="drawer-header">
+      <div class="drawer-title-box">
+        <div class="user-avatar-drawer">
+          {{ initials(drawerUser?.usuario || drawerUser?.puesto || 'U') }}
+        </div>
+        <div>
+          <h2 class="drawer-user-name">{{ drawerUser?.puesto }}</h2>
+          <span class="drawer-user-sub">{{ drawerUser?.usuario || 'Sin usuario' }} · {{ drawerUser?.nivel }}</span>
+        </div>
+      </div>
+      <button type="button" class="drawer-close-btn" (click)="closeDrawer()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="drawer-body">
+      <!-- Selector de Módulo -->
+      <div class="drawer-module-selector">
+        <label class="drawer-label">Módulo del Sistema</label>
+        <div class="custom-select-wrapper">
+          <select [(ngModel)]="selectedModule" class="drawer-select">
+            <option *ngFor="let m of getModulesKeys()" [value]="m">{{ m }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Action Button Reset -->
+      <div class="drawer-actions-bar">
+        <span class="module-selected-title">{{ selectedModule }}</span>
+        <button type="button" class="btn-reset-drawer" (click)="resetFino()">
+          <mat-icon style="font-size: 14px; width: 14px; height: 14px;">refresh</mat-icon>
+          Restablecer a su nivel
+        </button>
+      </div>
+
+      <!-- iOS / Android Toggle Switches List -->
+      <div class="toggles-tree-list" *ngIf="getSelectedUser()">
+        <div *ngFor="let group of getGroupedTreeForSelectedModule()" class="toggle-group-card">
+          <h4 class="toggle-group-title">{{ group.name }}</h4>
+          
+          <div class="toggle-items-list">
+            <div *ngFor="let item of group.items" class="toggle-item-row">
+              <div class="toggle-info-col">
+                <span class="toggle-action-name">{{ item.acc }}</span>
+                <span class="toggle-inherited-desc" [class.inherited-active]="[item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)]">
+                  Nivel {{ getSelectedUser()?.nivel }}: {{ [item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)] ? 'Permitido' : 'Sin acceso' }}
+                </span>
+              </div>
+
+              <!-- iOS / Android Style Toggle Switch -->
+              <label class="ios-switch">
+                <input type="checkbox"
+                       [checked]="finoGet(selectedUserId, getSelectedUser()?.nivel, selectedModule, group.name, item.acc, [item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)])"
+                       (change)="toggleFinoCheckbox(selectedUserId, selectedModule, group.name, item.acc, $any($event.target).checked)">
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
 
 </div>

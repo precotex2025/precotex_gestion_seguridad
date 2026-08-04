@@ -33,6 +33,15 @@ interface Faq {
 export class AyudaComponent implements OnInit {
   searchText: string = '';
   manuales: Manual[] = [];
+  expandedFaqs: { [id: number]: boolean } = {};
+
+  toggleFaq(id: number): void {
+    this.expandedFaqs[id] = !this.expandedFaqs[id];
+  }
+
+  isFaqExpanded(id: number): boolean {
+    return !!this.expandedFaqs[id];
+  }
 
   faqs: Faq[] = [
     {

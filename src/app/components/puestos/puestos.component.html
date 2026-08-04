@@ -1,41 +1,76 @@
 <div class="contenedor sn-animate-in">
 
-  <!-- BANNER NOTIFICACIÓN -->
-  <div class="banner-aviso">
-    <span>✦ Registro funcional. Pulsa <strong>Nuevo puesto</strong>, llena el formulario y guarda. Persiste aunque recargues.</span>
-  </div>
-
-  <!-- ESTADÍSTICAS CARDS -->
-  <div class="stats-grid">
-    <div class="stat-card border-left-purple">
-      <div class="stat-label">TOTAL</div>
-      <div class="stat-value text-white">{{ stats.total }}</div>
-      <div class="stat-desc">Registros</div>
+  <!-- BANNER NOTIFICACIÓN DISCRETO COLAPSABLE -->
+  <div class="banner-aviso-collapsible" *ngIf="mostrarBanner">
+    <div class="banner-info-left">
+      <mat-icon class="banner-info-icon">info</mat-icon>
+      <span>Gestión de puestos y colaboradores. Pulsa <strong>+ Nuevo puesto</strong> para registrar un cargo y asignar permisos del sistema.</span>
     </div>
-    <div class="stat-card border-left-green">
-      <div class="stat-label">ACTIVO</div>
-      <div class="stat-value text-green">{{ stats.activo }}</div>
-    </div>
-    <div class="stat-card border-left-amber">
-      <div class="stat-label">SIN PERMISOS CONFIG.</div>
-      <div class="stat-value text-amber">{{ stats.sinConfig }}</div>
-    </div>
-  </div>
-
-  <!-- TÍTULO DE SECCIÓN Y BOTÓN AGREGAR -->
-  <div class="seccion-header">
-    <h2 class="seccion-titulo">PUESTOS Y USUARIOS ASIGNADOS</h2>
-    <button type="button" class="btn-agregar-norma" (click)="onAgregar()">
-      <span>+ Nuevo puesto</span>
+    <button type="button" class="btn-close-banner" (click)="cerrarBanner()" title="Cerrar aviso">
+      <mat-icon>close</mat-icon>
     </button>
   </div>
 
-  <!-- BUSCADOR -->
-  <div class="buscador-container">
-    <input type="text" 
-           (keyup)="aplicarFiltro($event)" 
-           placeholder="Buscar..." 
-           class="buscador-input">
+  <!-- ESTADÍSTICAS COMPACTAS CON TOP-GLOW E ICONOS MARCA DE AGUA -->
+  <div class="stats-grid-compact">
+    
+    <div class="stat-card-compact glow-border-total">
+      <div class="stat-watermark">
+        <mat-icon>badge</mat-icon>
+      </div>
+      <div class="stat-card-content">
+        <span class="stat-card-title">TOTAL PUESTOS</span>
+        <span class="stat-card-number text-white">{{ stats.total }}</span>
+        <span class="stat-card-sub">Cargos registrados</span>
+      </div>
+    </div>
+
+    <div class="stat-card-compact glow-border-green">
+      <div class="stat-watermark">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+      <div class="stat-card-content">
+        <span class="stat-card-title">PUESTOS ACTIVOS</span>
+        <span class="stat-card-number text-green">{{ stats.activo }}</span>
+        <span class="stat-card-sub">Con usuario asignado</span>
+      </div>
+    </div>
+
+    <div class="stat-card-compact glow-border-amber">
+      <div class="stat-watermark">
+        <mat-icon>lock_open</mat-icon>
+      </div>
+      <div class="stat-card-content">
+        <span class="stat-card-title">SIN CONFIGURAR</span>
+        <span class="stat-card-number text-yellow">{{ stats.sinConfig }}</span>
+        <span class="stat-card-sub">Pendientes de permiso</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BARRA DE HERRAMIENTAS INTEGRADA EN 1 SOLA FILA -->
+  <div class="integrated-toolbar">
+    <div class="toolbar-title-section">
+      <h2 class="seccion-titulo">PUESTOS Y USUARIOS ASIGNADOS</h2>
+      <span class="results-badge">{{ dataSource.filteredData.length }} Puestos</span>
+    </div>
+
+    <div class="toolbar-actions-section">
+      <!-- Buscador Inline Integrado -->
+      <div class="inline-search-box">
+        <mat-icon class="search-icon">search</mat-icon>
+        <input type="text" 
+               (keyup)="aplicarFiltro($event)" 
+               placeholder="Buscar puesto, proceso o usuario..." 
+               class="inline-search-input">
+      </div>
+
+      <button type="button" class="btn-agregar-norma-premium" (click)="onAgregar()">
+        <mat-icon>add</mat-icon>
+        <span>Nuevo puesto</span>
+      </button>
+    </div>
   </div>
 
   <!-- CONTENEDOR DE TABLA PREMIUM -->
@@ -45,48 +80,61 @@
       <!-- Puesto / Cargo -->
       <ng-container matColumnDef="puesto">
         <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 200px;">Puesto / Cargo</th>
-        <td mat-cell *matCellDef="let row" class="norma-cell">{{ row.puesto }}</td>
+        <td mat-cell *matCellDef="let row" class="norma-cell-title">{{ row.puesto }}</td>
       </ng-container>
 
       <!-- Proceso -->
       <ng-container matColumnDef="proceso">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 140px;">Proceso</th>
-        <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.proceso }}</td>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px;">Proceso</th>
+        <td mat-cell *matCellDef="let row" class="cat-cell">{{ row.proceso }}</td>
       </ng-container>
 
-      <!-- Usuario Asignado -->
+      <!-- Usuario Asignado (Con Avatar Circular) -->
       <ng-container matColumnDef="usuario">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 180px;">Usuario Asignado</th>
-        <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.usuario || '—' }}</td>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 220px;">Usuario Asignado</th>
+        <td mat-cell *matCellDef="let row">
+          <div class="user-avatar-cell" *ngIf="row.usuario; else noUser">
+            <div class="avatar-circle-gradient">
+              {{ initials(row.usuario) }}
+            </div>
+            <span class="user-full-name">{{ row.usuario }}</span>
+          </div>
+          <ng-template #noUser>
+            <span class="no-user-text">— Sin asignar —</span>
+          </ng-template>
+        </td>
       </ng-container>
 
       <!-- Nivel -->
       <ng-container matColumnDef="nivel">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 120px;">Nivel</th>
-        <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.nivel }}</td>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 130px;">Nivel</th>
+        <td mat-cell *matCellDef="let row" class="cat-cell">{{ row.nivel }}</td>
       </ng-container>
 
       <!-- Permisos -->
       <ng-container matColumnDef="permisos">
         <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 200px;">Permisos</th>
-        <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.permisos }}</td>
+        <td mat-cell *matCellDef="let row" class="desc-cell-truncated" [matTooltip]="row.permisos" matTooltipPosition="above">
+          {{ row.permisos }}
+        </td>
       </ng-container>
 
-      <!-- Estado -->
+      <!-- Estado (Soft Badges con Glowing Dot) -->
       <ng-container matColumnDef="estado">
-        <th mat-header-cell *matHeaderCellDef style="width: 160px;">Estado</th>
+        <th mat-header-cell *matHeaderCellDef style="width: 150px;">Estado</th>
         <td mat-cell *matCellDef="let row">
-          <span [class]="row.estado === 'Activo' ? 'badge-estado-activo' : 'badge-estado-sin-permisos'">
-            {{ row.estado }}
+          <span class="soft-badge" [ngClass]="row.estado === 'Activo' ? 'soft-badge-vigente' : 'soft-badge-revision'">
+            <span class="glowing-dot"></span>
+            <span class="badge-text">{{ row.estado }}</span>
           </span>
         </td>
       </ng-container>
 
-      <!-- Acciones -->
+      <!-- Acciones con Hover Fade-In -->
       <ng-container matColumnDef="acciones">
-        <th mat-header-cell *matHeaderCellDef style="width: 160px; text-align: center;">Acciones</th>
-        <td mat-cell *matCellDef="let row">
-          <div class="actions-wrapper">
+        <th mat-header-cell *matHeaderCellDef style="width: 100px; text-align: center;">Acciones</th>
+        <td mat-cell *matCellDef="let row" class="acciones-cell">
+          <div class="actions-wrapper hover-fade">
             <button class="action-btn btn-edit" (click)="onEditar(row)" title="Editar">
               <mat-icon>edit</mat-icon>
             </button>

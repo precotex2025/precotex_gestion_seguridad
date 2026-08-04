@@ -19,6 +19,11 @@ export class PuestosComponent implements OnInit {
   sUsuario: string = GlobalVariable.vusu;
 
   stats = { total: 0, activo: 0, sinConfig: 0 };
+  mostrarBanner: boolean = true;
+
+  cerrarBanner(): void {
+    this.mostrarBanner = false;
+  }
 
   displayedColumns: string[] = [
     'puesto',

@@ -1,7 +1,21 @@
 <div class="contenedor sn-animate-in">
 
+  <!-- NAVEGACIÓN SUPERIOR: SEGMENTED CONTROL TABS -->
+  <div class="objetivos-nav-bar" style="margin-top: 10px;">
+    <div class="objetivos-segment-tabs">
+      <a class="objetivos-tab-btn" routerLink="/principal/planificacionObjetivos">
+        <mat-icon>track_changes</mat-icon>
+        <span>Planificación de Objetivos</span>
+      </a>
+      <a class="objetivos-tab-btn active" routerLink="/principal/medicionesPendientes">
+        <mat-icon>show_chart</mat-icon>
+        <span>Medición de Objetivos</span>
+      </a>
+    </div>
+  </div>
+
   <!-- BANNER NOTIFICACIÓN -->
-  <div class="banner-aviso">
+  <div class="banner-aviso" style="margin-top: 15px;">
     <span>✦ Registro funcional. Pulsa <strong>Registrar medición</strong>, llena el formulario y guarda. Persiste aunque recargues.</span>
   </div>
 

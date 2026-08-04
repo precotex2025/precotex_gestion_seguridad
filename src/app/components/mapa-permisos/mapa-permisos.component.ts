@@ -165,6 +165,45 @@ export class MapaPermisosComponent implements OnInit {
   accObj: any = {};
   accFine: any = {};
 
+  // Slide-over Drawer & Hover Highlighting States
+  drawerOpen: boolean = false;
+  drawerUser: any = null;
+  hoveredRow: string = '';
+  hoveredCol: string = '';
+  mostrarBanner: boolean = true;
+
+  cerrarBanner(): void {
+    this.mostrarBanner = false;
+  }
+
+  openDrawer(user: any): void {
+    this.drawerUser = user;
+    this.selectedUserId = user.id;
+    this.drawerOpen = true;
+  }
+
+  closeDrawer(): void {
+    this.drawerOpen = false;
+    this.drawerUser = null;
+  }
+
+  setHoveredCell(row: string, col: string): void {
+    this.hoveredRow = row;
+    this.hoveredCol = col;
+  }
+
+  initials(name: string): string {
+    if (!name) return 'U';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.substring(0, 2).toUpperCase();
+  }
+
+  clearHoveredCell(): void {
+    this.hoveredRow = '';
+    this.hoveredCol = '';
+  }
+
   actColors: any = {
     'Ver': '#5b8def',
     'Registrar': '#3ecf8e',

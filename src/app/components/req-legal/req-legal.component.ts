@@ -23,6 +23,23 @@ export class ReqLegalComponent implements OnInit {
     noCumple: 0
   };
 
+  mostrarBanner: boolean = true;
+
+  cerrarBanner(): void {
+    this.mostrarBanner = false;
+  }
+
+  getVencimientoAlertClass(dateStr: string): string {
+    if (!dateStr) return 'date-ok';
+    const vDate = new Date(dateStr);
+    const now = new Date();
+    const diffDays = Math.ceil((vDate.getTime() - now.getTime()) / (1000 * 3600 * 24));
+    
+    if (diffDays < 0) return 'date-expired-alert';
+    if (diffDays <= 30) return 'date-warning-30';
+    return 'date-ok';
+  }
+
   displayedColumns: string[] = [
     'requisito',
     'ambito',

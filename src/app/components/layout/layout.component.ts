@@ -27,6 +27,14 @@ export class LayoutComponent implements OnInit, OnDestroy {
   permisosUsuario: { [modulo: string]: string } = {};
   puestoUsuario: string = '';
 
+  // Sidebar Filter Search
+  sidebarFilterText: string = '';
+
+  matchesSidebar(label: string): boolean {
+    if (!this.sidebarFilterText || !this.sidebarFilterText.trim()) return true;
+    return label.toLowerCase().includes(this.sidebarFilterText.toLowerCase().trim());
+  }
+
   private resizeListener!: () => void;
 
   constructor(
@@ -60,8 +68,14 @@ export class LayoutComponent implements OnInit, OnDestroy {
   updateHeaderConfig(url: string): void {
     this.currentUrl = url;
 
+    console.log('[updateHeaderConfig] URL:', url, '| isAdmin:', this.isAdmin(), '| vCod_Rol:', GlobalVariable.vCod_Rol);
+
     const moduloKey = this.getModuloKeyByUrl(url);
+    console.log('[updateHeaderConfig] moduloKey:', JSON.stringify(moduloKey), '| hasAccess:', moduloKey ? this.hasAccess(moduloKey) : 'N/A (no key)');
+    console.log('[updateHeaderConfig] permisosUsuario:', JSON.stringify(this.permisosUsuario));
+
     if (moduloKey && !this.hasAccess(moduloKey)) {
+      console.log('[updateHeaderConfig] >>> BLOQUEADO por hasAccess. moduloKey:', moduloKey);
       this.toastr.error('No tiene permisos para acceder a este módulo.', 'Acceso Denegado');
       this.router.navigate(['/principal']);
       return;
@@ -69,6 +83,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
     // Bloquear acceso a Puestos y Permisos por módulo para usuarios no administradores
     if (!this.isAdmin() && (url.includes('/principal/puestos') || url.includes('/principal/mapaPermisos') || url.includes('/principal/verificacionAccesos') || url.includes('/principal/logAccesos') || url.includes('/principal/configuracionPuestos'))) {
+      console.log('[updateHeaderConfig] >>> BLOQUEADO por no-admin en ruta admin:', url);
       this.toastr.error('No tiene permisos para acceder a este módulo.', 'Acceso Denegado');
       this.router.navigate(['/principal']);
       return;
@@ -134,28 +149,18 @@ export class LayoutComponent implements OnInit, OnDestroy {
       this.activeSublink = url;
     } else if (url.includes('/principal/analytics')) {
       this.currentModule = 'Indicadores';
-      const isMedicion = url.includes('/principal/analytics/medicion');
       this.activeModule = {
         title: 'Indicadores',
         breadcrumb: 'Indicadores · Gestión',
-        activeTab: isMedicion ? 'medicion' : 'alta',
-        tabs: [
-          { id: 'alta', label: 'Alta de indicadores', route: '/principal/analytics' },
-          { id: 'medicion', label: 'Medición de indicadores', route: '/principal/analytics/medicion' }
-        ]
+        tabs: []
       };
       this.activeSublink = url;
     } else if (url.includes('/principal/planificacionObjetivos') || url.includes('/principal/medicionesPendientes')) {
       this.currentModule = 'Objetivos';
-      const isMedicion = url.includes('/principal/medicionesPendientes');
       this.activeModule = {
         title: 'Objetivos',
         breadcrumb: 'Objetivos · Gestión',
-        activeTab: isMedicion ? 'medicion' : 'planificacion',
-        tabs: [
-          { id: 'planificacion', label: 'Planificación de objetivos', route: '/principal/planificacionObjetivos' },
-          { id: 'medicion', label: 'Medición de objetivos', route: '/principal/medicionesPendientes' }
-        ]
+        tabs: []
       };
       this.activeSublink = url;
     } else if (url.includes('/principal/evaluacionRiesgos')) {
@@ -235,7 +240,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
           const puestosList = res.elements.map((p: any) => ({
             codigo_Puesto: p.codigo_Puesto,
             puesto: p.denominacion,
-            usuario: p.puesto_Funciones || '—'
+            usuario: p.puesto_Funciones || '—',
+            proceso: p.puesto_Descripcion || 'General'
           }));
 
           localStorage.setItem('precotex:puestos:listado', JSON.stringify(puestosList));
@@ -245,10 +251,18 @@ export class LayoutComponent implements OnInit, OnDestroy {
               if (permRes && permRes.success && permRes.elements) {
                 const accesosObj: any = {};
                 permRes.elements.forEach((row: any) => {
-                  if (!accesosObj[row.codigo_Puesto_Usuario]) {
-                    accesosObj[row.codigo_Puesto_Usuario] = {};
+                  const puestoClave = (row.codigo_Puesto_Usuario || '').trim();
+                  const moduloClave = (row.modulo_Clave || '').trim();
+                  const nivelAcceso = (row.nivel_Acceso || '').trim();
+
+                  if (puestoClave) {
+                    if (!accesosObj[puestoClave]) {
+                      accesosObj[puestoClave] = {};
+                    }
+                    if (moduloClave) {
+                      accesosObj[puestoClave][moduloClave] = nivelAcceso;
+                    }
                   }
-                  accesosObj[row.codigo_Puesto_Usuario][row.modulo_Clave] = row.nivel_Acceso;
                 });
 
                 localStorage.setItem('precotex:puestos:accesos', JSON.stringify(accesosObj));
@@ -260,30 +274,69 @@ export class LayoutComponent implements OnInit, OnDestroy {
               }
             }
           });
+
+          // También cargar permisos finos (detalle por acción) para que los módulos los lean
+          this.permisosService.getPermisosUsuarioDetalle('').subscribe({
+            next: (fineRes: any) => {
+              if (fineRes && fineRes.success && fineRes.elements && fineRes.elements.length > 0) {
+                const accFine: any = {};
+                fineRes.elements.forEach((row: any) => {
+                  const uid = (row.codigo_Puesto_Usuario || '').trim();
+                  if (!accFine[uid]) {
+                    accFine[uid] = {};
+                  }
+                  const key = (row.modulo || '') + '||' + (row.contenido || '') + '||' + (row.accion || '');
+                  accFine[uid][key] = row.flg_Permitido ? 1 : 0;
+                });
+                localStorage.setItem('precotex:puestos:accesos_fino', JSON.stringify(accFine));
+                console.log('[Layout] Permisos finos cargados:', Object.keys(accFine));
+              }
+            }
+          });
         }
       }
     });
   }
 
   processPermissions(userLogin: string, puestosList: any[], accesosObj: any): void {
+    console.log('[Permisos] --- Inicio processPermissions ---');
+    console.log('[Permisos] userLogin:', JSON.stringify(userLogin));
+    console.log('[Permisos] puestosList:', JSON.stringify(puestosList.map(p => ({ puesto: p.puesto, usuario: p.usuario }))));
+    console.log('[Permisos] accesosObj claves:', JSON.stringify(Object.keys(accesosObj)));
+
     const userPuesto = puestosList.find(p => this.matchesUser(userLogin, p.usuario));
     if (userPuesto) {
       this.puestoUsuario = userPuesto.puesto;
       const puestoName = (userPuesto.puesto || '').trim();
       const puestoCode = userPuesto.codigo_Puesto;
+      const procesoPuesto = (userPuesto.proceso || 'General').trim();
+      
+      // Guardar el proceso/área asignado al usuario
+      localStorage.setItem('precotex:usuario:proceso', procesoPuesto);
+      console.log('[Permisos] Proceso/Área asignado:', procesoPuesto);
 
-      // El Mapa de Permisos guarda con el NOMBRE del puesto como clave
-      // (ej. "Analista de Seguridad"), no con el código (ej. "001").
-      // Intentamos con todas las claves posibles para máxima compatibilidad.
-      this.permisosUsuario = accesosObj[puestoName]
-                          || accesosObj[puestoCode]
-                          || {};
+      // Buscar permisos por nombre de puesto (con trim por CHAR padding de SQL Server)
+      // Primero intento directo, luego con trim en cada clave del objeto
+      let permisos = accesosObj[puestoName] || accesosObj[puestoCode];
+      
+      if (!permisos) {
+        // Buscar haciendo trim en todas las claves del objeto (SQL Server CHAR padding)
+        const matchingKey = Object.keys(accesosObj).find(key => 
+          key.trim().toLowerCase() === puestoName.toLowerCase()
+        );
+        if (matchingKey) {
+          permisos = accesosObj[matchingKey];
+          console.log('[Permisos] Coincidencia encontrada con trim. Clave BD:', JSON.stringify(matchingKey), '| Puesto:', JSON.stringify(puestoName));
+        }
+      }
 
-      console.log('[Permisos] Usuario:', userLogin, '| Puesto:', puestoName, '| Permisos:', this.permisosUsuario);
+      this.permisosUsuario = permisos || {};
+      console.log('[Permisos] Usuario:', userLogin, '| Puesto:', puestoName, '| Permisos:', JSON.stringify(this.permisosUsuario));
     } else {
       this.permisosUsuario = {};
       this.puestoUsuario = '';
       console.log('[Permisos] No se encontró puesto para el usuario:', userLogin);
+      console.log('[Permisos] Usuarios disponibles en puestos:', puestosList.map(p => p.usuario));
     }
   }
 
@@ -387,6 +440,10 @@ export class LayoutComponent implements OnInit, OnDestroy {
     localStorage.removeItem('vcodtra');
     localStorage.removeItem('vtiptra');
     localStorage.removeItem('vCod_Rol');
+    localStorage.removeItem('precotex:puestos:accesos');
+    localStorage.removeItem('precotex:puestos:listado');
+    localStorage.removeItem('precotex:puestos:accesos_fino');
+    localStorage.removeItem('precotex:usuario:proceso');
 
     this.router.navigate(['/login']);
   }
