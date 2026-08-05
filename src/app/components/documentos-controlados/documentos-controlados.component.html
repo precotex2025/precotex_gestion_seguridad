@@ -54,7 +54,8 @@
                  (click)="setFilter(proc)">
               <div class="node-left">
                 <mat-icon class="folder-icon process-folder">insert_drive_file</mat-icon>
-                <span class="node-name">{{ proc }}</span>
+                <span class="node-abbr">[{{ getAbreviaturaProceso(proc) }}]</span>
+                <span class="node-name" [title]="proc">{{ proc }}</span>
               </div>
               <span class="mini-count-pill">{{ getProcessCount(proc) }}</span>
             </div>
@@ -190,7 +191,7 @@
                 </div>
               </td>
 
-              <td class="process-cell" style="min-width: 180px;">{{ doc.proceso }}</td>
+              <td class="process-cell" style="min-width: 180px;">{{ doc.proceso }} ({{ getAbreviaturaProceso(doc.proceso) }})</td>
               <td style="min-width: 110px; width: 110px; text-align: center;" class="date-cell">{{ doc.vig || '-' }}</td>
               
               <!-- Soft Badge for Status -->
