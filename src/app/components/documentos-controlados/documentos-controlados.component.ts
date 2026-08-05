@@ -504,4 +504,59 @@ export class DocumentosControladosComponent implements OnInit {
       this.toastr.warning('El registro no tiene un archivo adjunto.', 'Descargar');
     }
   }
+
+  getAbreviaturaProceso(proceso: string): string {
+    if (!proceso) return 'OYM';
+    const name = proceso.trim().toLowerCase();
+    
+    // Mapeo explícito de procesos estándar de Precotex
+    const map: { [key: string]: string } = {
+      'organización y métodos': 'OYM',
+      'organizacion y metodos': 'OYM',
+      'control patrimonial': 'CTP',
+      'auditoría interna': 'AIO',
+      'auditoria interna': 'AIO',
+      'sistemas': 'SIS',
+      'mantenimiento': 'MNT',
+      'calidad': 'CAL',
+      'costura': 'COS',
+      'acabados': 'ACA',
+      'aseguramiento de la calidad': 'ADC',
+      'consumos': 'CON',
+      'corte': 'COR',
+      'inspección': 'INS',
+      'inspeccion': 'INS',
+      'acabados textil': 'ACT',
+      'aseguramiento de calidad textil': 'ADT',
+      'estampado digital': 'ESD',
+      'laboratorio de color': 'LDC',
+      'lavandería': 'LAV',
+      'lavanderia': 'LAV',
+      'tejeduría': 'TEJ',
+      'tejeduria': 'TEJ',
+      'tintorería': 'TIN',
+      'tintoreria': 'TIN',
+      'administración y finanzas': 'AYF',
+      'administracion y finanzas': 'AYF',
+      'administración': 'ADM',
+      'administracion': 'ADM',
+      'contabilidad y costos': 'CYC',
+      'finanzas': 'FIN',
+      'tesorería': 'TES',
+      'tesoreria': 'TES'
+    };
+
+    if (map[name]) return map[name];
+
+    // Si no está en el mapa, generar una abreviatura de 3 letras basada en las primeras letras de las palabras
+    const palabras = proceso.toUpperCase().replace(/[^A-Z0-9\s]/g, '').split(/\s+/).filter(p => p && p !== 'Y' && p !== 'DE' && p !== 'LA' && p !== 'EL');
+    if (palabras.length >= 3) {
+      return (palabras[0][0] + palabras[1][0] + palabras[2][0]).substring(0, 3);
+    } else if (palabras.length === 2) {
+      return (palabras[0].substring(0, 2) + palabras[1][0]).substring(0, 3);
+    } else if (palabras.length === 1) {
+      return palabras[0].substring(0, 3);
+    }
+    return 'GEN';
+  }
 }
