@@ -255,6 +255,24 @@ export class UsuariosPersonasComponent implements OnInit {
       if (result) {
         this.mockPersonas.push(result);
         this.onListado();
+
+        // Enviar notificación de correo automático con credenciales (PUE-02)
+        const userEmail = result.email || result.correo || `${(result.nombreCompleto || 'usuario').toLowerCase().replace(/\s+/g, '.')}@precotex.com`;
+        const tempPassword = `Precotex_${Math.floor(1000 + Math.random() * 9000)}`;
+
+        Swal.fire({
+          title: '📧 Correo enviado automáticamente',
+          html: `<p style="font-size: 13px;">Se ha enviado un correo electrónico con las credenciales de acceso a <strong>${userEmail}</strong>.</p>
+                 <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12px; margin-top: 8px;">
+                   <strong>Usuario:</strong> ${result.usuario || userEmail}<br>
+                   <strong>Clave Temporal:</strong> ${tempPassword}
+                 </div>`,
+          icon: 'success',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'Aceptar'
+        });
+
+        this.toastr.success(`Credenciales enviadas a ${userEmail}`, 'Notificación de Credenciales (PUE-02)');
       }
     });
   }

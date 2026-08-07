@@ -71,8 +71,35 @@ export class LogAccesosComponent implements OnInit {
   constructor(private toastr: ToastrService) { }
 
   ngOnInit(): void {
+    // 1. Cargar accesos registrados localmente (PUE-01)
+    const localLogs = localStorage.getItem('precotex:log:accesos');
+    if (localLogs) {
+      try {
+        const parsed = JSON.parse(localLogs);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          this.allLogs = [...parsed, ...this.allLogs];
+        }
+      } catch (e) {}
+    }
+
+    // 2. Capturar el ingreso actual si es una nueva sesión (PUE-01)
+    const currentUser = (localStorage.getItem('precotex:usuario:nombre') || 'Administrador Sistema (admin)').trim();
+    const lastSession = sessionStorage.getItem('precotex:session:logged_time');
+    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+
+    if (!lastSession) {
+      sessionStorage.setItem('precotex:session:logged_time', nowStr);
+      const newEntry: LogAccesoRegistro = {
+        fechaHora: nowStr,
+        usuario: currentUser,
+        puesto: currentUser.toLowerCase().includes('admin') ? 'Super Administrador' : (localStorage.getItem('precotex:usuario:puesto') || 'Jefe de Área')
+      };
+      this.allLogs.unshift(newEntry);
+      localStorage.setItem('precotex:log:accesos', JSON.stringify(this.allLogs.slice(0, 100)));
+    }
+
     // Populate dropdown with unique names
-    const names = this.allLogs.map(l => l.usuario).filter(n => n && n.toLowerCase() !== 'admin');
+    const names = this.allLogs.map(l => l.usuario).filter(n => n);
     this.personasUnicas = ['Selecciona', ...Array.from(new Set(names))];
     
     // Generate page list

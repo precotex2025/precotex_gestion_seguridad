@@ -98,6 +98,9 @@ export class NormasComponent implements OnInit {
   aplicarFiltro(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('precotex:pref:normas_filter', filterValue);
+    }
   }
 
   onEditar(item: any){
@@ -153,6 +156,13 @@ export class NormasComponent implements OnInit {
         });
       }
     });      
+  }
+
+  onDescargarArchivo(row: any): void {
+    const fileName = row.archivo || row.ruta_Adjunto || row.norma + '.pdf';
+    this.toastr.info(`Descargando documento de la norma: ${row.norma}`, 'Descargar Documento');
+    // Descarga directa o apertura de documento
+    window.open(`https://gestion.precotex.com:444/ubicaciones/api/SNFiles/download?fileName=${encodeURIComponent(fileName)}`, '_blank');
   }
 
   onAgregar(){

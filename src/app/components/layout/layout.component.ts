@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import { Component, ViewChild, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { MatSidenav } from '@angular/material/sidenav';
 import { GlobalVariable } from '../../VarGlobals';
@@ -37,6 +37,29 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
   private resizeListener!: () => void;
 
+  isServerOnline: boolean = true;
+  private statusInterval: any;
+
+  // OP-1: Atajos de Teclado Globales (Ctrl+B, Ctrl+K, Esc)
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardShortcuts(event: KeyboardEvent): void {
+    // Ctrl + B o Ctrl + K -> Buscar
+    if ((event.ctrlKey || event.metaKey) && (event.key.toLowerCase() === 'b' || event.key.toLowerCase() === 'k')) {
+      event.preventDefault();
+      const searchBox = document.querySelector('.inline-search-input, .buscador-input, .glass-search-input, #globalSearchInput') as HTMLInputElement;
+      if (searchBox) {
+        searchBox.focus();
+        this.toastr.info('Buscador Enfocado (Atajo Ctrl+B)', 'Teclado SIG', { timeOut: 1500 });
+      }
+    }
+
+    // Esc -> Cerrar modales o desplegables
+    if (event.key === 'Escape') {
+      const closeButtons = document.querySelectorAll('.btn-close-banner, .btn-ghost-sm, .mat-dialog-close');
+      closeButtons.forEach((btn: any) => btn.click && btn.click());
+    }
+  }
+
   constructor(
     public router: Router,
     private puestosService: PuestosService,
@@ -51,6 +74,12 @@ export class LayoutComponent implements OnInit, OnDestroy {
       window.addEventListener('resize', this.resizeListener);
     }
 
+    // OP-2: Monitoreo de conexión en vivo con el servidor
+    this.checkServerConnection();
+    if (typeof window !== 'undefined') {
+      this.statusInterval = setInterval(() => this.checkServerConnection(), 15000);
+    }
+
     // Cargar permisos del usuario activo
     this.loadUserPermissions();
 
@@ -63,6 +92,21 @@ export class LayoutComponent implements OnInit, OnDestroy {
     ).subscribe((event: any) => {
       this.updateHeaderConfig(event.urlAfterRedirects || event.url);
     });
+  }
+
+  checkServerConnection(): void {
+    if (typeof navigator !== 'undefined') {
+      this.isServerOnline = navigator.onLine;
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.statusInterval) {
+      clearInterval(this.statusInterval);
+    }
+    if (typeof window !== 'undefined' && this.resizeListener) {
+      window.removeEventListener('resize', this.resizeListener);
+    }
   }
 
   updateHeaderConfig(url: string): void {
@@ -411,11 +455,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     return '';
   }
 
-  ngOnDestroy(): void {
-    if (typeof window !== 'undefined' && this.resizeListener) {
-      window.removeEventListener('resize', this.resizeListener);
-    }
-  }
+
 
   private checkScreenSize(): void {
     if (typeof window !== 'undefined') {

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
+import Swal from 'sweetalert2';
 import { AyudaService } from '../../services/ayuda.service';
 
 interface Manual {
@@ -46,30 +47,63 @@ export class AyudaComponent implements OnInit {
   faqs: Faq[] = [
     {
       id: 1,
-      pregunta: '¿Quién puede registrar una No Conformidad?',
-      respuesta: 'Según la política, Jefaturas y Gerencia registran NC de su proceso; Certificaciones emite las NC formales. El código (NC-INT-AAAA-NNN) se genera automáticamente.'
+      pregunta: '¿Cómo se alinean las No Conformidades a la norma ISO 9001:2015?',
+      respuesta: 'Según la cláusula 10.2 de ISO 9001:2015, ante una no conformidad, la organización debe evaluar la causa raíz mediante 5W-2H e implementar acciones correctivas verificables para evitar su recurrencia.'
     },
     {
       id: 2,
-      pregunta: '¿Cómo subo mi 5W-2H al Portafolio?',
-      respuesta: 'Ve a Portafolio de Mejora → "Registrar iniciativa" → selecciona sede, proceso y herramienta 5W-2H → sube el archivo Excel oficial.'
+      pregunta: '¿Cuál es el rol de los Comités de Seguridad según la ISO 45001:2018?',
+      respuesta: 'La norma ISO 45001 exige la participación activa de los trabajadores y sus representantes en la consulta y evaluación de riesgos de SST, coordinando directamente con el área SSOMA Precotex.'
     },
     {
       id: 3,
-      pregunta: '¿Por qué el botón "Verificar cierre" está bloqueado?',
-      respuesta: 'Porque la NC aún no tiene acciones correctivas completadas. Registra las acciones en el módulo de Acciones correctivas primero.'
+      pregunta: '¿Cómo se gestiona el control de Aspectos e Impactos Ambientales ISO 14001:2015?',
+      respuesta: 'En el módulo de Documentos Controlados y Gestión Ambiental se registran los procedimientos operativos para el manejo de residuos textiles, efluentes y consumo responsable de energía.'
     },
     {
       id: 4,
       pregunta: '¿Qué significa que un documento esté "Por vencer"?',
-      respuesta: 'Su fecha de vigencia vence en menos de 30 días. El responsable recibirá una alerta para actualizarlo antes de que quede obsoleto.'
+      respuesta: 'Significa que su vigencia vence en menos de 60 días. El responsable del proceso recibirá una alerta para su revisión y actualización semestral.'
     },
     {
       id: 5,
-      pregunta: '¿Cómo cambio los permisos de un usuario?',
-      respuesta: 'En Puestos → Permisos por módulo puedes ajustar el acceso por módulo, y el detalle por contenido y acción de cada persona.'
+      pregunta: '¿Cómo se solicitan nuevos permisos por Puesto?',
+      respuesta: 'Los Jefes de Área pueden generar una solicitud en Puestos → Permisos por Módulo o enviar un Ticket Rápido a Soporte O&M.'
     }
   ];
+
+  // AYU-03: Generación de ticket rápido de soporte
+  ticketAsunto: string = '';
+  ticketDescripcion: string = '';
+  ticketPrioridad: string = 'Normal';
+
+  onEnviarTicketRapido(): void {
+    if (!this.ticketAsunto.trim() || !this.ticketDescripcion.trim()) {
+      this.toastr.warning('Por favor ingrese el asunto y la descripción del problema.', 'Campos Requeridos');
+      return;
+    }
+
+    const numTicket = 'TICK-' + Math.floor(100000 + Math.random() * 900000);
+    const htmlConfirm = `
+      <div style="text-align: left; font-size: 13px; line-height: 1.6;">
+        <p style="color: #4ade80; font-weight: bold;">Ticket generado exitosamente: ${numTicket}</p>
+        <p><strong>Asunto:</strong> ${this.ticketAsunto}</p>
+        <p><strong>Prioridad:</strong> ${this.ticketPrioridad}</p>
+        <p style="color: #94a3b8; font-size: 12px;">Se ha notificado al equipo de Organización & Métodos y Soporte Sistemas. Recibirás respuesta a tu correo corporativo.</p>
+      </div>
+    `;
+
+    Swal.fire({
+      title: '🎟️ Ticket Registrado (AYU-03)',
+      html: htmlConfirm,
+      icon: 'success',
+      confirmButtonText: 'Aceptar'
+    });
+
+    this.ticketAsunto = '';
+    this.ticketDescripcion = '';
+    this.toastr.success(`Ticket ${numTicket} enviado a Soporte O&M.`, 'Ticket Rápido');
+  }
 
   filteredFaqs: Faq[] = [];
   manualesDescargados: any[] = [];

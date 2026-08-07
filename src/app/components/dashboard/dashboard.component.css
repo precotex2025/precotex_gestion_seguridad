@@ -712,3 +712,179 @@
   background: #f0b429;
   border-radius: 2px;
 }
+
+/* ===================================================================
+   BACKUP CENTER & RESGUARDO SYSTEM STYLES (INI-01)
+   =================================================================== */
+.bento-backup-section {
+  margin-top: 24px;
+}
+
+.backup-bento-box {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 16px;
+  padding: 20px 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.color-emerald {
+  color: #10b981;
+}
+
+.text-emerald {
+  color: #34d399 !important;
+}
+
+.text-sky {
+  color: #38bdf8 !important;
+}
+
+.backup-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #34d399;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
+.green-dot {
+  background-color: #10b981 !important;
+  box-shadow: 0 0 10px #10b981;
+}
+
+.backup-body-grid {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr;
+  gap: 24px;
+  margin-top: 16px;
+  align-items: center;
+}
+
+@media (max-width: 992px) {
+  .backup-body-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.backup-info-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 640px) {
+  .backup-info-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.backup-metric-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metric-label {
+  font-size: 0.74rem;
+  color: #94a3b8;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.metric-value {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #ffffff;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.metric-sub {
+  font-size: 0.68rem;
+  color: #64748b;
+}
+
+.backup-actions-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.action-buttons-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-backup-primary {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+}
+
+.btn-backup-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(16, 185, 129, 0.45);
+}
+
+.btn-backup-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-backup-ghost {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-backup-ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.backup-security-note {
+  font-size: 0.7rem;
+  color: #64748b;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.4;
+}
+

@@ -44,13 +44,24 @@ export class NormasRegeditComponent implements OnInit {
         ctrol_fechaVencimiento: [''],
         ctrol_fechaAuditoria: [''],
         ctrol_estado: ['Vigente'],
-        ctrol_descripcion: ['']
+        ctrol_descripcion: [''],
+        ctrol_archivo: ['']
     });
 
     this.formulario.get('ctrol_codigo')?.disable();
     
     if (this.data.Accion === 'U'){
       this.onLoadInfo();
+    }
+  }
+
+  selectedFileName: string = '';
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFileName = file.name;
+      this.formulario.get('ctrol_archivo')?.setValue(file.name);
     }
   }
 
@@ -71,6 +82,8 @@ export class NormasRegeditComponent implements OnInit {
      this.formulario.get('ctrol_fechaAuditoria')?.setValue(this.formatDate(this.data.Datos.fechaAuditoria));
      this.formulario.get('ctrol_estado')?.setValue(this.data.Datos.estado || 'Vigente');
      this.formulario.get('ctrol_descripcion')?.setValue(this.data.Datos.descripcion!);
+     this.selectedFileName = this.data.Datos.archivo || this.data.Datos.ruta_Adjunto || '';
+     this.formulario.get('ctrol_archivo')?.setValue(this.selectedFileName);
   }
 
   onSave(){

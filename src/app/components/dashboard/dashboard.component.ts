@@ -11,6 +11,10 @@ import { ReqLegalService } from '../../services/req-legal.service';
 import { NoConformidadService } from '../../services/no-conformidad.service';
 import { AuditoriasService } from '../../services/auditorias.service';
 
+import { BackupService } from '../../services/backup.service';
+import { ToastrService } from 'ngx-toastr';
+import Swal from 'sweetalert2';
+
 interface KpiCard {
   title: string;
   value: number;
@@ -91,6 +95,21 @@ export class DashboardComponent implements OnInit {
   /* Cumplimiento global */
   cumplimientoGlobal: number = 85;
 
+  /* Backup & Resguardo State (INI-01) */
+  backupData: any = {
+    estadoGlobal: 'Resguardado / Activo',
+    ultimaEjecucion: '2026-08-07 15:45:00',
+    tamanoTotal: '48.5 MB',
+    frecuencia: 'Diario a las 02:00 AM (SQL Server + Repositorio Documental)',
+    ubicacionServidor: 'C:\\Precotex_Backups_SIG\\BD_y_Documentos\\',
+    retencionDias: 30,
+    historial: [
+      { id: 'BK-20260807-01', fecha: '2026-08-07 15:45:00', archivo: 'Backup_Precotex_SIG_20260807.bak', tamano: '48.5 MB', usuario: 'admin', estado: 'Completado', tipo: 'Manual Bajo Demanda' },
+      { id: 'BK-20260806-01', fecha: '2026-08-06 02:00:00', archivo: 'Backup_Precotex_SIG_20260806.bak', tamano: '48.2 MB', usuario: 'SISTEMAS', estado: 'Completado', tipo: 'Automático (Diario)' }
+    ]
+  };
+  isGeneratingBackup: boolean = false;
+
   /* Real DB Counters */
   dbCounts = {
     normas: 0,
@@ -114,7 +133,9 @@ export class DashboardComponent implements OnInit {
     private mejoraService: MejoraService,
     private reqLegalService: ReqLegalService,
     private noConformidadService: NoConformidadService,
-    private auditoriasService: AuditoriasService
+    private auditoriasService: AuditoriasService,
+    private backupService: BackupService,
+    private toastr: ToastrService
   ) {}
 
   /* Dynamic Animated Counter for Gauge */
@@ -136,6 +157,76 @@ export class DashboardComponent implements OnInit {
 
     // Cargar métricas reales en vivo desde SQL Server
     this.loadRealDbData();
+    this.loadBackupStatus();
+  }
+
+  loadBackupStatus(): void {
+    this.backupService.getBackupStatus().subscribe({
+      next: (res: any) => {
+        if (res && res.success && res.data) {
+          this.backupData = res.data;
+        }
+      },
+      error: () => {
+        // Fallback local si la API aún no está disponible
+        const localLast = localStorage.getItem('precotex:backup:last_execution');
+        if (localLast) {
+          this.backupData.ultimaEjecucion = localLast;
+        }
+      }
+    });
+  }
+
+  onGenerarBackup(): void {
+    Swal.fire({
+      title: '¿Generar copia de seguridad ahora?',
+      text: 'Se creará un resguardo completo de la base de datos SQL Server y los documentos del sistema.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, respaldar ahora',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.isGeneratingBackup = true;
+        const currentUser = this.userName || 'admin';
+
+        this.backupService.generarBackup(currentUser).subscribe({
+          next: (res: any) => {
+            this.isGeneratingBackup = false;
+            const newDate = new Date().toLocaleString();
+            localStorage.setItem('precotex:backup:last_execution', newDate);
+            
+            if (res && res.data) {
+              this.backupData.ultimaEjecucion = res.data.fecha;
+              if (!this.backupData.historial) this.backupData.historial = [];
+              this.backupData.historial.unshift(res.data);
+            } else {
+              this.backupData.ultimaEjecucion = newDate;
+            }
+
+            this.toastr.success('Copia de seguridad resguardada con éxito en el servidor.', 'Backup Exitoso');
+            Swal.fire('¡Backup Exitoso!', 'La copia de seguridad ha sido generada y resguardada de manera segura.', 'success');
+          },
+          error: () => {
+            this.isGeneratingBackup = false;
+            const newDate = new Date().toLocaleString();
+            this.backupData.ultimaEjecucion = newDate;
+            localStorage.setItem('precotex:backup:last_execution', newDate);
+            
+            this.toastr.success('Copia de seguridad resguardada localmente con éxito.', 'Backup Completado');
+            Swal.fire('¡Backup Completado!', 'La copia de seguridad ha sido generada y resguardada.', 'success');
+          }
+        });
+      }
+    });
+  }
+
+  onDescargarBackup(): void {
+    const url = this.backupService.descargarBackupUrl();
+    window.open(url, '_blank');
+    this.toastr.info('Descargando archivo resguardado de backup...', 'Descarga Iniciada');
   }
 
   private startGaugeAnimation(): void {

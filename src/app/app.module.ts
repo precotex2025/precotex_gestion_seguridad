@@ -19,7 +19,8 @@ import { AvatarModule } from 'primeng/avatar';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { KnobModule } from 'primeng/knob';
 
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { ErrorHandlerInterceptor } from './interceptors/error-handler.interceptor';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { NgxSpinnerModule } from "ngx-spinner";
@@ -197,8 +198,13 @@ import { AyudaComponent } from './components/ayuda/ayuda.component';
     MatSortModule,
     MatCheckboxModule,
     MatTooltipModule,
-    CommonModule,
-    ToastrModule.forRoot(),
+    ToastrModule.forRoot({
+      timeOut: 3000,
+      positionClass: 'toast-bottom-right',
+      preventDuplicates: true,
+      progressBar: true,
+      closeButton: true
+    }),
     /* PrimeNG Modules */
     ChartModule,
     TableModule,
@@ -212,6 +218,11 @@ import { AyudaComponent } from './components/ayuda/ayuda.component';
   ],
   providers: [
     provideHttpClient(),
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: ErrorHandlerInterceptor,
+      multi: true
+    },
     provideNativeDateAdapter(),
     providePrimeNG({
       theme: {

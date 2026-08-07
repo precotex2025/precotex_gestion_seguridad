@@ -101,25 +101,87 @@
     </table>
   </div>
 
-  <!-- SECCIÓN ORGANIGRAMA CORPORATIVO -->
-  <div class="organigrama-section shadow-premium">
-    <h3 class="organigrama-titulo">Organigrama corporativo</h3>
-    <p class="organigrama-sub">Inserta el organigrama oficial de la empresa (PDF, PNG, Word o Excel).</p>
+  <!-- SECCIONES DOCUMENTALES: ORGANIGRAMA Y MAPA DE PROCESOS (ORG-07 & ORG-08) -->
+  <div class="docs-organizacionales-grid">
     
-    <div class="upload-wrapper">
-      <input type="file" 
-             id="organigrama-upload" 
-             class="hide" 
-             (change)="onFileSelected($event)">
+    <!-- 1. ORGANIGRAMA CORPORATIVO (ORG-07) -->
+    <div class="organigrama-section shadow-premium">
+      <div class="doc-header-row">
+        <div>
+          <h3 class="organigrama-titulo"><mat-icon class="icon-inline">account_tree</mat-icon> Organigrama Corporativo</h3>
+          <p class="organigrama-sub">Estructura jerárquica oficial de la empresa resguardada (PDF, PNG, Word, Excel).</p>
+        </div>
+        <button type="button" class="btn-download-doc" (click)="onDescargarArchivo('organigrama')" *ngIf="organigramaNombre">
+          <mat-icon>file_download</mat-icon> Descargar
+        </button>
+      </div>
       
-      <button type="button" class="btn-upload" (click)="triggerUpload()">
-        Seleccionar archivo
-      </button>
-      
-      <span class="file-name" [class.no-file]="!organigramaNombre">
-        {{ organigramaNombre || 'Sin organigrama cargado' }}
-      </span>
+      <div class="upload-wrapper">
+        <input type="file" 
+               id="organigrama-upload" 
+               class="hide" 
+               (change)="onFileSelected($event, 'organigrama')" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xlsx">
+        
+        <button type="button" class="btn-upload" (click)="triggerUpload('organigrama')">
+          <mat-icon>upload_file</mat-icon> Seleccionar Organigrama
+        </button>
+        
+        <span class="file-name" [class.no-file]="!organigramaNombre">
+          {{ organigramaNombre || 'Sin organigrama cargado' }}
+        </span>
+      </div>
+
+      <!-- Previsualización inferior visible (ORG-07) -->
+      <div class="file-preview-box" *ngIf="organigramaUrl">
+        <div class="preview-header">
+          <mat-icon>visibility</mat-icon> <span>Visualización Previa del Organigrama Resguardado</span>
+        </div>
+        <div class="preview-content">
+          <iframe *ngIf="organigramaNombre?.endsWith('.pdf') || organigramaUrl.startsWith('data:application/pdf')" [src]="organigramaUrl" class="doc-frame"></iframe>
+          <img *ngIf="!organigramaNombre?.endsWith('.pdf') && !organigramaUrl.startsWith('data:application/pdf')" [src]="organigramaUrl" alt="Organigrama" class="img-preview">
+        </div>
+      </div>
     </div>
+
+    <!-- 2. MAPA DE PROCESOS CORPORATIVO (ORG-08) -->
+    <div class="organigrama-section shadow-premium">
+      <div class="doc-header-row">
+        <div>
+          <h3 class="organigrama-titulo"><mat-icon class="icon-inline">schema</mat-icon> Mapa de Procesos Corporativo</h3>
+          <p class="organigrama-sub">Flujo de Macroprocesos Estratégicos, Operativos y de Soporte Precotex.</p>
+        </div>
+        <button type="button" class="btn-download-doc" (click)="onDescargarArchivo('mapaprocesos')" *ngIf="mapaProcesosNombre">
+          <mat-icon>file_download</mat-icon> Descargar
+        </button>
+      </div>
+      
+      <div class="upload-wrapper">
+        <input type="file" 
+               id="mapaprocesos-upload" 
+               class="hide" 
+               (change)="onFileSelected($event, 'mapaprocesos')" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xlsx">
+        
+        <button type="button" class="btn-upload" (click)="triggerUpload('mapaprocesos')">
+          <mat-icon>upload_file</mat-icon> Seleccionar Mapa de Procesos
+        </button>
+        
+        <span class="file-name" [class.no-file]="!mapaProcesosNombre">
+          {{ mapaProcesosNombre || 'Sin mapa de procesos cargado' }}
+        </span>
+      </div>
+
+      <!-- Previsualización inferior visible (ORG-08) -->
+      <div class="file-preview-box" *ngIf="mapaProcesosUrl">
+        <div class="preview-header">
+          <mat-icon>visibility</mat-icon> <span>Visualización Previa del Mapa de Procesos Resguardado</span>
+        </div>
+        <div class="preview-content">
+          <iframe *ngIf="mapaProcesosNombre?.endsWith('.pdf') || mapaProcesosUrl.startsWith('data:application/pdf')" [src]="mapaProcesosUrl" class="doc-frame"></iframe>
+          <img *ngIf="!mapaProcesosNombre?.endsWith('.pdf') && !mapaProcesosUrl.startsWith('data:application/pdf')" [src]="mapaProcesosUrl" alt="Mapa de Procesos" class="img-preview">
+        </div>
+      </div>
+    </div>
+
   </div>
 
 </div>

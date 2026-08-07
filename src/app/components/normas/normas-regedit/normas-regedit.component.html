@@ -57,7 +57,22 @@
         </div>
       </div>
 
-      <!-- Fila 4: Descripción Breve -->
+      <!-- Fila 4: Archivo Adjunto de la Norma / Certificación (ORG-04) -->
+      <div class="form-row">
+        <div class="form-field full-width">
+          <label class="form-label">Documento o Certificado Adjunto (PDF / Doc)</label>
+          <div class="file-upload-picker">
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept=".pdf,.doc,.docx" style="display: none;">
+            <button type="button" class="btn-picker" (click)="fileInput.click()">
+              <mat-icon>attach_file</mat-icon>
+              <span>Seleccionar archivo</span>
+            </button>
+            <span class="file-name-tag" *ngIf="selectedFileName">{{ selectedFileName }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fila 5: Descripción Breve -->
       <div class="form-row">
         <div class="form-field full-width">
           <label class="form-label">Descripción breve</label>

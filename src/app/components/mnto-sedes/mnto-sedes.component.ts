@@ -34,11 +34,14 @@ export class MntoSedesComponent implements OnInit{
   ){}
 
   displayedColumns: string[] = [
-    'codigo'      ,
+    'codigo',
     'acronimo',
-    'denominacion'       ,
-    'organizacion'    ,
-    'estado'      ,
+    'denominacion',
+    'direccion',
+    'distrito',
+    'procesos',
+    'organizacion',
+    'estado',
     'acciones'
   ];  
   dataSource = new MatTableDataSource<any>();    
@@ -216,11 +219,38 @@ export class MntoSedesComponent implements OnInit{
   } 
 
   onExportar(){
+    const data = this.dataSource.data.map(row => ({
+      'Código Sede': row.codigo_Sede,
+      'Acrónimo': row.acronimo || '',
+      'Sede / Denominación': row.denominacion || '',
+      'Dirección': row.direccion || '',
+      'Distrito / Localidad': row.localidad || row.provincia || '',
+      'Procesos': row.procesos || row.nombre_Proceso || 'General',
+      'Empresa': row.organizacion || '',
+      'Estado': (row.flg_Activo === 'True' || row.flg_Activo === '1' || row.flg_Activo === 'A') ? 'Activo' : 'Inactivo'
+    }));
 
+    if (!data.length) {
+      this.toastr.warning('No hay datos para exportar', 'Exportar Sedes');
+      return;
+    }
+
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + [Object.keys(data[0]).join(","), ...data.map(e => Object.values(e).map(v => `"${v}"`).join(","))].join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Sedes_PrecoSIG_${new Date().toISOString().substring(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.toastr.success('Exportación de sedes completada', 'Exportar Sedes');
   }
 
-  aplicarFiltro(object: any){
-    
+  aplicarFiltro(event: Event){
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
   onAtras(){

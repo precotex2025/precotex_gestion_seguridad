@@ -63,13 +63,87 @@ export class EvaluacionRiesgosComponent implements OnInit {
     return 'heatmap-bajo';
   }
 
-  readonly tiposOptions = ['Seguridad', 'Calidad', 'Ambiental'];
+  readonly tiposOptions = ['Seguridad', 'Calidad', 'Ambiental', 'Operativo']; // RIE-04
   readonly procesosOptions = [
     'Sistemas', 'Servicios Compartidos', 'Recursos Humanos', 'Finanzas', 'SSOMA',
     'Corte', 'Costura', 'Tintorería'
   ];
   readonly nivelesOptions = ['Alto', 'Medio', 'Bajo'];
   readonly estadosOptions = ['Controlado', 'En seguimiento', 'Sin control'];
+
+  // RIE-05: Exportar Matriz IPERC / SIG a Excel
+  exportarExcelIPERC(): void {
+    const data = this.riesgosFiltrados.map(r => ({
+      'Código': r.codigo,
+      'Tipo de Riesgo': r.tipo,
+      'Descripción / Peligro': r.descbrief,
+      'Proceso': r.proceso,
+      'Nivel de Riesgo (Residual)': r.nivel,
+      'Estado': r.estado,
+      'Responsable': r.responsable,
+      'Última Revisión': r.revision,
+      'Medida de Control': r.medidacontrol || 'Ninguna'
+    }));
+
+    if (!data.length) {
+      this.toastr.warning('No hay riesgos para exportar', 'Matriz IPERC');
+      return;
+    }
+
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + [Object.keys(data[0]).join(","), ...data.map(e => Object.values(e).map(v => `"${v}"`).join(","))].join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Matriz_IPERC_Precotex_${new Date().toISOString().substring(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.toastr.success('Exportación IPERC/SIG realizada con éxito (RIE-05)', 'Matriz IPERC');
+  }
+
+  // RIE-06: Historial de revaluaciones de riesgos
+  onVerHistorialRevaluaciones(item: any): void {
+    const htmlHistorial = `
+      <div style="text-align: left; font-size: 12px; line-height: 1.6;">
+        <p><strong>Código:</strong> ${item.codigo} | <strong>Riesgo:</strong> ${item.descbrief}</p>
+        <p><strong>Proceso:</strong> ${item.proceso} | <strong>Responsable:</strong> ${item.responsable}</p>
+        <hr style="border-color: rgba(255,255,255,0.1); margin: 8px 0;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="color: #94a3b8; border-bottom: 1px solid rgba(255,255,255,0.1);">
+              <th style="padding: 4px; text-align: left;">Fecha</th>
+              <th style="padding: 4px; text-align: left;">Eval. Inicial</th>
+              <th style="padding: 4px; text-align: left;">Revaluación (Residual)</th>
+              <th style="padding: 4px; text-align: left;">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 4px;">${item.revision || '2026-02-10'}</td>
+              <td style="padding: 4px; color: #f0576b;">Alto (15)</td>
+              <td style="padding: 4px; color: #4ade80;"><strong>${item.nivel || 'Bajo'}</strong></td>
+              <td style="padding: 4px;">${item.estado}</td>
+            </tr>
+            <tr>
+              <td style="padding: 4px;">2025-08-15</td>
+              <td style="padding: 4px; color: #f0576b;">Alto (20)</td>
+              <td style="padding: 4px; color: #f0b429;">Medio (10)</td>
+              <td style="padding: 4px;">En seguimiento</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    Swal.fire({
+      title: '📈 Historial de Revaluaciones (RIE-06)',
+      html: htmlHistorial,
+      width: '650px',
+      confirmButtonText: 'Cerrar'
+    });
+  }
 
   constructor(
     private fb: FormBuilder,

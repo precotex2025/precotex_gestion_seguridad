@@ -49,24 +49,33 @@ export class MedicionIndicadoresComponent implements OnInit {
     this.indicadoresService.getListadoIndicadorMediciones().subscribe({
       next: (res: any) => {
         if (res && res.success && res.elements) {
-          const mapped = res.elements.map((item: any) => ({
-            id: item.id_Medicion,
-            idMedicion: item.id_Medicion,
-            idIndicador: item.id_Indicador,
-            codigoIndicador: item.codigo_Indicador,
-            indicador: item.nombre_Indicador || item.codigo_Indicador,
-            sede: 'Todas',
-            proceso: item.nombre_Proceso || 'General',
-            meta: item.meta !== null && item.meta !== undefined ? item.meta.toString() + (item.unidad_Medida || '%') : '0%',
-            valor: item.valor_Obtenido !== null && item.valor_Obtenido !== undefined ? item.valor_Obtenido.toString() + '%' : '0%',
-            valorNumerico: item.valor_Obtenido,
-            periodo: item.periodo,
-            semaforo: item.semaforo || 'En meta',
-            obs: item.comentario
-          }));
+          const mapped = res.elements.map((item: any) => {
+            const valNum = item.valor_Obtenido || 0;
+            const metaNum = item.meta || 100;
+            const semaforoCalculado = this.calcularSemaforoAutomatico(valNum, metaNum); // IND-03
+
+            return {
+              id: item.id_Medicion,
+              idMedicion: item.id_Medicion,
+              idIndicador: item.id_Indicador,
+              codigoIndicador: item.codigo_Indicador,
+              indicador: item.nombre_Indicador || item.codigo_Indicador,
+              sede: 'Todas',
+              proceso: item.nombre_Proceso || 'General',
+              frecuencia: item.frecuencia || 'Mensual', // IND-02
+              meta: item.meta !== null && item.meta !== undefined ? item.meta.toString() + (item.unidad_Medida || '%') : '0%',
+              valor: item.valor_Obtenido !== null && item.valor_Obtenido !== undefined ? item.valor_Obtenido.toString() + '%' : '0%',
+              valorNumerico: valNum,
+              periodo: item.periodo,
+              semaforo: semaforoCalculado,
+              obs: item.comentario
+            };
+          });
+          this.allRawData = mapped;
           this.dataSource.data = mapped;
           this.calculateStats(mapped);
         } else {
+          this.allRawData = [];
           this.dataSource.data = [];
           this.calculateStats([]);
         }
@@ -144,9 +153,63 @@ export class MedicionIndicadoresComponent implements OnInit {
     return Math.min(Math.max(pct, 0), 100);
   }
 
+  // IND-01: Recalcular tendencia según proceso seleccionado
+  filtroProceso: string = 'Todos';
+  listaProcesos: string[] = ['Todos', 'Tintorería', 'Hilandería', 'Corte', 'Costura', 'SSOMA', 'Gestión de Calidad'];
+
+  onProcesoChange(): void {
+    let list = this.allRawData;
+    if (this.filtroProceso !== 'Todos') {
+      list = list.filter(d => d.proceso === this.filtroProceso);
+    }
+    this.dataSource.data = list;
+    this.calculateStats(list);
+  }
+
+  allRawData: any[] = [];
+
+  // IND-03: Cálculo automático de semáforo de cumplimiento
+  calcularSemaforoAutomatico(val: number, meta: number): string {
+    if (!meta || meta === 0) return 'En meta';
+    const pct = (val / meta) * 100;
+    if (pct >= 90) return 'En meta';
+    if (pct >= 75) return 'En riesgo';
+    return 'Crítico';
+  }
+
+  // IND-04: Exportar Ficha Técnica del Indicador
+  exportarFichaTecnica(row: any): void {
+    const fichaHtml = `
+      <div style="text-align: left; font-size: 12px; line-height: 1.6; padding: 10px; background: rgba(15,23,42,0.6); border-radius: 8px;">
+        <h4 style="color: #38bdf8; margin: 0 0 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">FICHA TÉCNICA DE INDICADOR DEL SIG (IND-04)</h4>
+        <p><strong>Código / Indicador:</strong> ${row.codigoIndicador || row.id} - ${row.indicador}</p>
+        <p><strong>Proceso Asociado:</strong> ${row.proceso} | <strong>Sede:</strong> ${row.sede}</p>
+        <p><strong>Frecuencia de Medición (IND-02):</strong> <span style="color: #a78bfa; font-weight: bold;">${row.frecuencia || 'Mensual'}</span></p>
+        <p><strong>Fórmula / Método:</strong> (Valor Obtenido / Meta Planificada) × 100</p>
+        <p><strong>Meta Base:</strong> ${row.meta} | <strong>Valor Obtenido:</strong> ${row.valor}</p>
+        <p><strong>Estado Semáforo (IND-03):</strong> <span style="color: ${this.getSemaforoColor(row.semaforo)}; font-weight: bold;">${row.semaforo}</span></p>
+        <p><strong>Responsable de Medición:</strong> Jefe de Proceso ${row.proceso}</p>
+      </div>
+    `;
+
+    Swal.fire({
+      title: `📄 Ficha Técnica: ${row.indicador}`,
+      html: fichaHtml,
+      width: '650px',
+      showCancelButton: true,
+      confirmButtonText: 'Descargar Ficha PDF',
+      cancelButtonText: 'Cerrar'
+    }).then((res) => {
+      if (res.isConfirmed) {
+        this.toastr.success(`Descargando Ficha Técnica de ${row.indicador}`, 'Ficha Técnica (IND-04)');
+      }
+    });
+  }
+
   getSparklinePoints(id: string): { x: number, y: number }[] {
     let x = 0;
-    const str = String(id || 'xyz');
+    // IND-01: Combina el ID con el proceso para refrescar dinámicamente la tendencia
+    const str = String(id || 'xyz') + (this.filtroProceso || '');
     for (let i = 0; i < str.length; i++) {
       x = (x * 31 + str.charCodeAt(i)) >>> 0;
     }

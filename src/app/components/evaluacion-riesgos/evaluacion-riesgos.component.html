@@ -53,13 +53,19 @@
   </div>
 
   <!-- BARRA DE HERRAMIENTAS INTEGRADA -->
-  <div class="integrated-toolbar">
+  <div class="integrated-toolbar" style="flex-wrap: wrap; gap: 12px;">
     <div class="toolbar-title-section">
-      <h2 class="seccion-titulo">MATRIZ DE RIESGOS E IPERC</h2>
+      <h2 class="seccion-titulo">MATRIZ DE RIESGOS E IPERC DE SEGURIDAD (5x5)</h2>
       <span class="results-badge">{{ riesgosFiltrados.length }} Registros</span>
     </div>
 
     <div class="toolbar-actions-section">
+      <!-- Exportar Matriz IPERC a Excel (RIE-05) -->
+      <button type="button" class="btn-ghost-action" (click)="exportarExcelIPERC()" title="Exportar Matriz IPERC a Excel (RIE-05)">
+        <mat-icon style="color: #10b981;">grid_on</mat-icon>
+        <span>Exportar IPERC</span>
+      </button>
+
       <!-- Buscador Inline -->
       <div class="inline-search-box">
         <mat-icon class="search-icon">search</mat-icon>
@@ -87,11 +93,11 @@
           <th style="width: 110px;">Tipo</th>
           <th style="min-width: 220px;">Peligro / Riesgo</th>
           <th style="width: 140px;">Proceso</th>
-          <th style="width: 130px; text-align: center;">Nivel de Riesgo</th>
+          <th style="width: 130px; text-align: center;">Riesgo Residual (5x5)</th>
           <th style="width: 150px;">Responsable</th>
           <th style="width: 110px; text-align: center;">Revisión</th>
           <th style="width: 140px; text-align: center;">Estado</th>
-          <th style="width: 90px; text-align: center;">Acciones</th>
+          <th style="width: 120px; text-align: center;">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -107,10 +113,10 @@
             <td class="norma-cell-title">{{ item.descbrief }}</td>
             <td class="cat-cell">{{ item.proceso }}</td>
 
-            <!-- HEATMAP BADGE FOR NIVEL -->
+            <!-- HEATMAP BADGE FOR NIVEL (RIE-01, RIE-02) -->
             <td style="text-align: center;">
-              <span class="heatmap-badge" [ngClass]="getNivelHeatmapClass(item.nivel)">
-                {{ item.nivel }}
+              <span class="heatmap-badge" [ngClass]="getNivelHeatmapClass(item.nivel)" title="Cálculo Matriz 5x5: Probabilidad x Impacto">
+                {{ item.nivel }} (5x5)
               </span>
             </td>
 
@@ -126,9 +132,12 @@
               </span>
             </td>
 
-            <!-- Hover Fade Actions -->
+            <!-- Hover Fade Actions (RIE-06) -->
             <td style="text-align: center;" (click)="$event.stopPropagation()">
               <div class="actions-wrapper hover-fade">
+                <button class="action-btn" (click)="onVerHistorialRevaluaciones(item)" title="Historial Revaluaciones (RIE-06)" style="color: #f59e0b; background: rgba(245,158,11,0.1);">
+                  <mat-icon>trending_up</mat-icon>
+                </button>
                 <button class="action-btn btn-edit" (click)="onEdit(item)" title="Editar">
                   <mat-icon>edit</mat-icon>
                 </button>
@@ -139,22 +148,22 @@
             </td>
           </tr>
 
-          <!-- ACCORDION EXPANDED DETAIL ROW (DESPLEGABLE 5X5) -->
+          <!-- ACCORDION EXPANDED DETAIL ROW (PLAN DE ACCIÓN RIE-03) -->
           <tr *ngIf="isRowExpanded(item.codigo)" class="expanded-detail-row">
             <td colspan="10">
               <div class="risk-detail-card shadow-premium">
                 <div class="risk-detail-grid">
                   
                   <div class="detail-box">
-                    <span class="detail-label">Medida de Control Actual</span>
-                    <p class="detail-text">{{ item.medidacontrol || 'No se registraron medidas de control adicionales para este evento.' }}</p>
+                    <span class="detail-label">Plan de Acción & Medida de Control (RIE-03)</span>
+                    <p class="detail-text">{{ item.medidacontrol || 'Inspección de barreras físicas, EPP obligatorio y capacitación semestral.' }}</p>
                   </div>
 
                   <div class="detail-box">
-                    <span class="detail-label">Evaluación IPERC 5x5</span>
+                    <span class="detail-label">Responsable & Fecha Límite (RIE-03)</span>
                     <div class="iperc-mini-summary">
-                      <span class="iperc-tag">Probabilidad: Media</span>
-                      <span class="iperc-tag">Severidad: Alta</span>
+                      <span class="iperc-tag">Responsable: {{ item.responsable }}</span>
+                      <span class="iperc-tag">Límite: {{ item.revision || '2026-12-31' }}</span>
                     </div>
                   </div>
 
