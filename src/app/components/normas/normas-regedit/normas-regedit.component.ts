@@ -54,12 +54,21 @@ export class NormasRegeditComponent implements OnInit {
     }
   }
 
+  formatDate(dateVal: any): string {
+    if (!dateVal) return '';
+    const str = dateVal.toString();
+    if (str.includes('T')) {
+      return str.split('T')[0];
+    }
+    return str.substring(0, 10);
+  }
+
   onLoadInfo(){
      this.formulario.get('ctrol_codigo')?.setValue(this.data.Datos.codigo_Norma!);
      this.formulario.get('ctrol_denominacion')?.setValue(this.data.Datos.norma!);
      this.formulario.get('ctrol_categoria')?.setValue(this.data.Datos.categoria || 'Calidad');
-     this.formulario.get('ctrol_fechaVencimiento')?.setValue(this.data.Datos.fechaVencimiento || '');
-     this.formulario.get('ctrol_fechaAuditoria')?.setValue(this.data.Datos.fechaAuditoria || '');
+     this.formulario.get('ctrol_fechaVencimiento')?.setValue(this.formatDate(this.data.Datos.fechaVencimiento));
+     this.formulario.get('ctrol_fechaAuditoria')?.setValue(this.formatDate(this.data.Datos.fechaAuditoria));
      this.formulario.get('ctrol_estado')?.setValue(this.data.Datos.estado || 'Vigente');
      this.formulario.get('ctrol_descripcion')?.setValue(this.data.Datos.descripcion!);
   }

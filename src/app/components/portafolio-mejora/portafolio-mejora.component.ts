@@ -27,7 +27,12 @@ export class PortafolioMejoraComponent implements OnInit {
   };
 
   mostrarArchivosSubidos: boolean = false;
-  procesosGroups: { [key: string]: string[] } = {};
+  expandedMacros: { [key: string]: boolean } = {};
+  procesosGroups: { [key: string]: string[] } = {
+    'Estratégicos': ['Organización y Métodos', 'Auditoría Interna', 'Sistemas'],
+    'Operativos': ['Costura', 'Corte', 'Acabados Textil', 'Aseguramiento de Calidad Textil', 'Estampado Digital', 'Laboratorio de Color', 'Lavandería', 'Tejeduría', 'Tintorería'],
+    'Soporte': ['Control Patrimonial', 'Mantenimiento', 'Administración y Finanzas', 'Contabilidad y Costos', 'Finanzas', 'Tesorería']
+  };
 
   displayedColumns: string[] = [
     'titulo',
@@ -59,8 +64,84 @@ export class PortafolioMejoraComponent implements OnInit {
     });
   }
 
-  getProcesosKeys() {
-    return Object.keys(this.procesosGroups) as Array<keyof typeof this.procesosGroups>;
+  getMacroProcesses(): string[] {
+    return Object.keys(this.procesosGroups);
+  }
+
+  getMacroCount(group: string): number {
+    const processes = this.procesosGroups[group] || [];
+    return this.mejoraList.filter(m => processes.includes(m.proceso)).length;
+  }
+
+  getProcessCount(proc: string): number {
+    return this.mejoraList.filter(m => m.proceso === proc).length;
+  }
+
+  toggleMacro(macro: string, event: MouseEvent): void {
+    event.stopPropagation();
+    this.expandedMacros[macro] = !this.isMacroExpanded(macro);
+  }
+
+  isMacroExpanded(macro: string): boolean {
+    return this.expandedMacros[macro] !== false; // Abierto por defecto
+  }
+
+  setFilter(filterValue: string): void {
+    this.selectedProceso = filterValue;
+    this.applyFilter();
+  }
+
+  getAbreviaturaProceso(proceso: string): string {
+    if (!proceso) return 'OYM';
+    const name = proceso.trim().toLowerCase();
+    
+    const map: { [key: string]: string } = {
+      'organización y métodos': 'OYM',
+      'organizacion y metodos': 'OYM',
+      'control patrimonial': 'CTP',
+      'auditoría interna': 'AIO',
+      'auditoria interna': 'AIO',
+      'sistemas': 'SIS',
+      'mantenimiento': 'MNT',
+      'calidad': 'CAL',
+      'costura': 'COS',
+      'acabados': 'ACA',
+      'aseguramiento de la calidad': 'ADC',
+      'consumos': 'CON',
+      'corte': 'COR',
+      'inspección': 'INS',
+      'inspeccion': 'INS',
+      'acabados textil': 'ACT',
+      'aseguramiento de calidad textil': 'ADT',
+      'estampado digital': 'ESD',
+      'laboratorio de color': 'LDC',
+      'lavandería': 'LAV',
+      'lavanderia': 'LAV',
+      'tejeduría': 'TEJ',
+      'tejeduria': 'TEJ',
+      'tintorería': 'TIN',
+      'tintoreria': 'TIN',
+      'administración y finanzas': 'AYF',
+      'administracion y finanzas': 'AYF',
+      'administración': 'ADM',
+      'administracion': 'ADM',
+      'contabilidad y costos': 'CYC',
+      'finanzas': 'FIN',
+      'tesorería': 'TES',
+      'tesoreria': 'TES'
+    };
+
+    if (map[name]) return map[name];
+
+    const palabras = proceso.toUpperCase().replace(/[^A-Z0-9\s]/g, '').split(/\s+/).filter(p => p && p !== 'Y' && p !== 'DE' && p !== 'LA' && p !== 'EL');
+    if (palabras.length >= 3) {
+      return (palabras[0][0] + palabras[1][0] + palabras[2][0]).substring(0, 3);
+    } else if (palabras.length === 2) {
+      return (palabras[0].substring(0, 2) + palabras[1][0]).substring(0, 3);
+    } else if (palabras.length === 1) {
+      return palabras[0].substring(0, 3);
+    }
+    return 'GEN';
   }
 
   onListado() {
@@ -203,8 +284,14 @@ export class PortafolioMejoraComponent implements OnInit {
   applyFilter() {
     let list = [...this.mejoraList];
 
-    if (this.selectedProceso !== 'Todos') {
-      list = list.filter(m => m.proceso === this.selectedProceso);
+    if (this.selectedProceso !== 'Todos' && this.selectedProceso !== '__all__') {
+      if (this.selectedProceso.startsWith('macro:')) {
+        const macro = this.selectedProceso.substring(6);
+        const processes = this.procesosGroups[macro] || [];
+        list = list.filter(m => processes.includes(m.proceso));
+      } else {
+        list = list.filter(m => m.proceso === this.selectedProceso);
+      }
     }
 
     if (this.searchText.trim()) {
