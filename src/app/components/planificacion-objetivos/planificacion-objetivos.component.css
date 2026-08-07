@@ -398,3 +398,19 @@
   opacity: 1;
   transform: scale(1);
 }
+
+.select-dark {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.76rem;
+  outline: none;
+}
+
+.select-dark option {
+  background: #0f172a;
+  color: #ffffff;
+}
+

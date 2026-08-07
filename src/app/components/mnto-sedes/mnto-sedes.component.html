@@ -55,8 +55,32 @@
         
         <!-- Denominación -->
         <ng-container matColumnDef="denominacion">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Denominación</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Denominación / Sede</th>
         <td mat-cell *matCellDef="let row">{{row.denominacion}}</td>     
+		</ng-container>
+
+        <!-- Dirección (ORG-11) -->
+        <ng-container matColumnDef="direccion">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Dirección</th>
+        <td mat-cell *matCellDef="let row" class="text-subtle">{{row.direccion || '—'}}</td>     
+		</ng-container>
+
+        <!-- Distrito / Localidad (ORG-11) -->
+        <ng-container matColumnDef="distrito">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Distrito / Localidad</th>
+        <td mat-cell *matCellDef="let row" class="text-subtle">{{row.localidad || row.provincia || '—'}}</td>     
+		</ng-container>
+
+        <!-- Procesos Asignados Visibles (ORG-06) -->
+        <ng-container matColumnDef="procesos">
+        <th mat-header-cell *matHeaderCellDef style="min-width: 180px;">Procesos Asignados</th>
+        <td mat-cell *matCellDef="let row">
+          <div class="visible-procesos-badges">
+            <span class="proc-pill" *ngFor="let p of (row.procesos ? row.procesos.split(',') : (row.nombre_Proceso ? [row.nombre_Proceso] : ['General']))">
+              {{ p.trim() }}
+            </span>
+          </div>
+        </td>     
 		</ng-container>
 		
         <!-- Organizacion -->
@@ -65,12 +89,13 @@
         <td mat-cell *matCellDef="let row">{{row.organizacion}}</td>              
         </ng-container>     
         
-        <!-- Estado -->
+        <!-- Estado (ORG-09) -->
         <ng-container matColumnDef="estado">
             <th mat-header-cell *matHeaderCellDef>Estado</th>
             <td mat-cell *matCellDef="let row">
-            <span [ngClass]="row.flg_Activo === 'True' ? 'activo' : 'inactivo'">
-                {{row.flg_Activo === "True" ? 'Activo' : 'Inactivo'}}
+            <span class="soft-badge" [ngClass]="(row.flg_Activo === 'True' || row.flg_Activo === '1' || row.flg_Activo === 'A') ? 'activo' : 'inactivo'">
+                <span class="glowing-dot"></span>
+                <span>{{ (row.flg_Activo === 'True' || row.flg_Activo === '1' || row.flg_Activo === 'A') ? 'Activo' : 'Inactivo' }}</span>
             </span>
             </td>
         </ng-container>           

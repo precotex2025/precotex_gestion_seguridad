@@ -114,24 +114,56 @@
     </div>
   </div>
 
-  <!-- SECTION: CONTACT CARD SUPPORT SECTION -->
+  <!-- SECTION: TICKET RÁPIDO Y CONTACTO A SOPORTE (AYU-03) -->
   <div class="panel-section margin-top-lg contact-support-section shadow-premium">
-    <div class="contact-support-card">
+    <div class="contact-support-card" style="flex-direction: column; align-items: stretch; gap: 20px;">
+      
       <div class="contact-support-info">
         <div class="contact-support-icon-box">
-          <mat-icon class="contact-support-icon">support_agent</mat-icon>
+          <mat-icon class="contact-support-icon">confirmation_number</mat-icon>
         </div>
         <div class="contact-support-text">
-          <h3 class="contact-title">¿Aún tienes dudas o problemas técnicos?</h3>
-          <p class="contact-subtitle">Ponte en contacto directo con los encargados del portal para resolver dudas de normas o incidencias del sistema.</p>
+          <h3 class="contact-title">Generación de Ticket Rápido a Soporte O&M / Sistemas (AYU-03)</h3>
+          <p class="contact-subtitle">Ingresa tu consulta o incidencia para recibir soporte prioritario con número de atención inmediato.</p>
         </div>
       </div>
-      
-      <div class="contact-actions-grid">
+
+      <!-- Ticket Form (AYU-03) -->
+      <div class="ticket-form-wrapper" style="display: flex; flex-direction: column; gap: 14px; background: rgba(15, 23, 42, 0.6); padding: 18px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
+        <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+          <div style="flex: 2; min-width: 250px;">
+            <label style="font-size: 11px; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Asunto / Título del Ticket:</label>
+            <input type="text" [(ngModel)]="ticketAsunto" placeholder="Ej: Error al adjuntar reporte en NC..." class="glass-search-input" style="width: 100%; border-radius: 8px; padding: 10px 14px; background: rgba(255, 255, 255, 0.05); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.15); font-size: 13px;">
+          </div>
+          
+          <div style="flex: 1; min-width: 160px;">
+            <label style="font-size: 11px; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Prioridad:</label>
+            <select [(ngModel)]="ticketPrioridad" class="select-dark" style="width: 100%; height: 42px; background-color: #151827 !important; color: #f8fafc !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; border-radius: 8px !important; padding: 8px 12px !important; font-size: 13px;">
+              <option value="Baja" style="background: #1e293b; color: #f8fafc;">🟢 Baja</option>
+              <option value="Normal" style="background: #1e293b; color: #f8fafc;">🟡 Normal</option>
+              <option value="Alta / Urgente" style="background: #1e293b; color: #f8fafc;">🔴 Alta / Urgente</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 11px; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Descripción Detallada:</label>
+          <textarea [(ngModel)]="ticketDescripcion" rows="3" placeholder="Describe los pasos para reproducir la incidencia o el requerimiento..." class="glass-search-input" style="width: 100%; border-radius: 8px; padding: 10px 14px; background: rgba(255, 255, 255, 0.05); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.15); font-size: 13px; resize: vertical;"></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end;">
+          <button type="button" class="btn-primary-glow" (click)="onEnviarTicketRapido()">
+            <mat-icon>send</mat-icon>
+            <span>Enviar Ticket Rápido</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="contact-actions-grid" style="margin-top: 10px;">
         <!-- O&M Contact Button -->
         <button type="button" class="btn-contact-card card-oym" (click)="onContactarOyM()">
           <div class="contact-card-badge"><mat-icon>mail</mat-icon> Consultas SIG</div>
-          <span class="contact-name">Patricia Rivera</span>
+          <span class="contact-name">Cesar Rivera</span>
           <span class="contact-role">Organización & Métodos (O&M)</span>
           <span class="contact-email">privera&#64;precotexperu.com</span>
         </button>
@@ -144,6 +176,7 @@
           <span class="contact-email">fhuamani&#64;precotexperu.com</span>
         </button>
       </div>
+
     </div>
   </div>
 

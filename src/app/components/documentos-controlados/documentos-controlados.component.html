@@ -157,8 +157,9 @@
               <th style="min-width: 180px;">Proceso</th>
               <th style="min-width: 110px; width: 110px; text-align: center;">Vigencia</th>
               <th style="min-width: 120px; width: 120px; text-align: center;">Estado</th>
+              <th style="min-width: 110px; width: 110px; text-align: center;">Visor / Lectura</th>
               <th style="min-width: 70px; width: 70px; text-align: center;">Archivo</th>
-              <th style="min-width: 100px; width: 100px; text-align: center;">Acciones</th>
+              <th style="min-width: 140px; width: 140px; text-align: center;">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -203,16 +204,31 @@
                 </span>
               </td>
 
-              <!-- Highlighted Download Button -->
+              <!-- Visor & Visto Bueno (DOC-07, DOC-10) -->
+              <td style="min-width: 110px; width: 110px; text-align: center;">
+                <div class="actions-wrapper">
+                  <button type="button" class="action-btn btn-view" (click)="onVistaPrevia(doc)" title="Visor Interno de Documento (DOC-10)">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                  <button type="button" class="action-btn btn-visto-bueno" (click)="onDarVistoBueno(doc)" [title]="doc.vistoBuenoInfo ? 'Visto Bueno dado por ' + doc.vistoBuenoInfo.usuario : 'Dar Visto Bueno de Lectura Semestral (DOC-07)'" [class.visto-bueno-done]="doc.vistoBuenoInfo">
+                    <mat-icon>check_circle</mat-icon>
+                  </button>
+                </div>
+              </td>
+
+              <!-- Highlighted Download Button (DOC-05) -->
               <td style="min-width: 70px; width: 70px; text-align: center;">
-                <button type="button" class="btn-download-highlight" (click)="downloadFile(doc)" title="Descargar archivo" *ngIf="canDownload">
+                <button type="button" class="btn-download-highlight" (click)="onDescargar(doc)" title="Descargar archivo limpio (DOC-05)" *ngIf="canDownload">
                   <mat-icon>download</mat-icon>
                 </button>
               </td>
 
-              <!-- Hover Fade-In Actions -->
-              <td style="min-width: 100px; width: 100px; text-align: center;" class="acciones-cell">
+              <!-- Hover Fade-In Actions (DOC-09, Edit, Delete) -->
+              <td style="min-width: 140px; width: 140px; text-align: center;" class="acciones-cell">
                 <div class="actions-wrapper hover-fade">
+                  <button class="action-btn btn-historial" (click)="onVerHistorial(doc)" title="Ver Historial de Versiones (DOC-09)">
+                    <mat-icon>history</mat-icon>
+                  </button>
                   <button class="action-btn btn-edit" (click)="onEditar(doc, i)" title="Editar registro" *ngIf="canEdit">
                     <mat-icon>edit</mat-icon>
                   </button>
@@ -224,7 +240,12 @@
             </tr>
 
             <tr *ngIf="filteredDocs.length === 0">
-              <td colspan="10" class="empty-row">
+              <td colspan="10" class="empty-row" style="padding: 24px;">
+                <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;" *ngIf="false">
+                  <div class="skeleton-row" style="height: 16px;"></div>
+                  <div class="skeleton-row" style="height: 16px; width: 80%;"></div>
+                  <div class="skeleton-row" style="height: 16px; width: 60%;"></div>
+                </div>
                 <mat-icon class="empty-icon">folder_off</mat-icon>
                 <p>No se encontraron documentos en esta selección.</p>
               </td>

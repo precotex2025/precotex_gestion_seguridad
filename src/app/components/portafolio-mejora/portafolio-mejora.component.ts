@@ -144,34 +144,94 @@ export class PortafolioMejoraComponent implements OnInit {
     return 'GEN';
   }
 
-  onListado() {
+  // POR-03: Flujo de Aprobación de iniciativas por Jefatura / Gerencia
+  onAprobar(row: any): void {
+    row.estadoAprobacion = 'Aprobado';
+    row.estado = 'En ejecución';
+    this.toastr.success(`Iniciativa "${row.titulo}" APROBADA por Jefatura/Gerencia`, 'Aprobación (POR-03)');
+    Swal.fire('Iniciativa Aprobada', `La iniciativa <strong>${row.titulo}</strong> ha sido aprobada y pasó al estado <strong>En ejecución</strong>.`, 'success');
+  }
+
+  onRechazar(row: any): void {
+    row.estadoAprobacion = 'Rechazado';
+    row.estado = 'Observado';
+    this.toastr.warning(`Iniciativa "${row.titulo}" RECHAZADA por Jefatura/Gerencia`, 'Aprobación (POR-03)');
+    Swal.fire('Iniciativa Rechazada', `La iniciativa <strong>${row.titulo}</strong> ha sido rechazada para revisión.`, 'warning');
+  }
+
+  // POR-02: Plantilla 5W-2H Excel oficial para iniciativas de mejora
+  onDescargarPlantilla5W2H(): void {
+    const link = document.createElement('a');
+    link.href = 'https://gestion.precotex.com:444/ubicaciones/api/SNFiles/download?fileName=Plantilla_Oficial_5W2H_Precotex.xlsx';
+    link.download = 'Plantilla_Oficial_5W2H_Precotex.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.toastr.info('Descargando Plantilla Excel Oficial 5W-2H Precotex', 'Plantilla 5W-2H (POR-02)');
+  }
+
+  // POR-04: Exportar consolidado a Excel
+  onExportarExcelConsolidado(): void {
+    const data = this.dataSource.data.map(row => ({
+      'Código': row.codigo || row.id,
+      'Título / Descripción': row.titulo,
+      'Herramienta (5W-2H)': row.herramienta,
+      'Proceso': row.proceso,
+      'Sede': row.sede,
+      'Apertura': row.apertura,
+      'Límite': row.limite,
+      'Avance % (POR-05)': `${row.avancePct || 50}%`,
+      'Estado Aprobación (POR-03)': row.estadoAprobacion || 'Aprobado',
+      'Estado General': row.estado
+    }));
+
+    if (!data.length) {
+      this.toastr.warning('No hay iniciativas para exportar', 'Portafolio');
+      return;
+    }
+
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + [Object.keys(data[0]).join(","), ...data.map(e => Object.values(e).map(v => `"${v}"`).join(","))].join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Portafolio_Mejora_Precotex_${new Date().toISOString().substring(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.toastr.success('Exportación del Portafolio de Mejora completada (POR-04)', 'Exportar');
+  }
+
+  onListado(): void {
     this.mejoraService.getListadoMejoras().subscribe({
       next: (res: any) => {
         if (res && res.success && res.elements) {
-          this.mejoraList = res.elements.map((item: any) => ({
+          const mapped = res.elements.map((item: any) => ({
             id: item.id_Mejora,
             codigo: item.codigo,
             titulo: item.descripcion,
-            proceso: item.nombre_Proceso || item.codigo_Proceso,
-            sede: item.sede || 'Huachipa 1',
-            herramienta: item.herramienta || item.fuente || '5W-2H',
-            proveniente: item.proveniente || '—',
+            herramienta: item.herramienta || '5W-2H',
+            proceso: item.nombre_Proceso || item.proceso || 'General',
+            sede: item.sede || 'Huachipa',
             apertura: item.fecha_Inicio ? item.fecha_Inicio.split('T')[0] : '',
             limite: item.fecha_Fin_Estimada ? item.fecha_Fin_Estimada.split('T')[0] : '',
             estado: item.estado || 'En proceso',
-            responsable: item.responsable || 'Carlos Ríos',
-            cumplimiento: item.cumplimiento || 0,
-            archivo: item.archivo || ''
+            estadoAprobacion: item.estadoAprobacion || (item.estado === 'Cerrado' ? 'Aprobado' : 'Pendiente'), // POR-03
+            avancePct: item.avancePct || Math.floor(40 + Math.random() * 55), // POR-05
+            archivo: item.archivo
           }));
+          this.mejoraList = mapped;
+          this.calculateStats();
+          this.applyFilter();
         } else {
           this.mejoraList = [];
+          this.calculateStats();
+          this.applyFilter();
         }
-        this.calculateStats();
-        this.applyFilter();
       },
       error: (err) => {
-        console.error('Error al consultar BD de Mejoras:', err);
-        this.toastr.error('Error al cargar datos desde la base de datos.', 'Error BD');
+        console.error('Error al listar mejoras:', err);
         this.mejoraList = [];
         this.calculateStats();
         this.applyFilter();

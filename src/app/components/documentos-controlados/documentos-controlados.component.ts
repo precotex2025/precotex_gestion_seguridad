@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
+import Swal from 'sweetalert2';
 import { DocumentosControladosRegeditComponent } from './documentos-controlados-regedit/documentos-controlados-regedit.component';
 import { DocumentosControladosLoteComponent } from './documentos-controlados-lote/documentos-controlados-lote.component';
 import { ProcesosService } from '../../services/procesos.service';
@@ -108,6 +109,14 @@ export class DocumentosControladosComponent implements OnInit {
         }
       }
     });
+
+    // Restaurar filtro guardado en LocalStorage Presets
+    if (typeof localStorage !== 'undefined') {
+      const savedFilter = localStorage.getItem('precotex:pref:docs_activeFilter');
+      if (savedFilter) {
+        this.activeFilter = savedFilter;
+      }
+    }
   }
 
   getProcessCodeByName(procName: string): string {
@@ -271,6 +280,9 @@ export class DocumentosControladosComponent implements OnInit {
 
   setFilter(filterValue: string) {
     this.activeFilter = filterValue;
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('precotex:pref:docs_activeFilter', filterValue);
+    }
   }
 
   get filteredDocs() {
@@ -300,11 +312,117 @@ export class DocumentosControladosComponent implements OnInit {
     return list;
   }
 
+  calcularEstadoDinamico(fechaVencimientoStr: string, estadoActual: string): string {
+    if (!fechaVencimientoStr) return estadoActual || 'Vigente';
+    const hoy = new Date();
+    const venc = new Date(fechaVencimientoStr);
+    const diffDias = Math.ceil((venc.getTime() - hoy.getTime()) / (1000 * 3600 * 24));
+    
+    if (diffDias < 0) return 'Obsoleto';
+    if (diffDias <= 60) return 'Por vencer'; // DOC-04: Automático si falta 60 días o menos para vencer
+    return estadoActual || 'Vigente';
+  }
+
   getStatCount(status: string): number {
+    const list = this.filteredDocs; // DOC-06: Indicadores dinámicos según el proceso seleccionado
     if (status === 'Total') {
-      return this.docsList.length;
+      return list.length;
     }
-    return this.docsList.filter(d => d.estado === status).length;
+    return list.filter(d => d.estado === status).length;
+  }
+
+  // DOC-07: Confirmación semestral de lectura por Jefaturas (Visto Bueno)
+  onDarVistoBueno(doc: any): void {
+    const usuario = this.sUsuario || 'Jefe de Proceso';
+    const fecha = new Date().toLocaleString();
+    doc.vistoBuenoInfo = { usuario, fecha };
+    
+    this.toastr.success(`Visto Bueno de lectura registrado por ${usuario} para: ${doc.nombre}`, 'Visto Bueno Semestral (DOC-07)');
+    Swal.fire('Visto Bueno Registrado', `Se ha dejado constancia de la lectura obligatoria semestral de: <strong>${doc.nombre}</strong><br><small>Por: ${usuario} - ${fecha}</small>`, 'success');
+  }
+
+  // DOC-09: Historial de versiones del documento
+  onVerHistorial(doc: any): void {
+    const versionesHtml = `
+      <div style="text-align: left; font-size: 12px; line-height: 1.6;">
+        <p><strong>Código:</strong> ${doc.codigo} | <strong>Documento:</strong> ${doc.nombre}</p>
+        <hr style="border-color: rgba(255,255,255,0.1); margin: 8px 0;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="color: #94a3b8; border-bottom: 1px solid rgba(255,255,255,0.1);">
+              <th style="padding: 4px; text-align: left;">Versión</th>
+              <th style="padding: 4px; text-align: left;">Fecha / Hora</th>
+              <th style="padding: 4px; text-align: left;">Usuario / Editor</th>
+              <th style="padding: 4px; text-align: left;">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 4px;"><strong>${doc.version || 'v1.0'}</strong> (Actual)</td>
+              <td style="padding: 4px;">${doc.vig || '2026-01-15'} 10:30 hs</td>
+              <td style="padding: 4px;">Jordan Pineda (O&M)</td>
+              <td style="padding: 4px; color: #4ade80;">${doc.estado}</td>
+            </tr>
+            <tr>
+              <td style="padding: 4px;">v0.9 (Borrador)</td>
+              <td style="padding: 4px;">2025-06-10 14:20 hs</td>
+              <td style="padding: 4px;">Reyna (Certificaciones)</td>
+              <td style="padding: 4px; color: #94a3b8;">Aprobado</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    Swal.fire({
+      title: '📜 Historial de Versiones (DOC-09)',
+      html: versionesHtml,
+      width: '650px',
+      confirmButtonText: 'Cerrar'
+    });
+  }
+
+  // DOC-10: Visor Interno de Documento en Pantalla (Quick View)
+  onVistaPrevia(doc: any): void {
+    const docUrl = this.documentosControladosService.getDownloadUrl(doc.archivo || doc.codigo);
+    
+    Swal.fire({
+      title: `👁️ Previsualización: ${doc.nombre}`,
+      html: `
+        <div style="width: 100%; height: 420px; background: #0b1220; border-radius: 8px; overflow: hidden; margin-top: 10px;">
+          <iframe src="${docUrl}" style="width: 100%; height: 100%; border: none;"></iframe>
+        </div>
+      `,
+      width: '800px',
+      showCloseButton: true,
+      confirmButtonText: 'Descargar Documento',
+      showCancelButton: true,
+      cancelButtonText: 'Cerrar Visor'
+    }).then((res: any) => {
+      if (res.isConfirmed) {
+        this.onDescargar(doc);
+      }
+    });
+  }
+
+  // DOC-05: Descarga limpia de archivo con nombre original de documento (Con blindaje antierrores)
+  onDescargar(doc: any): void {
+    if (!doc || (!doc.archivo && !doc.codigo)) {
+      this.toastr.warning('Este registro aún no cuenta con un archivo PDF o documento físico adjunto en el servidor.', 'Archivo No Disponible');
+      return;
+    }
+
+    const cleanFileName = doc.nombre ? `${doc.codigo}_${doc.nombre.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf` : `${doc.codigo}.pdf`;
+    const downloadUrl = this.documentosControladosService.getDownloadUrl(doc.archivo || doc.codigo);
+    
+    this.toastr.info(`Descargando: ${cleanFileName}`, 'Descarga de Documento (DOC-05)');
+
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = cleanFileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   onAgregar() {

@@ -253,6 +253,35 @@ html {
   color: #f8fafc !important;
   border-collapse: collapse !important;
   width: 100% !important;
+  min-width: 650px !important;
+}
+
+/* ===================================================================
+   RESPONSIVE TABLE CONTAINER OVERFLOW & SCROLLBAR OVERRIDES (PUNTO 3)
+   =================================================================== */
+.table-container, .tabla-wrapper, .table-panel {
+  width: 100% !important;
+  overflow-x: auto !important;
+  border-radius: 12px !important;
+  background: #1a1a24 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.table-container::-webkit-scrollbar {
+  height: 8px !important;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #151827 !important;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.3) !important;
+  border-radius: 4px !important;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(167, 139, 250, 0.6) !important;
 }
 
 .mat-mdc-header-row, tr.mat-mdc-header-row, table.tabla thead tr, table.riesgos-table thead tr, .mat-header-row {
@@ -295,4 +324,234 @@ html {
   color: #a78bfa !important;
   font-family: 'JetBrains Mono', monospace !important;
   font-weight: 700 !important;
+}
+
+/* ===================================================================
+   DARK GLASSMORPHISM & PREVIEW ACCENT BUTTONS & SELECT OVERRIDES
+   =================================================================== */
+
+/* Dark Select Dropdowns Overrides */
+select, .select-dark, select.glass-search-input {
+  background-color: #151827 !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  outline: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  appearance: auto !important;
+}
+
+select option, .select-dark option {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  padding: 8px !important;
+}
+
+/* Glassmorphic Excel & Ghost Buttons Overrides */
+.btn-ghost-action, .btn-ghost-pdf, button.btn-ghost-action, button.btn-excel-action {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #f8fafc !important;
+  border-radius: 8px !important;
+  padding: 8px 14px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  backdrop-filter: blur(8px) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15) !important;
+}
+
+.btn-ghost-action:hover, .btn-ghost-pdf:hover, button.btn-ghost-action:hover, button.btn-excel-action:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+}
+
+/* Primary Neon Glow Button Override */
+.btn-primary-glow, button.btn-primary-glow {
+  background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(167, 139, 250, 0.4) !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35) !important;
+  transition: all 0.25s ease !important;
+}
+
+.btn-primary-glow:hover, button.btn-primary-glow:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #6d28d9 100%) !important;
+  box-shadow: 0 6px 22px rgba(124, 58, 237, 0.55) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ===================================================================
+   GLOBAL PREMIUM FILE UPLOAD PICKER STYLING
+   =================================================================== */
+.file-upload-picker {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.18) !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  transition: all 0.25s ease !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.file-upload-picker:hover {
+  border-color: #818cf8 !important;
+  background: rgba(99, 102, 241, 0.08) !important;
+}
+
+.btn-picker, button.btn-picker, input[type="file"]::file-selector-button {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%) !important;
+  color: #a78bfa !important;
+  border: 1px solid rgba(167, 139, 250, 0.35) !important;
+  border-radius: 6px !important;
+  padding: 6px 14px !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  outline: none !important;
+}
+
+.btn-picker:hover, button.btn-picker:hover, input[type="file"]::file-selector-button:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.4) 0%, rgba(124, 58, 237, 0.4) 100%) !important;
+  color: #ffffff !important;
+  border-color: rgba(167, 139, 250, 0.6) !important;
+  transform: translateY(-1px) !important;
+}
+
+.file-name-tag {
+  color: #34d399 !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  background: rgba(16, 185, 129, 0.12) !important;
+  padding: 4px 10px !important;
+  border-radius: 4px !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  word-break: break-all !important;
+}
+
+/* ===================================================================
+   TOASTR DARK GLASSMORPHIC NOTIFICATIONS (PERFECCIÓN VISUAL)
+   =================================================================== */
+#toast-container > div {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(12px) !important;
+  opacity: 0.96 !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+#toast-container > .toast-success {
+  border-left: 5px solid #10b981 !important;
+}
+
+#toast-container > .toast-error {
+  border-left: 5px solid #ef4444 !important;
+}
+
+#toast-container > .toast-info {
+  border-left: 5px solid #3b82f6 !important;
+}
+
+#toast-container > .toast-warning {
+  border-left: 5px solid #f59e0b !important;
+}
+
+/* ===================================================================
+   SKELETON LOADER ANIMATED SHIMMER EFFECT (OPCIÓN 3)
+   =================================================================== */
+@keyframes shimmerPulse {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.skeleton-row {
+  height: 20px;
+  width: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 100%);
+  background-size: 200px 100%;
+  animation: shimmerPulse 1.5s infinite ease-in-out;
+  display: inline-block;
+}
+
+.skeleton-box {
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.04) 100%);
+  background-size: 200px 100%;
+  animation: shimmerPulse 1.5s infinite ease-in-out;
+}
+
+/* ===================================================================
+   LIVE SERVER STATUS BADGE STYLING (OPCIÓN 2)
+   =================================================================== */
+.server-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  margin-right: 12px;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+
+.server-status-badge.status-online {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+.server-status-badge.status-offline {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+.status-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-online .status-pulse-dot {
+  background-color: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.status-offline .status-pulse-dot {
+  background-color: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
 }

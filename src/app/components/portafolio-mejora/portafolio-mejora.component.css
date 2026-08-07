@@ -37,37 +37,43 @@
 }
 
 .btn-ghost-header {
-  background: transparent;
-  color: #8b90a8;
-  border: 1px solid #262b40;
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   padding: 8px 14px;
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
 }
 
 .btn-ghost-header:hover {
   color: #ffffff;
-  border-color: #5a6078;
-  background-color: rgba(27, 31, 48, 0.5);
+  border-color: rgba(255, 255, 255, 0.25);
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
 }
 
 .btn-primary-header {
-  background: #7c6cf0;
-  border: none;
+  background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);
+  border: 1px solid rgba(167, 139, 250, 0.4);
   border-radius: 8px;
   color: #ffffff;
   font-size: 12.5px;
   font-weight: 700;
   padding: 8px 16px;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35);
+  transition: all 0.25s ease;
 }
 
 .btn-primary-header:hover {
-  background-color: #8b7cf5;
+  background: linear-gradient(135deg, #4f46e5 0%, #6d28d9 100%);
+  box-shadow: 0 6px 22px rgba(124, 58, 237, 0.55);
+  transform: translateY(-2px);
 }
 
 /* DRAWER ARCHIVOS SUBIDOS */

@@ -144,7 +144,7 @@ export class SedesRegeditComponent implements OnInit{
               "localidad"           : sLocalidad,
               "provincia"           : sProvincia,
               "pais"                : sPais,
-              "flg_Activo"          : 'I',
+              "flg_Activo"          : '1',
               "cod_Usuario"         : "SISTEMAS",
               "accion": this.data.Accion,           
             };

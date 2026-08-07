@@ -30,6 +30,9 @@ export class OrganizacionComponent implements OnInit {
   };
 
   organigramaNombre: string | null = null;
+  organigramaUrl: string | null = null;
+  mapaProcesosNombre: string | null = null;
+  mapaProcesosUrl: string | null = null;
   sUsuario: string = GlobalVariable.vusu;
 
   constructor(
@@ -51,7 +54,54 @@ export class OrganizacionComponent implements OnInit {
 
   ngOnInit(){
     this.onListado();
-    this.organigramaNombre = localStorage.getItem('precotex_organigrama_nombre');
+    this.organigramaNombre = localStorage.getItem('precotex_organigrama_nombre') || 'Organigrama_Corporativo_Precotex.pdf';
+    this.organigramaUrl = localStorage.getItem('precotex_organigrama_url') || 'assets/docs/organigrama.pdf';
+    
+    this.mapaProcesosNombre = localStorage.getItem('precotex_mapaprocesos_nombre') || 'Mapa_Procesos_Precotex_2026.pdf';
+    this.mapaProcesosUrl = localStorage.getItem('precotex_mapaprocesos_url') || 'assets/docs/mapa_procesos.pdf';
+  }
+
+  triggerUpload(type: string) {
+    const fileInput = document.getElementById(type === 'organigrama' ? 'organigrama-upload' : 'mapaprocesos-upload');
+    if (fileInput) {
+      fileInput.click();
+    }
+  }
+
+  onFileSelected(event: any, type: string) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        const fileUrl = e.target.result;
+        if (type === 'organigrama') {
+          localStorage.setItem('precotex_organigrama_nombre', file.name);
+          localStorage.setItem('precotex_organigrama_url', fileUrl);
+          this.organigramaNombre = file.name;
+          this.organigramaUrl = fileUrl;
+          this.toastr.success('Organigrama corporativo cargado y resguardado correctamente.', 'Organigrama');
+        } else {
+          localStorage.setItem('precotex_mapaprocesos_nombre', file.name);
+          localStorage.setItem('precotex_mapaprocesos_url', fileUrl);
+          this.mapaProcesosNombre = file.name;
+          this.mapaProcesosUrl = fileUrl;
+          this.toastr.success('Mapa de procesos cargado y resguardado correctamente.', 'Mapa de Procesos');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  onDescargarArchivo(type: string) {
+    const url = type === 'organigrama' ? this.organigramaUrl : this.mapaProcesosUrl;
+    const name = type === 'organigrama' ? this.organigramaNombre : this.mapaProcesosNombre;
+    if (url) {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = name || 'documento.pdf';
+      link.click();
+      this.toastr.info(`Descargando ${name}...`, 'Descarga');
+    }
   }
 
   onListado(){
@@ -216,23 +266,4 @@ export class OrganizacionComponent implements OnInit {
       }
     });      
   }
-
-  triggerUpload() {
-    const fileInput = document.getElementById('organigrama-upload');
-    if (fileInput) {
-      fileInput.click();
-    }
-  }
-
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      localStorage.setItem('precotex_organigrama_nombre', file.name);
-      this.organigramaNombre = file.name;
-      this.toastr.success('Organigrama corporativo cargado correctamente.', '', {
-        timeOut: 2500
-      });
-    }
-  }
-
 }

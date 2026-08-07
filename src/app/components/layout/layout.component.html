@@ -129,6 +129,12 @@
 
       <span class="toolbar-spacer"></span>
 
+      <!-- Live Server Status Badge (OP-2) -->
+      <div class="server-status-badge" [class.status-online]="isServerOnline" [class.status-offline]="!isServerOnline" [title]="isServerOnline ? 'Conexión activa con el servidor SIG' : 'Sin conexión con la API backend'">
+        <span class="status-pulse-dot"></span>
+        <span class="status-text">{{ isServerOnline ? 'Servidor Conectado' : 'Sin Conexión' }}</span>
+      </div>
+
       <!-- User info -->
       <div class="toolbar-user">
         <div class="toolbar-avatar">
