@@ -27,7 +27,6 @@ import { ConfiguracionPuestosComponent } from './components/configuracion-puesto
 import { MedicionesPendientesComponent } from './components/mediciones-pendientes/mediciones-pendientes.component';
 import { EvaluacionRiesgosComponent } from './components/evaluacion-riesgos/evaluacion-riesgos.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { PlaceholderComponent } from './components/placeholder/placeholder.component';
 import { AuditoriasComponent } from './components/auditorias/auditorias.component';
 import { PortafolioMejoraComponent } from './components/portafolio-mejora/portafolio-mejora.component';
 import { ReqLegalComponent } from './components/req-legal/req-legal.component';

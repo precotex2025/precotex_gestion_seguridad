@@ -8,11 +8,11 @@ export const GlobalVariable = {
 
   // baseUrl: "http://192.168.1.36/ws_android_dev", //LOCAL <- FRONT
 
-  //baseUrlBackEnd: "https://localhost:7093/api/", //LOCAL <- BACK (SEGURIDAD)
+  baseUrlBackEnd: "https://localhost:7093/api/", //LOCAL <- BACK (SEGURIDAD)
 
   //--------------------------------------------PRODUCCION--------------------------------------------
 
-  baseUrlBackEnd: "https://gestion.precotex.com:444/ubicaciones/api/", // PRODUCCION SEGURIDAD <- BACK
+  //baseUrlBackEnd: "https://gestion.precotex.com:444/ubicaciones/api/", // PRODUCCION SEGURIDAD <- BACK
 
   num_planta: 0,
   cod_ordtra: '',

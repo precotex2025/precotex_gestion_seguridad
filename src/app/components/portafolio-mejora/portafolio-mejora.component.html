@@ -133,24 +133,57 @@
   <!-- DISPOSICIÓN PRINCIPAL: ÁRBOL + TABLA -->
   <div class="doc-layout">
     
-    <!-- PANEL IZQUIERDO: ÁRBOL DE PROCESOS -->
-    <div class="tree-panel">
-      <div class="tree-header">Estructura por proceso</div>
-      <div class="tree-nodes">
-        <div class="tree-node" [class.active]="selectedProceso === 'Todos'" (click)="selectProceso('Todos')">
-          <span>Todos</span>
-          <em class="node-count">{{ mejoraList.length }}</em>
+    <!-- PANEL IZQUIERDO: ESTRUCTURA DOCUMENTAL ESTILO FILE MANAGER -->
+    <div class="tree-panel-filemanager">
+      <div class="tree-header-row">
+        <mat-icon class="tree-header-icon">snippet_folder</mat-icon>
+        <span class="tree-header-title">ESTRUCTURA DOCUMENTAL</span>
+      </div>
+      
+      <!-- Root Node (Todos los procesos) -->
+      <div class="tree-node-item root-node" 
+           [class.active]="selectedProceso === 'Todos'" 
+           (click)="setFilter('Todos')">
+        <div class="node-left">
+          <mat-icon class="folder-icon root-icon">folder_shared</mat-icon>
+          <span class="node-name">Todos los procesos</span>
         </div>
+        <span class="mini-count-pill">{{ mejoraList.length }}</span>
+      </div>
 
-        <div *ngFor="let macro of getProcesosKeys()">
-          <div class="tree-group-title">{{ macro }}</div>
-          <div *ngFor="let proc of procesosGroups[macro]" 
-               class="tree-node" 
-               [class.active]="selectedProceso === proc" 
-               (click)="selectProceso(proc)">
-            <span>{{ proc }}</span>
-            <em class="node-count">{{ countProceso(proc) }}</em>
+      <!-- Macroprocesses & Subprocesses Accordion List -->
+      <div class="tree-groups-container">
+        <div *ngFor="let macro of getMacroProcesses()" class="macro-group-wrapper">
+          
+          <!-- Macroprocess Accordion Node -->
+          <div class="tree-node-item macro-node" 
+               [class.active]="selectedProceso === 'macro:' + macro"
+               (click)="setFilter('macro:' + macro)">
+            <div class="node-left">
+              <button type="button" class="accordion-arrow-btn" (click)="toggleMacro(macro, $event)">
+                <mat-icon class="arrow-icon" [class.rotated]="!isMacroExpanded(macro)">keyboard_arrow_down</mat-icon>
+              </button>
+              <mat-icon class="folder-icon macro-folder">folder</mat-icon>
+              <span class="node-name">{{ macro }}</span>
+            </div>
+            <span class="mini-count-pill">{{ getMacroCount(macro) }}</span>
           </div>
+          
+          <!-- Subprocesses Animated Container -->
+          <div class="sub-nodes-container" [class.collapsed]="!isMacroExpanded(macro)">
+            <div *ngFor="let proc of procesosGroups[macro]" 
+                 class="tree-node-item process-node"
+                 [class.active]="selectedProceso === proc"
+                 (click)="setFilter(proc)">
+              <div class="node-left">
+                <mat-icon class="folder-icon process-folder">insert_drive_file</mat-icon>
+                <span class="node-abbr">[{{ getAbreviaturaProceso(proc) }}]</span>
+                <span class="node-name" [title]="proc">{{ proc }}</span>
+              </div>
+              <span class="mini-count-pill">{{ getProcessCount(proc) }}</span>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

@@ -95,7 +95,6 @@ import { MedicionesPendientesComponent } from './components/mediciones-pendiente
 import { EvaluacionRiesgosComponent } from './components/evaluacion-riesgos/evaluacion-riesgos.component';
 import { EvaluacionRiesgosRegeditComponent } from './components/evaluacion-riesgos/evaluacion-riesgos-regedit/evaluacion-riesgos-regedit.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { PlaceholderComponent } from './components/placeholder/placeholder.component';
 import { AuditoriasComponent } from './components/auditorias/auditorias.component';
 import { AuditoriasRegeditComponent } from './components/auditorias/auditorias-regedit/auditorias-regedit.component';
 import { ProgramaAnualComponent } from './components/auditorias/programa-anual/programa-anual.component';
@@ -159,7 +158,6 @@ import { AyudaComponent } from './components/ayuda/ayuda.component';
     EvaluacionRiesgosComponent,
     EvaluacionRiesgosRegeditComponent,
     DashboardComponent,
-    PlaceholderComponent,
     AuditoriasComponent,
     AuditoriasRegeditComponent,
     ProgramaAnualComponent,
