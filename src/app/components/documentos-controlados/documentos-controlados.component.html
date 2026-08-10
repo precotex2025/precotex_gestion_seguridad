@@ -48,16 +48,35 @@
           
           <!-- Subprocesses Animated Container -->
           <div class="sub-nodes-container" [class.collapsed]="!isMacroExpanded(macro)">
-            <div *ngFor="let proc of PROCESOS_GROUPS[macro]" 
-                 class="tree-node-item process-node"
-                 [class.active]="activeFilter === proc"
-                 (click)="setFilter(proc)">
-              <div class="node-left">
-                <mat-icon class="folder-icon process-folder">insert_drive_file</mat-icon>
-                <span class="node-abbr">[{{ getAbreviaturaProceso(proc) }}]</span>
-                <span class="node-name" [title]="proc">{{ proc }}</span>
+            <div *ngFor="let proc of PROCESOS_GROUPS[macro]" class="process-wrapper-folder">
+              
+              <!-- Nodo de Proceso Principal -->
+              <div class="tree-node-item process-node"
+                   [class.active]="activeFilter === proc"
+                   (click)="setFilter(proc)">
+                <div class="node-left">
+                  <mat-icon class="folder-icon process-folder">folder_open</mat-icon>
+                  <span class="node-abbr">[{{ getAbreviaturaProceso(proc) }}]</span>
+                  <span class="node-name" [title]="proc">{{ proc }}</span>
+                </div>
+                <span class="mini-count-pill">{{ getProcessCount(proc) }}</span>
               </div>
-              <span class="mini-count-pill">{{ getProcessCount(proc) }}</span>
+
+              <!-- DOC-03: 6 Subcarpetas Estandarizadas por Proceso -->
+              <div class="sub-folders-doc03-container" *ngIf="activeFilter === proc || activeFilter.startsWith('folder:' + proc)">
+                <div *ngFor="let fType of CARPETAS_PROCESO" 
+                     class="tree-node-item folder-type-node"
+                     [class.active]="activeFilter === 'folder:' + proc + '|' + fType"
+                     (click)="setFilter('folder:' + proc + '|' + fType)"
+                     style="padding-left: 36px; font-size: 11px; height: 26px;">
+                  <div class="node-left">
+                    <mat-icon style="font-size: 14px; width: 14px; height: 14px; color: #6366f1; margin-right: 4px;">folder_special</mat-icon>
+                    <span class="node-name" style="color: #475569; font-weight: 500;">{{ fType }}</span>
+                  </div>
+                  <span class="mini-count-pill" style="font-size: 9px; padding: 1px 5px;">{{ getProcessTypeCount(proc, fType) }}</span>
+                </div>
+              </div>
+
             </div>
           </div>
 
@@ -127,6 +146,11 @@
           </button>
 
           <!-- Ghost Buttons -->
+          <button type="button" class="btn-ghost-action" (click)="onEditarCarpetasAdmin()" *ngIf="isUserAdmin" title="Gestión de Nombres de Carpetas por Proceso (Solo Administradores)">
+            <mat-icon style="color: #6366f1;">create_new_folder</mat-icon>
+            <span>Carpetas DOC-03</span>
+          </button>
+
           <button type="button" class="btn-ghost-action" (click)="onCargarLote()" *ngIf="canCreate">
             <mat-icon>upload_file</mat-icon>
             <span>Cargar lote</span>

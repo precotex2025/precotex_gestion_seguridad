@@ -46,6 +46,7 @@ export class OrganizacionComponent implements OnInit {
   displayedColumns: string[] = [
     'nombre',
     'direccion',
+    'distrito',
     'procesos',
     'estado',
     'acciones'
@@ -59,6 +60,32 @@ export class OrganizacionComponent implements OnInit {
     
     this.mapaProcesosNombre = localStorage.getItem('precotex_mapaprocesos_nombre') || 'Mapa_Procesos_Precotex_2026.pdf';
     this.mapaProcesosUrl = localStorage.getItem('precotex_mapaprocesos_url') || 'assets/docs/mapa_procesos.pdf';
+  }
+
+  // ORG-10: Exportar reporte de sedes a Excel / CSV
+  onExportarSedes(): void {
+    if (!this.dataSource.data || this.dataSource.data.length === 0) {
+      this.toastr.warning('No hay datos de sedes para exportar.', 'Exportación');
+      return;
+    }
+
+    let csvContent = "\uFEFFCódigo,Nombre de Sede,Dirección,Distrito,Procesos que Operan,Estado\n";
+
+    this.dataSource.data.forEach((row: any) => {
+      const line = `"${row.id}","${row.nombre}","${row.direccion}","${row.distrito}","${row.procesosNombres || 'Ninguno'}","${row.estado}"`;
+      csvContent += line + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Reporte_Estructura_Organizacional_Sedes_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    this.toastr.success('Reporte completo de sedes exportado con éxito.', 'ORG-10: Exportación');
   }
 
   triggerUpload(type: string) {
@@ -116,11 +143,14 @@ export class OrganizacionComponent implements OnInit {
               
               const mappedData = sedes.map((sede: any) => {
                 const sProcs = allProcs.filter((p: any) => p.codigo_Sede === sede.codigo_Sede);
+                const isActivo = sede.flg_Activo === '1' || sede.flg_Activo === true || sede.flg_Activo === 1 || sede.flg_Activo === 'True';
                 return {
                   id: sede.codigo_Sede,
                   nombre: sede.denominacion,
                   direccion: sede.direccion,
-                  estado: sede.localidad || 'Indefinido',
+                  distrito: sede.localidad || 'Lima',
+                  estado: isActivo ? 'Activo' : 'Inactivo',
+                  isActivo: isActivo,
                   procesosCount: sProcs.length,
                   procesosNombres: sProcs.map((p: any) => p.proceso).join(', '),
                   raw: sede
@@ -131,15 +161,20 @@ export class OrganizacionComponent implements OnInit {
               this.SpinnerService.hide();
             },
             error: () => {
-              const mappedData = sedes.map((sede: any) => ({
-                id: sede.codigo_Sede,
-                nombre: sede.denominacion,
-                direccion: sede.direccion,
-                estado: sede.localidad || 'Indefinido',
-                procesosCount: 0,
-                procesosNombres: '',
-                raw: sede
-              }));
+              const mappedData = sedes.map((sede: any) => {
+                const isActivo = sede.flg_Activo === '1' || sede.flg_Activo === true || sede.flg_Activo === 1 || sede.flg_Activo === 'True';
+                return {
+                  id: sede.codigo_Sede,
+                  nombre: sede.denominacion,
+                  direccion: sede.direccion,
+                  distrito: sede.localidad || 'Lima',
+                  estado: isActivo ? 'Activo' : 'Inactivo',
+                  isActivo: isActivo,
+                  procesosCount: 0,
+                  procesosNombres: '',
+                  raw: sede
+                };
+              });
               this.dataSource.data = mappedData;
               this.calculateStats(mappedData);
               this.SpinnerService.hide();

@@ -22,11 +22,12 @@
     <div class="form-row two-cols">
       <div class="form-group">
         <label class="form-label">Código (*)</label>
-        <input type="text" formControlName="codigo" class="form-input" placeholder="Ej. PRO-IMC-OYM-003" [disabled]="action === 'E'">
+        <input type="text" formControlName="codigo" class="form-input" placeholder="Ej. PRO-OPM-COS-004-01" [disabled]="action === 'E'">
       </div>
       <div class="form-group">
-        <label class="form-label">Versión</label>
-        <input type="text" formControlName="version" class="form-input" placeholder="Ej. v2.1">
+        <label class="form-label">Versión (DOC-02)</label>
+        <input type="text" formControlName="version" class="form-input" placeholder="Ej. v1">
+        <small style="color: #6366f1; font-size: 10px; margin-top: 3px; display: block; font-weight: 600;">⚡ Extraído del 5to segmento del Código (los 2 últimos dígitos).</small>
       </div>
     </div>
 
@@ -69,6 +70,7 @@
         <select formControlName="estado" class="form-input">
           <option *ngFor="let est of estados" [value]="est">{{ est }}</option>
         </select>
+        <small style="color: #6366f1; font-size: 10px; margin-top: 3px; display: block; font-weight: 600;">⚡ 'Por vencer' se auto-calcula a 2 meses (60 días) o menos.</small>
       </div>
     </div>
 

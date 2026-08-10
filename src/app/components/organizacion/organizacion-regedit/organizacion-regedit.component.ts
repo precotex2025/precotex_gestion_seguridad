@@ -267,9 +267,13 @@ export class OrganizacionRegeditComponent implements OnInit {
           next: (res: any) => {
             this.SpinnerService.hide();
             if (res.codeResult === 200 || res.codeResult === 201) {
-              const targetSedeCode = this.data.Accion === 'U' ? this.data.Datos.codigo_Sede : (res.element?.codigo_Sede || '001');
+              // ORG-05: Extraer código de sede devuelto por la API o generado para guardar sus procesos inmediatamente
+              const targetSedeCode = this.data.Accion === 'U' 
+                ? this.data.Datos.codigo_Sede 
+                : (res.element?.codigo_Sede || res.codigo_Sede || res.elements?.[0]?.codigo_Sede || res.id || '001');
+              
               this.saveProcesosForSede(targetSedeCode);
-              this.toastr.success(res.message || 'Sede guardada con éxito.', '', { timeOut: 2500 });
+              this.toastr.success(res.message || 'Sede y sus procesos guardados con éxito.', '', { timeOut: 2500 });
               this.dialogRef.close(true);
             } else {
               this.toastr.error(res.message, '', { timeOut: 2500 });
@@ -284,6 +288,7 @@ export class OrganizacionRegeditComponent implements OnInit {
     });
   }
 
+  // ORG-05: Asocia directamente todos los procesos marcados en el checkbox a la sede creada/editada
   saveProcesosForSede(sedeCode: string): void {
     if (!sedeCode) return;
     for (const proc of this.procesosList) {
@@ -296,22 +301,21 @@ export class OrganizacionRegeditComponent implements OnInit {
         newSedeCode = '001';
       }
 
-      if (newSedeCode !== proc.codigo_Sede) {
-        const procData = {
-          Accion: 'U',
-          Codigo_Proceso: proc.codigo_Proceso,
-          Codigo_Organizacion: proc.codigo_Organizacion || '001',
-          Codigo_Sede: newSedeCode,
-          Proceso: proc.proceso,
-          Codigo_Tipo_Proceso: proc.codigo_Tipo_Proceso,
-          Descripcion: proc.descripcion || '',
-          Nombre_Adjunto: proc.nombre_Adjunto || '',
-          Ruta_Adjunto: proc.ruta_Adjunto || '',
-          Flg_Activo: '1',
-          Cod_Usuario: this.sUsuario
-        };
-        this.procesosService.postProcesoMntoProcesos(procData).subscribe();
-      }
+      // Guardar cambios en el proceso para asociarlo a la sede
+      const procData = {
+        Accion: 'U',
+        Codigo_Proceso: proc.codigo_Proceso,
+        Codigo_Organizacion: proc.codigo_Organizacion || '001',
+        Codigo_Sede: newSedeCode,
+        Proceso: proc.proceso,
+        Codigo_Tipo_Proceso: proc.codigo_Tipo_Proceso,
+        Descripcion: proc.descripcion || '',
+        Nombre_Adjunto: proc.nombre_Adjunto || '',
+        Ruta_Adjunto: proc.ruta_Adjunto || '',
+        Flg_Activo: '1',
+        Cod_Usuario: this.sUsuario
+      };
+      this.procesosService.postProcesoMntoProcesos(procData).subscribe();
     }
   }
 

@@ -106,42 +106,50 @@ export class EvaluacionRiesgosComponent implements OnInit {
   // RIE-06: Historial de revaluaciones de riesgos
   onVerHistorialRevaluaciones(item: any): void {
     const htmlHistorial = `
-      <div style="text-align: left; font-size: 12px; line-height: 1.6;">
-        <p><strong>Código:</strong> ${item.codigo} | <strong>Riesgo:</strong> ${item.descbrief}</p>
-        <p><strong>Proceso:</strong> ${item.proceso} | <strong>Responsable:</strong> ${item.responsable}</p>
-        <hr style="border-color: rgba(255,255,255,0.1); margin: 8px 0;">
-        <table style="width: 100%; border-collapse: collapse;">
-          <thead>
-            <tr style="color: #94a3b8; border-bottom: 1px solid rgba(255,255,255,0.1);">
-              <th style="padding: 4px; text-align: left;">Fecha</th>
-              <th style="padding: 4px; text-align: left;">Eval. Inicial</th>
-              <th style="padding: 4px; text-align: left;">Revaluación (Residual)</th>
-              <th style="padding: 4px; text-align: left;">Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style="padding: 4px;">${item.revision || '2026-02-10'}</td>
-              <td style="padding: 4px; color: #f0576b;">Alto (15)</td>
-              <td style="padding: 4px; color: #4ade80;"><strong>${item.nivel || 'Bajo'}</strong></td>
-              <td style="padding: 4px;">${item.estado}</td>
-            </tr>
-            <tr>
-              <td style="padding: 4px;">2025-08-15</td>
-              <td style="padding: 4px; color: #f0576b;">Alto (20)</td>
-              <td style="padding: 4px; color: #f0b429;">Medio (10)</td>
-              <td style="padding: 4px;">En seguimiento</td>
-            </tr>
-          </tbody>
-        </table>
+      <div style="text-align: left; font-size: 13px; line-height: 1.6; color: #1e293b;">
+        <p style="color: #334155; margin-bottom: 10px;">
+          <strong style="color: #0f172a;">Código:</strong> ${item.codigo} | 
+          <strong style="color: #0f172a;">Riesgo:</strong> ${item.descbrief}
+        </p>
+        <p style="color: #475569; margin-bottom: 10px;">
+          <strong>Proceso:</strong> ${item.proceso} | 
+          <strong>Responsable:</strong> ${item.responsable}
+        </p>
+        <div style="overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; background: #ffffff;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+            <thead>
+              <tr style="background: #1e293b; color: #ffffff;">
+                <th style="padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase;">Fecha</th>
+                <th style="padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase;">Eval. Inicial</th>
+                <th style="padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase;">Revaluación (Residual)</th>
+                <th style="padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase;">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid #f1f5f9; background: #ffffff;">
+                <td style="padding: 10px 12px; color: #0f172a; font-weight: 600;">${item.revision || '2026-02-10'}</td>
+                <td style="padding: 10px 12px;"><span style="background: #fef2f2; color: #dc2626; padding: 2px 8px; border-radius: 12px; font-weight: 700;">Alto (15)</span></td>
+                <td style="padding: 10px 12px;"><span style="background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 12px; font-weight: 700;">${item.nivel || 'Bajo'}</span></td>
+                <td style="padding: 10px 12px; color: #334155;">${item.estado}</td>
+              </tr>
+              <tr style="background: #f8fafc;">
+                <td style="padding: 10px 12px; color: #64748b;">2025-08-15</td>
+                <td style="padding: 10px 12px;"><span style="background: #fef2f2; color: #dc2626; padding: 2px 8px; border-radius: 12px; font-weight: 700;">Alto (20)</span></td>
+                <td style="padding: 10px 12px;"><span style="background: #fef3c7; color: #b45309; padding: 2px 8px; border-radius: 12px; font-weight: 700;">Medio (10)</span></td>
+                <td style="padding: 10px 12px; color: #64748b;">En seguimiento</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     `;
 
     Swal.fire({
       title: '📈 Historial de Revaluaciones (RIE-06)',
       html: htmlHistorial,
-      width: '650px',
-      confirmButtonText: 'Cerrar'
+      width: '680px',
+      confirmButtonText: 'Entendido',
+      confirmButtonColor: '#6366f1'
     });
   }
 

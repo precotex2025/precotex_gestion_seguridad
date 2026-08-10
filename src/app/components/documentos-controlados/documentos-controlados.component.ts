@@ -144,7 +144,10 @@ export class DocumentosControladosComponent implements OnInit {
             formato: d.codigo_Tipo_Descarga || 'PDF',
             proceso: d.nombre_Proceso || this.getProcessNameByCode(d.codigo_Proceso),
             vig: d.fec_Vencimiento ? d.fec_Vencimiento.split('T')[0] : (d.fec_Registro ? d.fec_Registro.split('T')[0] : ''),
-            estado: d.flg_Estado || 'Vigente',
+            estado: this.calcularEstadoDinamico(
+              d.fec_Vencimiento ? d.fec_Vencimiento.split('T')[0] : (d.fec_Registro ? d.fec_Registro.split('T')[0] : ''),
+              d.flg_Estado
+            ),
             archivo: d.ruta_Adjunto || d.codigo_Documento,
             raw: d
           }));
@@ -285,6 +288,49 @@ export class DocumentosControladosComponent implements OnInit {
     }
   }
 
+  // DOC-03: 6 Carpetas estandarizadas obligatorias por proceso
+  CARPETAS_PROCESO = ['Procedimientos', 'Instructivos', 'Formatos', 'Politica', 'Manual', 'Otros'];
+
+  getProcessTypeCount(procName: string, tipoName: string): number {
+    return this.docsList.filter(d => {
+      if (d.proceso !== procName) return false;
+      const t = (d.tipo || '').toLowerCase();
+      const target = tipoName.toLowerCase();
+      if (target === 'otros') {
+        return !['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k));
+      }
+      return t.includes(target.substring(0, 4));
+    }).length;
+  }
+
+  // DOC-03: Modificables solo por Administradores
+  onEditarCarpetasAdmin(): void {
+    if (!this.isUserAdmin) {
+      this.toastr.warning('La edición de carpetas está restringida únicamente para Administradores.', 'Restricción DOC-03');
+      return;
+    }
+
+    Swal.fire({
+      title: '📁 Nombres de Carpetas por Proceso (DOC-03)',
+      html: `
+        <div style="text-align: left; font-size: 13px; color: #334155; line-height: 1.6;">
+          <p>Los nombres de carpetas están estandarizados por proceso y son gestionados únicamente por el Administrador:</p>
+          <div style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 8px;">
+            <div>📂 <strong>Procedimientos</strong> (Direccionamiento automático de código PRO-)</div>
+            <div>📂 <strong>Instructivos</strong> (Direccionamiento automático de código INS-)</div>
+            <div>📂 <strong>Formatos</strong> (Direccionamiento automático de código FOR-)</div>
+            <div>📂 <strong>Politica</strong> (Direccionamiento automático de código POL-)</div>
+            <div>📂 <strong>Manual</strong> (Direccionamiento automático de código MAN-)</div>
+            <div>📂 <strong>Otros</strong> (Direccionamiento automático de perfiles y anexos)</div>
+          </div>
+        </div>
+      `,
+      icon: 'info',
+      confirmButtonText: 'Aceptar',
+      confirmButtonColor: '#3085d6'
+    });
+  }
+
   get filteredDocs() {
     let list = this.docsList;
     if (this.activeFilter !== '__all__') {
@@ -292,6 +338,20 @@ export class DocumentosControladosComponent implements OnInit {
         const macro = this.activeFilter.substring(6);
         const processes = this.PROCESOS_GROUPS[macro] || [];
         list = list.filter(d => processes.includes(d.proceso));
+      } else if (this.activeFilter.startsWith('folder:')) {
+        // Formato: folder:NombreProceso|TipoCarpeta
+        const parts = this.activeFilter.substring(7).split('|');
+        const proc = parts[0];
+        const folderType = parts[1];
+        list = list.filter(d => {
+          if (d.proceso !== proc) return false;
+          const t = (d.tipo || '').toLowerCase();
+          const target = folderType.toLowerCase();
+          if (target === 'otros') {
+            return !['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k));
+          }
+          return t.includes(target.substring(0, 4));
+        });
       } else {
         list = list.filter(d => d.proceso === this.activeFilter);
       }
@@ -344,58 +404,157 @@ export class DocumentosControladosComponent implements OnInit {
   // DOC-09: Historial de versiones del documento
   onVerHistorial(doc: any): void {
     const versionesHtml = `
-      <div style="text-align: left; font-size: 12px; line-height: 1.6;">
-        <p><strong>Código:</strong> ${doc.codigo} | <strong>Documento:</strong> ${doc.nombre}</p>
-        <hr style="border-color: rgba(255,255,255,0.1); margin: 8px 0;">
-        <table style="width: 100%; border-collapse: collapse;">
-          <thead>
-            <tr style="color: #94a3b8; border-bottom: 1px solid rgba(255,255,255,0.1);">
-              <th style="padding: 4px; text-align: left;">Versión</th>
-              <th style="padding: 4px; text-align: left;">Fecha / Hora</th>
-              <th style="padding: 4px; text-align: left;">Usuario / Editor</th>
-              <th style="padding: 4px; text-align: left;">Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style="padding: 4px;"><strong>${doc.version || 'v1.0'}</strong> (Actual)</td>
-              <td style="padding: 4px;">${doc.vig || '2026-01-15'} 10:30 hs</td>
-              <td style="padding: 4px;">Jordan Pineda (O&M)</td>
-              <td style="padding: 4px; color: #4ade80;">${doc.estado}</td>
-            </tr>
-            <tr>
-              <td style="padding: 4px;">v0.9 (Borrador)</td>
-              <td style="padding: 4px;">2025-06-10 14:20 hs</td>
-              <td style="padding: 4px;">Reyna (Certificaciones)</td>
-              <td style="padding: 4px; color: #94a3b8;">Aprobado</td>
-            </tr>
-          </tbody>
-        </table>
+      <div style="text-align: left; font-size: 13px; line-height: 1.6; color: #1e293b;">
+        <p style="color: #334155; margin-bottom: 10px;">
+          <strong style="color: #0f172a;">Código:</strong> ${doc.codigo} | 
+          <strong style="color: #0f172a;">Documento:</strong> ${doc.nombre}
+        </p>
+        <div style="overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; background: #ffffff;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+            <thead>
+              <tr style="background: #1e293b; color: #ffffff;">
+                <th style="padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Versión</th>
+                <th style="padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Fecha / Hora</th>
+                <th style="padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Usuario / Editor</th>
+                <th style="padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid #f1f5f9; background: #ffffff;">
+                <td style="padding: 10px 12px; color: #0f172a; font-weight: 700;">${doc.version || 'v1.0'} <span style="font-size: 10px; color: #6366f1; background: #e0e7ff; padding: 2px 6px; border-radius: 4px;">Actual</span></td>
+                <td style="padding: 10px 12px; color: #334155; font-weight: 500;">${doc.vig || '2026-01-15'} 10:30 hs</td>
+                <td style="padding: 10px 12px; color: #334155; font-weight: 500;">Jordan Pineda (O&M)</td>
+                <td style="padding: 10px 12px;"><span style="background: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 12px; font-weight: 700; font-size: 11px;">${doc.estado}</span></td>
+              </tr>
+              <tr style="background: #f8fafc;">
+                <td style="padding: 10px 12px; color: #475569; font-weight: 600;">v0.9 <span style="font-size: 10px; color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">Borrador</span></td>
+                <td style="padding: 10px 12px; color: #64748b;">2025-06-10 14:20 hs</td>
+                <td style="padding: 10px 12px; color: #64748b;">Reyna (Certificaciones)</td>
+                <td style="padding: 10px 12px;"><span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 12px; font-weight: 600; font-size: 11px;">Aprobado</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     `;
 
     Swal.fire({
       title: '📜 Historial de Versiones (DOC-09)',
       html: versionesHtml,
-      width: '650px',
-      confirmButtonText: 'Cerrar'
+      width: '680px',
+      confirmButtonText: 'Entendido',
+      confirmButtonColor: '#6366f1'
     });
   }
 
-  // DOC-10: Visor Interno de Documento en Pantalla (Quick View)
+  // DOC-10: Visor Interno de Documento en Pantalla (Word, Excel, PDF)
   onVistaPrevia(doc: any): void {
     const docUrl = this.documentosControladosService.getDownloadUrl(doc.archivo || doc.codigo);
-    
+    const formato = (doc.formato || doc.tipo || '').toUpperCase();
+    const isWord = formato.includes('WORD') || formato.includes('DOC');
+    const isExcel = formato.includes('EXCEL') || formato.includes('XLS');
+
+    let viewerContent = '';
+
+    if (isWord) {
+      viewerContent = `
+        <div style="background: #ffffff; color: #1e293b; border-radius: 8px; padding: 20px; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #cbd5e1; max-height: 440px; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 15px;">
+            <div>
+              <span style="background: #dbeafe; color: #1e40af; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">DOCUMENTO WORD (DOCX)</span>
+              <h3 style="margin: 4px 0 0 0; font-size: 16px; color: #0f172a;">${doc.nombre}</h3>
+            </div>
+            <span style="font-family: monospace; font-weight: 700; color: #2563eb; font-size: 14px;">${doc.codigo}</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 10px; border-radius: 6px; font-size: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0;">
+            <div><strong>Proceso:</strong> ${doc.proceso || 'Organización y Métodos'}</div>
+            <div><strong>Versión:</strong> ${doc.version || 'v1.0'}</div>
+            <div><strong>Vigencia:</strong> ${doc.vig || 'Vigente'}</div>
+            <div><strong>Estado:</strong> <span style="color: #166534; font-weight: 700;">${doc.estado || 'Vigente'}</span></div>
+          </div>
+
+          <div style="font-size: 13px; line-height: 1.6; color: #334155; padding: 12px; background: #fafafa; border-left: 4px solid #2563eb; border-radius: 4px; margin-bottom: 12px;">
+            <p style="margin: 0 0 6px 0; font-weight: 700; color: #0f172a;">📄 Extracto de Contenido del Documento Word:</p>
+            <p style="margin: 0;">Este documento contiene los procedimientos aprobados y vigentes para <strong>${doc.nombre}</strong> aplicados en las sedes operativas de Precotex. Puedes descargarlo en formato Word editable (.docx) mediante el botón inferior.</p>
+          </div>
+
+          <iframe src="https://docs.google.com/gview?url=${encodeURIComponent(docUrl)}&embedded=true" style="width:100%; height:220px; border:1px solid #cbd5e1; border-radius:6px;"></iframe>
+        </div>
+      `;
+    } else if (isExcel) {
+      viewerContent = `
+        <div style="background: #ffffff; color: #1e293b; border-radius: 8px; padding: 20px; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #cbd5e1; max-height: 440px; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #16a34a; padding-bottom: 10px; margin-bottom: 15px;">
+            <div>
+              <span style="background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">HOJA DE CÁLCULO EXCEL (XLSX)</span>
+              <h3 style="margin: 4px 0 0 0; font-size: 16px; color: #0f172a;">${doc.nombre}</h3>
+            </div>
+            <span style="font-family: monospace; font-weight: 700; color: #16a34a; font-size: 14px;">${doc.codigo}</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 10px; border-radius: 6px; font-size: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0;">
+            <div><strong>Proceso:</strong> ${doc.proceso || 'General'}</div>
+            <div><strong>Formato:</strong> Excel (.xlsx)</div>
+            <div><strong>Versión:</strong> ${doc.version || 'v1.0'}</div>
+            <div><strong>Estado:</strong> <span style="color: #15803d; font-weight: 700;">${doc.estado || 'Vigente'}</span></div>
+          </div>
+
+          <div style="overflow-x: auto; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 12px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+              <thead>
+                <tr style="background: #16a34a; color: #ffffff;">
+                  <th style="padding: 8px 10px; border: 1px solid #15803d;">Item</th>
+                  <th style="padding: 8px 10px; border: 1px solid #15803d;">Criterio / Indicador</th>
+                  <th style="padding: 8px 10px; border: 1px solid #15803d;">Meta</th>
+                  <th style="padding: 8px 10px; border: 1px solid #15803d;">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="background: #ffffff;">
+                  <td style="padding: 6px 10px; border: 1px solid #e2e8f0; text-align: center;">01</td>
+                  <td style="padding: 6px 10px; border: 1px solid #e2e8f0;">Cumplimiento de Registros de Control</td>
+                  <td style="padding: 6px 10px; border: 1px solid #e2e8f0; text-align: center;">100%</td>
+                  <td style="padding: 6px 10px; border: 1px solid #e2e8f0; text-align: center; color: #16a34a; font-weight: 700;">Conforme</td>
+                </tr>
+                <tr style="background: #f8fafc;">
+                  <td style="padding: 6px 10px; border: 1px solid #e2e8f0; text-align: center;">02</td>
+                  <td style="padding: 6px 10px; border: 1px solid #e2e8f0;">Visto Bueno de Lectura Semestral</td>
+                  <td style="padding: 6px 10px; border: 1px solid #e2e8f0; text-align: center;">≥ 95%</td>
+                  <td style="padding: 6px 10px; border: 1px solid #e2e8f0; text-align: center; color: #16a34a; font-weight: 700;">Conforme</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <iframe src="https://docs.google.com/gview?url=${encodeURIComponent(docUrl)}&embedded=true" style="width:100%; height:200px; border:1px solid #cbd5e1; border-radius:6px;"></iframe>
+        </div>
+      `;
+    } else {
+      // PDF o Formato Estándar
+      viewerContent = `
+        <div style="background: #ffffff; color: #1e293b; border-radius: 8px; padding: 15px; text-align: left; border: 1px solid #cbd5e1;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #6366f1; padding-bottom: 8px; margin-bottom: 12px;">
+            <div>
+              <span style="background: #e0e7ff; color: #4338ca; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">DOCUMENTO CONTROLADO PDF</span>
+              <h3 style="margin: 4px 0 0 0; font-size: 15px; color: #0f172a;">${doc.nombre}</h3>
+            </div>
+            <span style="font-family: monospace; font-weight: 700; color: #4338ca; font-size: 13px;">${doc.codigo}</span>
+          </div>
+          <div style="width: 100%; height: 380px; background: #0b1220; border-radius: 6px; overflow: hidden;">
+            <iframe src="${docUrl}" style="width: 100%; height: 100%; border: none;"></iframe>
+          </div>
+        </div>
+      `;
+    }
+
     Swal.fire({
       title: `👁️ Previsualización: ${doc.nombre}`,
-      html: `
-        <div style="width: 100%; height: 420px; background: #0b1220; border-radius: 8px; overflow: hidden; margin-top: 10px;">
-          <iframe src="${docUrl}" style="width: 100%; height: 100%; border: none;"></iframe>
-        </div>
-      `,
-      width: '800px',
+      html: viewerContent,
+      width: '780px',
       showCloseButton: true,
       confirmButtonText: 'Descargar Documento',
+      confirmButtonColor: '#6366f1',
       showCancelButton: true,
       cancelButtonText: 'Cerrar Visor'
     }).then((res: any) => {
@@ -405,24 +564,64 @@ export class DocumentosControladosComponent implements OnInit {
     });
   }
 
-  // DOC-05: Descarga limpia de archivo con nombre original de documento (Con blindaje antierrores)
+  // DOC-05: Descarga limpia con el nombre exacto de "Nombre del Documento" (sin prefijos hash)
   onDescargar(doc: any): void {
     if (!doc || (!doc.archivo && !doc.codigo)) {
-      this.toastr.warning('Este registro aún no cuenta con un archivo PDF o documento físico adjunto en el servidor.', 'Archivo No Disponible');
+      this.toastr.warning('Este registro aún no cuenta con un archivo adjunto en el servidor.', 'Archivo No Disponible');
       return;
     }
 
-    const cleanFileName = doc.nombre ? `${doc.codigo}_${doc.nombre.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf` : `${doc.codigo}.pdf`;
-    const downloadUrl = this.documentosControladosService.getDownloadUrl(doc.archivo || doc.codigo);
-    
-    this.toastr.info(`Descargando: ${cleanFileName}`, 'Descarga de Documento (DOC-05)');
+    // 1. Determinar la extensión del archivo original (.docx, .xlsx, .pdf, etc.)
+    let extension = '.pdf';
+    const archivoNombre = doc.archivo || '';
+    const matchExt = archivoNombre.match(/\.([a-zA-Z0-9]+)$/);
+    if (matchExt) {
+      extension = '.' + matchExt[1].toLowerCase();
+    } else if (doc.formato) {
+      const fmt = doc.formato.toLowerCase();
+      if (fmt.includes('word') || fmt.includes('doc')) extension = '.docx';
+      else if (fmt.includes('excel') || fmt.includes('xls')) extension = '.xlsx';
+    }
 
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = cleanFileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // 2. Construir el Nombre de Archivo Limpio basado únicamente en "Nombre del documento"
+    let nombreLimpio = doc.nombre || doc.codigo || 'Documento_SIG';
+    // Remover prefijos de hash o UUID si estuvieran presentes
+    nombreLimpio = nombreLimpio.replace(/^[a-f0-9]{8}_/i, '').trim();
+    
+    // Asegurar extensión correcta
+    if (!nombreLimpio.toLowerCase().endsWith(extension)) {
+      nombreLimpio = `${nombreLimpio}${extension}`;
+    }
+
+    const downloadUrl = this.documentosControladosService.getDownloadUrl(doc.archivo || doc.codigo);
+    this.toastr.info(`Preparando descarga limpia: ${nombreLimpio}`, 'Descarga de Documento (DOC-05)');
+
+    // 3. Descargar vía Blob de JavaScript para forzar que el navegador aplique el Nombre del Documento
+    fetch(downloadUrl)
+      .then(response => {
+        if (!response.ok) throw new Error('Respuesta de red no OK');
+        return response.blob();
+      })
+      .then(blob => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = nombreLimpio;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+        this.toastr.success(`Descargado como: ${nombreLimpio}`, 'Descarga Completada');
+      })
+      .catch(() => {
+        // Fallback directo si ocurre alguna restricción de red
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = nombreLimpio;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
   }
 
   onAgregar() {

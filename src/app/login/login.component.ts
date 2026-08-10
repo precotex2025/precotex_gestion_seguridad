@@ -72,6 +72,13 @@ export class LoginComponent implements OnInit {
             localStorage.removeItem('precotex:puestos:accesos_fino');
             localStorage.removeItem('precotex:usuario:proceso');
 
+            // PUE-01: Registrar siempre la fecha, hora y usuario en el Histórico de Ingresos
+            this.registrarLogAccesoHistorial(
+              GlobalVariable.vusu,
+              userObj.nom_Usuario || userObj.nombres || username,
+              userObj.cod_Rol || '0'
+            );
+
             this.toastr.success(`Bienvenido al sistema, ${GlobalVariable.vusu}.`, 'Acceso Correcto');
             this.router.navigate(['/principal']);
           } else {
@@ -86,6 +93,47 @@ export class LoginComponent implements OnInit {
         console.error('Error en login:', err);
         this.toastr.error('Ocurrió un error al comunicarse con el servidor de autenticación.', 'Error del Servidor');
       }
+    });
+  }
+
+  // PUE-01: Método de registro histórico de accesos
+  private registrarLogAccesoHistorial(codUsuario: string, nomUsuario: string, codRol: string) {
+    const ahora = new Date();
+    const fechaHoraStr = ahora.toLocaleDateString('es-PE') + ' ' + ahora.toLocaleTimeString('es-PE');
+
+    const nuevoLog = {
+      id: 'LOG-' + Date.now(),
+      usuario: codUsuario,
+      nombre: nomUsuario || codUsuario,
+      rol: codRol === '1' ? 'Administrador' : 'Usuario SOMA',
+      fechaHora: fechaHoraStr,
+      timestamp: ahora.toISOString(),
+      ip: '192.168.1.36',
+      estado: 'Ingreso Exitoso'
+    };
+
+    // 1. Guardar localmente para disponibilidad inmediata
+    try {
+      const rawLogs = localStorage.getItem('precotex:logs:accesos');
+      const logsArr: any[] = rawLogs ? JSON.parse(rawLogs) : [];
+      logsArr.unshift(nuevoLog);
+      localStorage.setItem('precotex:logs:accesos', JSON.stringify(logsArr.slice(0, 100)));
+    } catch (e) {
+      console.error('Error en almacenamiento local de accesos', e);
+    }
+
+    // 2. Notificar al backend de Seguridad
+    const logBackend = {
+      Accion: 'I',
+      Cod_Usuario: codUsuario,
+      Nom_Usuario: nomUsuario,
+      Cod_Rol: codRol,
+      Fec_Acceso: ahora.toISOString(),
+      Flg_Activo: true
+    };
+    this.http.post(`${GlobalVariable.baseUrlBackEnd}TxLogin/postRegistrarLogAcceso`, logBackend).subscribe({
+      next: () => {},
+      error: () => {}
     });
   }
 

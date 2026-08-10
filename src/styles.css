@@ -555,3 +555,23 @@ select option, .select-dark option {
   background-color: #ef4444;
   box-shadow: 0 0 8px #ef4444;
 }
+
+/* ===================================================================
+   SWEETALERT2 MODAL HIGH-CONTRAST OVERRIDES (HISTORIAL DE VERSIONES)
+   =================================================================== */
+.swal2-html-container {
+  color: #1e293b !important;
+}
+
+.swal2-html-container table {
+  color: #1e293b !important;
+}
+
+.swal2-html-container table td {
+  color: #334155 !important;
+}
+
+.swal2-html-container table th {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+}

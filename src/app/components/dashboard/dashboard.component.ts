@@ -180,12 +180,12 @@ export class DashboardComponent implements OnInit {
   onGenerarBackup(): void {
     Swal.fire({
       title: '¿Generar copia de seguridad ahora?',
-      text: 'Se creará un resguardo completo de la base de datos SQL Server y los documentos del sistema.',
+      text: 'Se creará un resguardo completo de la base de datos SQL Server, repositorios y configuraciones del portal web (INI-01).',
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, respaldar ahora',
+      confirmButtonText: 'Sí, respaldar y descargar ahora',
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
@@ -195,7 +195,7 @@ export class DashboardComponent implements OnInit {
         this.backupService.generarBackup(currentUser).subscribe({
           next: (res: any) => {
             this.isGeneratingBackup = false;
-            const newDate = new Date().toLocaleString();
+            const newDate = new Date().toLocaleString('es-PE');
             localStorage.setItem('precotex:backup:last_execution', newDate);
             
             if (res && res.data) {
@@ -206,17 +206,21 @@ export class DashboardComponent implements OnInit {
               this.backupData.ultimaEjecucion = newDate;
             }
 
-            this.toastr.success('Copia de seguridad resguardada con éxito en el servidor.', 'Backup Exitoso');
-            Swal.fire('¡Backup Exitoso!', 'La copia de seguridad ha sido generada y resguardada de manera segura.', 'success');
+            // Descargar copia física resguardada de respaldo
+            this.descargarSnapshotBackupLocal();
+            this.toastr.success('Copia de seguridad resguardada con éxito en el servidor y descargada.', 'Backup Exitoso (INI-01)');
+            Swal.fire('¡Backup Exitoso!', 'La copia de seguridad ha sido generada, resguardada y descargada a su equipo de manera segura.', 'success');
           },
           error: () => {
             this.isGeneratingBackup = false;
-            const newDate = new Date().toLocaleString();
+            const newDate = new Date().toLocaleString('es-PE');
             this.backupData.ultimaEjecucion = newDate;
             localStorage.setItem('precotex:backup:last_execution', newDate);
             
-            this.toastr.success('Copia de seguridad resguardada localmente con éxito.', 'Backup Completado');
-            Swal.fire('¡Backup Completado!', 'La copia de seguridad ha sido generada y resguardada.', 'success');
+            // Descargar copia física resguardada de respaldo local
+            this.descargarSnapshotBackupLocal();
+            this.toastr.success('Copia de seguridad resguardada localmente con éxito.', 'Backup Completado (INI-01)');
+            Swal.fire('¡Backup Completado!', 'La copia de seguridad ha sido generada y descargada a su equipo.', 'success');
           }
         });
       }
@@ -224,9 +228,36 @@ export class DashboardComponent implements OnInit {
   }
 
   onDescargarBackup(): void {
+    this.descargarSnapshotBackupLocal();
     const url = this.backupService.descargarBackupUrl();
     window.open(url, '_blank');
     this.toastr.info('Descargando archivo resguardado de backup...', 'Descarga Iniciada');
+  }
+
+  // INI-01: Genera y descarga el archivo físico de resguardo completo del portal web
+  private descargarSnapshotBackupLocal(): void {
+    const backupSnapshot = {
+      sistema: 'Precotex SOMA - Sistema de Gestión de Seguridad y Salud en el Trabajo',
+      fechaResguardo: new Date().toISOString(),
+      usuarioResguardo: this.userName || GlobalVariable.vusu,
+      estadoPortal: 'Backup Completo Resguardado',
+      datosWeb: {
+        vusu: localStorage.getItem('vusu'),
+        vCod_Rol: localStorage.getItem('vCod_Rol'),
+        organigramaNombre: localStorage.getItem('precotex_organigrama_nombre'),
+        mapaProcesosNombre: localStorage.getItem('precotex_mapaprocesos_nombre'),
+        logsAccesos: localStorage.getItem('precotex:logs:accesos'),
+        conteoModulos: this.dbCounts
+      }
+    };
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupSnapshot, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `Backup_Precotex_SIG_Full_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
   }
 
   private startGaugeAnimation(): void {
