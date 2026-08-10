@@ -32,7 +32,8 @@ export class DocumentosControladosLoteComponent implements OnInit {
   isUploading: boolean = false;
   sUsuario: string = GlobalVariable.vusu || 'SISTEMAS';
 
-  tipos = ['Procedimiento', 'Instructivo', 'Formato', 'Manual', 'Perfil de puesto'];
+  // DOC-03: Carpetas estandarizadas por proceso
+  tipos = ['Procedimiento', 'Instructivo', 'Formato', 'Politica', 'Manual', 'Otros'];
   formatos = ['PDF', 'Word', 'Excel'];
 
   constructor(
@@ -102,19 +103,21 @@ export class DocumentosControladosLoteComponent implements OnInit {
           parsedName = nameWithoutExt.trim();
         }
 
-        // Auto-detectar tipo de documento
-        let parsedTipo = 'Procedimiento';
+        // DOC-03: Auto-detectar carpeta de destino según el prefijo del documento
+        let parsedTipo = 'Otros';
         const prefix = parsedCode.split('-')[0]?.toUpperCase() || '';
-        if (prefix === 'PRO') {
+        if (prefix === 'PRO' || prefix === 'PROC') {
           parsedTipo = 'Procedimiento';
-        } else if (prefix === 'INS') {
+        } else if (prefix === 'INS' || prefix === 'INST') {
           parsedTipo = 'Instructivo';
-        } else if (prefix === 'FOR') {
+        } else if (prefix === 'FOR' || prefix === 'FORM') {
           parsedTipo = 'Formato';
-        } else if (prefix === 'MAN') {
+        } else if (prefix === 'POL' || prefix === 'POLITICA') {
+          parsedTipo = 'Politica';
+        } else if (prefix === 'MAN' || prefix === 'MANUAL') {
           parsedTipo = 'Manual';
-        } else if (prefix === 'PER') {
-          parsedTipo = 'Perfil de puesto';
+        } else {
+          parsedTipo = 'Otros';
         }
 
         // Auto-detectar formato
@@ -179,23 +182,35 @@ export class DocumentosControladosLoteComponent implements OnInit {
           const fileNameServer = upRes.fileName || item.file.name;
           item.progressMessage = 'Registrando...';
 
+          // DOC-01: Vigencia por defecto a 3 AÑOS (en lugar de 1 año)
+          const fechaVenc3Anios = new Date();
+          fechaVenc3Anios.setFullYear(fechaVenc3Anios.getFullYear() + 3);
+
+          // DOC-02: Extracción automática de versión entera desde el 5to segmento
+          let autoVer = 'v1';
+          const parts = (item.codigo || '').split('-');
+          if (parts.length >= 5) {
+            const num = parseInt(parts[4].trim(), 10);
+            if (!isNaN(num)) autoVer = `v${num}`;
+          }
+
           const requestData = {
             Accion: 'I',
             Codigo_Documentos_Controlados: '',
             Codigo_Proceso: procCode,
             Codigo_Carpeta_Control: '001',
             Codigo_Normas: item.tipo,
-            Codigo_Tiempo_Conservacion: '1 Anio',
+            Codigo_Tiempo_Conservacion: '3 Anios',
             Codigo_Tipo_Descarga: item.formato,
             Denominacion: item.nombre,
             Codigo_Documento: item.codigo,
-            Version_Documento: 'v1.0',
+            Version_Documento: autoVer,
             Ruta_Adjunto: fileNameServer,
             Descripcion: item.nombre,
             bRegistroAsociado: true,
             bRequiereRevision: false,
             Flg_Estado: item.estado,
-            Fec_Vencimiento: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
+            Fec_Vencimiento: fechaVenc3Anios.toISOString().split('T')[0],
             Flg_Activo: true,
             Cod_Usuario: this.sUsuario
           };

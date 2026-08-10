@@ -180,15 +180,15 @@ export class MedicionIndicadoresComponent implements OnInit {
   // IND-04: Exportar Ficha Técnica del Indicador
   exportarFichaTecnica(row: any): void {
     const fichaHtml = `
-      <div style="text-align: left; font-size: 12px; line-height: 1.6; padding: 10px; background: rgba(15,23,42,0.6); border-radius: 8px;">
-        <h4 style="color: #38bdf8; margin: 0 0 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">FICHA TÉCNICA DE INDICADOR DEL SIG (IND-04)</h4>
-        <p><strong>Código / Indicador:</strong> ${row.codigoIndicador || row.id} - ${row.indicador}</p>
-        <p><strong>Proceso Asociado:</strong> ${row.proceso} | <strong>Sede:</strong> ${row.sede}</p>
-        <p><strong>Frecuencia de Medición (IND-02):</strong> <span style="color: #a78bfa; font-weight: bold;">${row.frecuencia || 'Mensual'}</span></p>
-        <p><strong>Fórmula / Método:</strong> (Valor Obtenido / Meta Planificada) × 100</p>
-        <p><strong>Meta Base:</strong> ${row.meta} | <strong>Valor Obtenido:</strong> ${row.valor}</p>
-        <p><strong>Estado Semáforo (IND-03):</strong> <span style="color: ${this.getSemaforoColor(row.semaforo)}; font-weight: bold;">${row.semaforo}</span></p>
-        <p><strong>Responsable de Medición:</strong> Jefe de Proceso ${row.proceso}</p>
+      <div style="text-align: left; font-size: 13px; line-height: 1.6; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; color: #1e293b;">
+        <h4 style="color: #0f172a; margin: 0 0 10px 0; border-bottom: 2px solid #6366f1; padding-bottom: 6px; font-size: 14px;">FICHA TÉCNICA DE INDICADOR DEL SIG (IND-04)</h4>
+        <p style="margin: 6px 0;"><strong style="color: #0f172a;">Código / Indicador:</strong> ${row.codigoIndicador || row.id} - ${row.indicador}</p>
+        <p style="margin: 6px 0;"><strong style="color: #0f172a;">Proceso Asociado:</strong> ${row.proceso} | <strong style="color: #0f172a;">Sede:</strong> ${row.sede}</p>
+        <p style="margin: 6px 0;"><strong style="color: #0f172a;">Frecuencia de Medición:</strong> <span style="color: #6366f1; font-weight: 700; background: #e0e7ff; padding: 2px 8px; border-radius: 6px;">${row.frecuencia || 'Mensual'}</span></p>
+        <p style="margin: 6px 0;"><strong style="color: #0f172a;">Fórmula / Método:</strong> (Valor Obtenido / Meta Planificada) × 100</p>
+        <p style="margin: 6px 0;"><strong style="color: #0f172a;">Meta Base:</strong> ${row.meta} | <strong style="color: #0f172a;">Valor Obtenido:</strong> <span style="font-weight: 700; color: #0f172a;">${row.valor}</span></p>
+        <p style="margin: 6px 0;"><strong style="color: #0f172a;">Estado Semáforo:</strong> <span style="background: #f1f5f9; color: ${this.getSemaforoColor(row.semaforo)}; font-weight: 700; padding: 2px 8px; border-radius: 6px;">${row.semaforo}</span></p>
+        <p style="margin: 6px 0;"><strong style="color: #0f172a;">Responsable de Medición:</strong> Jefe de Proceso ${row.proceso}</p>
       </div>
     `;
 
@@ -198,6 +198,7 @@ export class MedicionIndicadoresComponent implements OnInit {
       width: '650px',
       showCancelButton: true,
       confirmButtonText: 'Descargar Ficha PDF',
+      confirmButtonColor: '#6366f1',
       cancelButtonText: 'Cerrar'
     }).then((res) => {
       if (res.isConfirmed) {

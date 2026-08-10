@@ -44,21 +44,77 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       }
     });
 
+    const initialVig = row?.vig || '';
+    const initialEstado = this.calcularEstadoPorFecha(initialVig, row?.estado);
+    const initialVersion = row?.version || this.extraerVersionDelCodigo(row?.codigo) || 'v1';
+
     this.formulario = this.formBuilder.group({
       nombre: [row?.nombre || '', Validators.required],
       codigo: [row?.codigo || '', Validators.required],
       tipo: [row?.tipo || 'Procedimiento'],
-      version: [row?.version || 'v1.0'],
+      version: [initialVersion],
       formato: [row?.formato || 'PDF'],
       proceso: [row?.proceso || 'Sistemas'],
-      vig: [row?.vig || ''],
-      estado: [row?.estado || 'Vigente'],
+      vig: [initialVig],
+      estado: [initialEstado],
       archivo: [row?.archivo || '', Validators.required]
+    });
+
+    // DOC-02: Escuchar cambios de Código para extraer la Versión automáticamente del 5to segmento (los 2 últimos dígitos)
+    this.formulario.get('codigo')?.valueChanges.subscribe((codeStr: string) => {
+      if (codeStr) {
+        const autoVer = this.extraerVersionDelCodigo(codeStr);
+        if (autoVer) {
+          this.formulario.patchValue({ version: autoVer }, { emitEvent: false });
+        }
+      }
+    });
+
+    // Escuchar cambios de fecha de vigencia para calcular 'Por vencer' automáticamente si falta <= 60 días
+    this.formulario.get('vig')?.valueChanges.subscribe((fecha: string) => {
+      const autoEstado = this.calcularEstadoPorFecha(fecha);
+      this.formulario.patchValue({ estado: autoEstado }, { emitEvent: false });
     });
 
     if (row?.archivo) {
       this.fileName = row.archivo;
     }
+  }
+
+  // DOC-02: Extrae el entero de versión del 5to segmento (ej. PRO-OPM-COS-004-01 -> v1 o 1)
+  extraerVersionDelCodigo(code: string): string {
+    if (!code) return '';
+    const parts = code.trim().split('-');
+    if (parts.length >= 5) {
+      const seg5 = parts[4].trim(); // los 2 últimos dígitos (01, 02, 03)
+      const num = parseInt(seg5, 10);
+      if (!isNaN(num)) {
+        return `v${num}`;
+      }
+    }
+    // Fallback: Si termina en "-01" o similar
+    const match = code.match(/-(\d{1,2})$/);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (!isNaN(num)) {
+        return `v${num}`;
+      }
+    }
+    return '';
+  }
+
+  calcularEstadoPorFecha(fechaStr: string, defaultEstado: string = 'Vigente'): string {
+    if (!fechaStr) return defaultEstado;
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const venc = new Date(fechaStr);
+    venc.setHours(0, 0, 0, 0);
+    
+    const diffDias = Math.ceil((venc.getTime() - hoy.getTime()) / (1000 * 3600 * 24));
+    
+    if (diffDias < 0) return 'Obsoleto';
+    if (diffDias <= 60) return 'Por vencer'; // DOC-04: Automático a 2 meses (60 días) o menos
+    return 'Vigente';
   }
 
   getMacroProcesses(): string[] {
@@ -114,6 +170,8 @@ export class DocumentosControladosRegeditComponent implements OnInit {
         }
       }
 
+      const parsedVersion = this.extraerVersionDelCodigo(parsedCode);
+
       // Build patching data
       const patchData: any = {
         archivo: file.name
@@ -123,6 +181,7 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       if (parsedName) patchData.nombre = parsedName;
       if (parsedTipo) patchData.tipo = parsedTipo;
       if (parsedFormato) patchData.formato = parsedFormato;
+      if (parsedVersion) patchData.version = parsedVersion;
 
       this.formulario.patchValue(patchData);
     }
@@ -133,23 +192,25 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       return;
     }
 
+    const val = this.formulario.value;
+    val.estado = this.calcularEstadoPorFecha(val.vig, val.estado);
+
     if (this.selectedFile) {
       this.isUploading = true;
       this.documentosControladosService.uploadArchivo(this.selectedFile).subscribe({
         next: (res: any) => {
           this.isUploading = false;
-          const val = this.formulario.value;
           val.archivo = res.fileName || this.selectedFile?.name;
           val.filePath = res.filePath;
           this.dialogRef.close(val);
         },
         error: () => {
           this.isUploading = false;
-          this.dialogRef.close(this.formulario.value);
+          this.dialogRef.close(val);
         }
       });
     } else {
-      this.dialogRef.close(this.formulario.value);
+      this.dialogRef.close(val);
     }
   }
 

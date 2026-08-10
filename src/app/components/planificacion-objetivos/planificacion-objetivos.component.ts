@@ -149,30 +149,31 @@ export class PlanificacionObjetivosComponent implements OnInit {
   onVerHistorialSeguimiento(item: any): void {
     const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Dic'];
     const htmlTabla = `
-      <div style="text-align: left; font-size: 12px; line-height: 1.5;">
-        <p><strong>Objetivo:</strong> ${item.objetivo}</p>
-        <p><strong>Meta Establecida:</strong> <span style="color: #4ade80; font-weight: bold;">${item.meta}</span> | <strong>Proceso:</strong> ${item.proceso}</p>
-        <hr style="border-color: rgba(255,255,255,0.1); margin: 8px 0;">
-        <table style="width: 100%; border-collapse: collapse; text-align: center;">
-          <thead>
-            <tr style="color: #94a3b8; border-bottom: 1px solid rgba(255,255,255,0.1);">
-              ${meses.map(m => `<th style="padding: 4px;">${m}</th>`).join('')}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              ${meses.map((_, idx) => `<td style="padding: 6px; color: ${idx <= 2 ? '#4ade80' : '#94a3b8'};">${idx <= 2 ? (85 + idx * 3) + '%' : '-'}</td>`).join('')}
-            </tr>
-          </tbody>
-        </table>
+      <div style="text-align: left; font-size: 13px; line-height: 1.6; color: #1e293b;">
+        <p style="color: #334155; margin-bottom: 10px;"><strong style="color: #0f172a;">Objetivo:</strong> ${item.objetivo} | <strong style="color: #0f172a;">Proceso:</strong> ${item.proceso}</p>
+        <div style="overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; background: #ffffff;">
+          <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 12px;">
+            <thead>
+              <tr style="background: #1e293b; color: #ffffff;">
+                ${meses.map(m => `<th style="padding: 8px 6px; font-size: 11px; text-transform: uppercase;">${m}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="background: #ffffff;">
+                ${meses.map((_, idx) => `<td style="padding: 10px 6px; font-weight: 700; color: ${idx <= 2 ? '#15803d' : '#94a3b8'};">${idx <= 2 ? (85 + idx * 3) + '%' : '-'}</td>`).join('')}
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     `;
 
     Swal.fire({
       title: '📊 Seguimiento Mensual de Cumplimiento (OBJ-04)',
       html: htmlTabla,
-      width: '700px',
-      confirmButtonText: 'Cerrar'
+      width: '720px',
+      confirmButtonText: 'Entendido',
+      confirmButtonColor: '#6366f1'
     });
   }
 

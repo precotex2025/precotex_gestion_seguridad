@@ -64,6 +64,15 @@ export class ReqLegalRegeditComponent implements OnInit {
     }
   }
 
+  // ORG-04: Cargar archivo de norma o certificación vigente
+  onArchivoNormaSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.formulario.patchValue({ evidencia: file.name });
+      this.toastr.success(`Archivo de norma '${file.name}' adjuntado correctamente.`, 'ORG-04: Documentación');
+    }
+  }
+
   onGuardar() {
     if (this.formulario.invalid) {
       this.toastr.warning('Por favor llene todos los campos obligatorios.', '', { timeOut: 2000 });
