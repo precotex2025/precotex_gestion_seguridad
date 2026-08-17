@@ -447,7 +447,7 @@ export class DocumentosControladosComponent implements OnInit {
     });
   }
 
-  // DOC-10: Visor Interno de Documento en Pantalla (Word, Excel, PDF)
+  // DOC-10: Visor Interno de Documento en Pantalla (Word, Excel, PDF) - INI-03: Hoja Completa
   onVistaPrevia(doc: any): void {
     const docUrl = this.documentosControladosService.getDownloadUrl(doc.archivo || doc.codigo);
     const formato = (doc.formato || doc.tipo || '').toUpperCase();
@@ -458,7 +458,7 @@ export class DocumentosControladosComponent implements OnInit {
 
     if (isWord) {
       viewerContent = `
-        <div style="background: #ffffff; color: #1e293b; border-radius: 8px; padding: 20px; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #cbd5e1; max-height: 440px; overflow-y: auto;">
+        <div style="background: #ffffff; color: #1e293b; border-radius: 8px; padding: 15px; text-align: left; border: 1px solid #cbd5e1;">
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 15px;">
             <div>
               <span style="background: #dbeafe; color: #1e40af; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">DOCUMENTO WORD (DOCX)</span>
@@ -474,17 +474,14 @@ export class DocumentosControladosComponent implements OnInit {
             <div><strong>Estado:</strong> <span style="color: #166534; font-weight: 700;">${doc.estado || 'Vigente'}</span></div>
           </div>
 
-          <div style="font-size: 13px; line-height: 1.6; color: #334155; padding: 12px; background: #fafafa; border-left: 4px solid #2563eb; border-radius: 4px; margin-bottom: 12px;">
-            <p style="margin: 0 0 6px 0; font-weight: 700; color: #0f172a;">📄 Extracto de Contenido del Documento Word:</p>
-            <p style="margin: 0;">Este documento contiene los procedimientos aprobados y vigentes para <strong>${doc.nombre}</strong> aplicados en las sedes operativas de Precotex. Puedes descargarlo en formato Word editable (.docx) mediante el botón inferior.</p>
+          <div style="width: 100%; height: 70vh; background: #fafafa; border-radius: 6px; overflow: hidden; border: 1px solid #cbd5e1;">
+            <iframe src="https://docs.google.com/gview?url=${encodeURIComponent(docUrl)}&embedded=true" style="width:100%; height:100%; border:none;"></iframe>
           </div>
-
-          <iframe src="https://docs.google.com/gview?url=${encodeURIComponent(docUrl)}&embedded=true" style="width:100%; height:220px; border:1px solid #cbd5e1; border-radius:6px;"></iframe>
         </div>
       `;
     } else if (isExcel) {
       viewerContent = `
-        <div style="background: #ffffff; color: #1e293b; border-radius: 8px; padding: 20px; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #cbd5e1; max-height: 440px; overflow-y: auto;">
+        <div style="background: #ffffff; color: #1e293b; border-radius: 8px; padding: 15px; text-align: left; border: 1px solid #cbd5e1;">
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #16a34a; padding-bottom: 10px; margin-bottom: 15px;">
             <div>
               <span style="background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">HOJA DE CÁLCULO EXCEL (XLSX)</span>
@@ -500,40 +497,15 @@ export class DocumentosControladosComponent implements OnInit {
             <div><strong>Estado:</strong> <span style="color: #15803d; font-weight: 700;">${doc.estado || 'Vigente'}</span></div>
           </div>
 
-          <div style="overflow-x: auto; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 12px;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-              <thead>
-                <tr style="background: #16a34a; color: #ffffff;">
-                  <th style="padding: 8px 10px; border: 1px solid #15803d;">Item</th>
-                  <th style="padding: 8px 10px; border: 1px solid #15803d;">Criterio / Indicador</th>
-                  <th style="padding: 8px 10px; border: 1px solid #15803d;">Meta</th>
-                  <th style="padding: 8px 10px; border: 1px solid #15803d;">Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style="background: #ffffff;">
-                  <td style="padding: 6px 10px; border: 1px solid #e2e8f0; text-align: center;">01</td>
-                  <td style="padding: 6px 10px; border: 1px solid #e2e8f0;">Cumplimiento de Registros de Control</td>
-                  <td style="padding: 6px 10px; border: 1px solid #e2e8f0; text-align: center;">100%</td>
-                  <td style="padding: 6px 10px; border: 1px solid #e2e8f0; text-align: center; color: #16a34a; font-weight: 700;">Conforme</td>
-                </tr>
-                <tr style="background: #f8fafc;">
-                  <td style="padding: 6px 10px; border: 1px solid #e2e8f0; text-align: center;">02</td>
-                  <td style="padding: 6px 10px; border: 1px solid #e2e8f0;">Visto Bueno de Lectura Semestral</td>
-                  <td style="padding: 6px 10px; border: 1px solid #e2e8f0; text-align: center;">≥ 95%</td>
-                  <td style="padding: 6px 10px; border: 1px solid #e2e8f0; text-align: center; color: #16a34a; font-weight: 700;">Conforme</td>
-                </tr>
-              </tbody>
-            </table>
+          <div style="width: 100%; height: 70vh; background: #fafafa; border-radius: 6px; overflow: hidden; border: 1px solid #cbd5e1;">
+            <iframe src="https://docs.google.com/gview?url=${encodeURIComponent(docUrl)}&embedded=true" style="width:100%; height:100%; border:none;"></iframe>
           </div>
-
-          <iframe src="https://docs.google.com/gview?url=${encodeURIComponent(docUrl)}&embedded=true" style="width:100%; height:200px; border:1px solid #cbd5e1; border-radius:6px;"></iframe>
         </div>
       `;
     } else {
-      // PDF o Formato Estándar
+      // PDF o Formato Estándar - INI-03: Hoja Completa
       viewerContent = `
-        <div style="background: #ffffff; color: #1e293b; border-radius: 8px; padding: 15px; text-align: left; border: 1px solid #cbd5e1;">
+        <div style="background: #ffffff; color: #1e293b; border-radius: 8px; padding: 15px; text-align: left; border: 1px solid #cbd5e1; height: 82vh; display: flex; flex-direction: column;">
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #6366f1; padding-bottom: 8px; margin-bottom: 12px;">
             <div>
               <span style="background: #e0e7ff; color: #4338ca; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">DOCUMENTO CONTROLADO PDF</span>
@@ -541,7 +513,7 @@ export class DocumentosControladosComponent implements OnInit {
             </div>
             <span style="font-family: monospace; font-weight: 700; color: #4338ca; font-size: 13px;">${doc.codigo}</span>
           </div>
-          <div style="width: 100%; height: 380px; background: #0b1220; border-radius: 6px; overflow: hidden;">
+          <div style="flex-grow: 1; width: 100%; background: #0b1220; border-radius: 6px; overflow: hidden;">
             <iframe src="${docUrl}" style="width: 100%; height: 100%; border: none;"></iframe>
           </div>
         </div>
@@ -551,7 +523,7 @@ export class DocumentosControladosComponent implements OnInit {
     Swal.fire({
       title: `👁️ Previsualización: ${doc.nombre}`,
       html: viewerContent,
-      width: '780px',
+      width: '95vw',
       showCloseButton: true,
       confirmButtonText: 'Descargar Documento',
       confirmButtonColor: '#6366f1',

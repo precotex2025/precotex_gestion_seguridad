@@ -153,14 +153,15 @@
 }
 
 .proc-pill {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: #7c6cf0;
-  background: rgba(124, 108, 240, 0.12);
-  border: 1px solid rgba(124, 108, 240, 0.25);
-  padding: 2px 7px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1e1b4b;
+  background: #e0e7ff;
+  border: 1px solid #c7d2fe;
+  padding: 4px 8px;
   border-radius: 6px;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.2;
 }
 
 .text-subtle {
