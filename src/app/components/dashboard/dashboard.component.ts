@@ -291,12 +291,17 @@ export class DashboardComponent implements OnInit {
       }
     });
 
-    // 2. Documentos Controlados
+    // 2. Documentos Controlados (INI-02)
     this.documentosService.getListadoDocumentosControlados('001', '001', '', '').subscribe({
       next: (res: any) => {
         if (res && res.elements) {
           this.dbCounts.documentos = res.elements.length;
           this.updateKpiValue('Docs. Controlados', this.dbCounts.documentos);
+          
+          res.elements.forEach((doc: any) => {
+            const fechaLim = doc.fec_Vencimiento || doc.vig || '';
+            this.evaluarAlertasVencimiento(doc.nombre || doc.denominacion, fechaLim, 'Documento');
+          });
         }
       }
     });
@@ -339,11 +344,16 @@ export class DashboardComponent implements OnInit {
       }
     });
 
-    // 7. Requisitos Legales
+    // 7. Requisitos Legales (INI-02)
     this.reqLegalService.getListadoReqLegal('').subscribe({
       next: (res: any) => {
         if (res && res.elements) {
           this.dbCounts.legales = res.elements.length;
+          
+          res.elements.forEach((req: any) => {
+            const fechaLim = req.vencimiento || req.proxeval || '';
+            this.evaluarAlertasVencimiento(req.requisito || req.norma, fechaLim, 'Req. Legal');
+          });
         }
       }
     });
@@ -366,6 +376,36 @@ export class DashboardComponent implements OnInit {
         }
       }
     });
+  }
+
+  // INI-02: Sistema de Alertas Generales Dinámicas
+  private evaluarAlertasVencimiento(titulo: string, fechaVencimientoStr: string, tipoModulo: string): void {
+    if (!fechaVencimientoStr) return;
+    const hoy = new Date();
+    const venc = new Date(fechaVencimientoStr);
+    
+    if (isNaN(venc.getTime())) return;
+    
+    const diffTime = venc.getTime() - hoy.getTime();
+    const diffDias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDias >= 0 && diffDias <= 15) {
+      // Alerta Crítica para Gerencias (15 días antes)
+      this.alertas.unshift({
+        titulo: `🔴 [GERENCIA] Vence en ${diffDias} días: ${titulo}`,
+        tiempo: `${diffDias} días rest.`,
+        nivel: 'Crítica (15d)',
+        severidad: 'danger'
+      });
+    } else if (diffDias > 15 && diffDias <= 30) {
+      // Alerta Preventiva para Jefaturas (30 días antes)
+      this.alertas.push({
+        titulo: `⚠️ [JEFATURA] Vence en ${diffDias} días: ${titulo}`,
+        tiempo: `${diffDias} días rest.`,
+        nivel: 'Preventiva (30d)',
+        severidad: 'warning'
+      });
+    }
   }
 
   private updateKpiValue(title: string, value: number): void {

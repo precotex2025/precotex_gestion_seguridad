@@ -139,7 +139,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
         title: 'Organización',
         breadcrumb: 'Organización · Estructura',
         tabs: [
-          { label: 'Normas y objetivos', route: '/principal/normas' },
+          { label: 'Gestión de Normas y certificaciones', route: '/principal/normas' },
           { label: 'Estructura organizacional', route: '/principal/organizacion' }
         ]
       };

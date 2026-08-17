@@ -49,6 +49,7 @@ export class NormasComponent implements OnInit {
     'fechaAuditoria',
     'estado',
     'descripcion',
+    'observaciones',
     'acciones'
    ];  
   dataSource = new MatTableDataSource<any>();  

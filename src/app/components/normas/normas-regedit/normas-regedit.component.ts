@@ -45,6 +45,7 @@ export class NormasRegeditComponent implements OnInit {
         ctrol_fechaAuditoria: [''],
         ctrol_estado: ['Vigente'],
         ctrol_descripcion: [''],
+        ctrol_observaciones: [''],
         ctrol_archivo: ['']
     });
 
@@ -82,6 +83,7 @@ export class NormasRegeditComponent implements OnInit {
      this.formulario.get('ctrol_fechaAuditoria')?.setValue(this.formatDate(this.data.Datos.fechaAuditoria));
      this.formulario.get('ctrol_estado')?.setValue(this.data.Datos.estado || 'Vigente');
      this.formulario.get('ctrol_descripcion')?.setValue(this.data.Datos.descripcion!);
+     this.formulario.get('ctrol_observaciones')?.setValue(this.data.Datos.observaciones || '');
      this.selectedFileName = this.data.Datos.archivo || this.data.Datos.ruta_Adjunto || '';
      this.formulario.get('ctrol_archivo')?.setValue(this.selectedFileName);
   }
@@ -93,6 +95,7 @@ export class NormasRegeditComponent implements OnInit {
     const sFechaAuditoria = String(this.formulario.get('ctrol_fechaAuditoria')?.value || '').trim();
     const sEstado = String(this.formulario.get('ctrol_estado')?.value || 'Vigente').trim();
     const sDescripcion = String(this.formulario.get('ctrol_descripcion')?.value || '').trim();
+    const sObservaciones = String(this.formulario.get('ctrol_observaciones')?.value || '').trim();
 
     if (!sNorma) {
       this.matSnackBar.open("¡Ingrese el nombre de la norma...!", 'Cerrar', {
@@ -134,6 +137,7 @@ export class NormasRegeditComponent implements OnInit {
           fechaAuditoria: fechaA,
           estado: sEstado,
           descripcion: sDescripcion,
+          observaciones: sObservaciones,
           flg_Activo: '1',
           cod_Usuario: 'admin', // TODO: Get from auth
           accion: this.data.Accion

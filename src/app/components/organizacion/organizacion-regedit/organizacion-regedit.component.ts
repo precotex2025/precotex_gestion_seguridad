@@ -267,10 +267,30 @@ export class OrganizacionRegeditComponent implements OnInit {
           next: (res: any) => {
             this.SpinnerService.hide();
             if (res.codeResult === 200 || res.codeResult === 201) {
-              // ORG-05: Extraer código de sede devuelto por la API o generado para guardar sus procesos inmediatamente
-              const targetSedeCode = this.data.Accion === 'U' 
-                ? this.data.Datos.codigo_Sede 
-                : (res.element?.codigo_Sede || res.codigo_Sede || res.elements?.[0]?.codigo_Sede || res.id || '001');
+              // ORG-05: Extraer código de sede devuelto por la API o generado en base de datos desde res.message
+              let targetSedeCode = '';
+              if (this.data.Accion === 'U') {
+                targetSedeCode = this.data.Datos.codigo_Sede;
+              } else if (res.message) {
+                // Buscamos patrones del tipo "código: XXX" o "codigo: XXX"
+                const match = res.message.match(/(?:código|codigo|code)\s*:\s*(\w+)/i);
+                if (match) {
+                  targetSedeCode = match[1].trim();
+                } else {
+                  // Fallback: Tomamos la última palabra del mensaje por si viene el código al final
+                  const words = res.message.trim().split(/\s+/);
+                  const lastWord = words[words.length - 1];
+                  if (lastWord && lastWord.match(/^\w+$/)) {
+                    targetSedeCode = lastWord.replace(/[.,;:!]/g, '');
+                  }
+                }
+              }
+
+              if (!targetSedeCode) {
+                targetSedeCode = '001';
+              }
+
+              console.log('[postProcesoMntoSedes] Sede procesada. targetSedeCode extraído:', targetSedeCode, 'Mensaje API:', res.message);
               
               this.saveProcesosForSede(targetSedeCode);
               this.toastr.success(res.message || 'Sede y sus procesos guardados con éxito.', '', { timeOut: 2500 });

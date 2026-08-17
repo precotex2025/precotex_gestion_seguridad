@@ -63,7 +63,7 @@
   <!-- BARRA DE HERRAMIENTAS INTEGRADA EN 1 SOLA FILA -->
   <div class="integrated-toolbar">
     <div class="toolbar-title-section">
-      <h2 class="seccion-titulo">NORMAS Y CERTIFICACIONES</h2>
+      <h2 class="seccion-titulo">GESTIÓN DE NORMAS Y CERTIFICACIONES</h2>
       <span class="results-badge">{{ dataSource.filteredData.length }} Normas</span>
     </div>
 
@@ -128,6 +128,14 @@
         <th mat-header-cell *matHeaderCellDef style="min-width: 240px;">Descripción</th>
         <td mat-cell *matCellDef="let row" class="desc-cell-truncated" [matTooltip]="row.descripcion" matTooltipPosition="above">
           {{ row.descripcion }}
+        </td>
+      </ng-container>
+
+      <!-- Observaciones con Truncado Seguro y Tooltip (ORG-01) -->
+      <ng-container matColumnDef="observaciones">
+        <th mat-header-cell *matHeaderCellDef style="min-width: 240px;">Observaciones</th>
+        <td mat-cell *matCellDef="let row" class="desc-cell-truncated" [matTooltip]="row.observaciones" matTooltipPosition="above">
+          {{ row.observaciones || '—' }}
         </td>
       </ng-container>
 
