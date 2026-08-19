@@ -67,7 +67,17 @@
       <span class="results-badge">{{ dataSource.filteredData.length }} Normas</span>
     </div>
 
-    <div class="toolbar-actions-section">
+    <div class="toolbar-actions-section" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+      <!-- Exportar a Excel (ORG-02) -->
+      <button type="button" (click)="onExportarExcel()" title="Exportar reporte a Excel (ORG-02)" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; padding: 7px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 12px; height: 36px; box-sizing: border-box;">
+        <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #10b981;">grid_on</mat-icon> Excel
+      </button>
+
+      <!-- Exportar a PDF (ORG-02) -->
+      <button type="button" (click)="onExportarPDF()" title="Exportar reporte a PDF (ORG-02)" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; padding: 7px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 12px; height: 36px; box-sizing: border-box;">
+        <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #ef4444;">picture_as_pdf</mat-icon> PDF
+      </button>
+
       <!-- Buscador Inline Integrado -->
       <div class="inline-search-box">
         <mat-icon class="search-icon">search</mat-icon>

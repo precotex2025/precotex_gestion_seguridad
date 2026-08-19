@@ -2,6 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { forkJoin, Observable } from 'rxjs';
 import { NgxSpinnerService } from 'ngx-spinner';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
@@ -265,37 +266,45 @@ export class OrganizacionRegeditComponent implements OnInit {
 
         this.sedesService.postProcesoMntoSedes(requestData).subscribe({
           next: (res: any) => {
-            this.SpinnerService.hide();
             if (res.codeResult === 200 || res.codeResult === 201) {
-              // ORG-05: Extraer código de sede devuelto por la API o generado en base de datos desde res.message
-              let targetSedeCode = '';
+              const proceedWithProcesos = (codeToUse: string) => {
+                this.saveProcesosForSede(codeToUse, () => {
+                  this.SpinnerService.hide();
+                  this.toastr.success(res.message || 'Sede y sus procesos guardados con éxito.', '', { timeOut: 2500 });
+                  this.dialogRef.close(true);
+                });
+              };
+
               if (this.data.Accion === 'U') {
-                targetSedeCode = this.data.Datos.codigo_Sede;
-              } else if (res.message) {
-                // Buscamos patrones del tipo "código: XXX" o "codigo: XXX"
-                const match = res.message.match(/(?:código|codigo|code)\s*:\s*(\w+)/i);
-                if (match) {
-                  targetSedeCode = match[1].trim();
-                } else {
-                  // Fallback: Tomamos la última palabra del mensaje por si viene el código al final
-                  const words = res.message.trim().split(/\s+/);
-                  const lastWord = words[words.length - 1];
-                  if (lastWord && lastWord.match(/^\w+$/)) {
-                    targetSedeCode = lastWord.replace(/[.,;:!]/g, '');
+                proceedWithProcesos(this.data.Datos.codigo_Sede);
+              } else {
+                let targetSedeCode = res.codigo_Sede || (res.elements && res.elements[0] && res.elements[0].codigo_Sede);
+                if (!targetSedeCode && res.message) {
+                  const match = res.message.match(/(?:código|codigo|code)\s*:\s*(\w+)/i);
+                  if (match) {
+                    targetSedeCode = match[1].trim();
                   }
                 }
-              }
 
-              if (!targetSedeCode) {
-                targetSedeCode = '001';
+                if (targetSedeCode) {
+                  proceedWithProcesos(targetSedeCode);
+                } else {
+                  this.sedesService.getListadoSedes('001', '1').subscribe({
+                    next: (listRes: any) => {
+                      if (listRes && listRes.elements) {
+                        const createdSede = listRes.elements.find((s: any) => (s.denominacion || '').trim().toLowerCase() === nombre.trim().toLowerCase());
+                        if (createdSede) {
+                          targetSedeCode = createdSede.codigo_Sede;
+                        }
+                      }
+                      proceedWithProcesos(targetSedeCode || '001');
+                    },
+                    error: () => proceedWithProcesos('001')
+                  });
+                }
               }
-
-              console.log('[postProcesoMntoSedes] Sede procesada. targetSedeCode extraído:', targetSedeCode, 'Mensaje API:', res.message);
-              
-              this.saveProcesosForSede(targetSedeCode);
-              this.toastr.success(res.message || 'Sede y sus procesos guardados con éxito.', '', { timeOut: 2500 });
-              this.dialogRef.close(true);
             } else {
+              this.SpinnerService.hide();
               this.toastr.error(res.message, '', { timeOut: 2500 });
             }
           },
@@ -308,9 +317,14 @@ export class OrganizacionRegeditComponent implements OnInit {
     });
   }
 
-  // ORG-05: Asocia directamente todos los procesos marcados en el checkbox a la sede creada/editada
-  saveProcesosForSede(sedeCode: string): void {
-    if (!sedeCode) return;
+  // ORG-05: Asocia directamente todos los procesos marcados en el checkbox a la sede creada/editada y espera confirmación del backend
+  saveProcesosForSede(sedeCode: string, callback: () => void): void {
+    if (!sedeCode) {
+      callback();
+      return;
+    }
+
+    const requests: Observable<any>[] = [];
     for (const proc of this.procesosList) {
       const isChecked = this.checkedProcesoCodes.has(proc.codigo_Proceso);
       let newSedeCode = proc.codigo_Sede;
@@ -321,22 +335,33 @@ export class OrganizacionRegeditComponent implements OnInit {
         newSedeCode = '001';
       }
 
-      // Guardar cambios en el proceso para asociarlo a la sede
-      const procData = {
-        Accion: 'U',
-        Codigo_Proceso: proc.codigo_Proceso,
-        Codigo_Organizacion: proc.codigo_Organizacion || '001',
-        Codigo_Sede: newSedeCode,
-        Proceso: proc.proceso,
-        Codigo_Tipo_Proceso: proc.codigo_Tipo_Proceso,
-        Descripcion: proc.descripcion || '',
-        Nombre_Adjunto: proc.nombre_Adjunto || '',
-        Ruta_Adjunto: proc.ruta_Adjunto || '',
-        Flg_Activo: '1',
-        Cod_Usuario: this.sUsuario
-      };
-      this.procesosService.postProcesoMntoProcesos(procData).subscribe();
+      if (newSedeCode !== proc.codigo_Sede) {
+        const procData = {
+          Accion: 'U',
+          Codigo_Proceso: proc.codigo_Proceso,
+          Codigo_Organizacion: proc.codigo_Organizacion || '001',
+          Codigo_Sede: newSedeCode,
+          Proceso: proc.proceso,
+          Codigo_Tipo_Proceso: proc.codigo_Tipo_Proceso,
+          Descripcion: proc.descripcion || '',
+          Nombre_Adjunto: proc.nombre_Adjunto || '',
+          Ruta_Adjunto: proc.ruta_Adjunto || '',
+          Flg_Activo: '1',
+          Cod_Usuario: this.sUsuario
+        };
+        requests.push(this.procesosService.postProcesoMntoProcesos(procData));
+      }
     }
+
+    if (requests.length === 0) {
+      callback();
+      return;
+    }
+
+    forkJoin(requests).subscribe({
+      next: () => callback(),
+      error: () => callback()
+    });
   }
 
   onClose(){

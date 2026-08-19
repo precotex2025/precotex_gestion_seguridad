@@ -185,10 +185,15 @@ export class LayoutComponent implements OnInit, OnDestroy {
       this.activeSublink = url;
     } else if (url.includes('/principal/accionesCorrectivas')) {
       this.currentModule = 'No conformidades';
+      const isAcciones = url.includes('/principal/accionesCorrectivas/acciones-correctivas');
       this.activeModule = {
         title: 'No conformidades',
-        breadcrumb: 'No conformidades · Acciones Correctivas',
-        tabs: []
+        breadcrumb: 'No conformidades · Gestión de Hallazgos',
+        activeTab: isAcciones ? 'acciones-correctivas' : 'declaracion-nc',
+        tabs: [
+          { id: 'declaracion-nc', label: 'Declaración de NC', route: '/principal/accionesCorrectivas' },
+          { id: 'acciones-correctivas', label: 'Acciones correctivas', route: '/principal/accionesCorrectivas/acciones-correctivas' }
+        ]
       };
       this.activeSublink = url;
     } else if (url.includes('/principal/analytics')) {
@@ -218,12 +223,14 @@ export class LayoutComponent implements OnInit, OnDestroy {
     } else if (url.includes('/principal/auditorias')) {
       this.currentModule = 'Auditorías';
       const isProgramaAnual = url.includes('/principal/auditorias/programa-anual');
+      const isEjecucion = url.includes('/principal/auditorias/ejecucion-resultados');
       this.activeModule = {
         title: 'Auditorías',
         breadcrumb: 'Auditorías · Control Interno',
-        activeTab: isProgramaAnual ? 'programa-anual' : 'auditorias',
+        activeTab: isEjecucion ? 'ejecucion-resultados' : (isProgramaAnual ? 'programa-anual' : 'auditorias'),
         tabs: [
-          { id: 'auditorias', label: 'Auditorías', route: '/principal/auditorias' },
+          { id: 'auditorias', label: 'Planificación de Auditorías', route: '/principal/auditorias' },
+          { id: 'ejecucion-resultados', label: 'Ejecución y Resultados', route: '/principal/auditorias/ejecucion-resultados' },
           { id: 'programa-anual', label: 'Programa anual', route: '/principal/auditorias/programa-anual' }
         ]
       };
@@ -253,9 +260,13 @@ export class LayoutComponent implements OnInit, OnDestroy {
       };
       this.activeSublink = url;
     } else {
-      this.currentModule = '';
-      this.activeModule = null;
-      this.activeSublink = '';
+      this.currentModule = 'Inicio';
+      this.activeModule = {
+        title: 'Inicio',
+        breadcrumb: 'Inicio · Dashboard Principal',
+        tabs: []
+      };
+      this.activeSublink = url;
     }
   }
 

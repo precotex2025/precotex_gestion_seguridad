@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuditoriasService } from '../../../services/auditorias.service';
+import { ProcesosService } from '../../../services/procesos.service';
 
 interface data {
   Title  : string;
@@ -22,6 +23,40 @@ interface data {
 export class AuditoriasRegeditComponent implements OnInit {
 
   formulario!: FormGroup;
+  objectKeys = Object.keys;
+
+  PROCESOS_GROUPS: { [key: string]: string[] } = {
+    'Estratégicos': [
+      'Gestión de la Dirección',
+      'Organización y Métodos',
+      'Gestión de la Calidad y Certificaciones'
+    ],
+    'Operativos / Cadena de Valor': [
+      'Desarrollo de Producto / Diseño',
+      'Comercial / Ventas',
+      'Planeamiento y Control de la Producción (PCP)',
+      'Compras y Abastecimiento',
+      'Hilandería',
+      'Tejeduría',
+      'Tintorería y Acabados Tela',
+      'Corte',
+      'Costura',
+      'Estampado y Bordado',
+      'Acabados Prenda / Empaque',
+      'Aseguramiento de la Calidad Manufactura',
+      'Despacho y Exportaciones'
+    ],
+    'De Apoyo': [
+      'Gestión Humana y Nómina',
+      'SSOMA (Seguridad, Salud Ocupacional y Medio Ambiente)',
+      'Mantenimiento e Infraestructura',
+      'Tecnologías de la Información (Sistemas)',
+      'Control Patrimonial y Almacenes',
+      'Administración, Contabilidad y Finanzas',
+      'Legal y Cumplimiento',
+      'Auditoría Interna'
+    ]
+  };
 
   constructor(
     private formBuilder       : FormBuilder,
@@ -29,17 +64,27 @@ export class AuditoriasRegeditComponent implements OnInit {
     private toastr            : ToastrService,
     private matSnackBar       : MatSnackBar,
     private auditoriasService : AuditoriasService,
+    private procesosService   : ProcesosService,
     @Inject(MAT_DIALOG_DATA) public data: data,
     public dialogRef: MatDialogRef<AuditoriasRegeditComponent>,
   ) {}
 
   ngOnInit(): void {
+    this.procesosService.getProcesosAgrupados().subscribe({
+      next: (groups: any) => {
+        if (groups && Object.keys(groups).length > 0) {
+          this.PROCESOS_GROUPS = { ...this.PROCESOS_GROUPS, ...groups };
+        }
+      }
+    });
+
     this.formulario = this.formBuilder.group({
       ctrol_codigo      : [''],
       ctrol_tipo        : ['Interna'],
       ctrol_norma       : ['ISO 9001:2015'],
+      ctrol_norma_otra  : [''],
       ctrol_responsable : [''],
-      ctrol_areas       : [''],
+      ctrol_areas       : ['Costura'],
       ctrol_inicio      : [''],
       ctrol_fin         : [''],
       ctrol_frecuencia  : ['Anual'],
@@ -58,7 +103,17 @@ export class AuditoriasRegeditComponent implements OnInit {
     const d = this.data.Datos;
     this.formulario.get('ctrol_codigo')?.setValue(d.codigo_Auditoria || '');
     this.formulario.get('ctrol_tipo')?.setValue(d.tipo || 'Interna');
-    this.formulario.get('ctrol_norma')?.setValue(d.norma || 'ISO 9001:2015');
+    
+    const normasStandard = ['ISO 9001:2015', 'ISO 45001:2018', 'ISO 14001:2015', 'OCS', 'BASC', 'WRAP', 'GOTS', 'GRS', 'OEKO-TEX'];
+    const loadedNorma = d.norma || 'ISO 9001:2015';
+    if (normasStandard.includes(loadedNorma)) {
+      this.formulario.get('ctrol_norma')?.setValue(loadedNorma);
+      this.formulario.get('ctrol_norma_otra')?.setValue('');
+    } else {
+      this.formulario.get('ctrol_norma')?.setValue('Otro');
+      this.formulario.get('ctrol_norma_otra')?.setValue(loadedNorma);
+    }
+
     this.formulario.get('ctrol_responsable')?.setValue(d.responsable || '');
     this.formulario.get('ctrol_areas')?.setValue(d.areas || '');
     this.formulario.get('ctrol_inicio')?.setValue(d.inicio || '');
@@ -70,7 +125,21 @@ export class AuditoriasRegeditComponent implements OnInit {
 
   onSave(): void {
     const sTipo        = String(this.formulario.get('ctrol_tipo')?.value        || 'Interna').trim();
-    const sNorma       = String(this.formulario.get('ctrol_norma')?.value       || '').trim();
+    let sNorma         = String(this.formulario.get('ctrol_norma')?.value       || '').trim();
+    const sNormaOtra   = String(this.formulario.get('ctrol_norma_otra')?.value  || '').trim();
+
+    if (sNorma === 'Otro') {
+      if (!sNormaOtra) {
+        this.matSnackBar.open('¡Ingrese el nombre de la norma auditada...!', 'Cerrar', {
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          duration: 1500,
+        });
+        return;
+      }
+      sNorma = sNormaOtra;
+    }
+
     const sResponsable = String(this.formulario.get('ctrol_responsable')?.value || '').trim();
     const sAreas       = String(this.formulario.get('ctrol_areas')?.value       || '').trim();
     const sInicio      = String(this.formulario.get('ctrol_inicio')?.value      || '').trim();

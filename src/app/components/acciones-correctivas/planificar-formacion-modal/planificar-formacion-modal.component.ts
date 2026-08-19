@@ -22,7 +22,7 @@ export class PlanificarFormacionModalComponent implements OnInit {
   formulario!: FormGroup;
   
   tiposOptions = ['Interna', 'Externa'];
-  estadosOptions = ['Pendiente', 'En ejecución', 'Completada', 'Vencida'];
+  estadosOptions = ['Abierta', 'En proceso', 'Cerrada', 'Fuera de plazo'];
 
   procesosGroups: { [key: string]: string[] } = {};
   auditoriasList: any[] = [];

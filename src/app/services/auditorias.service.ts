@@ -27,4 +27,19 @@ export class AuditoriasService {
     }
     return this.http.get(this.baseUrl + 'SNAuditoria/getListadoAuditorias', { headers, params });
   }
+
+  // Endpoints para Ejecución y Resultados (AUDEJEC - Hallazgos y Evidencias)
+  getListadoEjecucionAuditorias(sFiltro: string = ''): Observable<any> {
+    const headers = this.Header;
+    let params = new HttpParams();
+    if (sFiltro) {
+      params = params.append('sFiltro', sFiltro);
+    }
+    return this.http.get(this.baseUrl + 'SNAuditoria/getListadoEjecucionAuditorias', { headers, params });
+  }
+
+  postProcesoMntoEjecucion(data: any): Observable<any> {
+    const headers = this.Header;
+    return this.http.post(this.baseUrl + 'SNAuditoria/postProcesoMntoEjecucion', data, { headers });
+  }
 }

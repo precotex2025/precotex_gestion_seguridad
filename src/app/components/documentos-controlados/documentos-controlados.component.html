@@ -165,6 +165,12 @@
             <mat-icon class="icon-pdf-btn">picture_as_pdf</mat-icon>
             <span>PDF</span>
           </button>
+
+          <!-- DOC-07: Reporte de Visto Bueno Semestral - Solo Admin -->
+          <button type="button" class="btn-ghost-action" (click)="onReporteVistoBueno()" *ngIf="isUserAdmin" title="Reporte de Lectura Semestral por Jefaturas (DOC-07) - Solo Administradores">
+            <mat-icon style="color: #16a34a;">fact_check</mat-icon>
+            <span>Reporte DOC-07</span>
+          </button>
         </div>
       </div>
 

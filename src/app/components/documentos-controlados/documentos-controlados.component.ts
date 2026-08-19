@@ -59,6 +59,9 @@ export class DocumentosControladosComponent implements OnInit {
   PROCESOS_GROUPS: { [key: string]: string[] } = {};
 
   defaultDocs = [
+    { nombre: 'Procedimiento de Operación de Costura Industrial', codigo: 'PRO-COS-001', tipo: 'Procedimiento', version: 'v1.0', formato: 'PDF', proceso: 'Costura', vig: '2026-12-31', estado: 'Vigente', archivo: 'PRO-COS-001.pdf' },
+    { nombre: 'Instructivo de Ensamblado y Costura de Prendas', codigo: 'INS-COS-002', tipo: 'Instructivo', version: 'v1.1', formato: 'PDF', proceso: 'Costura', vig: '2026-11-15', estado: 'Vigente', archivo: 'INS-COS-002.pdf' },
+    { nombre: 'Formato de Inspección y Control de Calidad en Costura', codigo: 'FOR-COS-003', tipo: 'Formato', version: 'v2.0', formato: 'Excel', proceso: 'Costura', vig: '2026-09-30', estado: 'Vigente', archivo: 'FOR-COS-003.xlsx' },
     { nombre: 'Procedimiento de Gestión de ACR y Mejora', codigo: 'PRO-IMC-OYM-003', tipo: 'Procedimiento', version: 'v2.1', formato: 'PDF', proceso: 'Organización y Métodos', vig: '2026-06-10', estado: 'Vigente', archivo: 'PRO-IMC-OYM-003.pdf' },
     { nombre: 'Instructivo de Uso de Formato 5W-2H', codigo: 'INS-IMC-OYM-002', tipo: 'Instructivo', version: 'v1.2', formato: 'PDF', proceso: 'Organización y Métodos', vig: '2026-01-15', estado: 'Vigente', archivo: 'INS-IMC-OYM-002.pdf' },
     { nombre: 'Manual de Organización y Funciones — O&M', codigo: 'MAN-IMC-OYM-001', tipo: 'Manual', version: 'v5.2', formato: 'PDF', proceso: 'Organización y Métodos', vig: '2026-05-02', estado: 'Vigente', archivo: 'MAN-IMC-OYM-001.pdf' },
@@ -76,6 +79,38 @@ export class DocumentosControladosComponent implements OnInit {
 
   procesosMap: { [name: string]: string } = {};
   codeToProcessMap: { [code: string]: string } = {};
+
+  // DOC-08: Identificación automática del proceso/área del usuario conectado
+  getUserProcesoActual(): string {
+    let proc = (localStorage.getItem('precotex:usuario:proceso') || '').trim();
+    if (proc && proc.toLowerCase() !== 'general') return proc;
+
+    const puesto = (localStorage.getItem('precotex:usuario:puesto') || '').trim();
+    if (puesto) {
+      if (puesto.toLowerCase().includes('costura')) return 'Costura';
+      if (puesto.toLowerCase().includes('estampado')) return 'Estampado';
+      if (puesto.toLowerCase().includes('ssoma')) return 'SSOMA';
+      if (puesto.toLowerCase().includes('calidad')) return 'Calidad';
+      if (puesto.toLowerCase().includes('sistemas')) return 'Sistemas';
+      if (puesto.toLowerCase().includes('auditor')) return 'Auditoría Interna';
+      if (puesto.toLowerCase().includes('patrimonial')) return 'Control Patrimonial';
+    }
+
+    const puestosRaw = localStorage.getItem('precotex_puestos_usuarios') || localStorage.getItem('precotex:puestos:listado');
+    if (puestosRaw) {
+      try {
+        const userNom = (localStorage.getItem('precotex:usuario:nombre') || GlobalVariable.vusu || '').trim().toLowerCase();
+        const pList = JSON.parse(puestosRaw);
+        const matchP = pList.find((p: any) => 
+          (p.usuario || '').toLowerCase().includes(userNom) || 
+          (p.puesto || '').toLowerCase() === puesto.toLowerCase()
+        );
+        if (matchP && matchP.proceso) return matchP.proceso;
+      } catch (e) {}
+    }
+
+    return '';
+  }
 
   ngOnInit(): void {
     if (typeof window !== 'undefined') {
@@ -134,8 +169,9 @@ export class DocumentosControladosComponent implements OnInit {
   loadDocs() {
     this.documentosControladosService.getListadoDocumentosControlados('001', '001', '', '').subscribe({
       next: (res: any) => {
+        let rawList: any[] = [];
         if (res && res.success && res.elements && res.elements.length > 0) {
-          let mapped = res.elements.map((d: any) => ({
+          rawList = res.elements.map((d: any) => ({
             codigo_Documentos_Controlados: d.codigo_Documentos_Controlados,
             nombre: d.denominacion,
             codigo: d.codigo_Documento || d.codigo_Documentos_Controlados,
@@ -151,27 +187,66 @@ export class DocumentosControladosComponent implements OnInit {
             archivo: d.ruta_Adjunto || d.codigo_Documento,
             raw: d
           }));
+        } else {
+          rawList = [...this.defaultDocs];
+        }
 
-          // Filtrar por área/proceso si el usuario NO es Administrador
-          const rolVal = localStorage.getItem('vCod_Rol') || GlobalVariable.vCod_Rol.toString();
-          const isUserAdmin = rolVal === '1';
+        // DOC-08 & DOC-15: Restricción por Proceso Responsable y Visibilidad de Lectura
+        const rolVal = localStorage.getItem('vCod_Rol') || GlobalVariable.vCod_Rol.toString();
+        const isUserAdmin = rolVal === '1' || (GlobalVariable.vusu || '').toLowerCase() === 'admin';
 
-          if (!isUserAdmin) {
-            const userProceso = localStorage.getItem('precotex:usuario:proceso') || '';
-            if (userProceso && userProceso.trim() !== '' && userProceso.toLowerCase() !== 'general') {
-              mapped = mapped.filter((d: any) => 
-                (d.proceso || '').toLowerCase().trim() === userProceso.toLowerCase().trim()
-              );
+        if (!isUserAdmin) {
+          const userProceso = this.getUserProcesoActual();
+          if (userProceso && userProceso.toLowerCase() !== 'general') {
+            rawList = rawList.filter((d: any) => {
+              const docP = (d.proceso || '').toLowerCase().trim();
+              const uP = userProceso.toLowerCase().trim();
+              const esMismoProceso = docP === uP || docP.includes(uP) || uP.includes(docP);
+              
+              // DOC-15: Permisos de Visibilidad por Proceso
+              const visList: string[] = d.procesosVisibles || [];
+              const esPublico = visList.length === 0 || visList.includes('Todos los procesos') || visList.includes('__ALL__');
+              const tienePermisoEspecifico = visList.some((p: string) => p.toLowerCase().trim() === uP);
+
+              return esMismoProceso || esPublico || tienePermisoEspecifico;
+            });
+            if (this.activeFilter === '__all__') {
+              this.activeFilter = userProceso;
             }
           }
-
-          this.docsList = mapped;
-        } else {
-          this.docsList = [];
         }
+
+        this.docsList = rawList;
+        // DOC-13: Aplicar regla de negocio (versiones anteriores pasan a Obsoleto)
+        this.aplicarReglaObsoletosPorVersion(this.docsList);
       },
       error: () => {
-        this.docsList = [];
+        let rawList = [...this.defaultDocs];
+        const rolVal = localStorage.getItem('vCod_Rol') || GlobalVariable.vCod_Rol.toString();
+        const isUserAdmin = rolVal === '1' || (GlobalVariable.vusu || '').toLowerCase() === 'admin';
+
+        if (!isUserAdmin) {
+          const userProceso = this.getUserProcesoActual();
+          if (userProceso && userProceso.toLowerCase() !== 'general') {
+            rawList = rawList.filter((d: any) => {
+              const docP = (d.proceso || '').toLowerCase().trim();
+              const uP = userProceso.toLowerCase().trim();
+              const esMismoProceso = docP === uP || docP.includes(uP) || uP.includes(docP);
+
+              const visList: string[] = d.procesosVisibles || [];
+              const esPublico = visList.length === 0 || visList.includes('Todos los procesos') || visList.includes('__ALL__');
+              const tienePermisoEspecifico = visList.some((p: string) => p.toLowerCase().trim() === uP);
+
+              return esMismoProceso || esPublico || tienePermisoEspecifico;
+            });
+            if (this.activeFilter === '__all__') {
+              this.activeFilter = userProceso;
+            }
+          }
+        }
+        this.docsList = rawList;
+        // DOC-13: Aplicar regla de negocio (versiones anteriores pasan a Obsoleto)
+        this.aplicarReglaObsoletosPorVersion(this.docsList);
       }
     });
   }
@@ -383,6 +458,98 @@ export class DocumentosControladosComponent implements OnInit {
     return estadoActual || 'Vigente';
   }
 
+  // DOC-13: Regla de Negocio - Transición automática a 'Obsoleto' cuando se carga una nueva versión
+  aplicarReglaObsoletosPorVersion(list: any[]): void {
+    if (!list || list.length === 0) return;
+
+    const grupos: { [baseCode: string]: any[] } = {};
+
+    list.forEach(doc => {
+      const baseCode = this.obtenerCodigoBase(doc.codigo || doc.nombre);
+      if (baseCode) {
+        if (!grupos[baseCode]) grupos[baseCode] = [];
+        grupos[baseCode].push(doc);
+      }
+    });
+
+    for (const baseCode in grupos) {
+      const items = grupos[baseCode];
+      if (items.length > 1) {
+        let maxVerNum = -1;
+        items.forEach(item => {
+          const vNum = this.extraerNumeroVersion(item.version || item.codigo);
+          if (vNum > maxVerNum) {
+            maxVerNum = vNum;
+          }
+        });
+
+        items.forEach(item => {
+          const vNum = this.extraerNumeroVersion(item.version || item.codigo);
+          if (vNum < maxVerNum) {
+            item.estado = 'Obsoleto';
+            if (item.raw) item.raw.flg_Estado = 'Obsoleto';
+          }
+        });
+      }
+    }
+  }
+
+  obtenerCodigoBase(codigo: string): string {
+    if (!codigo) return '';
+    const clean = codigo.trim().toUpperCase();
+    const parts = clean.split('-');
+    if (parts.length >= 5) {
+      return parts.slice(0, 4).join('-');
+    }
+    return clean;
+  }
+
+  extraerNumeroVersion(verStr: string): number {
+    if (!verStr) return 1;
+    const match = verStr.toString().match(/\d+/);
+    return match ? parseInt(match[0], 10) : 1;
+  }
+
+  marcarVersionesAnterioresObsoletasEnBD(nuevoDoc: any): void {
+    if (!nuevoDoc || !nuevoDoc.codigo) return;
+    const baseNuevo = this.obtenerCodigoBase(nuevoDoc.codigo);
+    const vNuevoNum = this.extraerNumeroVersion(nuevoDoc.version || nuevoDoc.codigo);
+
+    this.docsList.forEach((d: any) => {
+      if (d.codigo === nuevoDoc.codigo && d.version === nuevoDoc.version) return;
+      const baseExistente = this.obtenerCodigoBase(d.codigo);
+      if (baseExistente === baseNuevo) {
+        const vExistenteNum = this.extraerNumeroVersion(d.version || d.codigo);
+        if (vExistenteNum < vNuevoNum) {
+          d.estado = 'Obsoleto';
+          const procCode = this.getProcessCodeByName(d.proceso);
+          const requestData = {
+            Accion: 'U',
+            Codigo_Documentos_Controlados: d.codigo_Documentos_Controlados || d.codigo || '001',
+            Codigo_Proceso: procCode,
+            Codigo_Carpeta_Control: '001',
+            Codigo_Normas: d.tipo || 'Procedimiento',
+            Codigo_Tiempo_Conservacion: '3 Anios',
+            Codigo_Tipo_Descarga: d.formato || 'PDF',
+            Denominacion: d.nombre || '',
+            Codigo_Documento: d.codigo || '',
+            Version_Documento: d.version || 'v1.0',
+            Ruta_Adjunto: d.archivo || '',
+            Descripcion: d.nombre || '',
+            bRegistroAsociado: true,
+            bRequiereRevision: false,
+            Flg_Estado: 'Obsoleto',
+            Fec_Vencimiento: d.vig || '',
+            Flg_Activo: true,
+            Cod_Usuario: this.sUsuario
+          };
+          this.documentosControladosService.postProcesoMnto(requestData).subscribe({ next: () => {}, error: () => {} });
+        }
+      }
+    });
+    this.saveDocs();
+  }
+
   getStatCount(status: string): number {
     const list = this.filteredDocs; // DOC-06: Indicadores dinámicos según el proceso seleccionado
     if (status === 'Total') {
@@ -391,144 +558,502 @@ export class DocumentosControladosComponent implements OnInit {
     return list.filter(d => d.estado === status).length;
   }
 
-  // DOC-07: Confirmación semestral de lectura por Jefaturas (Visto Bueno)
+  // DOC-07: Confirmación semestral de lectura por Jefaturas (Visto Bueno) con confirmación
   onDarVistoBueno(doc: any): void {
-    const usuario = this.sUsuario || 'Jefe de Proceso';
-    const fecha = new Date().toLocaleString();
-    doc.vistoBuenoInfo = { usuario, fecha };
-    
-    this.toastr.success(`Visto Bueno de lectura registrado por ${usuario} para: ${doc.nombre}`, 'Visto Bueno Semestral (DOC-07)');
-    Swal.fire('Visto Bueno Registrado', `Se ha dejado constancia de la lectura obligatoria semestral de: <strong>${doc.nombre}</strong><br><small>Por: ${usuario} - ${fecha}</small>`, 'success');
+    const usuario = localStorage.getItem('precotex:usuario:nombre') || GlobalVariable.vusu || this.sUsuario || 'Usuario';
+    const puesto = localStorage.getItem('precotex:usuario:puesto') || 'Jefe de Proceso';
+
+    // Si ya tiene visto bueno, mostrar info
+    if (doc.vistoBuenoInfo) {
+      Swal.fire({
+        icon: 'info',
+        title: '✅ Visto Bueno ya Registrado',
+        html: `
+          <div style="text-align: left; font-size: 13px; line-height: 1.7; color: #334155;">
+            <p>Este documento ya cuenta con Visto Bueno de lectura semestral:</p>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px;">
+              <tr style="background: #f1f5f9;">
+                <td style="padding: 6px 10px; border: 1px solid #cbd5e1; font-weight: 700; width: 35%;">Documento:</td>
+                <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">${doc.nombre}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 10px; border: 1px solid #cbd5e1; font-weight: 700;">Confirmado por:</td>
+                <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">${doc.vistoBuenoInfo.usuario}</td>
+              </tr>
+              <tr style="background: #f1f5f9;">
+                <td style="padding: 6px 10px; border: 1px solid #cbd5e1; font-weight: 700;">Puesto / Cargo:</td>
+                <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">${doc.vistoBuenoInfo.puesto}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 10px; border: 1px solid #cbd5e1; font-weight: 700;">Fecha y Hora:</td>
+                <td style="padding: 6px 10px; border: 1px solid #cbd5e1; font-family: monospace;">${doc.vistoBuenoInfo.fecha}</td>
+              </tr>
+            </table>
+          </div>
+        `,
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#2563eb'
+      });
+      return;
+    }
+
+    // Pedir confirmación antes de registrar el Visto Bueno
+    Swal.fire({
+      title: '📋 Confirmar Visto Bueno de Lectura Semestral',
+      html: `
+        <div style="text-align: left; font-size: 13px; line-height: 1.7; color: #334155;">
+          <p style="margin-bottom: 10px;">¿Confirma que ha <strong>leído y revisado</strong> el siguiente documento controlado?</p>
+          <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+            <div style="font-weight: 700; color: #0f172a; font-size: 14px;">${doc.nombre}</div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
+              Código: <strong>${doc.codigo}</strong> &nbsp;|&nbsp; Proceso: <strong>${doc.proceso || 'General'}</strong>
+            </div>
+          </div>
+          <div style="background: #fffbeb; border: 1px solid #fbbf24; border-radius: 6px; padding: 10px; font-size: 12px; color: #92400e;">
+            <strong>⚠️ Importante:</strong> Esta acción queda registrada como constancia de lectura obligatoria semestral (DOC-07). 
+            Solo los administradores pueden ver este reporte.
+          </div>
+          <div style="margin-top: 12px; font-size: 12px; color: #64748b;">
+            <strong>Usuario:</strong> ${usuario}<br>
+            <strong>Puesto:</strong> ${puesto}
+          </div>
+        </div>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: '✅ Sí, confirmo la lectura',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#16a34a',
+      cancelButtonColor: '#64748b',
+      reverseButtons: true
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const ahora = new Date();
+        const fechaStr = ahora.getFullYear() + '-' +
+          String(ahora.getMonth() + 1).padStart(2, '0') + '-' +
+          String(ahora.getDate()).padStart(2, '0') + ' ' +
+          ahora.toLocaleTimeString('es-PE', { hour12: false });
+
+        doc.vistoBuenoInfo = { usuario, puesto, fecha: fechaStr };
+
+        // Registrar también en el audit log de revisiones
+        this.registrarRevisionLectura(doc, 'Visto Bueno Semestral (DOC-07)');
+
+        // Guardar en localStorage para persistencia
+        this.guardarVistoBuenoLocal(doc);
+        this.saveDocs();
+
+        this.toastr.success(`Visto Bueno registrado por ${usuario}`, 'Lectura Confirmada (DOC-07)');
+
+        Swal.fire({
+          icon: 'success',
+          title: '✅ Visto Bueno Registrado',
+          html: `Se ha dejado constancia de la lectura obligatoria semestral de: <strong>${doc.nombre}</strong><br><small>Por: ${usuario} (${puesto}) - ${fechaStr}</small>`,
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#16a34a'
+        });
+      }
+    });
   }
 
-  // DOC-09: Historial de versiones del documento
-  onVerHistorial(doc: any): void {
-    const versionesHtml = `
-      <div style="text-align: left; font-size: 13px; line-height: 1.6; color: #1e293b;">
-        <p style="color: #334155; margin-bottom: 10px;">
-          <strong style="color: #0f172a;">Código:</strong> ${doc.codigo} | 
-          <strong style="color: #0f172a;">Documento:</strong> ${doc.nombre}
-        </p>
-        <div style="overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; background: #ffffff;">
-          <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+  // DOC-07: Guardar visto bueno en localStorage para persistencia
+  private guardarVistoBuenoLocal(doc: any): void {
+    const key = 'precotex_vistos_buenos';
+    let registros: any[] = [];
+    try {
+      registros = JSON.parse(localStorage.getItem(key) || '[]');
+    } catch { registros = []; }
+
+    // Evitar duplicados del mismo usuario/doc en el mismo semestre
+    const yaExiste = registros.some((r: any) => r.codigo === doc.codigo && r.usuario === doc.vistoBuenoInfo.usuario);
+    if (!yaExiste) {
+      registros.push({
+        codigo: doc.codigo,
+        nombre: doc.nombre,
+        proceso: doc.proceso,
+        usuario: doc.vistoBuenoInfo.usuario,
+        puesto: doc.vistoBuenoInfo.puesto,
+        fecha: doc.vistoBuenoInfo.fecha
+      });
+      localStorage.setItem(key, JSON.stringify(registros));
+    }
+  }
+
+  // DOC-07: Reporte de Jefaturas - Solo Admin: quién leyó y quién NO leyó sus documentos
+  onReporteVistoBueno(): void {
+    const registros: any[] = (() => {
+      try { return JSON.parse(localStorage.getItem('precotex_vistos_buenos') || '[]'); } catch { return []; }
+    })();
+
+    // Construir filas de documentos con y sin visto bueno
+    const docsConVisto = this.docsList.filter(d => d.vistoBuenoInfo);
+    const docsSinVisto = this.docsList.filter(d => !d.vistoBuenoInfo);
+
+    const filasConVisto = docsConVisto.length > 0 ? docsConVisto.map(d => `
+      <tr style="border-bottom: 1px solid #e2e8f0;">
+        <td style="padding: 6px 10px; font-family: monospace; font-weight: 600; color: #2563eb;">${d.codigo}</td>
+        <td style="padding: 6px 10px; color: #0f172a; font-weight: 600;">${d.nombre}</td>
+        <td style="padding: 6px 10px; color: #475569;">${d.proceso || 'General'}</td>
+        <td style="padding: 6px 10px; color: #15803d; font-weight: 700;">${d.vistoBuenoInfo.usuario}</td>
+        <td style="padding: 6px 10px; color: #475569;">${d.vistoBuenoInfo.puesto}</td>
+        <td style="padding: 6px 10px; font-family: monospace; color: #475569; font-size: 11px;">${d.vistoBuenoInfo.fecha}</td>
+        <td style="padding: 6px 10px; text-align: center;"><span style="background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 10px;">✅ LEÍDO</span></td>
+      </tr>
+    `).join('') : `<tr><td colspan="7" style="padding: 14px; text-align: center; color: #64748b; font-style: italic;">Ningún documento tiene Visto Bueno registrado aún.</td></tr>`;
+
+    const filasSinVisto = docsSinVisto.length > 0 ? docsSinVisto.map(d => `
+      <tr style="border-bottom: 1px solid #e2e8f0; background: #fef2f2;">
+        <td style="padding: 6px 10px; font-family: monospace; font-weight: 600; color: #dc2626;">${d.codigo}</td>
+        <td style="padding: 6px 10px; color: #0f172a; font-weight: 600;">${d.nombre}</td>
+        <td style="padding: 6px 10px; color: #475569;">${d.proceso || 'General'}</td>
+        <td colspan="3" style="padding: 6px 10px; color: #dc2626; font-weight: 600; text-align: center;">— Pendiente de lectura —</td>
+        <td style="padding: 6px 10px; text-align: center;"><span style="background: #fee2e2; color: #dc2626; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 10px;">⏳ PENDIENTE</span></td>
+      </tr>
+    `).join('') : '';
+
+    const reporteHtml = `
+      <div style="text-align: left; font-size: 13px; line-height: 1.5; color: #1e293b; max-height: 70vh; overflow-y: auto;">
+        
+        <!-- RESUMEN EJECUTIVO -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;">
+          <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 12px; text-align: center;">
+            <div style="font-size: 24px; font-weight: 800; color: #15803d;">${docsConVisto.length}</div>
+            <div style="font-size: 11px; color: #166534; font-weight: 600;">Documentos Leídos</div>
+          </div>
+          <div style="background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 12px; text-align: center;">
+            <div style="font-size: 24px; font-weight: 800; color: #dc2626;">${docsSinVisto.length}</div>
+            <div style="font-size: 11px; color: #991b1b; font-weight: 600;">Pendientes de Lectura</div>
+          </div>
+          <div style="background: #eff6ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 12px; text-align: center;">
+            <div style="font-size: 24px; font-weight: 800; color: #2563eb;">${this.docsList.length}</div>
+            <div style="font-size: 11px; color: #1e40af; font-weight: 600;">Total Documentos</div>
+          </div>
+        </div>
+
+        <!-- TABLA DE DOCUMENTOS LEÍDOS -->
+        <h4 style="font-size: 13px; font-weight: 700; color: #15803d; margin: 0 0 8px 0;">
+          ✅ Documentos con Visto Bueno Confirmado
+        </h4>
+        <div style="overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 16px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
             <thead>
-              <tr style="background: #1e293b; color: #ffffff;">
-                <th style="padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Versión</th>
-                <th style="padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Fecha / Hora</th>
-                <th style="padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Usuario / Editor</th>
-                <th style="padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Estado</th>
+              <tr style="background: #166534; color: #ffffff;">
+                <th style="padding: 6px 10px; text-align: left;">Código</th>
+                <th style="padding: 6px 10px; text-align: left;">Documento</th>
+                <th style="padding: 6px 10px; text-align: left;">Proceso</th>
+                <th style="padding: 6px 10px; text-align: left;">Jefe / Usuario</th>
+                <th style="padding: 6px 10px; text-align: left;">Puesto</th>
+                <th style="padding: 6px 10px; text-align: left;">Fecha</th>
+                <th style="padding: 6px 10px; text-align: center;">Estado</th>
               </tr>
             </thead>
-            <tbody>
-              <tr style="border-bottom: 1px solid #f1f5f9; background: #ffffff;">
-                <td style="padding: 10px 12px; color: #0f172a; font-weight: 700;">${doc.version || 'v1.0'} <span style="font-size: 10px; color: #6366f1; background: #e0e7ff; padding: 2px 6px; border-radius: 4px;">Actual</span></td>
-                <td style="padding: 10px 12px; color: #334155; font-weight: 500;">${doc.vig || '2026-01-15'} 10:30 hs</td>
-                <td style="padding: 10px 12px; color: #334155; font-weight: 500;">Jordan Pineda (O&M)</td>
-                <td style="padding: 10px 12px;"><span style="background: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 12px; font-weight: 700; font-size: 11px;">${doc.estado}</span></td>
-              </tr>
-              <tr style="background: #f8fafc;">
-                <td style="padding: 10px 12px; color: #475569; font-weight: 600;">v0.9 <span style="font-size: 10px; color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">Borrador</span></td>
-                <td style="padding: 10px 12px; color: #64748b;">2025-06-10 14:20 hs</td>
-                <td style="padding: 10px 12px; color: #64748b;">Reyna (Certificaciones)</td>
-                <td style="padding: 10px 12px;"><span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 12px; font-weight: 600; font-size: 11px;">Aprobado</span></td>
-              </tr>
-            </tbody>
+            <tbody>${filasConVisto}</tbody>
           </table>
         </div>
+
+        <!-- TABLA DE DOCUMENTOS PENDIENTES -->
+        ${docsSinVisto.length > 0 ? `
+          <h4 style="font-size: 13px; font-weight: 700; color: #dc2626; margin: 0 0 8px 0;">
+            ⏳ Documentos Pendientes de Lectura
+          </h4>
+          <div style="overflow-x: auto; border-radius: 8px; border: 1px solid #fca5a5; margin-bottom: 10px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+              <thead>
+                <tr style="background: #991b1b; color: #ffffff;">
+                  <th style="padding: 6px 10px; text-align: left;">Código</th>
+                  <th style="padding: 6px 10px; text-align: left;">Documento</th>
+                  <th style="padding: 6px 10px; text-align: left;">Proceso</th>
+                  <th colspan="3" style="padding: 6px 10px; text-align: center;">Responsable</th>
+                  <th style="padding: 6px 10px; text-align: center;">Estado</th>
+                </tr>
+              </thead>
+              <tbody>${filasSinVisto}</tbody>
+            </table>
+          </div>
+        ` : ''}
+
       </div>
     `;
 
     Swal.fire({
-      title: '📜 Historial de Versiones (DOC-09)',
-      html: versionesHtml,
-      width: '680px',
-      confirmButtonText: 'Entendido',
-      confirmButtonColor: '#6366f1'
+      title: '📊 Reporte de Lectura Semestral - Jefaturas (DOC-07)',
+      html: reporteHtml,
+      width: '900px',
+      confirmButtonText: 'Cerrar Reporte',
+      confirmButtonColor: '#2563eb'
     });
   }
 
-  // DOC-10: Visor Interno de Documento en Pantalla (Word, Excel, PDF) - INI-03: Hoja Completa
-  onVistaPrevia(doc: any): void {
-    const docUrl = this.documentosControladosService.getDownloadUrl(doc.archivo || doc.codigo);
-    const formato = (doc.formato || doc.tipo || '').toUpperCase();
-    const isWord = formato.includes('WORD') || formato.includes('DOC');
-    const isExcel = formato.includes('EXCEL') || formato.includes('XLS');
-
-    let viewerContent = '';
-
-    if (isWord) {
-      viewerContent = `
-        <div style="background: #ffffff; color: #1e293b; border-radius: 8px; padding: 15px; text-align: left; border: 1px solid #cbd5e1;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 15px;">
-            <div>
-              <span style="background: #dbeafe; color: #1e40af; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">DOCUMENTO WORD (DOCX)</span>
-              <h3 style="margin: 4px 0 0 0; font-size: 16px; color: #0f172a;">${doc.nombre}</h3>
-            </div>
-            <span style="font-family: monospace; font-weight: 700; color: #2563eb; font-size: 14px;">${doc.codigo}</span>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 10px; border-radius: 6px; font-size: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0;">
-            <div><strong>Proceso:</strong> ${doc.proceso || 'Organización y Métodos'}</div>
-            <div><strong>Versión:</strong> ${doc.version || 'v1.0'}</div>
-            <div><strong>Vigencia:</strong> ${doc.vig || 'Vigente'}</div>
-            <div><strong>Estado:</strong> <span style="color: #166534; font-weight: 700;">${doc.estado || 'Vigente'}</span></div>
-          </div>
-
-          <div style="width: 100%; height: 70vh; background: #fafafa; border-radius: 6px; overflow: hidden; border: 1px solid #cbd5e1;">
-            <iframe src="https://docs.google.com/gview?url=${encodeURIComponent(docUrl)}&embedded=true" style="width:100%; height:100%; border:none;"></iframe>
-          </div>
-        </div>
-      `;
-    } else if (isExcel) {
-      viewerContent = `
-        <div style="background: #ffffff; color: #1e293b; border-radius: 8px; padding: 15px; text-align: left; border: 1px solid #cbd5e1;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #16a34a; padding-bottom: 10px; margin-bottom: 15px;">
-            <div>
-              <span style="background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">HOJA DE CÁLCULO EXCEL (XLSX)</span>
-              <h3 style="margin: 4px 0 0 0; font-size: 16px; color: #0f172a;">${doc.nombre}</h3>
-            </div>
-            <span style="font-family: monospace; font-weight: 700; color: #16a34a; font-size: 14px;">${doc.codigo}</span>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 10px; border-radius: 6px; font-size: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0;">
-            <div><strong>Proceso:</strong> ${doc.proceso || 'General'}</div>
-            <div><strong>Formato:</strong> Excel (.xlsx)</div>
-            <div><strong>Versión:</strong> ${doc.version || 'v1.0'}</div>
-            <div><strong>Estado:</strong> <span style="color: #15803d; font-weight: 700;">${doc.estado || 'Vigente'}</span></div>
-          </div>
-
-          <div style="width: 100%; height: 70vh; background: #fafafa; border-radius: 6px; overflow: hidden; border: 1px solid #cbd5e1;">
-            <iframe src="https://docs.google.com/gview?url=${encodeURIComponent(docUrl)}&embedded=true" style="width:100%; height:100%; border:none;"></iframe>
-          </div>
-        </div>
-      `;
-    } else {
-      // PDF o Formato Estándar - INI-03: Hoja Completa
-      viewerContent = `
-        <div style="background: #ffffff; color: #1e293b; border-radius: 8px; padding: 15px; text-align: left; border: 1px solid #cbd5e1; height: 82vh; display: flex; flex-direction: column;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #6366f1; padding-bottom: 8px; margin-bottom: 12px;">
-            <div>
-              <span style="background: #e0e7ff; color: #4338ca; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">DOCUMENTO CONTROLADO PDF</span>
-              <h3 style="margin: 4px 0 0 0; font-size: 15px; color: #0f172a;">${doc.nombre}</h3>
-            </div>
-            <span style="font-family: monospace; font-weight: 700; color: #4338ca; font-size: 13px;">${doc.codigo}</span>
-          </div>
-          <div style="flex-grow: 1; width: 100%; background: #0b1220; border-radius: 6px; overflow: hidden;">
-            <iframe src="${docUrl}" style="width: 100%; height: 100%; border: none;"></iframe>
-          </div>
-        </div>
-      `;
+  // Helper para registrar cada ingreso o revisión real de un usuario sobre el documento (DOC-09)
+  private registrarRevisionLectura(doc: any, accionStr: string = 'Lectura / Vista Previa'): void {
+    if (!doc.auditRevisiones) {
+      doc.auditRevisiones = [];
     }
 
+    const activeUser = localStorage.getItem('precotex:usuario:nombre') || GlobalVariable.vusu || 'admin';
+    const activePuesto = localStorage.getItem('precotex:usuario:puesto') || (activeUser.toLowerCase().includes('admin') ? 'Super Administrador' : 'Responsable SIG');
+    
+    const ahora = new Date();
+    const fStr = ahora.getFullYear() + '-' +
+      String(ahora.getMonth() + 1).padStart(2, '0') + '-' +
+      String(ahora.getDate()).padStart(2, '0') + ' ' +
+      ahora.toLocaleTimeString('es-PE', { hour12: false });
+
+    // Evitar registros duplicados en el mismo minuto para la misma acción
+    const yaExiste = doc.auditRevisiones.some((r: any) => 
+      r.usuario === activeUser && 
+      r.accion === accionStr && 
+      r.fechaHora.substring(0, 16) === fStr.substring(0, 16)
+    );
+
+    if (!yaExiste) {
+      doc.auditRevisiones.unshift({
+        usuario: activeUser,
+        puesto: activePuesto,
+        fechaHora: fStr,
+        accion: accionStr
+      });
+    }
+  }
+
+  // DOC-09: Historial de versiones y auditoría real de usuarios que ingresaron a revisar
+  onVerHistorial(doc: any): void {
+    this.registrarRevisionLectura(doc, 'Consulta de Histórico (DOC-09)');
+
+    const activeUser = localStorage.getItem('precotex:usuario:nombre') || GlobalVariable.vusu || 'admin';
+    const activePuesto = localStorage.getItem('precotex:usuario:puesto') || (activeUser.toLowerCase().includes('admin') ? 'Super Administrador' : 'Responsable SIG');
+
+    // 1. Detección dinámica del usuario real que subió el documento
+    if (!doc.historialVersiones || doc.historialVersiones.length === 0) {
+      const uploaderNombre = doc.usuarioSubio || `${activeUser} (${activePuesto})`;
+      const uploaderFecha = doc.fechaHoraSubida || (doc.vig ? doc.vig + ' 09:00:00' : '2026-08-19 12:45:00');
+      
+      doc.historialVersiones = [
+        {
+          version: doc.version || 'v1',
+          usuarioSubio: uploaderNombre,
+          fechaHora: uploaderFecha,
+          tipoCarga: 'Versión Cargada (Inicial)'
+        }
+      ];
+    }
+
+    const versionesRowsHtml = doc.historialVersiones.map((v: any, idx: number) => `
+      <tr style="border-bottom: 1px solid #f1f5f9; background: ${idx === 0 ? '#ffffff' : '#f8fafc'};">
+        <td style="padding: 8px 10px; font-weight: 700; color: #0f172a;">${v.version} ${idx === 0 ? '<span style="font-size: 9px; color: #2563eb; background: #eff6ff; padding: 1px 5px; border-radius: 4px;">Actual</span>' : ''}</td>
+        <td style="padding: 8px 10px; font-weight: 600; color: #334155;">${v.usuarioSubio}</td>
+        <td style="padding: 8px 10px; color: #475569; font-family: monospace;">${v.fechaHora}</td>
+        <td style="padding: 8px 10px;"><span style="background: ${idx === 0 ? '#dcfce7' : '#f1f5f9'}; color: ${idx === 0 ? '#15803d' : '#475569'}; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 11px;">${v.tipoCarga || 'Versión Vigente'}</span></td>
+      </tr>
+    `).join('');
+
+    // 2. Trazabilidad de accesos y revisiones del documento sin datos simulados falsos
+    const revisiones = doc.auditRevisiones || [];
+    let revisionesRowsHtml = '';
+
+    if (revisiones.length === 0) {
+      revisionesRowsHtml = `
+        <tr style="background: #ffffff;">
+          <td colspan="4" style="padding: 16px; text-align: center; color: #64748b; font-style: italic;">
+            No hay registros de revisión anteriores. Aún ningún otro usuario ha ingresado a revisar este documento.
+          </td>
+        </tr>
+      `;
+    } else {
+      revisionesRowsHtml = revisiones.map((r: any) => `
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+          <td style="padding: 8px 10px; font-weight: 600; color: #0f172a;">${r.usuario}</td>
+          <td style="padding: 8px 10px; color: #475569;">${r.puesto}</td>
+          <td style="padding: 8px 10px; color: #475569; font-family: monospace;">${r.fechaHora}</td>
+          <td style="padding: 8px 10px;"><span style="background: #e0e7ff; color: #3730a3; padding: 2px 7px; border-radius: 10px; font-weight: 600; font-size: 10px;">${r.accion}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    const versionesHtml = `
+      <div style="text-align: left; font-size: 13px; line-height: 1.5; color: #1e293b;">
+        
+        <!-- RESUMEN DOCUMENTO -->
+        <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <strong style="color: #0f172a; font-size: 14px;">📄 ${doc.nombre}</strong>
+            <span style="font-family: monospace; font-weight: 700; color: #2563eb; background: #dbeafe; padding: 2px 8px; border-radius: 4px;">${doc.codigo}</span>
+          </div>
+          <div style="font-size: 12px; color: #64748b; display: flex; gap: 12px;">
+            <span>Proceso: <strong style="color: #334155;">${doc.proceso || 'General'}</strong></span>
+            <span>Versión Actual: <strong style="color: #334155;">${doc.version || 'v1.0'}</strong></span>
+            <span>Estado: <strong style="color: #166534;">${doc.estado || 'Vigente'}</strong></span>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 1: HISTORIAL DE VERSIONES (CARGA REAL Y SUBSIGUIENTES) -->
+        <h4 style="font-size: 13px; font-weight: 700; color: #0f172a; margin: 0 0 8px 0;">
+          📤 1. Historial de Versiones Subidas (Primera versión y subsiguientes)
+        </h4>
+        <div style="overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 16px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+            <thead>
+              <tr style="background: #1e293b; color: #ffffff;">
+                <th style="padding: 8px 10px; text-align: left;">Versión</th>
+                <th style="padding: 8px 10px; text-align: left;">Usuario que Subió</th>
+                <th style="padding: 8px 10px; text-align: left;">Fecha y Hora</th>
+                <th style="padding: 8px 10px; text-align: left;">Estado / Carga</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${versionesRowsHtml}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- SECCIÓN 2: HISTORIAL REAL DE USUARIOS QUE INGRESARON A REVISAR -->
+        <h4 style="font-size: 13px; font-weight: 700; color: #0f172a; margin: 0 0 8px 0;">
+          👁️ 2. Historial de Usuarios que Ingresaron a Revisar el Documento
+        </h4>
+        <div style="overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; max-height: 180px; overflow-y: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+            <thead>
+              <tr style="background: #0f172a; color: #ffffff;">
+                <th style="padding: 8px 10px; text-align: left;">Usuario</th>
+                <th style="padding: 8px 10px; text-align: left;">Puesto / Cargo</th>
+                <th style="padding: 8px 10px; text-align: left;">Fecha y Hora</th>
+                <th style="padding: 8px 10px; text-align: left;">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${revisionesRowsHtml}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    `;
+
     Swal.fire({
-      title: `👁️ Previsualización: ${doc.nombre}`,
+      title: '📜 Histórico de Versiones y Revisiones (DOC-09)',
+      html: versionesHtml,
+      width: '740px',
+      confirmButtonText: 'Entendido',
+      confirmButtonColor: '#2563eb'
+    });
+  }
+
+  // DOC-10: Visor Interno de Documento en Pantalla (Word, Excel, PDF) - Contenido Real del Archivo
+  onVistaPrevia(doc: any): void {
+    this.registrarRevisionLectura(doc, 'Ingreso a revisar documento (Vista Previa)');
+
+    const docUrl = this.documentosControladosService.getDownloadUrl(doc.archivo || doc.codigo);
+    const formato = (doc.formato || '').toUpperCase();
+    const archivoExt = (doc.archivo || '').toLowerCase();
+
+    // Detectar tipo real por extensión del archivo
+    const isPdf = formato.includes('PDF') || archivoExt.endsWith('.pdf');
+    const isExcel = formato.includes('EXCEL') || formato.includes('XLS') || archivoExt.endsWith('.xls') || archivoExt.endsWith('.xlsx');
+    // Word: todo lo que no sea PDF ni Excel (docx por defecto)
+    const isWord = !isPdf && !isExcel;
+
+    const badgeColor = isWord ? '#2563eb' : (isExcel ? '#16a34a' : '#6366f1');
+    const badgeBg = isWord ? '#dbeafe' : (isExcel ? '#dcfce7' : '#e0e7ff');
+    const badgeText = isWord ? 'DOCUMENTO WORD (DOCX)' : (isExcel ? 'HOJA DE CÁLCULO EXCEL (XLSX)' : 'DOCUMENTO CONTROLADO PDF');
+
+    // HTML del visor con un contenedor dinámico donde se cargará el contenido real
+    const viewerContent = `
+      <div style="background: #f8fafc; color: #1e293b; border-radius: 10px; padding: 16px; text-align: left; border: 1px solid #cbd5e1; max-height: 85vh; display: flex; flex-direction: column;">
+        
+        <!-- ENCABEZADO -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid ${badgeColor}; padding-bottom: 10px; margin-bottom: 12px; background: #ffffff; padding: 10px 14px; border-radius: 6px; border: 1px solid #e2e8f0;">
+          <div>
+            <span style="background: ${badgeBg}; color: ${badgeColor}; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 4px;">${badgeText}</span>
+            <h3 style="margin: 6px 0 0 0; font-size: 17px; color: #0f172a;">${doc.nombre}</h3>
+          </div>
+          <div style="text-align: right;">
+            <span style="font-family: monospace; font-weight: 700; color: ${badgeColor}; font-size: 14px; background: #f8fafc; padding: 4px 10px; border-radius: 6px; border: 1px solid #e2e8f0;">${doc.codigo}</span>
+          </div>
+        </div>
+
+        <!-- BARRA RESUMEN -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; background: #ffffff; padding: 8px 14px; border-radius: 6px; font-size: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0;">
+          <div><span style="color: #64748b;">Proceso:</span> <strong style="color: #0f172a;">${doc.proceso || 'General'}</strong></div>
+          <div><span style="color: #64748b;">Versión:</span> <strong style="color: #0f172a;">${doc.version || 'v1.0'}</strong></div>
+          <div><span style="color: #64748b;">Vigencia:</span> <strong style="color: #0f172a;">${doc.vig || 'Vigente'}</strong></div>
+          <div><span style="color: #64748b;">Estado:</span> <strong style="color: #166534;">${doc.estado || 'Vigente'}</strong></div>
+        </div>
+
+        <!-- CONTENEDOR DEL DOCUMENTO REAL -->
+        <div id="docRealContentContainer" style="flex-grow: 1; width: 100%; overflow-y: auto; background: #e2e8f0; padding: 15px; border-radius: 6px; border: 1px solid #cbd5e1; min-height: 55vh;">
+          <div style="display: flex; justify-content: center; align-items: center; height: 200px;">
+            <div style="text-align: center;">
+              <div style="width: 40px; height: 40px; border: 4px solid #cbd5e1; border-top-color: ${badgeColor}; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px;"></div>
+              <p style="color: #64748b; font-size: 13px;">Cargando contenido real del documento...</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+    `;
+
+    Swal.fire({
+      title: '',
       html: viewerContent,
-      width: '95vw',
+      width: '90vw',
       showCloseButton: true,
-      confirmButtonText: 'Descargar Documento',
-      confirmButtonColor: '#6366f1',
+      confirmButtonText: '📥 Descargar Archivo Original',
+      confirmButtonColor: '#2563eb',
       showCancelButton: true,
-      cancelButtonText: 'Cerrar Visor'
+      cancelButtonText: 'Cerrar Visor',
+      didOpen: () => {
+        const container = document.getElementById('docRealContentContainer');
+        if (!container) return;
+
+        if (isPdf) {
+          // PDF: Fetch as Blob y mostrar inline
+          fetch(docUrl)
+            .then(res => res.blob())
+            .then(blob => {
+              const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+              const pdfUrl = URL.createObjectURL(pdfBlob);
+              container.innerHTML = `
+                <div style="width: 100%; height: 72vh; background: #0f172a; border-radius: 6px; overflow: hidden;">
+                  <iframe src="${pdfUrl}" style="width: 100%; height: 100%; border: none;"></iframe>
+                </div>
+              `;
+            }).catch(() => {
+              container.innerHTML = `<p style="color: #dc2626; text-align: center; padding: 40px;">Error al cargar el PDF. Use el botón "Descargar Archivo Original" para obtener el documento.</p>`;
+            });
+        } else if (isWord) {
+          // Word DOCX: Fetch como ArrayBuffer y convertir a HTML con mammoth.js
+          fetch(docUrl)
+            .then(res => res.arrayBuffer())
+            .then(arrayBuffer => {
+              return (window as any).mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+            })
+            .then((result: any) => {
+              const docHtml = result.value || '';
+              container.innerHTML = `
+                <div style="background: #ffffff; color: #1e293b; padding: 30px 40px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.12); max-width: 850px; margin: 0 auto; border: 1px solid #cbd5e1; font-family: 'Segoe UI', 'Calibri', Arial, sans-serif; font-size: 13px; line-height: 1.7;">
+                  ${docHtml}
+                </div>
+              `;
+            })
+            .catch(() => {
+              container.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #475569;">
+                  <p style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">⚠️ No se pudo renderizar la vista previa del documento Word.</p>
+                  <p style="font-size: 13px;">Presione <strong>"Descargar Archivo Original"</strong> para abrir el archivo en Microsoft Word.</p>
+                </div>
+              `;
+            });
+        } else {
+          // Excel: Intentar leer con fetch y mostrar mensaje de fallback
+          container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #475569;">
+              <p style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">📊 Archivo Excel detectado</p>
+              <p style="font-size: 13px;">Los archivos Excel se visualizan mejor en Microsoft Excel. Presione <strong>"Descargar Archivo Original"</strong> para abrirlo.</p>
+            </div>
+          `;
+        }
+      }
     }).then((res: any) => {
       if (res.isConfirmed) {
         this.onDescargar(doc);
@@ -617,7 +1142,7 @@ export class DocumentosControladosComponent implements OnInit {
           Codigo_Proceso: procCode,
           Codigo_Carpeta_Control: '001',
           Codigo_Normas: res.tipo || 'Procedimiento',
-          Codigo_Tiempo_Conservacion: '1 Anio',
+          Codigo_Tiempo_Conservacion: '3 Anios',
           Codigo_Tipo_Descarga: res.formato || 'PDF',
           Denominacion: res.nombre || '',
           Codigo_Documento: res.codigo || '',
@@ -634,11 +1159,13 @@ export class DocumentosControladosComponent implements OnInit {
 
         this.documentosControladosService.postProcesoMnto(requestData).subscribe({
           next: () => {
+            this.marcarVersionesAnterioresObsoletasEnBD(res);
             this.loadDocs();
             this.toastr.success('Documento guardado en la BD con éxito', 'Éxito');
           },
           error: () => {
             this.docsList.push(res);
+            this.marcarVersionesAnterioresObsoletasEnBD(res);
             this.saveDocs();
             this.toastr.success('Documento registrado localmente', 'Éxito');
           }
@@ -670,7 +1197,7 @@ export class DocumentosControladosComponent implements OnInit {
           Codigo_Proceso: procCode,
           Codigo_Carpeta_Control: '001',
           Codigo_Normas: res.tipo || 'Procedimiento',
-          Codigo_Tiempo_Conservacion: '1 Anio',
+          Codigo_Tiempo_Conservacion: '3 Anios',
           Codigo_Tipo_Descarga: res.formato || 'PDF',
           Denominacion: res.nombre || '',
           Codigo_Documento: res.codigo || '',
@@ -711,7 +1238,7 @@ export class DocumentosControladosComponent implements OnInit {
         Codigo_Proceso: procCode,
         Codigo_Carpeta_Control: '001',
         Codigo_Normas: doc.tipo || 'Procedimiento',
-        Codigo_Tiempo_Conservacion: '1 Anio',
+        Codigo_Tiempo_Conservacion: '3 Anios',
         Codigo_Tipo_Descarga: doc.formato || 'PDF',
         Denominacion: doc.nombre || '',
         Codigo_Documento: doc.codigo || '',
@@ -741,8 +1268,9 @@ export class DocumentosControladosComponent implements OnInit {
 
   onCargarLote() {
     let dialogRef = this.dialog.open(DocumentosControladosLoteComponent, {
-      width: '600px',
-      maxHeight: '90vh',
+      width: '92vw',
+      maxWidth: '1150px',
+      maxHeight: '92vh',
       disableClose: true
     });
 

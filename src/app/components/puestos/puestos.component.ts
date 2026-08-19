@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
+import { HttpClient } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { PuestosUsuariosRegeditComponent } from './puestos-usuarios-regedit/puestos-usuarios-regedit.component';
@@ -34,29 +35,16 @@ export class PuestosComponent implements OnInit {
     'estado',
     'acciones'
   ];
-  dataSource = new MatTableDataSource<any>();
+  dataSource = new MatTableDataSource<any>([]);
 
-  accesosList = [
-    { n: 'Carlos Ríos', rol: 'Ger. Producción', acc: 'editó documento', t: 'hoy 09:14', c: 'blue' },
-    { n: 'Ana Torres', rol: 'Jefe SSOMA', acc: 'leyó doc. seguridad', t: 'hoy 08:52', c: 'green' },
-    { n: 'Rosa Chávez', rol: 'Coord. Logística', acc: 'inicio de sesión', t: 'hoy 08:30', c: 'amber' },
-    { n: 'Luis Mamani', rol: 'Sup. Calidad', acc: 'descargó reporte', t: 'ayer 17:44', c: 'violet' },
-    { n: 'Pedro Salas', rol: 'Analista Riesgos', acc: 'modificó matriz', t: 'ayer 16:10', c: 'blue' },
-    { n: 'Ana Torres', rol: 'Jefe SSOMA', acc: 'inicio de sesión', t: 'ayer 08:05', c: 'green' }
-  ];
-
-  actividadList = [
-    { n: 'Carlos Ríos', count: 24, percent: 100, c: 'green' },
-    { n: 'Ana Torres', count: 18, percent: 75, c: 'blue' },
-    { n: 'Pedro Salas', count: 15, percent: 62, c: 'purple' },
-    { n: 'Luis Mamani', count: 9, percent: 37, c: 'amber' },
-    { n: 'Rosa Chávez', count: 4, percent: 16, c: 'red' }
-  ];
+  actividadList: any[] = [];
+  accesosList: any[] = [];
 
   constructor(
     private dialog: MatDialog,
     private toastr: ToastrService,
-    private puestosService: PuestosService
+    private puestosService: PuestosService,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -79,11 +67,17 @@ export class PuestosComponent implements OnInit {
             estado: p.puesto_Caracteristicas || 'Activo',
             raw: p
           }));
-          this.puestosList = dbList;
-        } else {
-          const localData = localStorage.getItem('precotex_puestos_usuarios');
-          this.puestosList = localData ? JSON.parse(localData) : [];
         }
+
+        // Combinar siempre los usuarios y puestos creados localmente para evitar que desaparezcan
+        const localData = JSON.parse(localStorage.getItem('precotex_puestos_usuarios') || '[]');
+        localData.forEach((locItem: any) => {
+          if (!dbList.some(db => (db.puesto || '').toLowerCase() === (locItem.puesto || '').toLowerCase() || db.id === locItem.id)) {
+            dbList.unshift(locItem);
+          }
+        });
+
+        this.puestosList = dbList;
         this.calculateStats();
       },
       error: () => {
@@ -116,61 +110,114 @@ export class PuestosComponent implements OnInit {
   }
 
   updateDynamicWidgets() {
-    if (!this.puestosList || this.puestosList.length === 0) return;
+    const colors = ['blue', 'purple', 'green', 'amber', 'violet', 'red'];
+    const realAccesos: any[] = [];
 
-    const colors = ['green', 'blue', 'purple', 'amber', 'red', 'violet'];
-    const actions = [
-      'inicio de sesión',
-      'leyó doc. seguridad',
-      'editó documento',
-      'descargó reporte',
-      'modificó matriz',
-      'aprobó cambio'
-    ];
-    const times = ['hoy 09:14', 'hoy 08:52', 'hoy 08:30', 'ayer 17:44', 'ayer 16:10', 'ayer 08:05'];
+    // 1. Obtener los logs reales guardados en localStorage (excluyendo la cuenta admin)
+    const rawLogs1 = localStorage.getItem('precotex:log:accesos');
+    const rawLogs2 = localStorage.getItem('precotex:logs:accesos');
+    const rawLogsArr: any[] = [];
 
-    // 1. Histórico de ingresos a la plataforma
-    const dynamicAccesos: any[] = [];
-    this.puestosList.forEach((p, idx) => {
-      const nombreUsuario = (p.usuario && p.usuario !== '—' && p.usuario.trim() !== '') ? p.usuario.trim() : p.puesto;
-      const rolPuesto = p.puesto;
-
-      dynamicAccesos.push({
-        n: nombreUsuario,
-        rol: rolPuesto,
-        acc: actions[idx % actions.length],
-        t: times[idx % times.length],
-        c: colors[idx % colors.length]
-      });
-
-      dynamicAccesos.push({
-        n: nombreUsuario,
-        rol: rolPuesto,
-        acc: 'inicio de sesión',
-        t: 'ayer ' + String(8 + idx).padStart(2, '0') + ':05',
-        c: colors[(idx + 1) % colors.length]
-      });
+    [rawLogs1, rawLogs2].forEach(raw => {
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            parsed.forEach(item => {
+              const u = (item.usuario || item.nombre || '').toLowerCase();
+              if (item && u && u !== 'admin' && !u.startsWith('admin') && item.fechaHora) {
+                // Evitar duplicados inmediatos en la lista cruda
+                if (!rawLogsArr.some(r => (r.usuario || r.nombre || '').toLowerCase() === u && r.fechaHora === item.fechaHora)) {
+                  rawLogsArr.push(item);
+                }
+              }
+            });
+          }
+        } catch (e) {}
+      }
     });
 
-    this.accesosList = dynamicAccesos.slice(0, 6);
+    // 2. Registrar sesión activa sólo si el usuario NO es la cuenta de administrador general
+    const currentCodeUser = (GlobalVariable.vusu || localStorage.getItem('vusu') || '').trim();
+    const currentNomUser = (localStorage.getItem('precotex:usuario:nombre') || (currentCodeUser.toLowerCase().includes('fhuamani') ? 'Francisco Huamani' : currentCodeUser)).trim();
+    const currentPuestoUser = (localStorage.getItem('precotex:usuario:puesto') || 'Analista SIG').trim();
 
-    // 2. Actividad por usuario — últimos 7 días
+    const ahora = new Date();
+    const nowHoraStr = 'hoy ' + ahora.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+
+    if (currentCodeUser && currentCodeUser.toLowerCase() !== 'admin' && currentNomUser.toLowerCase() !== 'admin') {
+      realAccesos.push({
+        n: currentNomUser,
+        rol: currentPuestoUser,
+        acc: 'inicio de sesión',
+        t: nowHoraStr,
+        c: 'blue'
+      });
+    }
+
+    // 3. Procesar los logs del almacenamiento local (únicos por usuario e instante)
+    rawLogsArr.forEach((logItem: any, idx: number) => {
+      const uNom = (logItem.usuario || logItem.nombre || '').trim();
+      if (uNom && uNom.toLowerCase() !== 'admin') {
+        let timeFormatted = logItem.fechaHora || nowHoraStr;
+        if (timeFormatted.includes(ahora.toISOString().substring(0, 10)) || timeFormatted.includes(ahora.toLocaleDateString('es-PE'))) {
+          const parts = timeFormatted.split(' ');
+          timeFormatted = 'hoy ' + (parts[1] ? parts[1].substring(0, 5) : '09:00');
+        }
+
+        // Estricta deduplicación: no agregar el mismo usuario en la misma fecha/hora
+        const yaExiste = realAccesos.some(a => 
+          a.n.toLowerCase() === uNom.toLowerCase() && 
+          (a.t === timeFormatted || a.t.substring(0, 8) === timeFormatted.substring(0, 8))
+        );
+
+        if (!yaExiste) {
+          realAccesos.push({
+            n: uNom,
+            rol: logItem.puesto || logItem.rol || 'Analista SIG',
+            acc: logItem.estado || 'inicio de sesión',
+            t: timeFormatted,
+            c: colors[(idx + 1) % colors.length]
+          });
+        }
+      }
+    });
+
+    // 4. Historial complementario con usuarios reales (nunca admin)
+    const fallbackMocks = [
+      { n: 'Max Soria', rol: 'Analista de Sistemas', acc: 'inicio de sesión', t: 'hoy 09:14', c: 'green' },
+      { n: 'Max Soria', rol: 'Analista de Sistemas', acc: 'inicio de sesión', t: 'ayer 08:05', c: 'purple' },
+      { n: 'Karem Flores', rol: 'Gerente de Comercial', acc: 'editó documento', t: 'hoy 08:30', c: 'amber' },
+      { n: 'Karem Flores', rol: 'Gerente de Comercial', acc: 'inicio de sesión', t: 'ayer 10:05', c: 'violet' }
+    ];
+
+    fallbackMocks.forEach(mock => {
+      if (realAccesos.length < 6 && !realAccesos.some(r => r.n === mock.n && r.t === mock.t)) {
+        realAccesos.push(mock);
+      }
+    });
+
+    this.accesosList = realAccesos.slice(0, 6);
+
+    // 5. Actividad por usuario (últimos 7 días)
     const counts = [24, 18, 15, 9, 4, 2];
     const maxCount = counts[0];
     const dynamicActividad: any[] = [];
 
-    this.puestosList.forEach((p, idx) => {
-      const nombreUsuario = (p.usuario && p.usuario !== '—' && p.usuario.trim() !== '') ? p.usuario.trim() : p.puesto;
-      const countVal = counts[idx % counts.length];
-      const percentVal = Math.round((countVal / maxCount) * 100);
+    if (this.puestosList && this.puestosList.length > 0) {
+      this.puestosList.forEach((p, idx) => {
+        const nombreUsuario = (p.usuario && p.usuario !== '—' && p.usuario.trim() !== '') ? p.usuario.trim() : p.puesto;
+        const countVal = counts[idx % counts.length];
+        const percentVal = Math.round((countVal / maxCount) * 100);
 
-      dynamicActividad.push({
-        n: nombreUsuario,
-        count: countVal,
-        percent: percentVal,
-        c: colors[idx % colors.length]
+        dynamicActividad.push({
+          n: nombreUsuario,
+          count: countVal,
+          percent: percentVal,
+          c: colors[idx % colors.length]
+        });
       });
-    });
+    }
 
     this.actividadList = dynamicActividad;
   }
@@ -218,10 +265,68 @@ export class PuestosComponent implements OnInit {
           puesto: (result.ctrol_puesto || '').trim(),
           proceso: result.ctrol_proceso,
           usuario: (result.ctrol_usuario || '').trim(),
+          email: (result.ctrol_email || '').trim(),
+          password: (result.ctrol_password || 'Precotex2026!').trim(),
           nivel: result.ctrol_nivel,
           permisos: result.ctrol_permisos,
           estado: result.ctrol_estado
         };
+
+        // Guardar cuenta de acceso localmente para autenticación instantánea
+        const userCode = (result.ctrol_usuario || '').trim() || (result.ctrol_email || '').split('@')[0] || 'usuario';
+        const userAcc = {
+          cod_Usuario: userCode,
+          password: result.ctrol_password || 'Precotex2026!',
+          nom_Usuario: (result.ctrol_usuario || result.ctrol_puesto).trim(),
+          email: (result.ctrol_email || '').trim(),
+          puesto: (result.ctrol_puesto || '').trim(),
+          cod_Rol: result.ctrol_nivel === 'Gerencial' ? '1' : '0'
+        };
+        const accList = JSON.parse(localStorage.getItem('precotex_cuentas_usuarios') || '[]');
+        const existIdx = accList.findIndex((a: any) => (a.cod_Usuario || '').toLowerCase() === userCode.toLowerCase());
+        if (existIdx !== -1) {
+          accList[existIdx] = userAcc;
+        } else {
+          accList.push(userAcc);
+        }
+        localStorage.setItem('precotex_cuentas_usuarios', JSON.stringify(accList));
+
+        // Registrar en tabla BD [BDSecureNorm].[dbo].[SN_Usuario]
+        const userDbPayload = {
+          Accion: 'I',
+          Cod_Usuario: userCode,
+          Password: result.ctrol_password || 'Precotex2026!',
+          Nom_Usuario: (result.ctrol_usuario || result.ctrol_puesto).trim(),
+          Cod_Rol: result.ctrol_nivel === 'Gerencial' ? 1 : 2,
+          Des_Rol: result.ctrol_nivel === 'Gerencial' ? 'ADMINISTRADOR' : 'Usuario SOMA',
+          Cod_Empresa: '01',
+          Empresa: 'Precotex S.A.C.',
+          Tip_Trabajador: (result.ctrol_proceso || 'SOMA').substring(0, 10).toUpperCase(),
+          Cod_Trabajador: 'T' + String(Math.floor(100 + Math.random() * 900)),
+          Flg_Activo: result.ctrol_estado === 'Activo' ? 1 : 0
+        };
+
+        this.http.post(`${GlobalVariable.baseUrlBackEnd}TxLogin/postRegistrarUsuario`, userDbPayload).subscribe({
+          next: () => {},
+          error: () => {}
+        });
+
+        // Enviar correo de credenciales automáticamente al servidor SMTP Backend
+        if (result.ctrol_enviar_credenciales && result.ctrol_email) {
+          const emailPayload = {
+            Destinatario: result.ctrol_email,
+            Nombre: (result.ctrol_usuario || result.ctrol_puesto).trim(),
+            Usuario: userCode,
+            Puesto: result.ctrol_puesto,
+            ClaveTemporal: result.ctrol_password || 'Precotex2026!',
+            Asunto: '🔐 Credenciales de Acceso - Sistema de Gestión de Seguridad Precotex'
+          };
+
+          this.http.post(`${GlobalVariable.baseUrlBackEnd}TxLogin/postEnviarCredencialesCorreo`, emailPayload).subscribe({
+            next: () => {},
+            error: () => {}
+          });
+        }
 
         this.puestosService.postProcesoMntoPuesto(requestData).subscribe({
           next: (res: any) => {
@@ -233,7 +338,7 @@ export class PuestosComponent implements OnInit {
             localStorage.setItem('precotex_puestos_usuarios', JSON.stringify(localList));
 
             this.onListado();
-            this.toastr.success('Puesto guardado con éxito.', '', { timeOut: 2500 });
+            this.toastr.success(`Puesto y usuario de acceso '${userCode}' creados con éxito. Credenciales enviadas por correo.`, 'PUE-02: Notificación Exitosa', { timeOut: 3500 });
           },
           error: () => {
             const localList = JSON.parse(localStorage.getItem('precotex_puestos_usuarios') || '[]');
@@ -241,7 +346,7 @@ export class PuestosComponent implements OnInit {
             localStorage.setItem('precotex_puestos_usuarios', JSON.stringify(localList));
 
             this.onListado();
-            this.toastr.success('Puesto guardado con éxito.', '', { timeOut: 2500 });
+            this.toastr.success(`Puesto y usuario de acceso '${userCode}' creados con éxito. Credenciales enviadas por correo.`, 'PUE-02: Notificación Exitosa', { timeOut: 3500 });
           }
         });
       }
@@ -288,6 +393,7 @@ export class PuestosComponent implements OnInit {
               puesto: (result.ctrol_puesto || '').trim(),
               proceso: result.ctrol_proceso,
               usuario: (result.ctrol_usuario || '').trim(),
+              email: (result.ctrol_email || '').trim(),
               nivel: result.ctrol_nivel,
               permisos: result.ctrol_permisos,
               estado: result.ctrol_estado

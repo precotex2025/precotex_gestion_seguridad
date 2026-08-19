@@ -418,3 +418,141 @@
   opacity: 1;
   transform: scale(1);
 }
+
+.fila-ejecucion:hover .actions-wrapper.hover-fade {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* SUBNAV TABS BAR (EJECUCIÓN Y RESULTADOS) */
+.subnav-tabs-wrapper {
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+}
+
+.subnav-tab-item {
+  background: #1a1a24;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.subnav-tab-item:hover {
+  background: #222230;
+  color: #ffffff;
+  border-color: rgba(124, 108, 240, 0.3);
+}
+
+.subnav-tab-item.active-tab {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: #6366f1;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+}
+
+.tab-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  color: #818cf8;
+}
+
+.tab-badge {
+  background: #334155;
+  color: #f8fafc;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.badge-purple {
+  background: rgba(124, 108, 240, 0.3);
+  color: #a99bff;
+}
+
+.btn-ejecucion {
+  background: linear-gradient(135deg, #7c6cf0, #4f46e5) !important;
+}
+
+/* TABLA EJECUCIÓN */
+.tabla-ejecucion {
+  width: 100%;
+  border-collapse: collapse;
+  color: #e2e8f0;
+  font-size: 12.5px;
+}
+
+.tabla-ejecucion th {
+  background: #15151e;
+  color: #94a3b8;
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.fila-ejecucion {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background-color 0.15s ease;
+}
+
+.fila-ejecucion:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.fila-ejecucion td {
+  padding: 12px 14px;
+  vertical-align: middle;
+}
+
+.sub-norma {
+  font-size: 10.5px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.nc-link-badge {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.status-pill {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pill-cerrado {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.pill-abierto {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+

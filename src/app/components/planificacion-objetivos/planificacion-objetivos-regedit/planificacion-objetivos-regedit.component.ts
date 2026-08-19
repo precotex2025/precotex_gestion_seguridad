@@ -49,7 +49,8 @@ export class PlanificacionObjetivosRegeditComponent implements OnInit {
       meta: ['', Validators.required],
       frecuencia: ['Mensual', Validators.required],
       estado: ['Planificado', Validators.required],
-      desc: ['']
+      desc: [''],
+      observaciones: ['']
     });
 
     if (this.data.Accion === 'U' && this.data.Datos) {

@@ -40,7 +40,7 @@
         </div>
       </div>
 
-      <!-- Fila 2: 4 Columnas (Permisos, Estado, y 2 vacías para alineación) -->
+      <!-- Fila 2: 4 Columnas (Permisos, Estado, Correo Electrónico, Contraseña de Acceso) -->
       <div class="grid-4-cols">
         <div class="form-section-item">
           <div class="form-label">Permisos <span class="required">*</span></div>
@@ -57,8 +57,22 @@
             <option value="Sin permisos config.">Sin permisos config.</option>
           </select>
         </div>
-        <div class="form-section-item"></div>
-        <div class="form-section-item"></div>
+        <div class="form-section-item">
+          <div class="form-label">Correo Electrónico (Email) <span class="required">*</span></div>
+          <input type="email" formControlName="ctrol_email" class="full-width-input" placeholder="usuario@precotexperu.com">
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Contraseña de Acceso <span class="required">*</span></div>
+          <input type="text" formControlName="ctrol_password" class="full-width-input" placeholder="Ej: Precotex2026!">
+        </div>
+      </div>
+
+      <!-- Fila 3: Opción de Envío Automático de Credenciales -->
+      <div style="margin-top: 12px; padding: 10px 14px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #0f172a; cursor: pointer;">
+          <input type="checkbox" formControlName="ctrol_enviar_credenciales" style="width: 17px; height: 17px; accent-color: #2563eb;">
+          <span>📧 Enviar usuario y contraseña de acceso por correo automáticamente al guardar</span>
+        </label>
       </div>
 
     </mat-dialog-content>

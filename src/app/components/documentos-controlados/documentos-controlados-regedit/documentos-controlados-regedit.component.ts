@@ -15,9 +15,15 @@ export class DocumentosControladosRegeditComponent implements OnInit {
   title: string = 'Registrar nuevo Documento';
   action: string = 'I';
 
-  PROCESOS_GROUPS: { [key: string]: string[] } = {};
+  PROCESOS_GROUPS: { [key: string]: string[] } = {
+    'Operaciones Textil (OPT)': ['Acabados Textil', 'Costura', 'Estampado', 'Hilandería', 'Tejitud'],
+    'Ingeniería y Mejora Continua (IMC)': ['Organización y Métodos', 'Mejora Continua', 'Control de Calidad'],
+    'Soporte (SOP)': ['Control Patrimonial', 'Sistemas', 'Mantenimiento'],
+    'Auditoría Interna (AIO)': ['Auditoría Interna'],
+    'Gestión Humana (GGHH)': ['Gestión Humana', 'SSOMA']
+  };
 
-  tipos = ['Procedimiento', 'Instructivo', 'Formato', 'Manual', 'Perfil de puesto'];
+  tipos = ['Procedimiento', 'Instructivo', 'Formato', 'Manual', 'Perfil de puesto', 'Politica', 'Plan', 'Registro'];
   formatos = ['PDF', 'Word', 'Excel'];
   estados = ['Vigente', 'Por vencer', 'Obsoleto'];
 
@@ -40,33 +46,48 @@ export class DocumentosControladosRegeditComponent implements OnInit {
 
     this.procesosService.getProcesosAgrupados().subscribe({
       next: (groups: any) => {
-        this.PROCESOS_GROUPS = groups;
+        if (groups && Object.keys(groups).length > 0) {
+          this.PROCESOS_GROUPS = { ...this.PROCESOS_GROUPS, ...groups };
+        }
       }
     });
 
     const initialVig = row?.vig || '';
-    const initialEstado = this.calcularEstadoPorFecha(initialVig, row?.estado);
+    const initialEstado = this.calcularEstadoPorFecha(initialVig, row?.estado || 'Vigente');
+    const initialTipo = row?.tipo || this.extraerTipoDelCodigo(row?.codigo) || 'Procedimiento';
     const initialVersion = row?.version || this.extraerVersionDelCodigo(row?.codigo) || 'v1';
+    const initialProceso = row?.proceso || this.extraerProcesoDelCodigo(row?.codigo) || 'Organización y Métodos';
 
     this.formulario = this.formBuilder.group({
       nombre: [row?.nombre || '', Validators.required],
       codigo: [row?.codigo || '', Validators.required],
-      tipo: [row?.tipo || 'Procedimiento'],
+      tipo: [initialTipo],
       version: [initialVersion],
       formato: [row?.formato || 'PDF'],
-      proceso: [row?.proceso || 'Sistemas'],
+      proceso: [initialProceso],
       vig: [initialVig],
       estado: [initialEstado],
       archivo: [row?.archivo || '', Validators.required]
     });
 
-    // DOC-02: Escuchar cambios de Código para extraer la Versión automáticamente del 5to segmento (los 2 últimos dígitos)
+    // Escuchar cambios de Código para extraer automáticamente Tipo, Proceso y Versión
     this.formulario.get('codigo')?.valueChanges.subscribe((codeStr: string) => {
       if (codeStr) {
+        const patchObj: any = {};
+
+        // Auto-extraer Tipo de Documento
+        const autoTipo = this.extraerTipoDelCodigo(codeStr);
+        if (autoTipo) patchObj.tipo = autoTipo;
+
+        // Auto-extraer Versión
         const autoVer = this.extraerVersionDelCodigo(codeStr);
-        if (autoVer) {
-          this.formulario.patchValue({ version: autoVer }, { emitEvent: false });
-        }
+        if (autoVer) patchObj.version = autoVer;
+
+        // Auto-extraer Proceso Responsable
+        const autoProc = this.extraerProcesoDelCodigo(codeStr);
+        if (autoProc) patchObj.proceso = autoProc;
+
+        this.formulario.patchValue(patchObj, { emitEvent: false });
       }
     });
 
@@ -78,6 +99,88 @@ export class DocumentosControladosRegeditComponent implements OnInit {
 
     if (row?.archivo) {
       this.fileName = row.archivo;
+    }
+  }
+
+  // DOC-12: Extraer Tipo de Documento automáticamente desde el prefijo del Código
+  extraerTipoDelCodigo(code: string): string {
+    if (!code) return 'Procedimiento';
+    const prefix = code.trim().split('-')[0]?.toUpperCase() || '';
+    if (prefix === 'PER' || prefix === 'PERFIL') return 'Perfil de puesto';
+    if (prefix === 'PRO' || prefix === 'PROC') return 'Procedimiento';
+    if (prefix === 'INS' || prefix === 'INST') return 'Instructivo';
+    if (prefix === 'FOR' || prefix === 'FORM') return 'Formato';
+    if (prefix === 'MAN' || prefix === 'MANUAL') return 'Manual';
+    if (prefix === 'POL' || prefix === 'POLITICA') return 'Politica';
+    if (prefix === 'PLN' || prefix === 'PLAN') return 'Plan';
+    if (prefix === 'REG' || prefix === 'REGISTRO') return 'Registro';
+    return 'Procedimiento';
+  }
+
+  // DOC-01: Obtener fecha de vigencia a 3 años por defecto
+  obtenerVigencia3Anios(): string {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() + 3);
+    return d.toISOString().substring(0, 10);
+  }
+
+  // Extrae el Área/Proceso Responsable según la sigla o abreviatura del Código (ej. PER-IMC-ACT-012 -> Acabados Textil)
+  extraerProcesoDelCodigo(code: string): string {
+    if (!code) return '';
+    const parts = code.trim().toUpperCase().split('-');
+
+    const mapAbbr: { [key: string]: string } = {
+      'ACT': 'Acabados Textil',
+      'ACAB': 'Acabados Textil',
+      'COS': 'Costura',
+      'EST': 'Estampado',
+      'OYM': 'Organización y Métodos',
+      'OM': 'Organización y Métodos',
+      'CTP': 'Control Patrimonial',
+      'CPT': 'Control Patrimonial',
+      'AIO': 'Auditoría Interna',
+      'AUD': 'Auditoría Interna',
+      'SIS': 'Sistemas',
+      'SST': 'SSOMA',
+      'SSOMA': 'SSOMA',
+      'CAL': 'Calidad',
+      'LOG': 'Logística',
+      'PCP': 'Planeamiento y Control de la Producción',
+      'GGHH': 'Gestión Humana',
+      'RRHH': 'Gestión Humana',
+      'GCOM': 'Gestión Comercial',
+      'GG': 'Gerencia General',
+      'AFC': 'Administración y Finanzas',
+      'ADM': 'Administración y Finanzas',
+      'BM': 'Balance de Materia',
+      'OPM': 'Operaciones Manufactura',
+      'OPT': 'Operaciones Textil'
+    };
+
+    for (const part of parts) {
+      if (mapAbbr[part]) {
+        const targetProc = mapAbbr[part];
+        this.asegurarProcesoEnGrupos(targetProc);
+        return targetProc;
+      }
+    }
+    return '';
+  }
+
+  asegurarProcesoEnGrupos(nombreProceso: string): void {
+    if (!nombreProceso) return;
+    let found = false;
+    for (const macro in this.PROCESOS_GROUPS) {
+      if (this.PROCESOS_GROUPS[macro].includes(nombreProceso)) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      if (!this.PROCESOS_GROUPS['Operaciones Textil (OPT)']) {
+        this.PROCESOS_GROUPS['Operaciones Textil (OPT)'] = [];
+      }
+      this.PROCESOS_GROUPS['Operaciones Textil (OPT)'].push(nombreProceso);
     }
   }
 
@@ -127,7 +230,7 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       this.selectedFile = file;
       this.fileName = file.name;
       
-      // Parse file name (e.g. "PRO-ERP-OYM-003 Procedimiento de ACR.pdf")
+      // Parse file name (e.g. "PER-IMC-ACT-012 Perfil de Puesto.pdf")
       const nameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
       const firstSpaceIdx = nameWithoutExt.indexOf(' ');
       
@@ -141,22 +244,10 @@ export class DocumentosControladosRegeditComponent implements OnInit {
         parsedCode = nameWithoutExt.trim();
       }
 
-      // Auto-populate Tipo de Documento based on parsed code prefix
-      let parsedTipo = '';
-      const prefix = parsedCode.split('-')[0]?.toUpperCase() || '';
-      if (prefix === 'PRO') {
-        parsedTipo = 'Procedimiento';
-      } else if (prefix === 'INS') {
-        parsedTipo = 'Instructivo';
-      } else if (prefix === 'FOR') {
-        parsedTipo = 'Formato';
-      } else if (prefix === 'MAN') {
-        parsedTipo = 'Manual';
-      } else if (prefix === 'PER') {
-        parsedTipo = 'Perfil de puesto';
-      }
+      // DOC-12: Auto-popular Tipo de Documento desde prefijo del código
+      const parsedTipo = this.extraerTipoDelCodigo(parsedCode);
 
-      // Auto-populate Formato based on file extension
+      // Auto-populate Formato basado en extensión de archivo
       let parsedFormato = '';
       const dotIdx = file.name.lastIndexOf('.');
       if (dotIdx !== -1) {
@@ -171,6 +262,7 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       }
 
       const parsedVersion = this.extraerVersionDelCodigo(parsedCode);
+      const parsedProceso = this.extraerProcesoDelCodigo(parsedCode);
 
       // Build patching data
       const patchData: any = {
@@ -182,8 +274,45 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       if (parsedTipo) patchData.tipo = parsedTipo;
       if (parsedFormato) patchData.formato = parsedFormato;
       if (parsedVersion) patchData.version = parsedVersion;
+      if (parsedProceso) patchData.proceso = parsedProceso;
 
       this.formulario.patchValue(patchData);
+    }
+  }
+
+  // DOC-15: Visibilidad y Permisos de lectura por Proceso
+  modoVisibilidad: 'TODOS' | 'SOLO_PROCESO' | 'PERSONALIZADO' = 'TODOS';
+  listaProcesosDisponibles = [
+    'Acabados Textil', 'Costura', 'Estampado', 'Hilandería', 'Tejitud',
+    'Organización y Métodos', 'Mejora Continua', 'Control de Calidad',
+    'Control Patrimonial', 'Sistemas', 'Mantenimiento', 'Auditoría Interna',
+    'Gestión Humana', 'SSOMA', 'Logística', 'Administración y Finanzas', 'Gerencia General'
+  ];
+  procesosVisiblesSeleccionados: string[] = ['Todos los procesos'];
+
+  isProcesoSeleccionado(proc: string): boolean {
+    return this.procesosVisiblesSeleccionados.includes(proc);
+  }
+
+  toggleProcesoVisibilidad(proc: string): void {
+    if (this.isProcesoSeleccionado(proc)) {
+      this.procesosVisiblesSeleccionados = this.procesosVisiblesSeleccionados.filter(p => p !== proc);
+    } else {
+      this.procesosVisiblesSeleccionados.push(proc);
+    }
+  }
+
+  onModoVisibilidadChange(): void {
+    if (this.modoVisibilidad === 'TODOS') {
+      this.procesosVisiblesSeleccionados = ['Todos los procesos'];
+    } else if (this.modoVisibilidad === 'SOLO_PROCESO') {
+      const procActual = this.formulario?.get('proceso')?.value || 'Organización y Métodos';
+      this.procesosVisiblesSeleccionados = [procActual];
+    } else if (this.modoVisibilidad === 'PERSONALIZADO') {
+      const procActual = this.formulario?.get('proceso')?.value || 'Organización y Métodos';
+      if (this.procesosVisiblesSeleccionados.includes('Todos los procesos')) {
+        this.procesosVisiblesSeleccionados = [procActual];
+      }
     }
   }
 
@@ -194,6 +323,8 @@ export class DocumentosControladosRegeditComponent implements OnInit {
 
     const val = this.formulario.value;
     val.estado = this.calcularEstadoPorFecha(val.vig, val.estado);
+    val.modoVisibilidad = this.modoVisibilidad;
+    val.procesosVisibles = this.modoVisibilidad === 'TODOS' ? ['Todos los procesos'] : (this.modoVisibilidad === 'SOLO_PROCESO' ? [val.proceso] : this.procesosVisiblesSeleccionados);
 
     if (this.selectedFile) {
       this.isUploading = true;

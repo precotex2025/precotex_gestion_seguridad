@@ -43,7 +43,8 @@ const routes: Routes = [
   {
     path: "principal", component : LayoutComponent, 
     children: [
-      { path: "", component: PrincipalComponent }, 
+      { path: "", component: DashboardComponent }, 
+      { path: "dashboard", component: DashboardComponent },
       { path: "normas"      , component: NormasComponent },
       { path: "organizacion", component: OrganizacionComponent },
       { path: "puestos", component: PuestosComponent },
@@ -59,6 +60,7 @@ const routes: Routes = [
       { path: "evaluacionesPuntuales", component: EvaluacionesPuntualesComponent },
       { path: "campusVirtual", component: CampusVirtualComponent },
       { path: "accionesCorrectivas", component: AccionesCorrectivasComponent },
+      { path: "accionesCorrectivas/acciones-correctivas", component: AccionesCorrectivasComponent },
       { path: "analytics", component: AnalyticsComponent },
       { path: "analytics/medicion", component: MedicionIndicadoresComponent },
       { path: "verificacionAccesos", component: VerificacionAccesosComponent },
@@ -68,6 +70,7 @@ const routes: Routes = [
       { path: "medicionesPendientes", component: MedicionesPendientesComponent },
       { path: "evaluacionRiesgos", component: EvaluacionRiesgosComponent },
       { path: "auditorias", component: AuditoriasComponent },
+      { path: "auditorias/ejecucion-resultados", component: AuditoriasComponent },
       { path: "auditorias/programa-anual", component: ProgramaAnualComponent },
       { path: "portafolioMejora", component: PortafolioMejoraComponent },
       { path: "reqLegal", component: ReqLegalComponent },

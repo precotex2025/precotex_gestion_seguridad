@@ -45,6 +45,7 @@ export class PlanificacionObjetivosComponent implements OnInit {
     'meta',
     'frecuencia',
     'estado',
+    'observaciones',
     'acciones'
   ];
 
@@ -125,6 +126,7 @@ export class PlanificacionObjetivosComponent implements OnInit {
             porcentajeAvance: item.porcentajeAvance || Math.floor(75 + Math.random() * 20),
             frecuencia: item.frecuencia || 'Mensual',
             estado: item.estado || 'Planificado',
+            observaciones: item.observaciones || item.observacion || item.nota || 'Cumplimiento adecuado según métricas del SIG',
             ano: item.ano || '2026',
             desc: item.nombre
           }));

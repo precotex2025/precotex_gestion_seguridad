@@ -27,7 +27,21 @@
             <option value="ISO 45001:2018">ISO 45001:2018</option>
             <option value="ISO 14001:2015">ISO 14001:2015</option>
             <option value="OCS">OCS</option>
+            <option value="BASC">BASC</option>
+            <option value="WRAP">WRAP</option>
+            <option value="GOTS">GOTS</option>
+            <option value="GRS">GRS</option>
+            <option value="OEKO-TEX">OEKO-TEX</option>
+            <option value="Otro">Otro (Especificar norma)</option>
           </select>
+
+          <!-- Campo dinámico para digitar una nueva norma personalizada -->
+          <input *ngIf="formulario.get('ctrol_norma')?.value === 'Otro'"
+                 type="text"
+                 formControlName="ctrol_norma_otra"
+                 placeholder="Escriba la nueva norma auditada..."
+                 class="form-input"
+                 style="margin-top: 8px;">
         </div>
       </div>
 
@@ -42,11 +56,13 @@
         </div>
 
         <div class="form-field">
-          <label class="form-label">Procesos / Áreas</label>
-          <input type="text"
-                 formControlName="ctrol_areas"
-                 placeholder="Ej. Costura, Calidad"
-                 class="form-input">
+          <label class="form-label">Procesos / Áreas <span class="req">*</span></label>
+          <select formControlName="ctrol_areas" class="form-select">
+            <option value="">-- Seleccionar Proceso / Área --</option>
+            <optgroup *ngFor="let group of objectKeys(PROCESOS_GROUPS)" [label]="group">
+              <option *ngFor="let p of PROCESOS_GROUPS[group]" [value]="p">{{ p }}</option>
+            </optgroup>
+          </select>
         </div>
       </div>
 

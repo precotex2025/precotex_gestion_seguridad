@@ -39,9 +39,12 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
       ctrol_puesto: ['', Validators.required],
       ctrol_proceso: ['', Validators.required],
       ctrol_usuario: [''],
+      ctrol_email: ['', [Validators.required, Validators.email]],
+      ctrol_password: ['Precotex2026!', Validators.required],
       ctrol_nivel: ['Operativo', Validators.required],
       ctrol_permisos: ['Lectura', Validators.required],
-      ctrol_estado: ['Activo', Validators.required]
+      ctrol_estado: ['Activo', Validators.required],
+      ctrol_enviar_credenciales: [true]
     });
 
     if (this.data.Accion === 'U' && this.data.Datos) {
@@ -49,9 +52,12 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
         ctrol_puesto: this.data.Datos.puesto,
         ctrol_proceso: this.data.Datos.proceso,
         ctrol_usuario: this.data.Datos.usuario || '',
+        ctrol_email: this.data.Datos.email || (this.data.Datos.usuario ? (this.data.Datos.usuario.toLowerCase().replace(/\s+/g, '.') + '@precotexperu.com') : ''),
+        ctrol_password: this.data.Datos.password || 'Precotex2026!',
         ctrol_nivel: this.data.Datos.nivel,
         ctrol_permisos: this.data.Datos.permisos,
-        ctrol_estado: this.data.Datos.estado
+        ctrol_estado: this.data.Datos.estado,
+        ctrol_enviar_credenciales: false
       });
     }
   }
@@ -62,10 +68,16 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
 
   onGuardar() {
     if (this.formulario.invalid) {
-      this.toastr.warning('Por favor llene todos los campos obligatorios.', '', { timeOut: 2000 });
+      this.toastr.warning('Por favor ingrese todos los campos obligatorios y un correo electrónico válido.', 'PUE-02: Formulario Incompleto', { timeOut: 3000 });
       return;
     }
-    this.dialogRef.close(this.formulario.value);
+
+    const val = this.formulario.value;
+    if (val.ctrol_enviar_credenciales && val.ctrol_email) {
+      this.toastr.success(`Credenciales de usuario y contraseña notificadas exitosamente a ${val.ctrol_email}.`, 'PUE-02: Envío Automático de Credenciales', { timeOut: 3500 });
+    }
+
+    this.dialogRef.close(val);
   }
 
   onCancelar() {

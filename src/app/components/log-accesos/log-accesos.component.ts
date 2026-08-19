@@ -71,40 +71,74 @@ export class LogAccesosComponent implements OnInit {
   constructor(private toastr: ToastrService) { }
 
   ngOnInit(): void {
-    // 1. Cargar accesos registrados localmente (PUE-01)
-    const localLogs = localStorage.getItem('precotex:log:accesos');
-    if (localLogs) {
-      try {
-        const parsed = JSON.parse(localLogs);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          this.allLogs = [...parsed, ...this.allLogs];
+    // 1. Cargar accesos registrados localmente desde ambas claves de storage (excluyendo admin)
+    const localLogs1 = localStorage.getItem('precotex:log:accesos');
+    const localLogs2 = localStorage.getItem('precotex:logs:accesos');
+    let customLogs: LogAccesoRegistro[] = [];
+
+    [localLogs1, localLogs2].forEach(raw => {
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            parsed.forEach(item => {
+              const uName = (item.usuario || item.nombre || '').trim();
+              if (item && uName && uName.toLowerCase() !== 'admin' && !uName.toLowerCase().startsWith('admin') && item.fechaHora) {
+                if (!customLogs.some(c => c.usuario.toLowerCase() === uName.toLowerCase() && c.fechaHora.substring(0, 16) === item.fechaHora.substring(0, 16))) {
+                  customLogs.push({
+                    fechaHora: item.fechaHora,
+                    usuario: uName,
+                    puesto: item.puesto || item.rol || 'Analista SIG'
+                  });
+                }
+              }
+            });
+          }
+        } catch (e) {}
+      }
+    });
+
+    // 2. Registrar ingreso de sesión activa sólo para usuarios no admin
+    const currentUsername = (localStorage.getItem('vusu') || '').trim();
+    const currentUser = (localStorage.getItem('precotex:usuario:nombre') || currentUsername).trim();
+    const currentPuesto = (localStorage.getItem('precotex:usuario:puesto') || 'Analista SIG').trim();
+    
+    if (currentUsername && currentUsername.toLowerCase() !== 'admin' && currentUser.toLowerCase() !== 'admin') {
+      const lastSession = sessionStorage.getItem('precotex:session:logged_time');
+      const ahora = new Date();
+      const nowStr = ahora.getFullYear() + '-' +
+        String(ahora.getMonth() + 1).padStart(2, '0') + '-' +
+        String(ahora.getDate()).padStart(2, '0') + ' ' +
+        ahora.toLocaleTimeString('es-PE', { hour12: false });
+
+      if (!lastSession) {
+        sessionStorage.setItem('precotex:session:logged_time', nowStr);
+        const activeEntry: LogAccesoRegistro = {
+          fechaHora: nowStr,
+          usuario: currentUser,
+          puesto: currentPuesto
+        };
+        if (!customLogs.some(c => c.usuario.toLowerCase() === currentUser.toLowerCase() && c.fechaHora.substring(0, 16) === nowStr.substring(0, 16))) {
+          customLogs.unshift(activeEntry);
         }
-      } catch (e) {}
+      }
     }
 
-    // 2. Capturar el ingreso actual si es una nueva sesión (PUE-01)
-    const currentUser = (localStorage.getItem('precotex:usuario:nombre') || 'Administrador Sistema (admin)').trim();
-    const lastSession = sessionStorage.getItem('precotex:session:logged_time');
-    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    // Filtrar admin también del mock general
+    this.allLogs = this.allLogs.filter(l => l.usuario.toLowerCase() !== 'admin');
 
-    if (!lastSession) {
-      sessionStorage.setItem('precotex:session:logged_time', nowStr);
-      const newEntry: LogAccesoRegistro = {
-        fechaHora: nowStr,
-        usuario: currentUser,
-        puesto: currentUser.toLowerCase().includes('admin') ? 'Super Administrador' : (localStorage.getItem('precotex:usuario:puesto') || 'Jefe de Área')
-      };
-      this.allLogs.unshift(newEntry);
-      localStorage.setItem('precotex:log:accesos', JSON.stringify(this.allLogs.slice(0, 100)));
+    if (customLogs.length > 0) {
+      this.allLogs = [...customLogs, ...this.allLogs];
     }
 
-    // Populate dropdown with unique names
-    const names = this.allLogs.map(l => l.usuario).filter(n => n);
+    // Llenar selector de usuarios únicos sin admin
+    const names = this.allLogs
+      .map(l => l.usuario)
+      .filter(n => n && n.toLowerCase() !== 'admin');
+
     this.personasUnicas = ['Selecciona', ...Array.from(new Set(names))];
     
-    // Generate page list
     this.pages = Array.from({ length: this.totalPages }, (_, i) => i + 1);
-
     this.filtrarDatos();
   }
 

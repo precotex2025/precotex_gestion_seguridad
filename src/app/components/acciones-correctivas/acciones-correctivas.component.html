@@ -9,113 +9,298 @@
     <button type="button" class="btn-close-banner" (click)="cerrarBanner()" title="Cerrar aviso">
       <mat-icon>close</mat-icon>
     </button>
-  </div>
-
-  <!-- ESTADÍSTICAS CARDS COMPACTAS CON TOP GLOW -->
-  <div class="stats-grid-5">
+  </div>  <!-- ===================================================================
+       TAB 1: DECLARACIÓN DE NO CONFORMIDADES (PROTOTIPO SIG - NCO-02)
+       =================================================================== -->
+  <ng-container *ngIf="activeSubTab === 'declaracion'">
     
-    <div class="stat-card-compact glow-border-total">
-      <div class="stat-watermark"><mat-icon>rule</mat-icon></div>
-      <div class="stat-card-content">
-        <span class="stat-card-title">TOTAL ACCIONES</span>
-        <span class="stat-card-number text-white">{{ stats.total }}</span>
-        <span class="stat-card-sub">En registro</span>
-      </div>
-    </div>
-
-    <div class="stat-card-compact glow-border-green">
-      <div class="stat-watermark"><mat-icon>check_circle</mat-icon></div>
-      <div class="stat-card-content">
-        <span class="stat-card-title">COMPLETADAS</span>
-        <span class="stat-card-number text-green">{{ stats.completadas }}</span>
-        <span class="stat-card-sub">Cerradas</span>
-      </div>
-    </div>
-
-    <div class="stat-card-compact glow-border-blue">
-      <div class="stat-watermark"><mat-icon>sync</mat-icon></div>
-      <div class="stat-card-content">
-        <span class="stat-card-title">EN EJECUCIÓN</span>
-        <span class="stat-card-number text-blue">{{ stats.enEjecucion }}</span>
-        <span class="stat-card-sub">En proceso</span>
-      </div>
-    </div>
-
-    <div class="stat-card-compact glow-border-amber">
-      <div class="stat-watermark"><mat-icon>pending_actions</mat-icon></div>
-      <div class="stat-card-content">
-        <span class="stat-card-title">PENDIENTES</span>
-        <span class="stat-card-number text-yellow">{{ stats.pendientes }}</span>
-        <span class="stat-card-sub">Por iniciar</span>
-      </div>
-    </div>
-
-    <!-- Pulsing Red Glow for Vencidas -->
-    <div class="stat-card-compact glow-border-red pulse-glow-red">
-      <div class="stat-watermark"><mat-icon>warning</mat-icon></div>
-      <div class="stat-card-content">
-        <span class="stat-card-title">VENCIDAS</span>
-        <span class="stat-card-number text-red">{{ stats.vencidas }}</span>
-        <span class="stat-card-sub">Plazo expirado</span>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- BARRA DE HERRAMIENTAS INTEGRADA Y SELECTOR DE VISTA -->
-  <div class="integrated-toolbar">
-    
-    <div class="toolbar-left-group">
-      <h2 class="seccion-titulo">ACCIONES CORRECTIVAS</h2>
+    <!-- ESTADÍSTICAS CARDS DE DECLARACIÓN DE NC (NCO-02) -->
+    <div class="stats-grid-5">
       
-      <!-- Segment Control (Pill Switch) -->
-      <div class="view-segment-control">
-        <button type="button" class="segment-btn" [class.active]="vistaActual === 'kanban'" (click)="setVista('kanban')">
-          <mat-icon>view_kanban</mat-icon>
-          <span>Tablero Kanban</span>
+      <div class="stat-card-compact glow-border-total">
+        <div class="stat-watermark"><mat-icon>report_problem</mat-icon></div>
+        <div class="stat-card-content">
+          <span class="stat-card-title">TOTAL DECLARADAS</span>
+          <span class="stat-card-number text-white">{{ declaracionStats.total }}</span>
+          <span class="stat-card-sub">En registro</span>
+        </div>
+      </div>
+
+      <div class="stat-card-compact glow-border-amber">
+        <div class="stat-watermark"><mat-icon>pending_actions</mat-icon></div>
+        <div class="stat-card-content">
+          <span class="stat-card-title">ABIERTA</span>
+          <span class="stat-card-number text-yellow">{{ declaracionStats.abiertas }}</span>
+          <span class="stat-card-sub">Por atender</span>
+        </div>
+      </div>
+
+      <div class="stat-card-compact glow-border-blue">
+        <div class="stat-watermark"><mat-icon>psychology</mat-icon></div>
+        <div class="stat-card-content">
+          <span class="stat-card-title">EN PROCESO</span>
+          <span class="stat-card-number text-blue">{{ declaracionStats.enProceso }}</span>
+          <span class="stat-card-sub">Análisis / Causa raíz</span>
+        </div>
+      </div>
+
+      <div class="stat-card-compact glow-border-green">
+        <div class="stat-watermark"><mat-icon>check_circle</mat-icon></div>
+        <div class="stat-card-content">
+          <span class="stat-card-title">CERRADAS</span>
+          <span class="stat-card-number text-green">{{ declaracionStats.cerradas }}</span>
+          <span class="stat-card-sub">Verificadas</span>
+        </div>
+      </div>
+
+      <div class="stat-card-compact glow-border-red pulse-glow-red">
+        <div class="stat-watermark"><mat-icon>warning</mat-icon></div>
+        <div class="stat-card-content">
+          <span class="stat-card-title">FUERA DE PLAZO</span>
+          <span class="stat-card-number text-red">{{ declaracionStats.fueraDePlazo }}</span>
+          <span class="stat-card-sub">Plazo expirado</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BARRA DE HERRAMIENTAS DECLARACIÓN DE NC -->
+    <div class="integrated-toolbar">
+      
+      <div class="toolbar-left-group">
+        <h2 class="seccion-titulo">NO CONFORMIDADES DECLARADAS</h2>
+      </div>
+
+      <div class="toolbar-actions-section">
+        <div class="inline-search-box">
+          <mat-icon class="search-icon">search</mat-icon>
+          <input type="text" 
+                 (keyup)="aplicarFiltroDeclaracion($event)" 
+                 placeholder="Buscar por código, hallazgo, proceso..." 
+                 class="inline-search-input">
+        </div>
+
+        <button type="button" class="btn-primary-glow" (click)="onDeclararNc()">
+          <mat-icon>add_alert</mat-icon>
+          <span>Declarar NC</span>
         </button>
-        <button type="button" class="segment-btn" [class.active]="vistaActual === 'tabla'" (click)="setVista('tabla')">
-          <mat-icon>format_list_bulleted</mat-icon>
-          <span>Vista Lista</span>
-        </button>
+      </div>
+
+    </div>
+
+    <!-- TABLA DE NO CONFORMIDADES DECLARADAS -->
+    <div class="table-card hover-fade">
+      <div class="table-responsive">
+        <table mat-table [dataSource]="declaracionDataSource" class="mat-elevation-z0 tabla-moderna">
+
+          <!-- Código -->
+          <ng-container matColumnDef="codigo">
+            <th mat-header-cell *matHeaderCellDef style="width: 140px;">Código</th>
+            <td mat-cell *matCellDef="let row" class="fw-600 color-codigo">
+              {{ row.codigo }}
+            </td>
+          </ng-container>
+
+          <!-- Tipo -->
+          <ng-container matColumnDef="tipo">
+            <th mat-header-cell *matHeaderCellDef style="width: 100px;">Tipo</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="type-pill" [class.type-externa]="row.tipo === 'Externa'" [class.type-interna]="row.tipo === 'Interna'">
+                {{ row.tipo }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Origen -->
+          <ng-container matColumnDef="origen">
+            <th mat-header-cell *matHeaderCellDef style="width: 140px;">Origen</th>
+            <td mat-cell *matCellDef="let row" class="cat-cell">{{ row.origen }}</td>
+          </ng-container>
+
+          <!-- Proceso -->
+          <ng-container matColumnDef="proceso">
+            <th mat-header-cell *matHeaderCellDef style="width: 160px;">Proceso Responsable</th>
+            <td mat-cell *matCellDef="let row" class="cat-cell">{{ row.proceso }}</td>
+          </ng-container>
+
+          <!-- Hallazgo -->
+          <ng-container matColumnDef="hallazgo">
+            <th mat-header-cell *matHeaderCellDef>Hallazgo Detectado</th>
+            <td mat-cell *matCellDef="let row" class="nombre-doc-cell">
+              <span class="cell-main-text">{{ row.hallazgo }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Requisito -->
+          <ng-container matColumnDef="requisito">
+            <th mat-header-cell *matHeaderCellDef style="width: 140px;">Requisito Incumplido</th>
+            <td mat-cell *matCellDef="let row" class="cat-cell" style="color: #f87171; font-weight: 600;">
+              {{ row.requisito }}
+            </td>
+          </ng-container>
+
+          <!-- Detección -->
+          <ng-container matColumnDef="deteccion">
+            <th mat-header-cell *matHeaderCellDef style="width: 110px;">Detección</th>
+            <td mat-cell *matCellDef="let row" class="cat-cell">{{ row.deteccion }}</td>
+          </ng-container>
+
+          <!-- Responsable -->
+          <ng-container matColumnDef="responsable">
+            <th mat-header-cell *matHeaderCellDef style="width: 140px;">Responsable</th>
+            <td mat-cell *matCellDef="let row" class="cat-cell">{{ row.responsable }}</td>
+          </ng-container>
+
+          <!-- Estado (NCO-02) -->
+          <ng-container matColumnDef="estado">
+            <th mat-header-cell *matHeaderCellDef style="width: 140px;">Estado</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="soft-badge" [ngClass]="{
+                'soft-badge-vigente': row.estado === 'Cerrada',
+                'soft-badge-blue': row.estado === 'En proceso',
+                'soft-badge-revision': row.estado === 'Abierta',
+                'soft-badge-porvencer': row.estado === 'Fuera de plazo'
+              }">
+                <span class="glowing-dot"></span>
+                <span>{{ row.estado }}</span>
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Acciones -->
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef style="width: 120px; text-align: center;">Acciones</th>
+            <td mat-cell *matCellDef="let row" class="acciones-cell">
+              <div class="actions-wrapper hover-fade">
+                <button class="action-btn btn-view" (click)="onVerNcDeclarada(row)" title="Ver detalle de NC">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button class="action-btn btn-edit" (click)="onDeclararNc(row)" title="Editar NC">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button class="action-btn btn-delete" (click)="onEliminarNcDeclarada(row)" title="Eliminar NC">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="declaracionColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: declaracionColumns;" class="tabla-fila-hover"></tr>
+
+        </table>
       </div>
     </div>
 
-    <div class="toolbar-actions-section">
-      <!-- Buscador Inline Integrado -->
-      <div class="inline-search-box">
-        <mat-icon class="search-icon">search</mat-icon>
-        <input type="text" 
-               (keyup)="aplicarFiltro($event)" 
-               placeholder="Buscar por NC, acción, responsable..." 
-               class="inline-search-input">
-      </div>
-
-      <button type="button" class="btn-primary-glow" (click)="onAgregar()">
-        <mat-icon>add</mat-icon>
-        <span>Nueva acción correctiva</span>
-      </button>
-    </div>
-
-  </div>
+  </ng-container>
 
   <!-- ===================================================================
-       VISTA 1: TABLERO KANBAN INTERACTIVO (4 COLUMNAS)
+       TAB 2: ACCIONES CORRECTIVAS (KANBAN / LISTA - NCO-02)
        =================================================================== -->
-  <div class="kanban-board-container" *ngIf="vistaActual === 'kanban'">
+  <ng-container *ngIf="activeSubTab === 'acciones'">
+
+    <!-- ESTADÍSTICAS CARDS DE ACCIONES CORRECTIVAS (NCO-02) -->
+    <div class="stats-grid-5">
+      
+      <div class="stat-card-compact glow-border-total">
+        <div class="stat-watermark"><mat-icon>rule</mat-icon></div>
+        <div class="stat-card-content">
+          <span class="stat-card-title">TOTAL ACCIONES</span>
+          <span class="stat-card-number text-white">{{ stats.total }}</span>
+          <span class="stat-card-sub">En registro</span>
+        </div>
+      </div>
+
+      <div class="stat-card-compact glow-border-amber">
+        <div class="stat-watermark"><mat-icon>pending_actions</mat-icon></div>
+        <div class="stat-card-content">
+          <span class="stat-card-title">ABIERTA</span>
+          <span class="stat-card-number text-yellow">{{ stats.abiertas }}</span>
+          <span class="stat-card-sub">Por atender</span>
+        </div>
+      </div>
+
+      <div class="stat-card-compact glow-border-blue">
+        <div class="stat-watermark"><mat-icon>sync</mat-icon></div>
+        <div class="stat-card-content">
+          <span class="stat-card-title">EN PROCESO</span>
+          <span class="stat-card-number text-blue">{{ stats.enProceso }}</span>
+          <span class="stat-card-sub">En ejecución</span>
+        </div>
+      </div>
+
+      <div class="stat-card-compact glow-border-green">
+        <div class="stat-watermark"><mat-icon>check_circle</mat-icon></div>
+        <div class="stat-card-content">
+          <span class="stat-card-title">CERRADAS</span>
+          <span class="stat-card-number text-green">{{ stats.cerradas }}</span>
+          <span class="stat-card-sub">Completadas</span>
+        </div>
+      </div>
+
+      <div class="stat-card-compact glow-border-red pulse-glow-red">
+        <div class="stat-watermark"><mat-icon>warning</mat-icon></div>
+        <div class="stat-card-content">
+          <span class="stat-card-title">FUERA DE PLAZO</span>
+          <span class="stat-card-number text-red">{{ stats.fueraDePlazo }}</span>
+          <span class="stat-card-sub">Plazo expirado</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BARRA DE HERRAMIENTAS INTEGRADA Y SELECTOR DE VISTA -->
+    <div class="integrated-toolbar">
+      
+      <div class="toolbar-left-group">
+        <h2 class="seccion-titulo">ACCIONES CORRECTIVAS</h2>
+        
+        <!-- Segment Control (Pill Switch) -->
+        <div class="view-segment-control">
+          <button type="button" class="segment-btn" [class.active]="vistaActual === 'kanban'" (click)="setVista('kanban')">
+            <mat-icon>view_kanban</mat-icon>
+            <span>Tablero Kanban</span>
+          </button>
+          <button type="button" class="segment-btn" [class.active]="vistaActual === 'tabla'" (click)="setVista('tabla')">
+            <mat-icon>format_list_bulleted</mat-icon>
+            <span>Vista Lista</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="toolbar-actions-section">
+        <!-- Buscador Inline Integrado -->
+        <div class="inline-search-box">
+          <mat-icon class="search-icon">search</mat-icon>
+          <input type="text" 
+                 (keyup)="aplicarFiltro($event)" 
+                 placeholder="Buscar por NC, acción, responsable..." 
+                 class="inline-search-input">
+        </div>
+
+        <button type="button" class="btn-primary-glow" (click)="onAgregar()">
+          <mat-icon>add</mat-icon>
+          <span>Nueva acción correctiva</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- VISTA 1: TABLERO KANBAN INTERACTIVO (4 COLUMNAS NCO-02: ABIERTA, EN PROCESO, CERRADA, FUERA DE PLAZO) -->
+    <div class="kanban-board-container" *ngIf="vistaActual === 'kanban'">
     
-    <!-- Columna 1: Pendientes -->
+    <!-- Columna 1: ABIERTA -->
     <div class="kanban-column column-amber">
       <div class="column-header">
         <div class="col-title-box">
           <span class="column-dot dot-amber"></span>
-          <span class="column-title">PENDIENTES</span>
+          <span class="column-title">ABIERTA</span>
         </div>
-        <span class="column-count-badge">{{ getKanbanByEstado('Pendiente').length }}</span>
+        <span class="column-count-badge">{{ getKanbanByEstado('Abierta').length }}</span>
       </div>
 
       <div class="column-cards-wrapper">
-        <div *ngFor="let card of getKanbanByEstado('Pendiente')" class="kanban-card shadow-premium" (click)="openNcDrawer(card)">
+        <div *ngFor="let card of getKanbanByEstado('Abierta')" class="kanban-card shadow-premium" (click)="openNcDrawer(card)">
           <div class="card-top-row">
             <span class="card-nc-code">{{ card.nc }}</span>
             <span class="card-type-tag">{{ card.tipo }}</span>
@@ -136,38 +321,36 @@
           </div>
 
           <div class="card-footer-row">
-            <!-- Rapid State Move Buttons -->
             <div class="card-actions-quick">
-              <button type="button" class="btn-quick-move btn-move-blue" (click)="moverEstado(card, 'En Ejecución', $event)" title="Mover a En Ejecución">
-                <mat-icon>play_arrow</mat-icon> En Ejecución
+              <button type="button" class="btn-quick-move btn-move-blue" (click)="moverEstado(card, 'En proceso', $event)" title="Mover a En proceso">
+                <mat-icon>play_arrow</mat-icon> En proceso
               </button>
             </div>
 
-            <!-- Avatar -->
             <div class="card-avatar" [title]="card.responsable">
               {{ initials(card.responsable) }}
             </div>
           </div>
         </div>
 
-        <div *ngIf="getKanbanByEstado('Pendiente').length === 0" class="kanban-empty-drop">
-          <span>Sin acciones pendientes</span>
+        <div *ngIf="getKanbanByEstado('Abierta').length === 0" class="kanban-empty-drop">
+          <span>Sin acciones abiertas</span>
         </div>
       </div>
     </div>
 
-    <!-- Columna 2: En Ejecución -->
+    <!-- Columna 2: EN PROCESO -->
     <div class="kanban-column column-blue">
       <div class="column-header">
         <div class="col-title-box">
           <span class="column-dot dot-blue"></span>
-          <span class="column-title">EN EJECUCIÓN</span>
+          <span class="column-title">EN PROCESO</span>
         </div>
-        <span class="column-count-badge">{{ getKanbanByEstado('En Ejecución').length }}</span>
+        <span class="column-count-badge">{{ getKanbanByEstado('En proceso').length }}</span>
       </div>
 
       <div class="column-cards-wrapper">
-        <div *ngFor="let card of getKanbanByEstado('En Ejecución')" class="kanban-card shadow-premium" (click)="openNcDrawer(card)">
+        <div *ngFor="let card of getKanbanByEstado('En proceso')" class="kanban-card shadow-premium" (click)="openNcDrawer(card)">
           <div class="card-top-row">
             <span class="card-nc-code">{{ card.nc }}</span>
             <span class="card-type-tag">{{ card.tipo }}</span>
@@ -188,41 +371,39 @@
           </div>
 
           <div class="card-footer-row">
-            <!-- Rapid State Move Buttons -->
             <div class="card-actions-quick">
-              <button type="button" class="btn-quick-move btn-move-green" (click)="moverEstado(card, 'Completada', $event)" title="Mover a Completada">
-                <mat-icon>check</mat-icon> Completar
+              <button type="button" class="btn-quick-move btn-move-green" (click)="moverEstado(card, 'Cerrada', $event)" title="Mover a Cerrada">
+                <mat-icon>check</mat-icon> Cerrar
               </button>
             </div>
 
-            <!-- Avatar -->
             <div class="card-avatar" [title]="card.responsable">
               {{ initials(card.responsable) }}
             </div>
           </div>
         </div>
 
-        <div *ngIf="getKanbanByEstado('En Ejecución').length === 0" class="kanban-empty-drop">
-          <span>Sin acciones en ejecución</span>
+        <div *ngIf="getKanbanByEstado('En proceso').length === 0" class="kanban-empty-drop">
+          <span>Sin acciones en proceso</span>
         </div>
       </div>
     </div>
 
-    <!-- Columna 3: Completadas -->
+    <!-- Columna 3: CERRADAS -->
     <div class="kanban-column column-green">
       <div class="column-header">
         <div class="col-title-box">
           <span class="column-dot dot-green"></span>
-          <span class="column-title">COMPLETADAS</span>
+          <span class="column-title">CERRADAS</span>
         </div>
-        <span class="column-count-badge">{{ getKanbanByEstado('Completada').length }}</span>
+        <span class="column-count-badge">{{ getKanbanByEstado('Cerrada').length }}</span>
       </div>
 
       <div class="column-cards-wrapper">
-        <div *ngFor="let card of getKanbanByEstado('Completada')" class="kanban-card shadow-premium card-completed" (click)="openNcDrawer(card)">
+        <div *ngFor="let card of getKanbanByEstado('Cerrada')" class="kanban-card shadow-premium opacity-done" (click)="openNcDrawer(card)">
           <div class="card-top-row">
-            <span class="card-nc-code">{{ card.nc }}</span>
-            <span class="card-type-tag">{{ card.tipo }}</span>
+            <span class="card-nc-code text-strike">{{ card.nc }}</span>
+            <span class="card-type-tag type-success">Cerrada</span>
           </div>
 
           <h4 class="card-action-title">{{ card.accion }}</h4>
@@ -232,44 +413,37 @@
               <mat-icon class="meta-icon">account_tree</mat-icon>
               <span>{{ card.proceso }}</span>
             </div>
-            
-            <div class="meta-date-box">
-              <mat-icon class="meta-icon">check_circle</mat-icon>
-              <span>Finalizada</span>
-            </div>
           </div>
 
           <div class="card-footer-row">
-            <span class="completed-text"><mat-icon>verified</mat-icon> Cerrada</span>
-
-            <!-- Avatar -->
-            <div class="card-avatar avatar-green" [title]="card.responsable">
+            <span class="done-stamp">✅ Finalizado</span>
+            <div class="card-avatar" [title]="card.responsable">
               {{ initials(card.responsable) }}
             </div>
           </div>
         </div>
 
-        <div *ngIf="getKanbanByEstado('Completada').length === 0" class="kanban-empty-drop">
-          <span>Sin acciones completadas</span>
+        <div *ngIf="getKanbanByEstado('Cerrada').length === 0" class="kanban-empty-drop">
+          <span>Sin acciones cerradas</span>
         </div>
       </div>
     </div>
 
-    <!-- Columna 4: Vencidas -->
+    <!-- Columna 4: FUERA DE PLAZO -->
     <div class="kanban-column column-red">
       <div class="column-header">
         <div class="col-title-box">
           <span class="column-dot dot-red"></span>
-          <span class="column-title">VENCIDAS</span>
+          <span class="column-title">FUERA DE PLAZO</span>
         </div>
-        <span class="column-count-badge">{{ getKanbanByEstado('Vencida').length }}</span>
+        <span class="column-count-badge badge-red-glow">{{ getKanbanByEstado('Fuera de plazo').length }}</span>
       </div>
 
       <div class="column-cards-wrapper">
-        <div *ngFor="let card of getKanbanByEstado('Vencida')" class="kanban-card shadow-premium card-overdue" (click)="openNcDrawer(card)">
+        <div *ngFor="let card of getKanbanByEstado('Fuera de plazo')" class="kanban-card shadow-premium card-vencida-glow" (click)="openNcDrawer(card)">
           <div class="card-top-row">
-            <span class="card-nc-code">{{ card.nc }}</span>
-            <span class="card-type-tag tag-overdue">Vencida</span>
+            <span class="card-nc-code text-red">{{ card.nc }}</span>
+            <span class="card-type-tag type-alert">Expirado</span>
           </div>
 
           <h4 class="card-action-title">{{ card.accion }}</h4>
@@ -280,28 +454,27 @@
               <span>{{ card.proceso }}</span>
             </div>
             
-            <div class="meta-date-box date-expired">
-              <mat-icon class="meta-icon">error</mat-icon>
-              <span>{{ card.limite ? (card.limite | date:'dd/MM/yy') : 'Expirada' }}</span>
+            <div class="meta-date-box text-red font-bold">
+              <mat-icon class="meta-icon text-red">report_problem</mat-icon>
+              <span>{{ card.limite ? (card.limite | date:'dd/MM/yy') : 'Vencida' }}</span>
             </div>
           </div>
 
           <div class="card-footer-row">
             <div class="card-actions-quick">
-              <button type="button" class="btn-quick-move btn-move-amber" (click)="moverEstado(card, 'En Ejecución', $event)" title="Reactivar acción">
-                <mat-icon>refresh</mat-icon> Reactivar
+              <button type="button" class="btn-quick-move btn-move-blue" (click)="moverEstado(card, 'En proceso', $event)" title="Reactivar">
+                <mat-icon>replay</mat-icon> Reactivar
               </button>
             </div>
 
-            <!-- Avatar -->
             <div class="card-avatar avatar-red" [title]="card.responsable">
               {{ initials(card.responsable) }}
             </div>
           </div>
         </div>
 
-        <div *ngIf="getKanbanByEstado('Vencida').length === 0" class="kanban-empty-drop">
-          <span>Sin acciones vencidas</span>
+        <div *ngIf="getKanbanByEstado('Fuera de plazo').length === 0" class="kanban-empty-drop">
+          <span>Sin acciones fuera de plazo</span>
         </div>
       </div>
     </div>
@@ -406,6 +579,7 @@
       <p>No se encontraron acciones correctivas registradas.</p>
     </div>
   </div>
+  </ng-container>
 
   <!-- ===================================================================
        SLIDE-OVER DRAWER FOR NO CONFORMIDAD DETAILS (GLASSMORPHISM)
