@@ -6,26 +6,46 @@
       <span class="material-icons">trending_up</span>
     </div>
     <div class="dialog-header-text">
-      <h2 class="dialog-title">{{ data.Accion === 'I' ? 'Registrar nueva iniciativa' : 'Editar iniciativa' }}</h2>
-      <p class="dialog-subtitle">Complete los detalles de la iniciativa de mejora según el documento</p>
+      <h2 class="dialog-title">{{ data.Accion === 'I' ? 'Registrar nueva incidencia / iniciativa' : 'Editar incidencia / iniciativa' }}</h2>
+      <p class="dialog-subtitle">Seleccione si registrará una incidencia o iniciativa de mejora y complete los detalles</p>
     </div>
   </div>
 
   <div class="dialog-content">
+
+    <!-- FILA 0: TIPO DE REGISTRO (INCIDENCIA / INICIATIVA) - PDM-01 -->
+    <div class="form-group full-width margin-bottom-14">
+      <label class="form-label">Tipo de Registro (*)</label>
+      <div style="display: flex; gap: 12px;">
+        <label *ngFor="let opt of tiposRegistroOpts" 
+               [style.background]="formulario.get('tipoRegistro')?.value === opt ? 'rgba(99, 102, 241, 0.25)' : 'rgba(255, 255, 255, 0.04)'"
+               [style.border]="formulario.get('tipoRegistro')?.value === opt ? '2px solid #818cf8' : '1px solid rgba(255, 255, 255, 0.1)'"
+               style="flex: 1; padding: 10px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 13px; color: #f8fafc; transition: all 0.2s ease;">
+          <input type="radio" formControlName="tipoRegistro" [value]="opt" style="accent-color: #6366f1;">
+          <span>{{ opt === 'Incidencia' ? '🚨 Incidencia de Mejora' : '💡 Iniciativa de Mejora' }}</span>
+        </label>
+      </div>
+    </div>
 
     <!-- FILA 1: SEDE & PROCESO -->
     <div class="form-row two-cols">
       <div class="form-group">
         <label class="form-label">Sede (*)</label>
         <select formControlName="sede" class="form-input" (change)="onSedeChange($any($event.target).value)">
+          <option value="">-- Seleccione una sede --</option>
           <option *ngFor="let s of sedes" [value]="s">{{ s }}</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">Proceso — <span class="note-purple">carga según sede</span> (*)</label>
         <select formControlName="proceso" class="form-input">
+          <option value="">-- Seleccione un proceso --</option>
           <option *ngFor="let p of procesosActuales" [value]="p">{{ p }}</option>
         </select>
+        <small *ngIf="formulario.get('sede')?.value && procesosActuales.length === 0"
+               style="color: #f0b429; font-size: 11px; margin-top: 4px; display: block;">
+          ⚠️ Esta sede no tiene procesos asignados. Asígnelos desde Organización → Estructura organizacional.
+        </small>
       </div>
     </div>
 
@@ -73,22 +93,131 @@
         <input type="date" formControlName="registro" class="form-input readonly-input" readonly>
       </div>
     </div>
+    <!-- FILA 5: ESTADO + FECHA FIN (PDM-04 & PDM-05) -->
+    <div class="form-row two-cols margin-bottom-14">
+      <div class="form-group">
+        <label class="form-label">Estado de la incidencia / iniciativa (*)</label>
+        <select formControlName="estado" class="form-input">
+          <option *ngFor="let est of estadoOpts" [value]="est">{{ est }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha fin <span class="faint-tag">editable</span></label>
+        <input type="date" formControlName="fechaFin" class="form-input"
+               placeholder="Se coloca al cerrar la incidencia/iniciativa">
+      </div>
+    </div>
 
-    <!-- FILA 5: ZONA DRAG & DROP SUBIR EXCEL -->
-    <div class="upload-zone" (click)="excelFileInput.click()">
+    <!-- FILA 6: ZONA DRAG & DROP SUBIR EXCEL & VISTA PREVIA (PREVISTA) -->
+    <div *ngIf="!archivoNombre && !cargandoArchivo" class="upload-zone" (click)="excelFileInput.click()">
       <div class="upload-icon">
         <span class="material-icons">cloud_upload</span>
       </div>
       <div class="upload-title">Subir archivo Excel (5W-2H o ACR)</div>
       <div class="upload-sub">Solo .xlsx / .xls · máx. 10MB</div>
-      <div class="upload-filename" [class.has-file]="archivoNombre">
-        {{ archivoNombre ? archivoNombre : 'Ningún archivo seleccionado' }}
-      </div>
+      <div class="upload-filename">Ningún archivo seleccionado</div>
       <input #excelFileInput 
              type="file" 
              accept=".xlsx,.xls" 
              style="display:none" 
              (change)="onFileChange($event)">
+    </div>
+
+    <!-- CARGANDO ARCHIVO SPINNER -->
+    <div *ngIf="cargandoArchivo" class="upload-zone" style="cursor: default; opacity: 0.8; border-color: #38bdf8;">
+      <div class="upload-icon" style="animation: spin 1s linear infinite; color: #38bdf8;">
+        <span class="material-icons">sync</span>
+      </div>
+      <div class="upload-title" style="color: #38bdf8;">Procesando y leyendo Excel...</div>
+      <div class="upload-sub">Subiendo archivo al servidor y extrayendo campos...</div>
+    </div>
+
+    <!-- VISTA PREVIA DEL ARCHIVO EXCEL CARGADO (PREVISTA) -->
+    <div *ngIf="archivoNombre && !cargandoArchivo" class="excel-preview-panel shadow-premium" style="background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 16px; margin-top: 10px;">
+      
+      <!-- CABECERA DEL ARCHIVO -->
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; color: #34d399;">
+            <span class="material-icons" style="font-size: 24px;">table_chart</span>
+          </div>
+          <div>
+            <div style="font-weight: 700; font-size: 14px; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
+              <span>{{ archivoNombre }}</span>
+              <span style="font-size: 10px; background: #10b981; color: #022c22; font-weight: 800; padding: 2px 8px; border-radius: 12px; text-transform: uppercase;">✔ Excel Cargado</span>
+            </div>
+            <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">
+              Tamaño: <span style="color: #cbd5e1; font-weight: 600;">{{ archivoTamanio || '245.8 KB' }}</span> · Herramienta: <span style="color: #38bdf8; font-weight: 600;">{{ formulario.get('herramienta')?.value }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn-ghost" (click)="excelFileInputChange.click()" style="padding: 6px 12px; font-size: 12px; color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); border-radius: 6px; background: rgba(56,189,248,0.1); cursor: pointer;">
+            <span class="material-icons" style="font-size: 15px; vertical-align: middle; margin-right: 2px;">published_with_changes</span> Cambiar
+          </button>
+          <button type="button" class="btn-ghost" (click)="onQuitarArchivo()" style="padding: 6px 12px; font-size: 12px; color: #f87171; border: 1px solid rgba(248,113,113,0.3); border-radius: 6px; background: rgba(239,68,68,0.1); cursor: pointer;">
+            <span class="material-icons" style="font-size: 15px; vertical-align: middle; margin-right: 2px;">delete</span> Quitar
+          </button>
+          <input #excelFileInputChange 
+                 type="file" 
+                 accept=".xlsx,.xls" 
+                 style="display:none" 
+                 (change)="onFileChange($event)">
+        </div>
+      </div>
+
+      <!-- TÍTULO DE VISTA PREVIA -->
+      <div style="font-size: 11px; font-weight: 700; color: #34d399; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span class="material-icons" style="font-size: 16px;">preview</span>
+          <span>Contenido Real Extraído del Documento Excel Subido</span>
+        </div>
+        <span *ngIf="excelRows.length > 0" style="font-size: 10px; background: rgba(56,189,248,0.15); color: #38bdf8; padding: 2px 8px; border-radius: 4px; font-weight: 600;">
+          {{ excelRows.length }} filas leídas
+        </span>
+      </div>
+
+      <!-- VISTA PREVIA REAL DEL EXCEL (SI SE LEYERON ENCABEZADOS Y FILAS REALES) -->
+      <div *ngIf="excelHeaders.length > 0" style="background: rgba(15, 23, 42, 0.7); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); overflow-x: auto; max-height: 240px; margin-bottom: 12px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px; color: #e2e8f0; white-space: nowrap;">
+          <thead>
+            <tr style="background: rgba(30, 41, 59, 0.9); border-bottom: 1px solid rgba(255, 255, 255, 0.12); text-align: left;">
+              <th style="padding: 8px 12px; color: #94a3b8; font-weight: 700; width: 35px; text-align: center; border-right: 1px solid rgba(255,255,255,0.06);">#</th>
+              <th *ngFor="let h of excelHeaders" style="padding: 8px 12px; color: #38bdf8; font-weight: 700; border-right: 1px solid rgba(255,255,255,0.06);">
+                {{ h || 'Columna' }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of excelRows; let i = index" style="border-bottom: 1px solid rgba(255, 255, 255, 0.04);">
+              <td style="padding: 6px 12px; text-align: center; font-weight: 700; color: #64748b; background: rgba(0,0,0,0.2); border-right: 1px solid rgba(255,255,255,0.06);">{{ i + 1 }}</td>
+              <td *ngFor="let cell of r" style="padding: 6px 12px; color: #f1f5f9; border-right: 1px solid rgba(255,255,255,0.04);">
+                {{ cell }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- MATRIZ RESUMEN SI NO HAY FILAS O PARA DETALLE ADICIONAL -->
+      <div *ngIf="excelHeaders.length === 0" style="background: rgba(15, 23, 42, 0.6); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px; color: #e2e8f0;">
+          <thead>
+            <tr style="background: rgba(255, 255, 255, 0.04); border-bottom: 1px solid rgba(255, 255, 255, 0.08); text-align: left;">
+              <th style="padding: 8px 12px; color: #94a3b8; font-weight: 700; width: 150px;">Dimensión 5W-2H</th>
+              <th style="padding: 8px 12px; color: #94a3b8; font-weight: 700;">Detalle Extraído del Archivo Excel</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of previewRows; let last = last" [style.border-bottom]="last ? 'none' : '1px solid rgba(255, 255, 255, 0.04)'">
+              <td style="padding: 8px 12px; font-weight: 700; color: #818cf8; background: rgba(99, 102, 241, 0.03);">{{ row.campo }}</td>
+              <td style="padding: 8px 12px; color: #f1f5f9;">{{ row.detalle }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
     </div>
 
   </div>

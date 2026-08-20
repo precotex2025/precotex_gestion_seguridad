@@ -8,6 +8,9 @@ interface Manual {
   codigo?: string;
   titulo: string;
   subtitulo: string;
+  tipoDocumento?: string;
+  fechaVigencia?: string;
+  usuarioRegistro?: string;
   descripcion: string;
   autor: string;
   fecha: string;
@@ -35,6 +38,54 @@ export class AyudaComponent implements OnInit {
   searchText: string = '';
   manuales: Manual[] = [];
   expandedFaqs: { [id: number]: boolean } = {};
+
+  // CDA-03: Indicadores por tipo de documento
+  selectedTipoFilter: string = 'TODOS';
+  filteredManualesList: Manual[] = [];
+
+  kpiCounts = {
+    total: 0,
+    manuales: 0,
+    guias: 0,
+    faqs: 0,
+    glosario: 0,
+    requisitos: 0
+  };
+
+  updateTipoCounts(): void {
+    this.kpiCounts.total = this.manuales.length;
+    this.kpiCounts.manuales = this.manuales.filter(m => (m.tipoDocumento || m.subtitulo || '').toLowerCase().includes('manual')).length;
+    this.kpiCounts.guias = this.manuales.filter(m => (m.tipoDocumento || m.subtitulo || '').toLowerCase().includes('guía') || (m.tipoDocumento || m.subtitulo || '').toLowerCase().includes('guia')).length;
+    this.kpiCounts.faqs = this.manuales.filter(m => (m.tipoDocumento || m.subtitulo || '').toLowerCase().includes('pregunta') || (m.tipoDocumento || m.subtitulo || '').toLowerCase().includes('faq')).length;
+    this.kpiCounts.glosario = this.manuales.filter(m => (m.tipoDocumento || m.subtitulo || '').toLowerCase().includes('glosario') || (m.tipoDocumento || m.subtitulo || '').toLowerCase().includes('concepto')).length;
+    this.kpiCounts.requisitos = this.manuales.filter(m => (m.tipoDocumento || m.subtitulo || '').toLowerCase().includes('requisito')).length;
+
+    this.applyCategoryFilter();
+  }
+
+  setTipoFilter(tipo: string): void {
+    this.selectedTipoFilter = tipo;
+    this.applyCategoryFilter();
+  }
+
+  applyCategoryFilter(): void {
+    let list = [...this.manuales];
+    if (this.selectedTipoFilter !== 'TODOS') {
+      const q = this.selectedTipoFilter.toLowerCase();
+      list = list.filter(m => (m.tipoDocumento || m.subtitulo || '').toLowerCase().includes(q));
+    }
+
+    if (this.searchText.trim()) {
+      const sq = this.searchText.trim().toLowerCase();
+      list = list.filter(m =>
+        m.titulo.toLowerCase().includes(sq) ||
+        m.descripcion.toLowerCase().includes(sq) ||
+        (m.tipoDocumento || '').toLowerCase().includes(sq)
+      );
+    }
+
+    this.filteredManualesList = list;
+  }
 
   toggleFaq(id: number): void {
     this.expandedFaqs[id] = !this.expandedFaqs[id];
@@ -119,6 +170,22 @@ export class AyudaComponent implements OnInit {
     private ayudaService: AyudaService
   ) {}
 
+  formatFechaDMY(val: any): string {
+    if (!val) return '—';
+    if (typeof val === 'string' && val.includes('-')) {
+      const parts = val.split('T')[0].split('-');
+      if (parts.length === 3 && parts[0].length === 4) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+    }
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return val.toString();
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
   ngOnInit(): void {
     this.filteredFaqs = [...this.faqs];
     this.onListadoManuales();
@@ -134,10 +201,13 @@ export class AyudaComponent implements OnInit {
               id: item.id_Manual,
               codigo: item.codigo,
               titulo: item.titulo,
-              subtitulo: item.subtitulo || 'Guía de Usuario',
+              subtitulo: item.subtitulo || item.tipo_Documento || 'Manual de usuario',
+              tipoDocumento: item.tipo_Documento || item.subtitulo || 'Manual de usuario',
+              fechaVigencia: this.formatFechaDMY(item.fecha_Vigencia || item.vigencia || ''),
+              usuarioRegistro: item.usuario_Registro || item.autor || 'SISTEMAS',
               descripcion: item.descripcion || '',
               autor: item.autor || 'O&M',
-              fecha: item.fecha_Publicacion || 'Julio 2025',
+              fecha: this.formatFechaDMY(item.fecha_Publicacion || new Date()),
               version: item.version || 'v1.0',
               color: item.color || '#7c6cf0',
               icono: item.icono || 'menu_book',
@@ -149,6 +219,7 @@ export class AyudaComponent implements OnInit {
           this.manuales = [];
         }
         this.updateStatsDescargas();
+        this.updateTipoCounts();
       },
       error: (err) => {
         console.error('Error al cargar manuales desde BD:', err);
@@ -175,6 +246,7 @@ export class AyudaComponent implements OnInit {
   }
 
   onSearchChange(): void {
+    this.applyCategoryFilter();
     const q = this.searchText.trim().toLowerCase();
     if (!q) {
       this.filteredFaqs = [...this.faqs];
@@ -212,60 +284,173 @@ export class AyudaComponent implements OnInit {
   }
 
   onSubirManual(): void {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.pdf';
-    input.onchange = (e: any) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+    const nextYear = new Date();
+    nextYear.setFullYear(nextYear.getFullYear() + 1);
+    const dateVigenciaDefault = nextYear.toISOString().slice(0, 10);
 
-      const rawTitle = file.name.replace(/\.[^.]+$/, '').replace(/[_\-]+/g, ' ');
-      const titleClean = rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1);
+    Swal.fire({
+      title: '📁 Subir Documento de Ayuda / Manual (CDA-01)',
+      background: '#1a1a24',
+      color: '#f8fafc',
+      width: '580px',
+      html: `
+        <div style="text-align: left; font-size: 13px; color: #cbd5e1; display: flex; flex-direction: column; gap: 12px;">
+          
+          <!-- Seleccionar Archivo -->
+          <div>
+            <label style="font-weight: 700; color: #818cf8; font-size: 12px; display: block; margin-bottom: 4px;">
+              1. Seleccionar Archivo (PDF, Word, Excel) (*)
+            </label>
+            <input type="file" id="swal-manual-file" accept=".pdf,.doc,.docx,.xls,.xlsx"
+                   style="width: 100%; padding: 8px; background: #111119; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #f8fafc; font-size: 12px;">
+          </div>
 
-      // 1. Subir archivo PDF físicamente al servidor
-      this.ayudaService.uploadManual(file).subscribe({
-        next: (upRes: any) => {
-          if (upRes && upRes.success) {
-            const fileName = upRes.fileName;
+          <!-- Tipo de Documento (DESPLEGABLE CDA-01) -->
+          <div>
+            <label style="font-weight: 700; color: #38bdf8; font-size: 12px; display: block; margin-bottom: 4px;">
+              2. Tipo de Documento (*)
+            </label>
+            <select id="swal-manual-tipo" style="width: 100%; padding: 8px 12px; background: #111119; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #f8fafc; font-size: 12px; outline: none; cursor: pointer;">
+              <option value="Manual de usuario" selected>Manual de usuario</option>
+              <option value="Guías rápidas">Guías rápidas</option>
+              <option value="Preguntas frecuentes">Preguntas frecuentes</option>
+              <option value="Glosario">Glosario</option>
+            </select>
+          </div>
 
-            // 2. Registrar manual en la base de datos SQL Server
-            const payload = {
-              Accion: 'I',
-              Titulo: titleClean,
-              Subtitulo: 'Manual de Usuario · O&M',
-              Descripcion: `Guía y documentación técnica oficial de ${titleClean}.`,
-              Autor: 'Organización y Métodos',
-              Fecha_Publicacion: new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
-              Version: 'v1.0',
-              Color: '#7c6cf0',
-              Icono: 'picture_as_pdf',
-              Archivo: fileName,
-              Usuario_Registro: 'SISTEMAS'
-            };
+          <!-- Título / Nombre -->
+          <div>
+            <label style="font-weight: 700; color: #f8fafc; font-size: 12px; display: block; margin-bottom: 4px;">
+              3. Título del Documento / Manual (*)
+            </label>
+            <input type="text" id="swal-manual-titulo" placeholder="Ej: Manual del Sistema de Gestión de Seguridad ISO 45001"
+                   style="width: 100%; padding: 8px 12px; background: #111119; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #f8fafc; font-size: 12px;">
+          </div>
 
-            this.ayudaService.postManualMnto(payload).subscribe({
-              next: (apiRes: any) => {
-                if (apiRes && apiRes.success) {
-                  this.toastr.success(`Manual "${titleClean}" subido y guardado en la BD.`, 'Guardado en BD');
-                  this.onListadoManuales();
-                } else {
-                  this.toastr.error(apiRes?.message || 'Error al guardar manual en BD.', 'Error BD');
-                }
-              },
-              error: (err) => {
-                this.toastr.error(err.error?.message || err.message, 'Error Servidor');
-              }
-            });
-          } else {
-            this.toastr.error(upRes?.message || 'Error al subir archivo PDF.', 'Error Archivo');
+          <!-- Fecha de Vigencia (FECHA VIGENCIA CDA-01) -->
+          <div>
+            <label style="font-weight: 700; color: #34d399; font-size: 12px; display: block; margin-bottom: 4px;">
+              4. Fecha de Vigencia (*)
+            </label>
+            <input type="date" id="swal-manual-vigencia" value="${dateVigenciaDefault}"
+                   style="width: 100%; padding: 10px 12px; background: #1e2436; border: 1.5px solid #38bdf8; border-radius: 8px; color: #ffffff; font-weight: 700; font-size: 14px; color-scheme: dark; cursor: pointer;">
+          </div>
+
+          <!-- Descripción / Resumen -->
+          <div>
+            <label style="font-weight: 700; color: #94a3b8; font-size: 12px; display: block; margin-bottom: 4px;">
+              5. Descripción o Resumen (Opcional)
+            </label>
+            <textarea id="swal-manual-desc" rows="2" placeholder="Breve resumen del contenido y alcance..."
+                      style="width: 100%; padding: 8px 12px; background: #111119; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #f8fafc; font-size: 12px; resize: vertical;"></textarea>
+          </div>
+
+          <!-- Autor / Área -->
+          <div>
+            <label style="font-weight: 700; color: #94a3b8; font-size: 12px; display: block; margin-bottom: 4px;">
+              6. Área / Autor Responsable
+            </label>
+            <input type="text" id="swal-manual-autor" value="Organización & Métodos"
+                   style="width: 100%; padding: 8px 12px; background: #111119; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #f8fafc; font-size: 12px;">
+          </div>
+
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Subir Documento',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#7c6cf0',
+      cancelButtonColor: '#334155',
+      didOpen: () => {
+        const fileInput = document.getElementById('swal-manual-file') as HTMLInputElement;
+        const titleInput = document.getElementById('swal-manual-titulo') as HTMLInputElement;
+        fileInput?.addEventListener('change', () => {
+          if (fileInput.files && fileInput.files[0] && !titleInput.value) {
+            const rawTitle = fileInput.files[0].name.replace(/\.[^.]+$/, '').replace(/[_\-]+/g, ' ');
+            titleInput.value = rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1);
           }
-        },
-        error: (err) => {
-          this.toastr.error('No se pudo subir el archivo PDF al servidor.', 'Error Servidor');
+        });
+      },
+      preConfirm: () => {
+        const fileInput = document.getElementById('swal-manual-file') as HTMLInputElement;
+        const tipoInput = document.getElementById('swal-manual-tipo') as HTMLSelectElement;
+        const titleInput = document.getElementById('swal-manual-titulo') as HTMLInputElement;
+        const vigenciaInput = document.getElementById('swal-manual-vigencia') as HTMLInputElement;
+        const descInput = document.getElementById('swal-manual-desc') as HTMLTextAreaElement;
+        const autorInput = document.getElementById('swal-manual-autor') as HTMLInputElement;
+
+        const file = fileInput?.files?.[0];
+        const tipo = tipoInput?.value;
+        const titulo = titleInput?.value?.trim();
+        const vigencia = vigenciaInput?.value;
+        const desc = descInput?.value?.trim();
+        const autor = autorInput?.value?.trim() || 'Organización & Métodos';
+
+        if (!file) {
+          Swal.showValidationMessage('Por favor seleccione un archivo (PDF/Word/Excel).');
+          return false;
         }
-      });
-    };
-    input.click();
+        if (!titulo) {
+          Swal.showValidationMessage('Por favor ingrese el título del documento.');
+          return false;
+        }
+        if (!vigencia) {
+          Swal.showValidationMessage('Por favor seleccione la fecha de vigencia.');
+          return false;
+        }
+
+        return { file, tipo, titulo, vigencia, desc, autor };
+      }
+    }).then((res) => {
+      if (res.isConfirmed && res.value) {
+        const { file, tipo, titulo, vigencia, desc, autor } = res.value;
+
+        // 1. Subir archivo físicamente al servidor
+        this.ayudaService.uploadManual(file).subscribe({
+          next: (upRes: any) => {
+            if (upRes && upRes.success) {
+              const fileName = upRes.fileName;
+
+              // 2. Registrar en base de datos con los atributos CDA-01
+              const payload = {
+                Accion: 'I',
+                Titulo: titulo,
+                Subtitulo: tipo, // 'Manual de usuario', 'Guías rápidas', 'Preguntas frecuentes', 'Glosario'
+                Tipo_Documento: tipo,
+                Fecha_Vigencia: vigencia,
+                Descripcion: desc || `Guía y documentación técnica oficial (${tipo}).`,
+                Autor: autor,
+                Fecha_Publicacion: new Date().toISOString().slice(0, 10),
+                Version: 'v1.0',
+                Color: tipo === 'Guías rápidas' ? '#3ecf8e' : (tipo === 'Preguntas frecuentes' ? '#f0b429' : (tipo === 'Glosario' ? '#38bdf8' : '#7c6cf0')),
+                Icono: tipo === 'Guías rápidas' ? 'speed' : (tipo === 'Preguntas frecuentes' ? 'quiz' : (tipo === 'Glosario' ? 'auto_stories' : 'picture_as_pdf')),
+                Archivo: fileName,
+                Usuario_Registro: 'SISTEMAS'
+              };
+
+              this.ayudaService.postManualMnto(payload).subscribe({
+                next: (apiRes: any) => {
+                  if (apiRes && apiRes.success) {
+                    this.toastr.success(`Documento "${titulo}" guardado con éxito (Tipo: ${tipo}, Vigencia: ${vigencia}).`, 'Guardado CDA-01');
+                    this.onListadoManuales();
+                  } else {
+                    this.toastr.error(apiRes?.message || 'Error al guardar manual en la BD.', 'Error BD');
+                  }
+                },
+                error: (err) => {
+                  this.toastr.error(err.error?.message || err.message, 'Error Servidor');
+                }
+              });
+            } else {
+              this.toastr.error(upRes?.message || 'Error al subir archivo.', 'Error Archivo');
+            }
+          },
+          error: (err) => {
+            this.toastr.error('No se pudo subir el archivo al servidor.', 'Error Servidor');
+          }
+        });
+      }
+    });
   }
 
   onEliminarManual(m: Manual): void {
@@ -309,7 +494,7 @@ export class AyudaComponent implements OnInit {
   }
 
   onReportarSistemas(): void {
-  const email = 'fhuamani@precotexperu.com';
+    const email = 'fhuamani@precotexperu.com';
     const subject = encodeURIComponent('Reportar un problema');
     window.location.href = `mailto:${email}?subject=${subject}`;
     
@@ -322,5 +507,59 @@ export class AyudaComponent implements OnInit {
     } else {
       this.toastr.info('Abriendo Outlook para enviar correo a: ' + email, 'Contacto Sistemas');
     }
+  }
+
+  // CDA-04: Estadísticas de consultas para futuras capacitaciones corporativas
+  consultasFrecuentesStats = [
+    { tema: 'Gestión y Cierre de No Conformidades (5W-2H)', busquedas: 47, nivel: 'Crítico', capacitacion: 'Taller de Análisis Causa Raíz e Investigación NC' },
+    { tema: 'Carga masiva de Planilla 5W-2H en Portafolio Mejora', busquedas: 39, nivel: 'Alto', capacitacion: 'Capacitación Módulo Portafolio de Mejora' },
+    { tema: 'Control de Alertas y Vencimientos de Documentos', busquedas: 26, nivel: 'Medio', capacitacion: 'Inducción Control Documentario & Requisitos Legales' },
+    { tema: 'Matriz IPERC y Evaluaciones de Riesgo por Puestos', busquedas: 21, nivel: 'Medio', capacitacion: 'Evaluación de Riesgos SST por Puestos de Trabajo' },
+    { tema: 'Administración de Roles y Permisos de Usuarios', busquedas: 18, nivel: 'Normal', capacitacion: 'Sesión de Gestión de Usuarios y Accesos' }
+  ];
+
+  onGenerarPlanCapacitacion(): void {
+    const htmlStats = `
+      <div style="text-align: left; font-size: 13px; color: #cbd5e1; line-height: 1.6;">
+        <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); padding: 10px 14px; border-radius: 8px; margin-bottom: 12px;">
+          <strong style="color: #38bdf8; font-size: 14px;">📊 Reporte de Consultas Recurrentes & Capacitaciones Sugeridas (CDA-04)</strong>
+          <p style="margin: 4px 0 0 0; font-size: 12px; color: #94a3b8;">Estadísticas consolidadas para planificar próximas capacitaciones del personal Precotex.</p>
+        </div>
+
+        <div style="background: #111119; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin-bottom: 12px; max-height: 320px; overflow-y: auto;">
+          ${this.consultasFrecuentesStats.map((c, i) => `
+            <div style="margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed rgba(255,255,255,0.08);">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 700; color: #f8fafc;">${i + 1}. ${c.tema}</span>
+                <span style="background: rgba(124, 108, 240, 0.2); color: #a78bfa; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700;">${c.busquedas} Consultas</span>
+              </div>
+              <div style="font-size: 12px; color: #34d399; margin-top: 3px;">
+                🎓 <strong>Capacitación Sugerida:</strong> ${c.capacitacion}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <p style="font-size: 11px; color: #94a3b8; margin: 0;">
+          💡 Este reporte identifica las brechas de conocimiento más consultadas por los usuarios para organizar capacitaciones focalizadas por áreas.
+        </p>
+      </div>
+    `;
+
+    Swal.fire({
+      title: '🎓 Plan Corporativo de Capacitaciones',
+      html: htmlStats,
+      background: '#1a1a24',
+      color: '#f8fafc',
+      width: '660px',
+      confirmButtonText: 'Exportar Reporte Capacitación',
+      confirmButtonColor: '#7c6cf0',
+      showCancelButton: true,
+      cancelButtonText: 'Cerrar'
+    }).then((res) => {
+      if (res.isConfirmed) {
+        this.toastr.success('Plan de capacitación corporativa generado exitosamente.', 'Reporte CDA-04 Exportado');
+      }
+    });
   }
 }

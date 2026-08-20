@@ -142,7 +142,7 @@
           <!-- Detección -->
           <ng-container matColumnDef="deteccion">
             <th mat-header-cell *matHeaderCellDef style="width: 110px;">Detección</th>
-            <td mat-cell *matCellDef="let row" class="cat-cell">{{ row.deteccion }}</td>
+            <td mat-cell *matCellDef="let row" class="cat-cell">{{ formatFechaDMY(row.deteccion) }}</td>
           </ng-container>
 
           <!-- Responsable -->

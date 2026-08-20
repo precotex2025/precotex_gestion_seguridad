@@ -6,7 +6,8 @@ import { ProcesosService } from '../../../services/procesos.service';
 
 interface DialogData {
   Title: string;
-  Accion: string; // 'I' | 'U'
+  Accion: string; // 'I' | 'U' | 'V'
+  NextCodigo?: string;
   Datos: any;
 }
 
@@ -19,7 +20,19 @@ interface DialogData {
 export class EvaluacionRiesgosRegeditComponent implements OnInit {
   formulario!: FormGroup;
 
+  readonly sedesOptions = ['Planta Ate', 'Planta Santa Anita', 'Planta Huachipa', 'Oficinas Centrales']; // RIE-09
+  readonly periodosOptions = ['2026', '2025', '2024', '2023']; // RIE-09
   readonly tiposOptions = ['Seguridad', 'Calidad', 'Ambiental', 'Operativo']; // RIE-04
+  readonly clausulasOptions = [
+    '6.1.1 Acciones para abordar riesgos y oportunidades',
+    '6.1.2 Identificación de peligros y evaluación de los riesgos (IPERC)',
+    '6.1.3 Determinación de los requisitos legales y otros requisitos',
+    '6.1.4 Planificación de acciones',
+    '8.1 Planificación y control operacional',
+    '8.2 Preparación y respuesta ante emergencias',
+    '9.1 Seguimiento, medición, análisis y evaluación del desempeño',
+    '10.2 Incidentes, no conformidades y acciones correctivas'
+  ]; // RIE-10
   
   procesosGroups: { [key: string]: string[] } = {};
 
@@ -42,23 +55,28 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
     });
 
     this.formulario = this.fb.group({
-      codigo: ['', Validators.required],
+      codigo: [{ value: '', disabled: true }, Validators.required],
+      periodo: [new Date().getFullYear().toString(), Validators.required], // RIE-09
+      sede: ['Planta Ate', Validators.required],                           // RIE-09
       tipo: ['Seguridad', Validators.required],
+      clausula: ['6.1.2 Identificación de peligros y evaluación de los riesgos (IPERC)', Validators.required], // RIE-10
       descbrief: ['', Validators.required],
       proceso: ['SSOMA', Validators.required],
+      causaprobable: [''],                                                 // RIE-11
+      consecuenciapotencial: [''],                                         // RIE-11
       probabilidad: [3, Validators.required], // 1 a 5
       impacto: [3, Validators.required],     // 1 a 5
-      nivel: ['Medio', Validators.required],  // Auto-calculado
+      nivel: [{ value: 'Medio', disabled: true }, Validators.required],  // RIE-12: Auto-calculado bloqueado
       responsable: ['', Validators.required],
-      revision: ['', Validators.required],
-      estado: ['En seguimiento', Validators.required],
+      revision: [new Date().toISOString().substring(0, 10)], // RIE-17: Valor inicial por defecto
+      estado: ['Sin control'],                               // RIE-18: Nace inicialmente como 'Sin control'
       medidacontrol: ['']
     });
 
-    // RIE-01: Cálculo automático de nivel de riesgo residual al modificar probabilidad o impacto
-    this.formulario.valueChanges.subscribe(vals => {
-      const p = parseInt(vals.probabilidad || 3, 10);
-      const i = parseInt(vals.impacto || 3, 10);
+    // RIE-12: Cálculo automático de nivel de riesgo residual (Probabilidad x Impacto)
+    const calcularNivel = () => {
+      const p = parseInt(this.formulario.get('probabilidad')?.value || 3, 10);
+      const i = parseInt(this.formulario.get('impacto')?.value || 3, 10);
       const score = p * i;
       let nuevoNivel = 'Bajo';
       if (score >= 15) nuevoNivel = 'Alto';
@@ -67,14 +85,25 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
       if (this.formulario.get('nivel')?.value !== nuevoNivel) {
         this.formulario.get('nivel')?.setValue(nuevoNivel, { emitEvent: false });
       }
-    });
+    };
 
-    if (this.data.Accion === 'U' && this.data.Datos) {
+    this.formulario.get('probabilidad')?.valueChanges.subscribe(() => calcularNivel());
+    this.formulario.get('impacto')?.valueChanges.subscribe(() => calcularNivel());
+
+    if (this.data.Accion === 'I') {
+      const autoCod = this.data.NextCodigo || 'RSG-2026-001';
+      this.formulario.patchValue({ codigo: autoCod });
+    } else if ((this.data.Accion === 'U' || this.data.Accion === 'V') && this.data.Datos) {
       this.formulario.patchValue({
         codigo: this.data.Datos.codigo,
+        periodo: this.data.Datos.periodo || new Date().getFullYear().toString(),
+        sede: this.data.Datos.sede || 'Planta Ate',
         tipo: this.data.Datos.tipo,
+        clausula: this.data.Datos.clausula || '6.1.2 Identificación de peligros y evaluación de los riesgos (IPERC)',
         descbrief: this.data.Datos.descbrief,
         proceso: this.data.Datos.proceso,
+        causaprobable: this.data.Datos.causaprobable || '',
+        consecuenciapotencial: this.data.Datos.consecuenciapotencial || '',
         probabilidad: this.data.Datos.probabilidad || 3,
         impacto: this.data.Datos.impacto || 3,
         nivel: this.data.Datos.nivel || 'Medio',
@@ -83,11 +112,60 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
         estado: this.data.Datos.estado,
         medidacontrol: this.data.Datos.medidacontrol || ''
       });
+      if (this.data.Accion === 'V') {
+        this.formulario.disable();
+      }
     }
+  }
+
+  readonly probRows = [5, 4, 3, 2, 1]; // Filas de 5 a 1
+  readonly impCols = [1, 2, 3, 4, 5];  // Columnas de 1 a 5
+
+  // RIE-13: Selección interactiva al hacer clic en cualquier celda de la matriz 5x5
+  seleccionarCeldaMatriz(prob: number, impacto: number): void {
+    if (this.data.Accion === 'V') return;
+    this.formulario.patchValue({
+      probabilidad: prob,
+      impacto: impacto
+    });
+  }
+
+  isCeldaSeleccionada(prob: number, impacto: number): boolean {
+    const currentP = parseInt(this.formulario.get('probabilidad')?.value || 3, 10);
+    const currentI = parseInt(this.formulario.get('impacto')?.value || 3, 10);
+    return currentP === prob && currentI === impacto;
+  }
+
+  getCeldaColorMatriz(prob: number, impacto: number): string {
+    const score = prob * impacto;
+    if (score >= 15) return 'rgba(239, 68, 68, 0.45)';  // Alto (Red)
+    if (score >= 8)  return 'rgba(245, 158, 11, 0.45)'; // Medio (Amber)
+    return 'rgba(34, 197, 94, 0.45)';                  // Bajo (Green)
+  }
+
+  getScoreCalculado(): number {
+    const p = parseInt(this.formulario.get('probabilidad')?.value || 3, 10);
+    const i = parseInt(this.formulario.get('impacto')?.value || 3, 10);
+    return p * i;
   }
 
   getProcesosKeys(): string[] {
     return Object.keys(this.procesosGroups);
+  }
+
+  // RIE-12: Estilos dinámicos para la insignia de nivel autocalculado
+  getNivelBg(nivel?: string): string {
+    const val = (nivel || '').toLowerCase();
+    if (val.includes('alto')) return 'rgba(239, 68, 68, 0.25)';
+    if (val.includes('medio')) return 'rgba(245, 158, 11, 0.25)';
+    return 'rgba(34, 197, 94, 0.25)';
+  }
+
+  getNivelColor(nivel?: string): string {
+    const val = (nivel || '').toLowerCase();
+    if (val.includes('alto')) return '#f87171';
+    if (val.includes('medio')) return '#fbbf24';
+    return '#4ade80';
   }
 
   onGuardar(): void {
@@ -95,7 +173,7 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
       this.toastr.warning('Por favor, rellene todos los campos obligatorios.', 'Formulario Inválido');
       return;
     }
-    this.dialogRef.close(this.formulario.value);
+    this.dialogRef.close(this.formulario.getRawValue());
   }
 
   onCancelar(): void {

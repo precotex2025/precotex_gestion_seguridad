@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { PortafolioMejoraRegeditComponent } from './portafolio-mejora-regedit/portafolio-mejora-regedit.component';
 import { ProcesosService } from '../../services/procesos.service';
 import { MejoraService } from '../../services/mejora.service';
+import { SedesService } from '../../services/sedes.service';
 
 @Component({
   selector: 'app-portafolio-mejora',
@@ -18,6 +19,12 @@ export class PortafolioMejoraComponent implements OnInit {
   filteredList: any[] = [];
   searchText: string = '';
   selectedProceso: string = 'Todos';
+
+  // PDM-09: Filtros de Sede, Herramienta y Estado
+  filterSede: string = 'TODAS';
+  filterHerramienta: string = 'TODAS';
+  filterEstado: string = 'TODOS';
+  sedesDisponibles: string[] = [];
 
   stats = {
     total: 0,
@@ -39,8 +46,10 @@ export class PortafolioMejoraComponent implements OnInit {
     'herramienta',
     'proceso',
     'sede',
+    'registro',
     'apertura',
     'limite',
+    'fechaFin',
     'estado',
     'acciones'
   ];
@@ -50,11 +59,25 @@ export class PortafolioMejoraComponent implements OnInit {
     private dialog: MatDialog,
     private toastr: ToastrService,
     private procesosService: ProcesosService,
-    private mejoraService: MejoraService
+    private mejoraService: MejoraService,
+    private sedesService: SedesService
   ) {}
 
   ngOnInit(): void {
     this.onListado();
+
+    // PDM-09: Cargar sedes activas para el filtro
+    this.sedesService.getListadoSedes('001', '1').subscribe({
+      next: (res: any) => {
+        if (res && res.success && res.elements) {
+          const listS = res.elements
+            .map((s: any) => (s.denominacion || '').trim())
+            .filter((s: string) => s.length > 0);
+          this.sedesDisponibles = Array.from(new Set(listS));
+        }
+      }
+    });
+
     this.procesosService.getProcesosAgrupados().subscribe({
       next: (groups: any) => {
         if (groups && Object.keys(groups).length > 0) {
@@ -214,8 +237,10 @@ export class PortafolioMejoraComponent implements OnInit {
             herramienta: item.herramienta || '5W-2H',
             proceso: item.nombre_Proceso || item.proceso || 'General',
             sede: item.sede || 'Huachipa',
-            apertura: item.fecha_Inicio ? item.fecha_Inicio.split('T')[0] : '',
-            limite: item.fecha_Fin_Estimada ? item.fecha_Fin_Estimada.split('T')[0] : '',
+            registro: item.fecha_Registro ? item.fecha_Registro.split('T')[0] : (item.registro || item.fecha_Ocurrencia || ''),
+            apertura: item.fecha_Inicio ? item.fecha_Inicio.split('T')[0] : (item.apertura || ''),
+            limite: item.fecha_Fin_Estimada ? item.fecha_Fin_Estimada.split('T')[0] : (item.limite || ''),
+            fechaFin: item.fecha_Fin ? item.fecha_Fin.split('T')[0] : (item.fechaFin || ''),
             estado: item.estado || 'En proceso',
             estadoAprobacion: item.estadoAprobacion || (item.estado === 'Cerrado' ? 'Aprobado' : 'Pendiente'), // POR-03
             avancePct: item.avancePct || Math.floor(40 + Math.random() * 55), // POR-05
@@ -354,6 +379,21 @@ export class PortafolioMejoraComponent implements OnInit {
       }
     }
 
+    // PDM-09: Filtro por SEDE
+    if (this.filterSede && this.filterSede !== 'TODAS') {
+      list = list.filter(m => (m.sede || '').toLowerCase().trim() === this.filterSede.toLowerCase().trim());
+    }
+
+    // PDM-09: Filtro por HERRAMIENTA
+    if (this.filterHerramienta && this.filterHerramienta !== 'TODAS') {
+      list = list.filter(m => (m.herramienta || '').toLowerCase().trim() === this.filterHerramienta.toLowerCase().trim());
+    }
+
+    // PDM-09: Filtro por ESTADO
+    if (this.filterEstado && this.filterEstado !== 'TODOS') {
+      list = list.filter(m => (m.estado || '').toLowerCase().trim() === this.filterEstado.toLowerCase().trim());
+    }
+
     if (this.searchText.trim()) {
       const q = this.searchText.toLowerCase();
       list = list.filter(m =>
@@ -375,7 +415,7 @@ export class PortafolioMejoraComponent implements OnInit {
       panelClass: 'custom-large-dialog',
       disableClose: true,
       data: {
-        Title: 'Registrar iniciativa',
+        Title: 'Registrar incidencia / iniciativa',
         Accion: 'I',
         Datos: null
       }
@@ -386,6 +426,7 @@ export class PortafolioMejoraComponent implements OnInit {
         const payload = {
           Accion: 'I',
           Codigo: '',
+          Tipo: res.tipoRegistro || 'Iniciativa',
           Fuente: res.herramienta,
           Herramienta: res.herramienta,
           Codigo_Proceso: res.proceso,
@@ -507,6 +548,32 @@ export class PortafolioMejoraComponent implements OnInit {
     }
     const downloadUrl = this.mejoraService.getDownloadUrl(item.archivo);
     window.open(downloadUrl, '_blank');
+  }
+
+  // PDM-08: Ver detalle de la iniciativa / incidencia
+  onVer(item: any): void {
+    Swal.fire({
+      title: `<span style="color: #6366f1; font-weight: 700;">Detalle de ${item.tipo || 'Incidencia / Iniciativa'}</span>`,
+      html: `
+        <div style="text-align: left; font-size: 13px; color: #e2e8f0; display: flex; flex-direction: column; gap: 8px; padding: 6px 0;">
+          <div><strong style="color: #818cf8;">Código:</strong> ${item.codigo || item.id || '—'}</div>
+          <div><strong style="color: #818cf8;">Título:</strong> ${item.titulo || '—'}</div>
+          <div><strong style="color: #818cf8;">Herramienta:</strong> <span style="background: rgba(56,189,248,0.15); color: #38bdf8; padding: 2px 8px; border-radius: 4px; font-weight: 600;">${item.herramienta || '5W-2H'}</span></div>
+          <div><strong style="color: #818cf8;">Sede:</strong> ${item.sede || '—'}</div>
+          <div><strong style="color: #818cf8;">Proceso:</strong> ${item.proceso || '—'}</div>
+          <div><strong style="color: #818cf8;">Fecha Registro:</strong> ${item.registro || '—'}</div>
+          <div><strong style="color: #818cf8;">Fecha Apertura:</strong> ${item.apertura || '—'}</div>
+          <div><strong style="color: #818cf8;">Fecha Límite:</strong> ${item.limite || '—'}</div>
+          <div><strong style="color: #818cf8;">Fecha Fin:</strong> ${item.fechaFin || '—'}</div>
+          <div><strong style="color: #818cf8;">Estado:</strong> <span style="font-weight: 700; color: #34d399;">${item.estado || 'Abierto'}</span></div>
+          <div><strong style="color: #818cf8;">Archivo Adjunto:</strong> ${item.archivo ? item.archivo : 'Sin archivo'}</div>
+        </div>
+      `,
+      confirmButtonText: 'Cerrar',
+      confirmButtonColor: '#6366f1',
+      background: '#1e1e2d',
+      color: '#f8fafc'
+    });
   }
 
   onExportarExcel(): void {

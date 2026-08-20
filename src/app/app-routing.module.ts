@@ -69,6 +69,8 @@ const routes: Routes = [
       { path: "configuracionPuestos", component: ConfiguracionPuestosComponent },
       { path: "medicionesPendientes", component: MedicionesPendientesComponent },
       { path: "evaluacionRiesgos", component: EvaluacionRiesgosComponent },
+      { path: "evaluacionRiesgos/identificacion-evaluacion", component: EvaluacionRiesgosComponent },
+      { path: "evaluacionRiesgos/seguimiento-controles", component: EvaluacionRiesgosComponent },
       { path: "auditorias", component: AuditoriasComponent },
       { path: "auditorias/ejecucion-resultados", component: AuditoriasComponent },
       { path: "auditorias/programa-anual", component: ProgramaAnualComponent },

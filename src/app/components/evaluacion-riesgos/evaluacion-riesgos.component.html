@@ -11,8 +11,8 @@
     </button>
   </div>
 
-  <!-- ESTADÍSTICAS COMPACTAS CON TOP GLOW -->
-  <div class="stats-grid-compact">
+  <!-- ESTADÍSTICAS CARDS CON TOP GLOW (5 KPIS RIE-02) -->
+  <div class="stats-grid-5">
     
     <div class="stat-card-compact glow-border-total">
       <div class="stat-watermark"><mat-icon>shield</mat-icon></div>
@@ -23,170 +23,434 @@
       </div>
     </div>
 
+    <div class="stat-card-compact glow-border-red pulse-glow-red">
+      <div class="stat-watermark"><mat-icon>report_problem</mat-icon></div>
+      <div class="stat-card-content">
+        <span class="stat-card-title">NIVEL ALTO (CRÍTICOS)</span>
+        <span class="stat-card-number text-red">{{ cantNivelAlto }}</span>
+        <span class="stat-card-sub">Acción inmediata</span>
+      </div>
+    </div>
+
+    <div class="stat-card-compact glow-border-amber">
+      <div class="stat-watermark"><mat-icon>warning</mat-icon></div>
+      <div class="stat-card-content">
+        <span class="stat-card-title">SIN CONTROL</span>
+        <span class="stat-card-number text-yellow">{{ cantSinControl }}</span>
+        <span class="stat-card-sub">Plan pendiente</span>
+      </div>
+    </div>
+
     <div class="stat-card-compact glow-border-green">
       <div class="stat-watermark"><mat-icon>verified_user</mat-icon></div>
       <div class="stat-card-content">
         <span class="stat-card-title">CONTROLADOS</span>
         <span class="stat-card-number text-green">{{ cantControlado }}</span>
-        <span class="stat-card-sub">Bajo norma</span>
+        <span class="stat-card-sub">Medida verificada</span>
       </div>
     </div>
 
-    <div class="stat-card-compact glow-border-amber">
-      <div class="stat-watermark"><mat-icon>hourglass_empty</mat-icon></div>
+    <div class="stat-card-compact glow-border-blue">
+      <div class="stat-watermark"><mat-icon>donut_large</mat-icon></div>
       <div class="stat-card-content">
-        <span class="stat-card-title">EN SEGUIMIENTO</span>
-        <span class="stat-card-number text-yellow">{{ cantEnSeguimiento }}</span>
-        <span class="stat-card-sub">Medidas en curso</span>
-      </div>
-    </div>
-
-    <div class="stat-card-compact glow-border-red pulse-glow-red">
-      <div class="stat-watermark"><mat-icon>warning</mat-icon></div>
-      <div class="stat-card-content">
-        <span class="stat-card-title">SIN CONTROL</span>
-        <span class="stat-card-number text-red">{{ cantSinControl }}</span>
-        <span class="stat-card-sub">Acción urgente</span>
+        <span class="stat-card-title">CUMPLIMIENTO DEL PLAN</span>
+        <span class="stat-card-number text-blue">{{ pctCumplimiento }}%</span>
+        <span class="stat-card-sub">Controlados / total</span>
       </div>
     </div>
 
   </div>
 
-  <!-- BARRA DE HERRAMIENTAS INTEGRADA -->
-  <div class="integrated-toolbar" style="flex-wrap: wrap; gap: 12px;">
-    <div class="toolbar-title-section">
-      <h2 class="seccion-titulo">MATRIZ DE RIESGOS E IPERC DE SEGURIDAD (5x5)</h2>
-      <span class="results-badge">{{ riesgosFiltrados.length }} Registros</span>
-    </div>
+  <!-- ===================================================================
+       PESTAÑA 1: IDENTIFICACIÓN Y EVALUACIÓN DE RIESGOS (RIE-01)
+       =================================================================== -->
+  <ng-container *ngIf="activeSubTab === 'identificacion'">
 
-    <div class="toolbar-actions-section">
-      <!-- Exportar Matriz IPERC a Excel (RIE-05) -->
-      <button type="button" class="btn-ghost-action" (click)="exportarExcelIPERC()" title="Exportar Matriz IPERC a Excel (RIE-05)">
-        <mat-icon style="color: #10b981;">grid_on</mat-icon>
-        <span>Exportar IPERC</span>
-      </button>
-
-      <!-- Buscador Inline -->
-      <div class="inline-search-box">
-        <mat-icon class="search-icon">search</mat-icon>
-        <input type="text" 
-               [formControl]="$any(formularioBusqueda.get('termino'))" 
-               (input)="onBuscar()" 
-               placeholder="Buscar por código, peligro, proceso..." 
-               class="inline-search-input">
+    <!-- MATRIZ DE EVALUACIÓN IPERC 5x5 (PROBABILIDAD x IMPACTO - PROTOTIPO) -->
+    <div class="matrix-panel shadow-premium">
+      <div class="matrix-header">
+        <div>
+          <h3 class="seccion-titulo-sm">Matriz de Evaluación (Probabilidad × Impacto)</h3>
+          <span class="matrix-subtitle">Metodología ISO 31000 · Haz clic en cualquier celda para filtrar los riesgos</span>
+        </div>
+        <button *ngIf="cellFilter" type="button" class="btn-clear-cell" (click)="clearCellFilter()">
+          ✖ Limpiar filtro celda ({{ cellFilter }})
+        </button>
       </div>
 
-      <button type="button" class="btn-primary-glow" (click)="onAgregar()">
-        <mat-icon>add</mat-icon>
-        <span>Declarar riesgo</span>
+      <div class="matrix-body-layout">
+        <div class="matrix-grid-wrapper">
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th class="matrix-corner">IMPACTO \ PROB.</th>
+                <th>1 - Muy Baja</th>
+                <th>2 - Baja</th>
+                <th>3 - Media</th>
+                <th>4 - Alta</th>
+                <th>5 - Muy Alta</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let imp of [5, 4, 3, 2, 1]">
+                <td class="impact-label">
+                  {{ imp === 5 ? '5 - Catastrófico' : (imp === 4 ? '4 - Mayor' : (imp === 3 ? '3 - Moderado' : (imp === 2 ? '2 - Menor' : '1 - Insignificante'))) }}
+                </td>
+                <td *ngFor="let prob of [1, 2, 3, 4, 5]" 
+                    class="matrix-cell"
+                    [class.cell-active]="cellFilter === prob + '-' + imp"
+                    [style.background]="getMatrixCellColor(prob, imp)"
+                    (click)="toggleMatrixCellFilter(prob, imp)"
+                    title="Probabilidad {{prob}} x Impacto {{imp}} = Score {{prob*imp}}">
+                  <span class="score-num">{{ prob * imp }}</span>
+                  <span class="count-badge" *ngIf="getMatrixCount(prob, imp) > 0">
+                    {{ getMatrixCount(prob, imp) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- LEYENDA DE NIVELES SIDEBAR (RIE-03) -->
+        <div class="matrix-legend-box">
+          <div class="legend-title">Leyenda de Niveles (IPERC)</div>
+          <div class="legend-list">
+            <div class="legend-item">
+              <span class="legend-swatch swatch-alto"></span>
+              <div class="legend-text">
+                <strong style="color: #f0576b;">Alto (15 - 25)</strong>: Acción inmediata
+              </div>
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch swatch-medio"></span>
+              <div class="legend-text">
+                <strong style="color: #f0b429;">Medio (8 - 14)</strong>: Control específico
+              </div>
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch swatch-bajo"></span>
+              <div class="legend-text">
+                <strong style="color: #3ecf8e;">Bajo (1 - 7)</strong>: Riesgo aceptable
+              </div>
+            </div>
+          </div>
+
+          <div class="legend-footer-note">
+            💡 <strong>Tip:</strong> Haz clic en cualquier celda de la matriz 5x5 para filtrar automáticamente la tabla IPERC por ese nivel específico.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BARRA DE HERRAMIENTAS INTEGRADA -->
+    <div class="integrated-toolbar" style="flex-wrap: wrap; gap: 12px;">
+      <div class="toolbar-title-section">
+        <h2 class="seccion-titulo">IDENTIFICACIÓN Y EVALUACIÓN DE RIESGOS (IPERC 5x5)</h2>
+        <span class="results-badge">{{ riesgosFiltrados.length }} Registros</span>
+      </div>
+
+      <div class="toolbar-actions-section">
+        <!-- Exportar Matriz IPERC a Excel (RIE-05) -->
+        <button type="button" class="btn-ghost-action" (click)="exportarExcelIPERC()" title="Exportar Matriz IPERC a Excel (RIE-05)">
+          <mat-icon style="color: #10b981;">grid_on</mat-icon>
+          <span>Exportar IPERC</span>
+        </button>
+
+        <!-- Buscador Inline (RIE-04: Código, Peligro/Descripción, Responsable) -->
+        <div class="inline-search-box">
+          <mat-icon class="search-icon">search</mat-icon>
+          <input type="text" 
+                 [formControl]="$any(formularioBusqueda.get('termino'))" 
+                 (input)="onBuscar()" 
+                 placeholder="Buscar por código, descripción o responsable..." 
+                 class="inline-search-input">
+        </div>
+
+        <button type="button" class="btn-primary-glow" (click)="onAgregar()">
+          <mat-icon>add</mat-icon>
+          <span>Declarar riesgo</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- FILTROS AVANZADOS RIE-04 (SEDE, PROCESO, TIPO/NORMA, ESTADO) -->
+    <div class="filters-row-bar" [formGroup]="formularioBusqueda">
+      <div class="filter-field">
+        <label class="filter-label">Sede:</label>
+        <select formControlName="sede" (change)="onBuscar()" class="filter-select">
+          <option value="">Todas las Sedes</option>
+          <option *ngFor="let s of sedesOptions" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+
+      <div class="filter-field">
+        <label class="filter-label">Proceso:</label>
+        <select formControlName="proceso" (change)="onBuscar()" class="filter-select">
+          <option value="">Todos los Procesos</option>
+          <option *ngFor="let p of procesosOptions" [value]="p">{{ p }}</option>
+        </select>
+      </div>
+
+      <div class="filter-field">
+        <label class="filter-label">Tipo / Norma:</label>
+        <select formControlName="tipo" (change)="onBuscar()" class="filter-select">
+          <option value="">Todos los Tipos</option>
+          <option *ngFor="let t of tiposOptions" [value]="t">{{ t }}</option>
+        </select>
+      </div>
+
+      <div class="filter-field">
+        <label class="filter-label">Estado:</label>
+        <select formControlName="estado" (change)="onBuscar()" class="filter-select">
+          <option value="">Todos los Estados</option>
+          <option *ngFor="let e of estadosOptions" [value]="e">{{ e }}</option>
+        </select>
+      </div>
+
+      <button type="button" class="btn-reset-filters" (click)="limpiarFiltros()" title="Limpiar todos los filtros de búsqueda">
+        <mat-icon>filter_alt_off</mat-icon>
+        <span>Limpiar filtros</span>
       </button>
     </div>
-  </div>
 
-  <!-- TABLA MATRIZ IPERC CON ACCORDEON & HEATMAP -->
-  <div class="table-container shadow-premium">
-    <table class="tabla">
-      <thead>
-        <tr>
-          <th style="width: 40px;"></th>
-          <th style="width: 140px;">Código</th>
-          <th style="width: 110px;">Tipo</th>
-          <th style="min-width: 220px;">Peligro / Riesgo</th>
-          <th style="width: 140px;">Proceso</th>
-          <th style="width: 130px; text-align: center;">Riesgo Residual (5x5)</th>
-          <th style="width: 150px;">Responsable</th>
-          <th style="width: 110px; text-align: center;">Revisión</th>
-          <th style="width: 140px; text-align: center;">Estado</th>
-          <th style="width: 120px; text-align: center;">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <ng-container *ngFor="let item of riesgosFiltrados">
-          <!-- Main Row -->
-          <tr class="fila row-expandable" [class.expanded]="isRowExpanded(item.codigo)" (click)="toggleRow(item.codigo)">
-            <td style="text-align: center; color: #64748b;">
-              <mat-icon class="chevron-icon" [class.rotated]="isRowExpanded(item.codigo)">keyboard_arrow_right</mat-icon>
+    <!-- TABLA MATRIZ IPERC CON ACCORDEON & HEATMAP -->
+    <div class="table-container shadow-premium">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th style="width: 36px;"></th>
+            <th style="width: 120px;">Código</th>
+            <th style="width: 120px;">Tipo / Norma</th>
+            <th style="min-width: 200px;">Descripción</th>
+            <th style="width: 130px;">Proceso</th>
+            <th style="width: 130px;">Sede</th>
+            <th style="width: 125px; text-align: center;">Nivel de riesgo</th>
+            <th style="width: 130px; text-align: center;">Estado</th>
+            <th style="width: 140px;">Responsable</th>
+            <th style="width: 100px; text-align: center;">F. cierre</th>
+            <th style="width: 110px; text-align: center;">Próx. revisión</th>
+            <th style="width: 110px; text-align: center;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let item of riesgosFiltrados">
+            <!-- Main Row -->
+            <tr class="fila row-expandable" [class.expanded]="isRowExpanded(item.codigo)" (click)="toggleRow(item.codigo)">
+              <td style="text-align: center; color: #64748b;">
+                <mat-icon class="chevron-icon" [class.rotated]="isRowExpanded(item.codigo)">keyboard_arrow_right</mat-icon>
+              </td>
+
+              <td class="code-cell font-mono text-purple">{{ item.codigo }}</td>
+              <td class="simple-type-text">{{ item.tipo }}</td>
+              <td class="norma-cell-title">{{ item.descbrief }}</td>
+              <td class="cat-cell">{{ item.proceso }}</td>
+              <td class="cat-cell">{{ item.sede || 'Planta Ate' }}</td>
+
+              <!-- HEATMAP BADGE FOR NIVEL (RIE-01, RIE-02) -->
+              <td style="text-align: center;">
+                <span class="heatmap-badge" [ngClass]="getNivelHeatmapClass(item.nivel)" title="Cálculo Matriz 5x5: Probabilidad x Impacto">
+                  {{ item.nivel }} (5x5)
+                </span>
+              </td>
+
+              <!-- Soft Badge for State -->
+              <td style="text-align: center;">
+                <span class="soft-badge" 
+                      [ngClass]="getEstadoClass(item.estado) === 'status-green' ? 'soft-badge-vigente' : (getEstadoClass(item.estado) === 'status-amber' ? 'soft-badge-revision' : 'soft-badge-porvencer')">
+                  <span class="glowing-dot"></span>
+                  <span>{{ item.estado }}</span>
+                </span>
+              </td>
+
+              <td class="cat-cell">{{ item.responsable }}</td>
+              <td style="text-align: center;" class="date-cell">{{ formatearFecha(item.fcierre || '--') }}</td>
+              <td style="text-align: center;" class="date-cell">{{ formatearFecha(item.revision) }}</td>
+
+              <!-- Hover Fade Actions (RIE-07: Botón Ver jala datos de Declarar Riesgo) -->
+              <td style="text-align: center;" (click)="$event.stopPropagation()">
+                <div class="actions-wrapper hover-fade">
+                  <button class="action-btn btn-view" (click)="onVer(item)" title="Ver detalle del riesgo (RIE-07)">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                  <button class="action-btn btn-edit" (click)="onEdit(item)" title="Editar">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button class="action-btn btn-delete" (click)="onDelete(item)" title="Eliminar">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- ACCORDION EXPANDED DETAIL ROW (PLAN DE ACCIÓN RIE-03) -->
+            <tr *ngIf="isRowExpanded(item.codigo)" class="expanded-detail-row">
+              <td colspan="12">
+                <div class="risk-detail-card shadow-premium">
+                  <div class="risk-detail-grid">
+                    
+                    <div class="detail-box">
+                      <span class="detail-label">Plan de Acción & Medida de Control (RIE-03)</span>
+                      <p class="detail-text">{{ item.medidacontrol || 'Inspección de barreras físicas, EPP obligatorio y capacitación semestral.' }}</p>
+                    </div>
+
+                    <div class="detail-box">
+                      <span class="detail-label">Responsable & Fecha Límite (RIE-03)</span>
+                      <div class="iperc-mini-summary">
+                        <span class="iperc-tag">Responsable: {{ item.responsable }}</span>
+                        <span class="iperc-tag">Límite: {{ item.revision || '2026-12-31' }}</span>
+                      </div>
+                    </div>
+
+                    <div class="detail-box">
+                      <span class="detail-label">Acción Inmediata Requerida</span>
+                      <p class="detail-text">Supervisión continua por el responsable de área y verificación de EPPs.</p>
+                    </div>
+
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+
+          <!-- Empty state -->
+          <tr *ngIf="riesgosFiltrados.length === 0">
+            <td colspan="12" class="empty-row">
+              <mat-icon class="empty-icon">security</mat-icon>
+              <p>No se encontraron riesgos registrados en la matriz IPERC.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </ng-container>
+
+  <!-- ===================================================================
+       PESTAÑA 2: SEGUIMIENTO DE CONTROLES Y PLAN DE ACCIÓN (RIE-01)
+       =================================================================== -->
+  <ng-container *ngIf="activeSubTab === 'seguimiento'">
+
+    <!-- BARRA DE HERRAMIENTAS Y FILTROS RÁPIDOS DE URGENCIA -->
+    <div class="integrated-toolbar">
+      <div class="toolbar-left-group">
+        <h2 class="seccion-titulo">SEGUIMIENTO DE CONTROLES</h2>
+        
+        <!-- Segment Chips for Urgency -->
+        <div class="view-segment-control">
+          <button type="button" class="segment-btn" [class.active]="segUrgFilter === 'all'" (click)="setSegUrgFilter('all')">
+            <span>Todos ({{ riesgos.length }})</span>
+          </button>
+          <button type="button" class="segment-btn" [class.active]="segUrgFilter === 'venc'" (click)="setSegUrgFilter('venc')">
+            <span [style.color]="segUrgFilter === 'venc' ? '#ffffff' : '#f87171'">🔴 Vencidos</span>
+          </button>
+          <button type="button" class="segment-btn" [class.active]="segUrgFilter === 'prox'" (click)="setSegUrgFilter('prox')">
+            <span [style.color]="segUrgFilter === 'prox' ? '#ffffff' : '#fbbf24'">🟡 Por vencer</span>
+          </button>
+          <button type="button" class="segment-btn" [class.active]="segUrgFilter === 'ald'" (click)="setSegUrgFilter('ald')">
+            <span [style.color]="segUrgFilter === 'ald' ? '#ffffff' : '#34d399'">🟢 Al día</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="toolbar-actions-section">
+        <div class="inline-search-box">
+          <mat-icon class="search-icon">search</mat-icon>
+          <input type="text" 
+                 [formControl]="$any(formularioBusqueda.get('termino'))" 
+                 (input)="onBuscar()" 
+                 placeholder="Buscar riesgo, responsable..." 
+                 class="inline-search-input">
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLA DE SEGUIMIENTO DE CONTROLES -->
+    <div class="table-container shadow-premium">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th style="width: 130px;">Código</th>
+            <th style="min-width: 240px;">Riesgo / Descripción</th>
+            <th style="width: 120px; text-align: center;">Nivel (5x5)</th>
+            <th style="width: 140px;">Estado Control</th>
+            <th style="width: 140px;">Avance Plan</th>
+            <th style="width: 120px; text-align: center;">Próx. Revisión</th>
+            <th style="width: 150px; text-align: center;">Urgencia</th>
+            <th style="width: 100px; text-align: center;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of getSeguimientoList()" class="fila" (click)="onActualizarControl(item)" style="cursor: pointer;">
+            
+            <td class="code-cell font-mono text-purple">{{ item.codigo }}</td>
+            
+            <td class="norma-cell-title">
+              {{ item.descbrief }}
+              <div style="color: #64748b; font-size: 11px; margin-top: 2px;">
+                {{ item.proceso }} · Resp: {{ item.responsable }}
+              </div>
             </td>
 
-            <td class="code-cell font-mono text-purple">{{ item.codigo }}</td>
-            <td class="simple-type-text">{{ item.tipo }}</td>
-            <td class="norma-cell-title">{{ item.descbrief }}</td>
-            <td class="cat-cell">{{ item.proceso }}</td>
-
-            <!-- HEATMAP BADGE FOR NIVEL (RIE-01, RIE-02) -->
             <td style="text-align: center;">
-              <span class="heatmap-badge" [ngClass]="getNivelHeatmapClass(item.nivel)" title="Cálculo Matriz 5x5: Probabilidad x Impacto">
-                {{ item.nivel }} (5x5)
+              <span class="heatmap-badge" [ngClass]="getNivelHeatmapClass(item.nivel)">
+                {{ item.nivel }}
               </span>
             </td>
 
-            <td class="cat-cell">{{ item.responsable }}</td>
-            <td style="text-align: center;" class="date-cell">{{ formatearFecha(item.revision) }}</td>
-
-            <!-- Soft Badge for State -->
-            <td style="text-align: center;">
+            <td>
               <span class="soft-badge" 
-                    [ngClass]="getEstadoClass(item.estado) === 'status-green' ? 'soft-badge-vigente' : (getEstadoClass(item.estado) === 'status-amber' ? 'soft-badge-revision' : 'soft-badge-porvencer')">
+                    [ngClass]="getEstadoClass(item.estado) === 'status-green' ? 'soft-badge-vigente' : (getEstadoClass(item.estado) === 'status-amber' ? 'soft-badge-blue' : 'soft-badge-porvencer')">
                 <span class="glowing-dot"></span>
                 <span>{{ item.estado }}</span>
               </span>
             </td>
 
-            <!-- Hover Fade Actions (RIE-06) -->
-            <td style="text-align: center;" (click)="$event.stopPropagation()">
-              <div class="actions-wrapper hover-fade">
-                <button class="action-btn" (click)="onVerHistorialRevaluaciones(item)" title="Historial Revaluaciones (RIE-06)" style="color: #f59e0b; background: rgba(245,158,11,0.1);">
-                  <mat-icon>trending_up</mat-icon>
-                </button>
-                <button class="action-btn btn-edit" (click)="onEdit(item)" title="Editar">
-                  <mat-icon>edit</mat-icon>
-                </button>
-                <button class="action-btn btn-delete" (click)="onDelete(item)" title="Eliminar">
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- ACCORDION EXPANDED DETAIL ROW (PLAN DE ACCIÓN RIE-03) -->
-          <tr *ngIf="isRowExpanded(item.codigo)" class="expanded-detail-row">
-            <td colspan="10">
-              <div class="risk-detail-card shadow-premium">
-                <div class="risk-detail-grid">
-                  
-                  <div class="detail-box">
-                    <span class="detail-label">Plan de Acción & Medida de Control (RIE-03)</span>
-                    <p class="detail-text">{{ item.medidacontrol || 'Inspección de barreras físicas, EPP obligatorio y capacitación semestral.' }}</p>
-                  </div>
-
-                  <div class="detail-box">
-                    <span class="detail-label">Responsable & Fecha Límite (RIE-03)</span>
-                    <div class="iperc-mini-summary">
-                      <span class="iperc-tag">Responsable: {{ item.responsable }}</span>
-                      <span class="iperc-tag">Límite: {{ item.revision || '2026-12-31' }}</span>
-                    </div>
-                  </div>
-
-                  <div class="detail-box">
-                    <span class="detail-label">Acción Inmediata Requerida</span>
-                    <p class="detail-text">Supervisión continua por el responsable de área y verificación de EPPs.</p>
-                  </div>
-
+            <!-- Avance (%) Progress bar -->
+            <td>
+              <div style="background: rgba(255,255,255,0.08); border-radius: 6px; height: 8px; overflow: hidden;">
+                <div [style.width.%]="getAvanceControl(item)" 
+                     [style.background]="getAvanceControl(item) === 100 ? '#10b981' : (getAvanceControl(item) >= 50 ? '#3b82f6' : '#ef4444')"
+                     style="height: 100%; transition: width 0.3s ease;">
                 </div>
               </div>
+              <div style="font-size: 10px; color: #94a3b8; margin-top: 3px; font-weight: 600;">
+                {{ getAvanceControl(item) }}% completado
+              </div>
+            </td>
+
+            <td style="text-align: center;" class="date-cell">{{ formatearFecha(item.revision) }}</td>
+
+            <!-- Urgencia Badge -->
+            <td style="text-align: center;">
+              <span class="soft-badge" [ngClass]="getRiesgoUrgencia(item.revision).badgeClass">
+                <span>{{ getRiesgoUrgencia(item.revision).text }}</span>
+              </span>
+            </td>
+
+            <!-- Action: Update control -->
+            <td style="text-align: center;" (click)="$event.stopPropagation()">
+              <div class="actions-wrapper hover-fade">
+                <button class="action-btn btn-edit" (click)="onActualizarControl(item, $event)" title="Actualizar seguimiento de control">
+                  <mat-icon>edit_note</mat-icon>
+                </button>
+              </div>
+            </td>
+
+          </tr>
+
+          <!-- Empty state -->
+          <tr *ngIf="getSeguimientoList().length === 0">
+            <td colspan="8" class="empty-row">
+              <mat-icon class="empty-icon">security</mat-icon>
+              <p>No se encontraron registros de seguimiento para el filtro seleccionado.</p>
             </td>
           </tr>
-        </ng-container>
+        </tbody>
+      </table>
+    </div>
 
-        <!-- Empty state -->
-        <tr *ngIf="riesgosFiltrados.length === 0">
-          <td colspan="10" class="empty-row">
-            <mat-icon class="empty-icon">security</mat-icon>
-            <p>No se encontraron riesgos registrados en la matriz IPERC.</p>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  </ng-container>
 
 </div>
+

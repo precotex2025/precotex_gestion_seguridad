@@ -1,7 +1,7 @@
 <div class="dialog-container">
   
   <div class="dialog-header">
-    <h2 class="dialog-title">{{ data.Accion === 'I' ? 'Nuevo registro' : 'Editar registro' }}</h2>
+    <h2 class="dialog-title">{{ data.Accion === 'I' ? 'Nuevo registro' : (data.Accion === 'V' ? 'Ver registro de riesgo' : 'Editar registro') }}</h2>
     <button type="button" class="btn-close-header" (click)="onCancelar()" title="Cerrar">
       <mat-icon>close</mat-icon>
     </button>
@@ -11,24 +11,59 @@
     
     <mat-dialog-content class="form-content">
       
-      <!-- Fila 1: 4 Columnas (CÓDIGO, TIPO, DESCRIPCIÓN, PROCESO) -->
+      <!-- RIE-18: BANNER DE NOTA EXPLICATIVA DEL FLUJO DE TRABAJO -->
+      <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 10px;">
+        <mat-icon style="color: #818cf8; font-size: 20px; width: 20px; height: 20px; margin-top: 1px;">info</mat-icon>
+        <div style="font-size: 11px; color: #cbd5e1; line-height: 1.45;">
+          <strong style="color: #f8fafc; font-size: 12px; display: block; margin-bottom: 2px;">Flujo del Proceso de Gestión de Riesgos (IPERC):</strong>
+          Todo nuevo riesgo declarado nace automáticamente en estado <span style="color: #f87171; font-weight: 700;">"Sin control" / "En seguimiento"</span>. Las medidas de control definitivas, sus evidencias y la revaluación del riesgo residual se gestionarán posteriormente en la pestaña <strong style="color: #818cf8;">"Seguimiento de controles"</strong>.
+        </div>
+      </div>
+
+      <!-- SECCIÓN 1: IDENTIFICACIÓN DEL RIESGO (RIE-15) -->
+      <div class="form-section-banner" style="margin-top: 0;">
+        <div class="form-section-banner-title">
+          <mat-icon>assignment</mat-icon>
+          <span>1. Identificación del Riesgo</span>
+        </div>
+      </div>
+
+      <!-- Fila 1: 4 Columnas (CÓDIGO, PERIODO, SEDE, TIPO) -->
       <div class="grid-4-cols">
         <div class="form-section-item">
-          <div class="form-label">CÓDIGO</div>
-          <input type="text" formControlName="codigo" class="full-width-input" placeholder="Ej. RSG-2025-043">
+          <div class="form-label">CÓDIGO (AUTOGENERADO)</div>
+          <input type="text" formControlName="codigo" class="full-width-input" readonly style="background: rgba(255, 255, 255, 0.03); color: #818cf8; font-weight: 700; cursor: not-allowed; border: 1px solid rgba(129, 140, 248, 0.3);" placeholder="RSG-2026-XXX">
         </div>
         <div class="form-section-item">
-          <div class="form-label">TIPO</div>
+          <div class="form-label">PERIODO (*)</div>
+          <select formControlName="periodo" class="full-width-input">
+            <option *ngFor="let p of periodosOptions" [value]="p">{{ p }}</option>
+          </select>
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">SEDE (*)</div>
+          <select formControlName="sede" class="full-width-input">
+            <option *ngFor="let s of sedesOptions" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">TIPO / NORMA (*)</div>
           <select formControlName="tipo" class="full-width-input">
             <option *ngFor="let opt of tiposOptions" [value]="opt">{{ opt }}</option>
           </select>
         </div>
-        <div class="form-section-item">
-          <div class="form-label">DESCRIPCIÓN</div>
-          <input type="text" formControlName="descbrief" class="full-width-input" placeholder="Ej. Falla eléctrica en planta de corte">
+      </div>
+
+      <!-- Fila 2: 2 Columnas (CLÁUSULA ISO, PROCESO) -->
+      <div class="grid-4-cols">
+        <div class="form-section-item" style="grid-column: span 2;">
+          <div class="form-label">CLÁUSULA / REQUISITO ISO (*)</div>
+          <select formControlName="clausula" class="full-width-input">
+            <option *ngFor="let c of clausulasOptions" [value]="c">{{ c }}</option>
+          </select>
         </div>
-        <div class="form-section-item">
-          <div class="form-label">PROCESO</div>
+        <div class="form-section-item" style="grid-column: span 2;">
+          <div class="form-label">PROCESO (*)</div>
           <select formControlName="proceso" class="full-width-input">
             <optgroup *ngFor="let key of getProcesosKeys()" [label]="key">
               <option *ngFor="let proc of procesosGroups[key]" [value]="proc">{{ proc }}</option>
@@ -37,43 +72,142 @@
         </div>
       </div>
 
-      <!-- Fila 2: 4 Columnas (NIVEL, ESTADO DE CONTROL, RESPONSABLE, FECHA DE REVISIÓN) -->
-      <div class="grid-4-cols">
-        <div class="form-section-item">
-          <div class="form-label">NIVEL</div>
-          <select formControlName="nivel" class="full-width-input">
-            <option *ngFor="let opt of nivelesOptions" [value]="opt">{{ opt }}</option>
-          </select>
+      <!-- Fila 3: DESCRIPCIÓN DE PELIGRO / RIESGO -->
+      <div class="form-section-item" style="margin-bottom: 16px;">
+        <div class="form-label">DESCRIPCIÓN DE PELIGRO / RIESGO (*)</div>
+        <input type="text" formControlName="descbrief" class="full-width-input" placeholder="Ej. Falla eléctrica en tablero principal de planta de corte">
+      </div>
+
+      <!-- Fila 4: CAUSA PROBABLE y CONSECUENCIA POTENCIAL (RIE-11) -->
+      <div class="grid-4-cols" style="margin-bottom: 16px;">
+        <div class="form-section-item" style="grid-column: span 2;">
+          <div class="form-label">CAUSA PROBABLE</div>
+          <textarea formControlName="causaprobable" class="full-width-input" rows="2" placeholder="Ej. Desgaste por uso continuo, falta de inspección o procedimiento no actualizado"></textarea>
         </div>
-        <div class="form-section-item">
-          <div class="form-label">ESTADO DE CONTROL</div>
-          <select formControlName="estado" class="full-width-input">
-            <option *ngFor="let opt of estadosOptions" [value]="opt">{{ opt }}</option>
-          </select>
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">RESPONSABLE</div>
-          <input type="text" formControlName="responsable" class="full-width-input" placeholder="Nombre del responsable">
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">FECHA DE REVISIÓN</div>
-          <input type="date" formControlName="revision" class="full-width-input">
+        <div class="form-section-item" style="grid-column: span 2;">
+          <div class="form-label">CONSECUENCIA POTENCIAL</div>
+          <textarea formControlName="consecuenciapotencial" class="full-width-input" rows="2" placeholder="Ej. Lesión o atrapamiento de personal, paralización de línea o pérdida de material"></textarea>
         </div>
       </div>
 
-      <!-- Fila 3: MEDIDA DE CONTROL (100% width) -->
-      <div class="form-section-item" style="margin-top: 16px;">
-        <div class="form-label">MEDIDA DE CONTROL</div>
-        <textarea formControlName="medidacontrol" class="full-width-input" rows="3" placeholder="Ej. Uso obligatorio de EPP dieléctrico, señalización de peligro y mantenimiento preventivo mensual"></textarea>
+      <!-- SECCIÓN 2: EVALUACIÓN DEL RIESGO (RIE-15) -->
+      <div class="form-section-banner">
+        <div class="form-section-banner-title">
+          <mat-icon>analytics</mat-icon>
+          <span>2. Evaluación del Riesgo (Matriz IPERC 5x5)</span>
+        </div>
+      </div>
+
+      <!-- RIE-13: SECCIÓN MATRIZ DE EVALUACIÓN VISUAL 5x5 (PROBABILIDAD X IMPACTO) -->
+      <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 10px; padding: 14px 16px; margin: 12px 0 16px 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div style="font-size: 0.75rem; font-weight: 800; color: #818cf8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
+            <mat-icon style="font-size: 16px; width: 16px; height: 16px;">grid_on</mat-icon>
+            <span>Matriz de Evaluación Visual 5x5</span>
+          </div>
+          <div style="font-size: 0.8rem; font-weight: 700; color: #f8fafc; background: #0b0f19; border: 1px solid rgba(255,255,255,0.12); padding: 4px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px;">
+            <span>Score: <strong style="color: #6366f1;">{{ getScoreCalculado() }}</strong></span>
+            <span style="display: inline-block; width: 1px; height: 12px; background: rgba(255,255,255,0.2);"></span>
+            <span>Nivel Calculado: <strong [style.color]="getNivelColor(formulario.get('nivel')?.value)">{{ formulario.get('nivel')?.value }}</strong></span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 180px 1fr; gap: 16px; align-items: center;">
+          <div style="background: #0b0f19; padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: grid; grid-template-columns: 24px repeat(5, 1fr); gap: 4px; text-align: center; font-size: 10px; font-weight: 700; color: #94a3b8; margin-bottom: 4px;">
+              <div></div>
+              <div>I1</div><div>I2</div><div>I3</div><div>I4</div><div>I5</div>
+            </div>
+            <div *ngFor="let p of probRows" style="display: grid; grid-template-columns: 24px repeat(5, 1fr); gap: 4px; margin-top: 4px; align-items: center;">
+              <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-align: center;">P{{ p }}</div>
+              <div *ngFor="let i of impCols" 
+                (click)="seleccionarCeldaMatriz(p, i)"
+                [style.background]="getCeldaColorMatriz(p, i)"
+                [style.border]="isCeldaSeleccionada(p, i) ? '2px solid #ffffff' : '1px solid rgba(255,255,255,0.1)'"
+                [style.box-shadow]="isCeldaSeleccionada(p, i) ? '0 0 12px rgba(99, 102, 241, 0.9)' : 'none'"
+                [style.transform]="isCeldaSeleccionada(p, i) ? 'scale(1.12)' : 'scale(1)'"
+                style="height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #ffffff; cursor: pointer; transition: all 0.2s ease;">
+                {{ p * i }}
+              </div>
+            </div>
+          </div>
+
+          <div style="font-size: 11px; color: #cbd5e1; line-height: 1.5;">
+            <div style="font-weight: 700; color: #f8fafc; margin-bottom: 4px;">Selección rápida de matriz:</div>
+            <p style="margin: 0 0 8px 0; color: #94a3b8;">Haz clic en cualquier celda de la matriz 5x5 para asignar la Probabilidad e Impacto de forma visual e intuitiva:</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 10px; font-weight: 700;">
+              <span style="background: rgba(239, 68, 68, 0.25); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 3px 8px; border-radius: 6px;">🔴 Alto (15 - 25)</span>
+              <span style="background: rgba(245, 158, 11, 0.25); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); padding: 3px 8px; border-radius: 6px;">🟡 Medio (8 - 14)</span>
+              <span style="background: rgba(34, 197, 94, 0.25); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); padding: 3px 8px; border-radius: 6px;">🟢 Bajo (1 - 7)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fila Evaluativa: PROBABILIDAD, IMPACTO, NIVEL AUTOCALCULADO -->
+      <div class="grid-4-cols">
+        <div class="form-section-item">
+          <div class="form-label">PROBABILIDAD (1 - 5)</div>
+          <select formControlName="probabilidad" class="full-width-input">
+            <option [value]="1">1 - Muy Baja</option>
+            <option [value]="2">2 - Baja</option>
+            <option [value]="3">3 - Media</option>
+            <option [value]="4">4 - Alta</option>
+            <option [value]="5">5 - Muy Alta</option>
+          </select>
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">IMPACTO (1 - 5)</div>
+          <select formControlName="impacto" class="full-width-input">
+            <option [value]="1">1 - Insignificante</option>
+            <option [value]="2">2 - Menor</option>
+            <option [value]="3">3 - Moderado</option>
+            <option [value]="4">4 - Mayor</option>
+            <option [value]="5">5 - Catastrófico</option>
+          </select>
+        </div>
+        <div class="form-section-item" style="grid-column: span 2;">
+          <div class="form-label">NIVEL RESIDUAL (AUTOCALCULADO)</div>
+          <input type="text" formControlName="nivel" class="full-width-input" readonly 
+            [style.background]="getNivelBg(formulario.get('nivel')?.value)"
+            [style.color]="getNivelColor(formulario.get('nivel')?.value)"
+            style="font-weight: 800; text-align: center; border: 1px solid rgba(255,255,255,0.15); cursor: not-allowed;"
+            title="Cálculo automático: Probabilidad x Impacto (Matriz 5x5)">
+        </div>
+      </div>
+
+      <!-- SECCIÓN 3: PLANIFICACIÓN DEL CONTROL (RIE-15) -->
+      <div class="form-section-banner">
+        <div class="form-section-banner-title">
+          <mat-icon>build_circle</mat-icon>
+          <span>3. Planificación del Control</span>
+        </div>
+      </div>
+
+      <!-- Fila Planificación: RESPONSABLE (RIE-17: Estado de control y Fecha de revisión trasladados a Seguimiento) -->
+      <div class="form-section-item">
+        <div class="form-label">RESPONSABLE (DUEÑO DEL PROCESO) (*)</div>
+        <input type="text" formControlName="responsable" class="full-width-input" placeholder="Ej. Juan Pérez (Jefe / Dueño del Proceso)">
+      </div>
+
+      <!-- Fila 5: MEDIDA DE CONTROL PROPUESTA (100% width - RIE-16) -->
+      <div class="form-section-item" style="margin-top: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+          <div class="form-label" style="margin-bottom: 0;">MEDIDA DE CONTROL PROPUESTA (*)</div>
+          <span style="font-size: 11px; color: #818cf8; font-weight: 600;">
+            ℹ️ Nota: Propuesta editable posteriormente en la pestaña "Seguimiento de controles"
+          </span>
+        </div>
+        <textarea formControlName="medidacontrol" class="full-width-input" rows="3" placeholder="Ej. Propuesta inicial: Uso obligatorio de EPP dieléctrico, señalización de peligro y mantenimiento preventivo mensual (se gestiona en Seguimiento de controles)..."></textarea>
       </div>
 
     </mat-dialog-content>
 
     <mat-dialog-actions class="dialog-actions-row">
       <button type="button" class="BtnCancelarPlan" mat-flat-button (click)="onCancelar()">
-        Cancelar
+        {{ data.Accion === 'V' ? 'Cerrar' : 'Cancelar' }}
       </button>
-      <button type="submit" class="BtnGuardarPlan" mat-flat-button>
+      <button *ngIf="data.Accion !== 'V'" type="submit" class="BtnGuardarPlan" mat-flat-button>
         Guardar
       </button>
     </mat-dialog-actions>

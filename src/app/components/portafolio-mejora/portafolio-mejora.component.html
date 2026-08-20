@@ -1,13 +1,42 @@
 <div class="contenedor sn-animate-in">
 
-  <!-- CABECERA SUPERIOR Y BOTONES -->
-  <div class="top-header-panel">
-    <h1 class="main-title">PORTAFOLIO DE MEJORA</h1>
-    <div class="header-actions">
-      <button type="button" class="btn-ghost-header" (click)="onToggleArchivosSubidos()">Archivos subidos</button>
-      <button type="button" class="btn-ghost-header" (click)="onExportarPDF()">Exportar PDF</button>
-      <button type="button" class="btn-ghost-header" (click)="onExportarExcel()">Exportar Excel</button>
-      <button type="button" class="btn-primary-header" (click)="onAgregar()">+ Registrar incidencia / iniciativa</button>
+  <!-- BARRA DE HERRAMIENTAS INTEGRADA Y ACCIONES (ESTILO IMAGEN 3) -->
+  <div class="integrated-toolbar margin-bottom-16">
+    <div class="inline-search-box">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input type="text" 
+             (keyup)="buscar($event)" 
+             placeholder="Buscar por código, título, herramienta, sede o estado..." 
+             class="inline-search-input">
+    </div>
+    
+    <div class="toolbar-actions-section">
+      <!-- Primary Solid Glow Button -->
+      <button type="button" class="btn-primary-glow" (click)="onAgregar()">
+        <mat-icon>add</mat-icon>
+        <span>+ Nueva iniciativa / incidencia</span>
+      </button>
+
+      <!-- Ghost Buttons -->
+      <button type="button" class="btn-ghost-action" (click)="onDescargarPlantilla5W2H()" title="Descargar Plantilla Excel 5W-2H (POR-02)">
+        <mat-icon style="color: #38bdf8;">table_view</mat-icon>
+        <span>Plantilla 5W-2H</span>
+      </button>
+
+      <button type="button" class="btn-ghost-action" (click)="onExportarExcelConsolidado()" title="Exportar Consolidado a Excel (POR-04)">
+        <mat-icon class="icon-excel-btn">grid_on</mat-icon>
+        <span>Excel</span>
+      </button>
+
+      <button type="button" class="btn-ghost-action" (click)="onExportarPDF()">
+        <mat-icon style="color: #f87171;">picture_as_pdf</mat-icon>
+        <span>PDF</span>
+      </button>
+
+      <button type="button" class="btn-ghost-action" (click)="onToggleArchivosSubidos()">
+        <mat-icon style="color: #a78bfa;">folder</mat-icon>
+        <span>Archivos subidos</span>
+      </button>
     </div>
   </div>
 
@@ -29,7 +58,9 @@
           <div class="archivo-name">{{ item.archivo }}</div>
           <div class="archivo-sub">{{ item.titulo }} · {{ item.herramienta }} · {{ item.sede }}</div>
         </div>
-        <button type="button" class="btn-download-sm" (click)="onDescargarArchivo(item)">Bajar</button>
+        <button type="button" class="btn-descargar-archivo" (click)="onDescargarArchivo(item)" title="Descargar archivo">
+          <span class="material-icons">download</span>
+        </button>
       </div>
     </div>
   </div>
@@ -190,32 +221,42 @@
 
     <!-- PANEL DERECHO: LISTADO Y ACCIONES (POR-01 A POR-05) -->
     <div class="table-panel">
-      <div class="seccion-header" style="flex-wrap: wrap; gap: 10px;">
-        <div>
-          <h2 class="seccion-titulo">Detalle del Portafolio de Mejora</h2>
-          <span class="section-subtitle">Gestión de Iniciativas 5W-2H y Proyectos de Innovación</span>
+      
+      <!-- DETALLE DEL PORTAFOLIO DE MEJORA Y FILTROS (ESTILO IMAGEN 2) -->
+      <div class="seccion-header-pdm margin-bottom-14">
+        <h2 class="seccion-titulo-pdm">DETALLE DEL PORTAFOLIO DE MEJORA</h2>
+
+        <!-- FILTROS PDM-09 (IMAGEN 2) -->
+        <div class="pdm-filters-row">
+          <div class="filter-chip-box">
+            <span class="chip-label chip-purple">SEDE:</span>
+            <select [(ngModel)]="filterSede" (change)="applyFilter()" class="chip-select">
+              <option value="TODAS">TODAS LAS SEDES</option>
+              <option *ngFor="let s of sedesDisponibles" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+
+          <div class="filter-chip-box">
+            <span class="chip-label chip-cyan">HERRAMIENTA:</span>
+            <select [(ngModel)]="filterHerramienta" (change)="applyFilter()" class="chip-select">
+              <option value="TODAS">TODAS</option>
+              <option value="5W-2H">5W-2H</option>
+              <option value="ACR">ACR</option>
+              <option value="Iniciativa">Iniciativa</option>
+            </select>
+          </div>
+
+          <div class="filter-chip-box">
+            <span class="chip-label chip-green">ESTADO:</span>
+            <select [(ngModel)]="filterEstado" (change)="applyFilter()" class="chip-select">
+              <option value="TODOS">TODOS</option>
+              <option value="Abierto">Abierto</option>
+              <option value="Desarrollo- Análisis">Desarrollo- Análisis</option>
+              <option value="Desarrollo- Acciones en ejecución">Desarrollo- Acciones en ejecución</option>
+              <option value="Cerrado">Cerrado</option>
+            </select>
+          </div>
         </div>
-
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-          <!-- Plantilla 5W-2H (POR-02) -->
-          <button type="button" class="btn-ghost-action" (click)="onDescargarPlantilla5W2H()" title="Descargar Plantilla Excel 5W-2H (POR-02)" style="background: rgba(56,189,248,0.1) !important; border: 1px solid rgba(56,189,248,0.3) !important; color: #38bdf8 !important;">
-            <mat-icon style="color: #38bdf8; font-size: 18px; width: 18px; height: 18px;">table_view</mat-icon>
-            <span>Plantilla 5W-2H</span>
-          </button>
-
-          <!-- Exportar Excel (POR-04) -->
-          <button type="button" class="btn-ghost-action" (click)="onExportarExcelConsolidado()" title="Exportar Consolidado a Excel (POR-04)" style="background: rgba(16,185,129,0.1) !important; border: 1px solid rgba(16,185,129,0.3) !important; color: #34d399 !important;">
-            <mat-icon style="color: #10b981; font-size: 18px; width: 18px; height: 18px;">grid_on</mat-icon>
-            <span>Excel</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="buscador-container">
-        <input type="text" 
-               (keyup)="buscar($event)" 
-               placeholder="Buscar por título, herramienta, sede o estado..." 
-               class="buscador-input">
       </div>
 
       <div class="table-container shadow-premium">
@@ -254,53 +295,79 @@
             <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.sede }}</td>
           </ng-container>
 
-          <!-- Apertura / Límite -->
+          <!-- Fecha Registro (PDM-06) -->
+          <ng-container matColumnDef="registro">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 105px;">Fecha Registro</th>
+            <td mat-cell *matCellDef="let row" class="desc-cell">{{ (row.registro || row.fecha_Registro || row.fechaRegistro) | date:'dd/MM/yyyy' }}</td>
+          </ng-container>
+
+          <!-- Fecha Apertura / Ocurrencia (PDM-06) -->
           <ng-container matColumnDef="apertura">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 90px;">Apertura</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 105px;">Fecha Apertura</th>
             <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.apertura | date:'dd/MM/yyyy' }}</td>
           </ng-container>
 
+          <!-- Fecha Límite (PDM-06) -->
           <ng-container matColumnDef="limite">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 90px;">Límite</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 105px;">Fecha Límite</th>
             <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.limite | date:'dd/MM/yyyy' }}</td>
           </ng-container>
 
-          <!-- Estado & Avance % (POR-05) -->
-          <ng-container matColumnDef="estado">
-            <th mat-header-cell *matHeaderCellDef style="width: 150px;">Avance & Estado</th>
-            <td mat-cell *matCellDef="let row">
-              <div style="display: flex; flex-direction: column; gap: 4px;">
-                <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                  <span class="soft-badge" [ngClass]="row.estado === 'Cerrado' || row.estado === 'Implementado' ? 'soft-badge-vigente' : (row.estado === 'En proceso' ? 'soft-badge-blue' : 'soft-badge-revision')" style="padding: 2px 6px; font-size: 10px;">
-                    <span>{{ row.estado || 'En proceso' }}</span>
-                  </span>
-                  <span style="color: #34d399; font-weight: 700;">{{ row.avancePct || 50 }}%</span>
-                </div>
-                <!-- Barra de Avance POR-05 -->
-                <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden;">
-                  <div [style.width.%]="row.avancePct || 50" style="height: 100%; background: linear-gradient(90deg, #10b981, #a78bfa); border-radius: 3px;"></div>
-                </div>
-              </div>
+          <!-- Fecha Fin (PDM-06) -->
+          <ng-container matColumnDef="fechaFin">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 105px;">Fecha Fin</th>
+            <td mat-cell *matCellDef="let row" class="desc-cell">
+              <span *ngIf="row.fechaFin || row.fecha_Fin || row.fechafin" style="color: #34d399; font-weight: 600;">
+                {{ (row.fechaFin || row.fecha_Fin || row.fechafin) | date:'dd/MM/yyyy' }}
+              </span>
+              <span *ngIf="!(row.fechaFin || row.fecha_Fin || row.fechafin)" style="color: #94a3b8; font-style: italic;">
+                —
+              </span>
             </td>
           </ng-container>
 
-          <!-- Acciones & Flujo de Aprobación por Jefatura (POR-03) -->
+          <!-- Estado (PDM-07: Se elimina porcentaje y barra, se muestra el estado) -->
+          <ng-container matColumnDef="estado">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 160px;">Estado</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="badge-estado-pdm" 
+                    [ngStyle]="{
+                      'background': row.estado === 'Cerrado' ? 'rgba(16,185,129,0.15)' :
+                                    (row.estado === 'Desarrollo- Acciones en ejecución' ? 'rgba(99,102,241,0.15)' :
+                                    (row.estado === 'Desarrollo- Análisis' ? 'rgba(245,158,11,0.15)' : 'rgba(56,189,248,0.15)')),
+                      'color': row.estado === 'Cerrado' ? '#34d399' :
+                               (row.estado === 'Desarrollo- Acciones en ejecución' ? '#818cf8' :
+                               (row.estado === 'Desarrollo- Análisis' ? '#fbbf24' : '#38bdf8')),
+                      'border': row.estado === 'Cerrado' ? '1px solid rgba(16,185,129,0.3)' :
+                                (row.estado === 'Desarrollo- Acciones en ejecución' ? '1px solid rgba(99,102,241,0.3)' :
+                                (row.estado === 'Desarrollo- Análisis' ? '1px solid rgba(245,158,11,0.3)' : '1px solid rgba(56,189,248,0.3)'))
+                    }"
+                    style="padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; display: inline-block; text-align: center;">
+                {{ row.estado || 'Abierto' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Acciones (PDM-08: Header 'Acciones', con botones EDITAR, VER, DESCARGAR, ELIMINAR) -->
           <ng-container matColumnDef="acciones">
-            <th mat-header-cell *matHeaderCellDef style="width: 130px; text-align: center;">Aprobación & Acciones</th>
+            <th mat-header-cell *matHeaderCellDef style="width: 160px; text-align: center;">Acciones</th>
             <td mat-cell *matCellDef="let e" class="acciones-cell">
-              <div class="actions-wrapper hover-fade">
-                <!-- Aprobación POR-03 -->
-                <button class="action-btn" (click)="onAprobar(e)" title="Aprobar Iniciativa (POR-03)" *ngIf="e.estadoAprobacion !== 'Aprobado'" style="color: #10b981; background: rgba(16,185,129,0.1);">
-                  <mat-icon>check_circle</mat-icon>
+              <div class="actions-wrapper hover-fade" style="display: flex; gap: 6px; justify-content: center;">
+                <!-- EDITAR -->
+                <button type="button" class="action-btn btn-edit" (click)="onEditar(e)" title="Editar registro" style="color: #818cf8; background: rgba(99,102,241,0.15);">
+                  <mat-icon style="font-size: 18px; width: 18px; height: 18px;">edit</mat-icon>
                 </button>
-                <button class="action-btn" (click)="onRechazar(e)" title="Rechazar Iniciativa (POR-03)" *ngIf="e.estadoAprobacion !== 'Rechazado'" style="color: #ef4444; background: rgba(239,68,68,0.1);">
-                  <mat-icon>cancel</mat-icon>
+                <!-- VER (PDM-08) -->
+                <button type="button" class="action-btn" (click)="onVer(e)" title="Ver detalle" style="color: #38bdf8; background: rgba(56,189,248,0.15);">
+                  <mat-icon style="font-size: 18px; width: 18px; height: 18px;">visibility</mat-icon>
                 </button>
-                <button class="action-btn btn-edit" (click)="onEditar(e)" title="Editar">
-                  <mat-icon>edit</mat-icon>
+                <!-- DESCARGAR (PDM-08) -->
+                <button type="button" class="action-btn" (click)="onDescargarArchivo(e)" title="Descargar archivo adjunto" style="color: #34d399; background: rgba(16,185,129,0.15);">
+                  <mat-icon style="font-size: 18px; width: 18px; height: 18px;">file_download</mat-icon>
                 </button>
-                <button class="action-btn btn-delete" (click)="onEliminar(e)" title="Eliminar">
-                  <mat-icon>delete</mat-icon>
+                <!-- ELIMINAR -->
+                <button type="button" class="action-btn btn-delete" (click)="onEliminar(e)" title="Eliminar registro" style="color: #f87171; background: rgba(239,68,68,0.15);">
+                  <mat-icon style="font-size: 18px; width: 18px; height: 18px;">delete</mat-icon>
                 </button>
               </div>
             </td>

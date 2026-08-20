@@ -442,6 +442,22 @@ export class AccionesCorrectivasComponent implements OnInit {
     });
   }
 
+  formatFechaDMY(val: any): string {
+    if (!val) return '—';
+    if (typeof val === 'string' && val.includes('-')) {
+      const parts = val.split('T')[0].split('-');
+      if (parts.length === 3 && parts[0].length === 4) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+    }
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return val.toString();
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
   onVerNcDeclarada(item: any): void {
     Swal.fire({
       title: `📄 No Conformidad: ${item.codigo}`,
@@ -453,7 +469,7 @@ export class AccionesCorrectivasComponent implements OnInit {
           <div style="background: #111119; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 14px; margin-bottom: 12px;">
             <div style="font-weight: 700; color: #818cf8; font-size: 15px; margin-bottom: 6px;">${item.codigo} — ${item.tipo} (${item.origen})</div>
             <div><strong style="color:#94a3b8;">Proceso Responsable:</strong> ${item.proceso}</div>
-            <div><strong style="color:#94a3b8;">Fecha Detección:</strong> ${item.deteccion}</div>
+            <div><strong style="color:#94a3b8;">Fecha Detección:</strong> ${this.formatFechaDMY(item.deteccion)}</div>
             <div><strong style="color:#94a3b8;">Responsable de Reporte:</strong> ${item.responsable}</div>
             <div><strong style="color:#94a3b8;">Estado Actual:</strong> <span style="color:#f59e0b; font-weight:700;">${item.estado}</span></div>
           </div>

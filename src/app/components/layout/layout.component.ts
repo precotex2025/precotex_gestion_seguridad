@@ -213,11 +213,16 @@ export class LayoutComponent implements OnInit, OnDestroy {
       };
       this.activeSublink = url;
     } else if (url.includes('/principal/evaluacionRiesgos')) {
+      const isSeguimiento = url.includes('seguimiento-controles');
       this.currentModule = 'Riesgos';
       this.activeModule = {
         title: 'Riesgos',
-        breadcrumb: 'Riesgos · IPERC',
-        tabs: []
+        breadcrumb: 'Riesgos · IPERC / Matriz de Riesgos',
+        activeTab: isSeguimiento ? 'seguimiento-controles' : 'identificacion-evaluacion',
+        tabs: [
+          { id: 'identificacion-evaluacion', label: 'Identificación y evaluación', route: '/principal/evaluacionRiesgos' },
+          { id: 'seguimiento-controles', label: 'Seguimiento de controles', route: '/principal/evaluacionRiesgos/seguimiento-controles' }
+        ]
       };
       this.activeSublink = url;
     } else if (url.includes('/principal/auditorias')) {

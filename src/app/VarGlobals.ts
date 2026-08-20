@@ -12,7 +12,7 @@ export const GlobalVariable = {
 
   //--------------------------------------------PRODUCCION--------------------------------------------
 
-  //baseUrlBackEnd: "https://gestion.precotex.com:444/ubicaciones/api/", // PRODUCCION SEGURIDAD <- BACK
+  //baseUrlBackEnd: "http://192.168.1.36:5252/api/", // PRODUCCION SEGURIDAD <- BACK
 
   num_planta: 0,
   cod_ordtra: '',
@@ -35,7 +35,7 @@ export const GlobalVariable = {
     COD_TIPORDTRA: ''
   },
 
-  start: {}, 
+  start: {},
   end: {},
   Orden_servicio: '',
   Cod_ClienteG: '',

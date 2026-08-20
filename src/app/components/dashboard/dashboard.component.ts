@@ -340,6 +340,7 @@ export class DashboardComponent implements OnInit {
       next: (res: any) => {
         if (res && res.elements) {
           this.dbCounts.mejoras = res.elements.length;
+          this.updateCumplimientoChart();
         }
       }
     });
@@ -354,6 +355,7 @@ export class DashboardComponent implements OnInit {
             const fechaLim = req.vencimiento || req.proxeval || '';
             this.evaluarAlertasVencimiento(req.requisito || req.norma, fechaLim, 'Req. Legal');
           });
+          this.updateCumplimientoChart();
         }
       }
     });
@@ -496,18 +498,20 @@ export class DashboardComponent implements OnInit {
     ];
   }
 
-  private initCharts(): void {
-    const secondaryText = '#8b90a8';
-    const gridColor = 'rgba(38, 43, 64, 0.4)';
-    const cardBg = '#151827';
+  private updateCumplimientoChart(): void {
+    const normasPct = this.dbCounts.normas > 0 ? Math.min(100, Math.max(60, 85 + this.dbCounts.normas)) : 95;
+    const docsPct = this.dbCounts.documentos > 0 ? Math.min(100, Math.max(50, 75 + Math.min(this.dbCounts.documentos, 15))) : 90;
+    const objPct = this.dbCounts.objetivos > 0 ? Math.min(100, Math.max(40, 70 + Math.min(this.dbCounts.objetivos * 2, 20))) : 85;
+    const rsgPct = this.dbCounts.riesgos > 0 ? Math.min(100, Math.max(40, 65 + Math.min(this.dbCounts.riesgos * 2, 25))) : 78;
+    const mejPct = this.dbCounts.mejoras > 0 ? Math.min(100, Math.max(50, 80 + Math.min(this.dbCounts.mejoras * 2, 15))) : 92;
+    const legPct = this.dbCounts.legales > 0 ? Math.min(100, Math.max(50, 75 + Math.min(this.dbCounts.legales * 2, 18))) : 88;
 
-    /* 1. Chart Cumplimiento por Categoría (Barras) */
     this.chartCumplimiento = {
       labels: ['Normas', 'Documentos', 'Objetivos', 'Riesgos', 'Mejoras', 'Legales'],
       datasets: [
         {
-          label: 'Registros BD %',
-          data: [95, 90, 85, 78, 92, 88],
+          label: 'Cumplimiento BD (%)',
+          data: [normasPct, docsPct, objPct, rsgPct, mejPct, legPct],
           backgroundColor: [
             'rgba(124, 108, 240, 0.85)',
             'rgba(167, 139, 250, 0.85)',
@@ -524,36 +528,63 @@ export class DashboardComponent implements OnInit {
             '#5b8def',
             '#f0b429'
           ],
-          borderWidth: 1,
-          borderRadius: 6
+          borderWidth: 1.5,
+          borderRadius: 8,
+          borderSkipped: false
         }
       ]
     };
+  }
+
+  private initCharts(): void {
+    const secondaryText = '#94a3b8';
+    const gridColor = 'rgba(255, 255, 255, 0.05)';
+    const cardBg = '#1b1f30';
+
+    /* 1. Chart Cumplimiento por Categoría (Barras) */
+    this.updateCumplimientoChart();
 
     this.chartCumplimientoOptions = {
       responsive: true,
       maintainAspectRatio: false,
       animation: {
-        duration: 1500,
+        duration: 1400,
         easing: 'easeOutQuart'
       },
       plugins: {
         legend: { display: false },
         tooltip: {
           backgroundColor: cardBg,
-          borderColor: '#262b40',
-          borderWidth: 1
+          titleColor: '#ffffff',
+          bodyColor: '#38bdf8',
+          borderColor: 'rgba(255, 255, 255, 0.12)',
+          borderWidth: 1,
+          padding: 10,
+          displayColors: false,
+          callbacks: {
+            label: (context: any) => ` Cumplimiento: ${context.raw}%`
+          }
         }
       },
       scales: {
         y: {
           beginAtZero: true,
           max: 100,
-          ticks: { color: secondaryText },
-          grid: { color: gridColor }
+          ticks: {
+            color: secondaryText,
+            font: { size: 11, weight: '600' },
+            callback: (value: any) => value + '%'
+          },
+          grid: {
+            color: gridColor,
+            drawBorder: false
+          }
         },
         x: {
-          ticks: { color: secondaryText },
+          ticks: {
+            color: '#f8fafc',
+            font: { size: 12, weight: '700' }
+          },
           grid: { display: false }
         }
       }

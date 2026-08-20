@@ -31,11 +31,96 @@
     </div>
   </div>
 
+  <!-- SECTION: INDICADORES POR TIPO DE DOCUMENTO (CDA-03) -->
+  <div class="indicadores-cda-container shadow-premium">
+    <div class="indicadores-header-row">
+      <div class="indicadores-title-box">
+        <mat-icon style="color: #38bdf8;">analytics</mat-icon>
+        <div>
+          <h4 class="indicadores-title">Indicadores por Tipo de Documento</h4>
+          <span class="indicadores-sub">Clasificación oficial de manuales, requisitos, guías, preguntas y conceptos</span>
+        </div>
+      </div>
+      <span class="badge-total-cda">
+        <mat-icon style="font-size: 14px; width:14px; height:14px;">library_books</mat-icon>
+        <span>{{ kpiCounts.total }} Registros BD</span>
+      </span>
+    </div>
+
+    <div class="kpi-chips-grid">
+      <!-- Todos -->
+      <div class="kpi-chip-card" [class.active]="selectedTipoFilter === 'TODOS'" (click)="setTipoFilter('TODOS')">
+        <div class="chip-icon-box color-indigo">
+          <mat-icon>dashboard</mat-icon>
+        </div>
+        <div class="chip-info">
+          <span class="chip-label">Todos los Tipos</span>
+          <span class="chip-val color-indigo">{{ kpiCounts.total }}</span>
+        </div>
+      </div>
+
+      <!-- Manuales de Usuario -->
+      <div class="kpi-chip-card" [class.active]="selectedTipoFilter === 'Manual de usuario'" (click)="setTipoFilter('Manual de usuario')">
+        <div class="chip-icon-box color-purple">
+          <mat-icon>menu_book</mat-icon>
+        </div>
+        <div class="chip-info">
+          <span class="chip-label">Manuales de Usuario</span>
+          <span class="chip-val color-purple">{{ kpiCounts.manuales }}</span>
+        </div>
+      </div>
+
+      <!-- Guías Rápidas -->
+      <div class="kpi-chip-card" [class.active]="selectedTipoFilter === 'Guías rápidas'" (click)="setTipoFilter('Guías rápidas')">
+        <div class="chip-icon-box color-emerald">
+          <mat-icon>speed</mat-icon>
+        </div>
+        <div class="chip-info">
+          <span class="chip-label">Guías Rápidas</span>
+          <span class="chip-val color-emerald">{{ kpiCounts.guias }}</span>
+        </div>
+      </div>
+
+      <!-- Preguntas Frecuentes -->
+      <div class="kpi-chip-card" [class.active]="selectedTipoFilter === 'Preguntas frecuentes'" (click)="setTipoFilter('Preguntas frecuentes')">
+        <div class="chip-icon-box color-amber">
+          <mat-icon>quiz</mat-icon>
+        </div>
+        <div class="chip-info">
+          <span class="chip-label">Preguntas Frecuentes</span>
+          <span class="chip-val color-amber">{{ kpiCounts.faqs }}</span>
+        </div>
+      </div>
+
+      <!-- Glosario & Conceptos -->
+      <div class="kpi-chip-card" [class.active]="selectedTipoFilter === 'Glosario'" (click)="setTipoFilter('Glosario')">
+        <div class="chip-icon-box color-cyan">
+          <mat-icon>auto_stories</mat-icon>
+        </div>
+        <div class="chip-info">
+          <span class="chip-label">Glosario & Conceptos</span>
+          <span class="chip-val color-cyan">{{ kpiCounts.glosario }}</span>
+        </div>
+      </div>
+
+      <!-- Requisitos -->
+      <div class="kpi-chip-card" [class.active]="selectedTipoFilter === 'Requisitos'" (click)="setTipoFilter('Requisitos')">
+        <div class="chip-icon-box color-rose">
+          <mat-icon>gavel</mat-icon>
+        </div>
+        <div class="chip-info">
+          <span class="chip-label">Requisitos & Normas</span>
+          <span class="chip-val color-rose">{{ kpiCounts.requisitos }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- SECTION: MANUALES DE USUARIO -->
   <div class="section-header">
     <div>
-      <h3 class="section-title">Manuales de usuario oficiales</h3>
-      <span class="section-subtitle">Documentos técnicos y guías de uso elaboradas por O&M</span>
+      <h3 class="section-title">Manuales y Documentos Oficiales</h3>
+      <span class="section-subtitle">Filtro activo: <strong>{{ selectedTipoFilter }}</strong> ({{ filteredManualesList.length }} mostrados)</span>
     </div>
     <button type="button" class="btn-primary-glow" (click)="onSubirManual()">
       <mat-icon>cloud_upload</mat-icon>
@@ -44,7 +129,7 @@
   </div>
 
   <div class="manuales-grid">
-    <div *ngFor="let m of manuales" class="manual-card shadow-premium" [style.border-top-color]="m.color">
+    <div *ngFor="let m of filteredManualesList" class="manual-card shadow-premium" [style.border-top-color]="m.color">
       <div class="manual-header">
         <div class="manual-icon-box" [style.background-color]="m.color + '22'" [style.color]="m.color">
           <mat-icon>{{ m.icono }}</mat-icon>
@@ -65,7 +150,13 @@
       <div class="manual-footer">
         <div class="manual-meta">
           <span class="font-mono text-purple">{{ m.version }}</span>
-          <small>{{ m.fecha }} · <b>{{ m.autor }}</b></small>
+          <small>📅 Pub: <b>{{ m.fecha }}</b></small>
+          <small style="color: #a78bfa; font-weight: 600; display: block; margin-top: 2px;">
+            👤 Registrado por: <b>{{ m.usuarioRegistro || m.autor }}</b>
+          </small>
+          <small *ngIf="m.fechaVigencia" style="color: #34d399; font-weight: 600; display: block; margin-top: 2px;">
+            ⌛ Vigencia exacta: {{ m.fechaVigencia }}
+          </small>
         </div>
         
         <!-- Ghost Button for Download -->
@@ -73,6 +164,47 @@
           <mat-icon>picture_as_pdf</mat-icon>
           <span>Descargar PDF</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: CONTROL DE CONSULTAS MÁS FRECUENTES & CAPACITACIONES (CDA-04) -->
+  <div class="panel-section margin-top-lg shadow-premium" style="background: #1a1a24; border-top: 3px solid #818cf8;">
+    <div class="section-header-faq border-bottom" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px;">
+      <div>
+        <h3 class="section-title" style="display: flex; align-items: center; gap: 8px;">
+          <mat-icon style="color: #818cf8;">insights</mat-icon>
+          Control de Consultas Frecuentes & Plan de Capacitaciones (CDA-04)
+        </h3>
+        <span class="section-subtitle">Identificación de temas más consultados por los usuarios para planificar futuras capacitaciones</span>
+      </div>
+      <button type="button" class="btn-primary-glow" (click)="onGenerarPlanCapacitacion()" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
+        <mat-icon>school</mat-icon>
+        <span>Plan de Capacitación</span>
+      </button>
+    </div>
+
+    <!-- Ranking Grid of Consultas Frecuentes -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; padding-top: 16px;">
+      <div *ngFor="let item of consultasFrecuentesStats; let i = index" 
+           style="background: #111119; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <span style="background: rgba(99, 102, 241, 0.15); color: #818cf8; font-weight: 800; font-size: 11px; padding: 2px 8px; border-radius: 6px;">
+            TOP #{{ i + 1 }}
+          </span>
+          <span style="color: #38bdf8; font-weight: 800; font-size: 13px;">
+            🔥 {{ item.busquedas }} Consultas
+          </span>
+        </div>
+
+        <h5 style="color: #f8fafc; font-size: 13px; font-weight: 700; margin: 0; line-height: 1.4;">
+          {{ item.tema }}
+        </h5>
+
+        <div style="background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.2); border-radius: 6px; padding: 6px 10px; font-size: 11px; color: #34d399; font-weight: 600;">
+          🎓 <strong>Capacitación Sugerida:</strong> {{ item.capacitacion }}
+        </div>
       </div>
     </div>
   </div>

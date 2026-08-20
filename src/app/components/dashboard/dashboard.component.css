@@ -320,6 +320,12 @@
   display: block;
 }
 
+.bento-box-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 /* -------------------------------------------------------------------
    4. BENTO GRID TIER 2: Compliance Chart (2/3) & Glass Alerts (1/3)
    ------------------------------------------------------------------- */
@@ -327,6 +333,7 @@
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 20px;
+  align-items: stretch;
 }
 
 @media (max-width: 1024px) {
@@ -336,12 +343,15 @@
 }
 
 .chart-bento-box {
-  min-height: 320px;
+  display: flex;
+  flex-direction: column;
 }
 
 .chart-wrapper {
   width: 100%;
-  height: 235px;
+  flex: 1;
+  min-height: 280px;
+  position: relative;
 }
 
 /* Status Badge Mini */

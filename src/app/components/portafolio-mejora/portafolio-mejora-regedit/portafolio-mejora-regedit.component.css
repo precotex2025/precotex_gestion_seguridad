@@ -253,3 +253,42 @@
   color: #e7e9f2;
   border-color: #8b90a8;
 }
+
+/* ESTILOS ULTRA-PREMIUM PARA LA TABLA DE PREVISTA DE EXCEL */
+.excel-preview-panel {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45), 0 0 20px rgba(16, 185, 129, 0.08);
+  backdrop-filter: blur(12px);
+  margin-top: 14px;
+}
+
+.excel-preview-panel table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.excel-preview-panel table th {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%) !important;
+  color: #38bdf8 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  border-bottom: 2px solid rgba(56, 189, 248, 0.3) !important;
+  padding: 10px 12px !important;
+}
+
+.excel-preview-panel table td {
+  padding: 8px 12px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  font-size: 11.5px !important;
+  transition: background 0.2s ease;
+}
+
+.excel-preview-panel table tr:hover td {
+  background: rgba(56, 189, 248, 0.06) !important;
+}
