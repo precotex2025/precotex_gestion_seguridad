@@ -1,19 +1,29 @@
 <div class="login-wrapper">
-  
+
   <!-- LEFT SIDE: FORM PANEL -->
   <div class="login-left-panel">
     <div class="login-card sn-animate-in">
-      
+
+      <!-- Micro-Badge Header -->
+      <div class="login-badge-header">
+        <span class="security-dot"></span>
+        <span>ACCESO SEGURO CORPORATIVO</span>
+      </div>
+
       <h2 class="login-title">Iniciar sesión en su cuenta</h2>
-      
+      <p class="login-subtitle">Ingrese sus credenciales para acceder a la plataforma</p>
+
       <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="login-form">
-        
+
         <!-- Usuario -->
         <div class="input-group">
-          <label class="input-label">Usuario</label>
+          <label class="input-label">USUARIO</label>
           <div class="input-wrapper">
-            <input type="text" formControlName="user" placeholder="Escriba su usuario" class="form-input">
-            <button type="button" class="clear-btn" *ngIf="loginForm.get('user')?.value" (click)="loginForm.get('user')?.setValue('')">
+            <mat-icon class="input-leading-icon">person_outline</mat-icon>
+            <input type="text" formControlName="user" placeholder="Escriba su usuario" class="form-input"
+              autocomplete="username">
+            <button type="button" class="clear-btn" *ngIf="loginForm.get('user')?.value"
+              (click)="loginForm.get('user')?.setValue('')" title="Limpiar">
               <mat-icon>close</mat-icon>
             </button>
           </div>
@@ -21,13 +31,13 @@
 
         <!-- Contraseña -->
         <div class="input-group">
-          <label class="input-label">Contraseña</label>
+          <label class="input-label">CONTRASEÑA</label>
           <div class="input-wrapper">
-            <input [type]="ocultarPassword ? 'password' : 'text'" 
-                   formControlName="pass" 
-                   placeholder="••••••••" 
-                   class="form-input">
-            <button type="button" class="toggle-password-btn" (click)="ocultarPassword = !ocultarPassword">
+            <mat-icon class="input-leading-icon">lock_outline</mat-icon>
+            <input [type]="ocultarPassword ? 'password' : 'text'" formControlName="pass" placeholder="••••••••"
+              class="form-input" autocomplete="current-password">
+            <button type="button" class="toggle-password-btn" (click)="ocultarPassword = !ocultarPassword"
+              title="Mostrar/Ocultar contraseña">
               <mat-icon class="toggle-icon">
                 {{ ocultarPassword ? 'visibility_off' : 'visibility' }}
               </mat-icon>
@@ -46,33 +56,86 @@
 
         <!-- Botón Ingresar -->
         <button type="submit" class="btn-login-submit" [disabled]="isSubmitting">
-          {{ isSubmitting ? 'Ingresando...' : 'Ingresar' }}
+          <mat-icon class="btn-icon" *ngIf="!isSubmitting">login</mat-icon>
+          <span>{{ isSubmitting ? 'Validando credenciales...' : 'Ingresar' }}</span>
         </button>
+
+        <!-- Footer / Contacto -->
+        <div class="login-footer-help">
+          <span>¿Problemas para acceder? Contacta a <a href="mailto:fhuamani@precotexperu.com">Sistemas TI</a></span>
+        </div>
 
       </form>
     </div>
   </div>
 
-  <!-- RIGHT SIDE: COLORFUL MESH PANEL -->
+  <!-- RIGHT SIDE: BRANDING PANEL -->
   <div class="login-right-panel">
+
+    <!-- Concentric Circles Background Animation -->
     <div class="circles-overlay">
       <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="svg-circles">
-        <circle cx="100" cy="0" r="30" stroke="rgba(255,255,255,0.12)" stroke-width="0.3"/>
-        <circle cx="100" cy="0" r="40" stroke="rgba(255,255,255,0.12)" stroke-width="0.3"/>
-        <circle cx="100" cy="0" r="50" stroke="rgba(255,255,255,0.12)" stroke-width="0.3"/>
-        <circle cx="100" cy="0" r="60" stroke="rgba(255,255,255,0.12)" stroke-width="0.3"/>
-        <circle cx="100" cy="0" r="70" stroke="rgba(255,255,255,0.12)" stroke-width="0.3"/>
-        <circle cx="100" cy="0" r="80" stroke="rgba(255,255,255,0.12)" stroke-width="0.3"/>
-        <circle cx="100" cy="0" r="90" stroke="rgba(255,255,255,0.12)" stroke-width="0.3"/>
+        <circle cx="100" cy="0" r="25" stroke="rgba(255,255,255,0.06)" stroke-width="0.3" />
+        <circle cx="100" cy="0" r="38" stroke="rgba(255,255,255,0.08)" stroke-width="0.3" />
+        <circle cx="100" cy="0" r="52" stroke="rgba(255,255,255,0.09)" stroke-width="0.3" />
+        <circle cx="100" cy="0" r="66" stroke="rgba(255,255,255,0.11)" stroke-width="0.3" />
+        <circle cx="100" cy="0" r="80" stroke="rgba(255,255,255,0.12)" stroke-width="0.3" />
+        <circle cx="100" cy="0" r="95" stroke="rgba(255,255,255,0.14)" stroke-width="0.3" />
       </svg>
     </div>
-    
+
     <div class="mesh-logo-container">
-      <div class="mesh-shield">
-        <mat-icon>verified_user</mat-icon>
+
+      <!-- Brand Logo Card (Matching Image 2) -->
+      <div class="brand-logo-card-login">
+        <img src="assets/logo.jpg" alt="Precotex Logo" class="brand-logo-img-login" (error)="onImgError($event)">
       </div>
-      <h1 class="mesh-title">Smul</h1>
-      <p class="mesh-subtitle">Portal Corporativo de Gestión Documentaria</p>
+
+      <!-- Portal Title & Subtitle -->
+      <h1 class="brand-portal-title">Portal Corporativo de Gestión Documentaria</h1>
+      <p class="brand-portal-subtitle">Portal Corporativo de Gestión Documentaria</p>
+
+      <!-- Key Enterprise Badges -->
+      <div class="brand-features-list">
+
+        <div class="feature-item-glass">
+          <div class="feature-icon-wrapper">
+            <mat-icon>verified</mat-icon>
+          </div>
+          <div class="feature-details">
+            <div class="feature-heading">Normas y Estándares SIG</div>
+            <div class="feature-desc">ISO 9001:2015 • ISO 45001:2018 • ISO 14001:2015 • BASC V6</div>
+          </div>
+        </div>
+
+        <div class="feature-item-glass">
+          <div class="feature-icon-wrapper icon-green">
+            <mat-icon>shield</mat-icon>
+          </div>
+          <div class="feature-details">
+            <div class="feature-heading">Gestión de Riesgos & Peligros (IPERC)</div>
+            <div class="feature-desc">Matriz 5x5, controles operacionales y seguimiento preventivo</div>
+          </div>
+        </div>
+
+        <div class="feature-item-glass">
+          <div class="feature-icon-wrapper icon-amber">
+            <mat-icon>fact_check</mat-icon>
+          </div>
+          <div class="feature-details">
+            <div class="feature-heading">Auditorías & No Conformidades</div>
+            <div class="feature-desc">Planes de acción 8D, causa raíz y monitoreo de eficacia</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Badge -->
+      <div class="brand-security-footer">
+        <mat-icon>lock</mat-icon>
+        <span>Plataforma Corporativa Segura • PRECOTEX S.A.C. 2026</span>
+      </div>
+
     </div>
 
     <!-- Dots pattern -->

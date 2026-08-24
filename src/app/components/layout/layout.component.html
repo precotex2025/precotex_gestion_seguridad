@@ -5,12 +5,11 @@
 
     <!-- Logo / Brand -->
     <div class="sidenav-brand" routerLink="/principal" style="cursor: pointer;">
-      <div class="brand-icon">
-        <mat-icon>verified_user</mat-icon>
+      <div class="brand-logo-card">
+        <img src="assets/logo.jpg" alt="Precotex Logo" class="brand-logo-img" (error)="onImgError($event)">
       </div>
       <div class="brand-text">
-        <span class="brand-name">Smul</span>
-        <span class="brand-version">Portal Corporativo deGestión Documentaria</span>
+        <span class="brand-version">Portal Corporativo de Gestión Documentaria</span>
       </div>
     </div>
 
@@ -26,7 +25,8 @@
     <mat-nav-list (click)="onNavListClick($event)">
 
       <!-- INICIO -->
-      <a *ngIf="matchesSidebar('Inicio')" mat-list-item routerLink="/principal" [class.active-link]="currentUrl === '/principal' || currentUrl === '/principal/'" class="nav-item">
+      <a *ngIf="matchesSidebar('Inicio')" mat-list-item routerLink="/principal"
+        [class.active-link]="currentUrl === '/principal' || currentUrl === '/principal/'" class="nav-item">
         <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Inicio</span>
@@ -35,77 +35,92 @@
       <span class="nav-section-label">GESTIÓN</span>
 
       <!-- ORGANIZACION -->
-      <a *ngIf="matchesSidebar('Organización')" mat-list-item routerLink="/principal/normas" [class.active-link]="currentModule === 'Organización'" class="nav-item">
+      <a *ngIf="matchesSidebar('Organización')" mat-list-item routerLink="/principal/normas"
+        [class.active-link]="currentModule === 'Organización'" class="nav-item">
         <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Organización</span>
       </a>
 
       <!-- PUESTOS -->
-      <a *ngIf="isAdmin() && matchesSidebar('Puestos')" mat-list-item routerLink="/principal/puestos" [class.active-link]="currentModule === 'Puestos'" class="nav-item">
+      <a *ngIf="isAdmin() && matchesSidebar('Puestos')" mat-list-item routerLink="/principal/puestos"
+        [class.active-link]="currentModule === 'Puestos'" class="nav-item">
         <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Puestos</span>
       </a>
 
       <!-- DOCUMENTACION -->
-      <a *ngIf="hasAccess('documentacion') && matchesSidebar('Documentación')" mat-list-item routerLink="/principal/documentosControlados" [class.active-link]="currentModule === 'Documentación'" class="nav-item">
+      <a *ngIf="hasAccess('documentacion') && matchesSidebar('Documentación')" mat-list-item
+        routerLink="/principal/documentosControlados" [class.active-link]="currentModule === 'Documentación'"
+        class="nav-item">
         <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Documentación</span>
       </a>
 
       <!-- AUDITORIAS -->
-      <a *ngIf="hasAccess('auditorias') && matchesSidebar('Auditorías')" mat-list-item routerLink="/principal/auditorias" [class.active-link]="currentModule === 'Auditorías'" class="nav-item">
+      <a *ngIf="hasAccess('auditorias') && matchesSidebar('Auditorías')" mat-list-item
+        routerLink="/principal/auditorias" [class.active-link]="currentModule === 'Auditorías'" class="nav-item">
         <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Auditorías</span>
       </a>
 
       <!-- NO CONFORMIDADES -->
-      <a *ngIf="hasAccess('noconf') && matchesSidebar('No conformidades')" mat-list-item routerLink="/principal/accionesCorrectivas" [class.active-link]="currentModule === 'No conformidades'" class="nav-item">
+      <a *ngIf="hasAccess('noconf') && matchesSidebar('No conformidades')" mat-list-item
+        routerLink="/principal/accionesCorrectivas" [class.active-link]="currentModule === 'No conformidades'"
+        class="nav-item">
         <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">No conformidades</span>
       </a>
 
       <!-- INDICADORES -->
-      <a *ngIf="hasAccess('indicadores') && matchesSidebar('Indicadores')" mat-list-item routerLink="/principal/analytics" [class.active-link]="currentModule === 'Indicadores'" class="nav-item">
+      <a *ngIf="hasAccess('indicadores') && matchesSidebar('Indicadores')" mat-list-item
+        routerLink="/principal/analytics" [class.active-link]="currentModule === 'Indicadores'" class="nav-item">
         <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Indicadores</span>
       </a>
 
       <!-- OBJETIVOS -->
-      <a *ngIf="hasAccess('objetivos') && matchesSidebar('Objetivos')" mat-list-item routerLink="/principal/planificacionObjetivos" [class.active-link]="currentModule === 'Objetivos'" class="nav-item">
+      <a *ngIf="hasAccess('objetivos') && matchesSidebar('Objetivos')" mat-list-item
+        routerLink="/principal/planificacionObjetivos" [class.active-link]="currentModule === 'Objetivos'"
+        class="nav-item">
         <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Objetivos</span>
       </a>
 
       <!-- RIESGOS -->
-      <a *ngIf="hasAccess('riesgos') && matchesSidebar('Riesgos')" mat-list-item routerLink="/principal/evaluacionRiesgos" [class.active-link]="currentModule === 'Riesgos'" class="nav-item">
+      <a *ngIf="hasAccess('riesgos') && matchesSidebar('Riesgos')" mat-list-item
+        routerLink="/principal/evaluacionRiesgos" [class.active-link]="currentModule === 'Riesgos'" class="nav-item">
         <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Riesgos</span>
       </a>
 
       <!-- PORTAFOLIO DE MEJORA -->
-      <a *ngIf="hasAccess('mejora') && matchesSidebar('Portafolio de Mejora')" mat-list-item routerLink="/principal/portafolioMejora" [class.active-link]="currentModule === 'Portafolio de Mejora'" class="nav-item">
+      <a *ngIf="hasAccess('mejora') && matchesSidebar('Portafolio de Mejora')" mat-list-item
+        routerLink="/principal/portafolioMejora" [class.active-link]="currentModule === 'Portafolio de Mejora'"
+        class="nav-item">
         <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Portafolio de Mejora</span>
       </a>
 
       <!-- REQ. LEGAL -->
-      <a *ngIf="hasAccess('legal') && matchesSidebar('Req. legal')" mat-list-item routerLink="/principal/reqLegal" [class.active-link]="currentModule === 'Req. legal'" class="nav-item">
+      <a *ngIf="hasAccess('legal') && matchesSidebar('Req. legal')" mat-list-item routerLink="/principal/reqLegal"
+        [class.active-link]="currentModule === 'Req. legal'" class="nav-item">
         <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Req. legal</span>
       </a>
 
       <!-- AYUDA -->
-      <a *ngIf="matchesSidebar('Centro de ayuda')" mat-list-item routerLink="/principal/ayuda" [class.active-link]="currentModule === 'Centro de ayuda'" class="nav-item">
+      <a *ngIf="matchesSidebar('Centro de ayuda')" mat-list-item routerLink="/principal/ayuda"
+        [class.active-link]="currentModule === 'Centro de ayuda'" class="nav-item">
         <div class="active-indicator-bar"></div>
         <span class="menu-bullet"></span>
         <span class="nav-label">Centro de ayuda</span>
@@ -130,7 +145,8 @@
       <span class="toolbar-spacer"></span>
 
       <!-- Live Server Status Badge (OP-2) -->
-      <div class="server-status-badge" [class.status-online]="isServerOnline" [class.status-offline]="!isServerOnline" [title]="isServerOnline ? 'Conexión activa con el servidor SIG' : 'Sin conexión con la API backend'">
+      <div class="server-status-badge" [class.status-online]="isServerOnline" [class.status-offline]="!isServerOnline"
+        [title]="isServerOnline ? 'Conexión activa con el servidor SIG' : 'Sin conexión con la API backend'">
         <span class="status-pulse-dot"></span>
         <span class="status-text">{{ isServerOnline ? 'Servidor Conectado' : 'Sin Conexión' }}</span>
       </div>
@@ -155,12 +171,10 @@
       <div class="module-header" *ngIf="activeModule">
         <h1 class="module-title">{{ activeModule.title }}</h1>
         <div class="module-breadcrumb">{{ activeModule.breadcrumb }}</div>
-        
+
         <div class="module-tabs">
-          <a *ngFor="let tab of activeModule.tabs" 
-             [routerLink]="tab.route" 
-             class="module-tab-link" 
-             [class.active-tab]="activeModule.activeTab ? activeModule.activeTab === tab.id : currentUrl.startsWith(tab.route)">
+          <a *ngFor="let tab of activeModule.tabs" [routerLink]="tab.route" class="module-tab-link"
+            [class.active-tab]="activeModule.activeTab ? activeModule.activeTab === tab.id : currentUrl.startsWith(tab.route)">
             {{ tab.label }}
           </a>
         </div>
@@ -168,10 +182,8 @@
 
       <!-- SECONDARY NAVIGATION BAR -->
       <div class="secondary-nav" *ngIf="activeModule && activeModule.secondaryNav">
-        <a *ngFor="let sub of activeModule.secondaryNav" 
-           [routerLink]="sub.route" 
-           class="secondary-nav-link" 
-           [class.active-sublink]="activeSublink === sub.route">
+        <a *ngFor="let sub of activeModule.secondaryNav" [routerLink]="sub.route" class="secondary-nav-link"
+          [class.active-sublink]="activeSublink === sub.route">
           {{ sub.label }}
         </a>
       </div>

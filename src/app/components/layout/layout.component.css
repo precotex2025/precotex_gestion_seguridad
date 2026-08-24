@@ -18,29 +18,32 @@
 /* Brand Header */
 .sidenav-brand {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 22px 20px 20px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 18px 16px 14px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   margin-bottom: 8px;
 }
 
-.brand-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #4f46e5, #8b5cf6);
+.brand-logo-card {
+  width: 100%;
+  max-width: 180px;
+  height: 44px;
+  border-radius: 8px;
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  padding: 4px 10px;
 }
 
-.brand-icon mat-icon {
-  color: #fff;
-  font-size: 22px;
-  width: 22px;
-  height: 22px;
+.brand-logo-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
 .brand-text {
@@ -48,19 +51,11 @@
   flex-direction: column;
 }
 
-.brand-name {
-  font-family: 'Inter', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-
 .brand-version {
-  font-size: 0.65rem;
-  color: rgba(148, 163, 184, 0.7);
-  font-weight: 500;
+  font-size: 0.68rem;
+  color: rgba(148, 163, 184, 0.8);
+  font-weight: 600;
+  line-height: 1.2;
   letter-spacing: 0.05em;
 }
 

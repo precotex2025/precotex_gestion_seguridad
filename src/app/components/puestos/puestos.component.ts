@@ -52,6 +52,49 @@ export class PuestosComponent implements OnInit {
   }
 
   onListado() {
+    // 1. Asegurar cuenta local por defecto de Cynthia Aldana
+    const seedPuestos = [
+      {
+        id: 'PUE-010',
+        codigo_Puesto: '010',
+        puesto: 'Coordinador de SSOMA',
+        proceso: 'SSOMA (Seguridad, Salud Ocupacional y Medio Ambiente)',
+        usuario: 'Cynthia Aldana',
+        nivel: 'Mando Medio',
+        permisos: 'Lectura + descarga + modificar',
+        estado: 'Activo',
+        email: 'caldana@precotexperu.com'
+      }
+    ];
+
+    try {
+      const rawCuentas = localStorage.getItem('precotex_cuentas_usuarios');
+      const cuentas = rawCuentas ? JSON.parse(rawCuentas) : [];
+      if (!cuentas.some((c: any) => (c.cod_Usuario || '').toLowerCase() === 'caldana')) {
+        cuentas.push({
+          cod_Usuario: 'caldana',
+          password: 'Precotex2026!',
+          nom_Usuario: 'Cynthia Aldana',
+          puesto: 'Coordinador de SSOMA',
+          email: 'caldana@precotexperu.com',
+          cod_Rol: '2',
+          des_Rol: 'Usuario SOMA',
+          flg_Activo: 1
+        });
+        cuentas.push({
+          cod_Usuario: 'cynthia.aldana',
+          password: 'Precotex2026!',
+          nom_Usuario: 'Cynthia Aldana',
+          puesto: 'Coordinador de SSOMA',
+          email: 'caldana@precotexperu.com',
+          cod_Rol: '2',
+          des_Rol: 'Usuario SOMA',
+          flg_Activo: 1
+        });
+        localStorage.setItem('precotex_cuentas_usuarios', JSON.stringify(cuentas));
+      }
+    } catch (e) {}
+
     this.puestosService.getListadoPuesto('001', '', '').subscribe({
       next: (res: any) => {
         let dbList: any[] = [];
@@ -65,11 +108,19 @@ export class PuestosComponent implements OnInit {
             nivel: p.nivelRiesgo || p.codigo_Nivel_Riesgo || 'Operativo',
             permisos: p.puesto_Requisitos || 'Lectura',
             estado: p.puesto_Caracteristicas || 'Activo',
+            flg_Activo: p.flg_Activo,
             raw: p
-          }));
+          })).filter((p: any) => p.flg_Activo !== '0' && p.flg_Activo !== 0);
         }
 
-        // Combinar siempre los usuarios y puestos creados localmente para evitar que desaparezcan
+        // Combinar con los puestos semillas por defecto
+        seedPuestos.forEach(sp => {
+          if (!dbList.some(db => (db.puesto || '').toLowerCase() === sp.puesto.toLowerCase())) {
+            dbList.push(sp);
+          }
+        });
+
+        // Combinar siempre los usuarios y puestos creados localmente
         const localData = JSON.parse(localStorage.getItem('precotex_puestos_usuarios') || '[]');
         localData.forEach((locItem: any) => {
           if (!dbList.some(db => (db.puesto || '').toLowerCase() === (locItem.puesto || '').toLowerCase() || db.id === locItem.id)) {
@@ -77,12 +128,37 @@ export class PuestosComponent implements OnInit {
           }
         });
 
+        // Filtrar permanentemente los puestos eliminados por el usuario
+        const deletedList: string[] = JSON.parse(localStorage.getItem('precotex_puestos_eliminados') || '[]');
+        dbList = dbList.filter(item => {
+          const id = (item.codigo_Puesto || item.id || '').toString().trim().toLowerCase();
+          const pName = (item.puesto || '').toString().trim().toLowerCase();
+          const uName = (item.usuario || '').toString().trim().toLowerCase();
+          return !deletedList.includes(id) && !deletedList.includes(pName + '|' + uName);
+        });
+
         this.puestosList = dbList;
         this.calculateStats();
       },
       error: () => {
+        let list = [...seedPuestos];
         const localData = localStorage.getItem('precotex_puestos_usuarios');
-        this.puestosList = localData ? JSON.parse(localData) : [];
+        if (localData) {
+          const parsed = JSON.parse(localData);
+          parsed.forEach((locItem: any) => {
+            if (!list.some(l => (l.puesto || '').toLowerCase() === (locItem.puesto || '').toLowerCase())) {
+              list.unshift(locItem);
+            }
+          });
+        }
+        const deletedList: string[] = JSON.parse(localStorage.getItem('precotex_puestos_eliminados') || '[]');
+        list = list.filter((item: any) => {
+          const id = (item.codigo_Puesto || item.id || '').toString().trim().toLowerCase();
+          const pName = (item.puesto || '').toString().trim().toLowerCase();
+          const uName = (item.usuario || '').toString().trim().toLowerCase();
+          return !deletedList.includes(id) && !deletedList.includes(pName + '|' + uName);
+        });
+        this.puestosList = list;
         this.calculateStats();
       }
     });
@@ -257,7 +333,10 @@ export class PuestosComponent implements OnInit {
           Puesto_Caracteristicas: result.ctrol_estado || 'Activo',
           Caracteristicas_Visible: true,
           Flg_Activo: '1',
-          Cod_Usuario: this.sUsuario
+          Cod_Usuario: this.sUsuario,
+          Email: (result.ctrol_email || '').trim(),
+          Password: (result.ctrol_password || 'Precotex2026!').trim(),
+          Enviar_Correo: result.ctrol_enviar_credenciales ? 1 : 0
         };
 
         const newItem = {
@@ -323,8 +402,13 @@ export class PuestosComponent implements OnInit {
           };
 
           this.http.post(`${GlobalVariable.baseUrlBackEnd}TxLogin/postEnviarCredencialesCorreo`, emailPayload).subscribe({
-            next: () => {},
-            error: () => {}
+            next: () => {
+              this.toastr.success(`Correo con credenciales despachado exitosamente a ${result.ctrol_email} (con copia a fhuamani@precotexperu.com).`, '📧 Correo Enviado');
+            },
+            error: (err) => {
+              console.warn('Error al conectar con servicio SMTP de correo:', err);
+              this.toastr.info(`Puesto y usuario '${userCode}' registrados en BD.`, 'Puesto Guardado');
+            }
           });
         }
 
@@ -382,7 +466,9 @@ export class PuestosComponent implements OnInit {
           Puesto_Caracteristicas: result.ctrol_estado || 'Activo',
           Caracteristicas_Visible: true,
           Flg_Activo: '1',
-          Cod_Usuario: this.sUsuario
+          Cod_Usuario: this.sUsuario,
+          Email: (result.ctrol_email || '').trim(),
+          Password: (result.ctrol_password || 'Precotex2026!').trim()
         };
 
         const updateLocal = () => {
@@ -415,52 +501,78 @@ export class PuestosComponent implements OnInit {
   onEliminar(item: any) {
     Swal.fire({
       title: '¿Desea eliminar el registro?, Confirme',
+      text: `Se eliminará el puesto "${item.puesto}" y su usuario asignado.`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí',
-      cancelButtonText: 'No'
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        const isDbRecord = item.codigo_Puesto && /^\d{1,3}$/.test(item.codigo_Puesto.trim());
+        const id = (item.codigo_Puesto || item.id || '').toString().trim().toLowerCase();
+        const pName = (item.puesto || '').toString().trim().toLowerCase();
+        const uName = (item.usuario || '').toString().trim().toLowerCase();
 
-        const removeLocalItem = () => {
-          this.puestosList = this.puestosList.filter(p => p.id !== item.id && p.codigo_Puesto !== item.codigo_Puesto);
-          localStorage.setItem('precotex_puestos_usuarios', JSON.stringify(this.puestosList));
-          this.calculateStats();
-          this.toastr.success('Registro eliminado con éxito.', '', { timeOut: 2500 });
+        // 1. Guardar en lista negra de eliminados
+        const deletedList: string[] = JSON.parse(localStorage.getItem('precotex_puestos_eliminados') || '[]');
+        if (id && !deletedList.includes(id)) deletedList.push(id);
+        if (pName && !deletedList.includes(pName)) deletedList.push(pName);
+        if (pName && uName && !deletedList.includes(pName + '|' + uName)) deletedList.push(pName + '|' + uName);
+        localStorage.setItem('precotex_puestos_eliminados', JSON.stringify(deletedList));
+
+        // 2. Remover de puestos locales
+        const localList = JSON.parse(localStorage.getItem('precotex_puestos_usuarios') || '[]');
+        const filteredLocal = localList.filter((p: any) => 
+          p.id !== item.id && 
+          p.codigo_Puesto !== item.codigo_Puesto && 
+          (p.puesto || '').toLowerCase() !== pName
+        );
+        localStorage.setItem('precotex_puestos_usuarios', JSON.stringify(filteredLocal));
+
+        // 3. Remover de cuentas de acceso locales
+        const rawCuentas = localStorage.getItem('precotex_cuentas_usuarios');
+        if (rawCuentas) {
+          const cuentas = JSON.parse(rawCuentas).filter((c: any) => 
+            (c.puesto || '').toLowerCase() !== pName &&
+            (c.nom_Usuario || '').toLowerCase() !== uName &&
+            (c.cod_Usuario || '').toLowerCase() !== uName
+          );
+          localStorage.setItem('precotex_cuentas_usuarios', JSON.stringify(cuentas));
+        }
+
+        // 4. Enviar solicitud de baja a la base de datos
+        const codPuesto = (item.codigo_Puesto || item.id || '').toString().replace(/\D/g, '');
+        const requestData = {
+          Accion: 'D',
+          Codigo_Puesto: codPuesto ? codPuesto.padStart(3, '0') : (item.codigo_Puesto || item.id),
+          Codigo_Organizacion: '001',
+          Codigo_Sede: '001',
+          Denominacion: item.puesto || '',
+          Codigo_Nivel_Riesgo: item.nivel || '',
+          Validacion_Periodica: true,
+          Puesto_Descripcion: item.proceso || '',
+          Puesto_Funciones: item.usuario || '',
+          Puesto_Requisitos: item.permisos || '',
+          Puesto_Caracteristicas: item.estado || '',
+          Caracteristicas_Visible: false,
+          Flg_Activo: '0',
+          Cod_Usuario: this.sUsuario
         };
 
-        if (isDbRecord) {
-          const requestData = {
-            Accion: 'D',
-            Codigo_Puesto: item.codigo_Puesto.trim().padStart(3, '0'),
-            Codigo_Organizacion: '001',
-            Codigo_Sede: '001',
-            Denominacion: item.puesto || '',
-            Codigo_Nivel_Riesgo: item.nivel || '',
-            Validacion_Periodica: true,
-            Puesto_Descripcion: item.proceso || '',
-            Puesto_Funciones: item.usuario || '',
-            Puesto_Requisitos: item.permisos || '',
-            Puesto_Caracteristicas: item.estado || '',
-            Caracteristicas_Visible: true,
-            Flg_Activo: '0',
-            Cod_Usuario: this.sUsuario
-          };
+        this.puestosService.postProcesoMntoPuesto(requestData).subscribe({
+          next: () => {},
+          error: () => {}
+        });
 
-          this.puestosService.postProcesoMntoPuesto(requestData).subscribe({
-            next: () => {
-              removeLocalItem();
-            },
-            error: () => {
-              removeLocalItem();
-            }
-          });
-        } else {
-          removeLocalItem();
-        }
+        // 5. Actualizar la tabla en vivo
+        this.puestosList = this.puestosList.filter(p => 
+          p.id !== item.id && 
+          p.codigo_Puesto !== item.codigo_Puesto && 
+          (p.puesto || '').toLowerCase() !== pName
+        );
+        this.calculateStats();
+        this.toastr.success('Puesto eliminado correctamente.', '', { timeOut: 2500 });
       }
     });
   }

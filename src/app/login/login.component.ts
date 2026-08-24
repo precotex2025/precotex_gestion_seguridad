@@ -26,6 +26,15 @@ export class LoginComponent implements OnInit {
     private toastr: ToastrService
   ) {}
 
+  onImgError(event: any) {
+    if (event && event.target) {
+      if (!event.target.getAttribute('data-tried-fallback')) {
+        event.target.setAttribute('data-tried-fallback', 'true');
+        event.target.src = 'logo.jpg';
+      }
+    }
+  }
+
   onLogin() {
     if (this.loginForm.invalid) {
       this.toastr.warning('Por favor ingrese su usuario y contraseña.', 'Campos Requeridos');

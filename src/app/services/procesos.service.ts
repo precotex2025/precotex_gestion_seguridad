@@ -44,6 +44,94 @@ export class ProcesosService {
     return this.http.get(this.baseUrl + 'SNProceso/getListadoProcesos', { headers, params });
   } 
 
+  private DEFAULT_PROCESOS: { [key: string]: string[] } = {
+    'Gerencia General (GG)': [
+      'Sistema de Gestión General',
+      'Gestión Estratégica',
+      'Proyectos Gerenciales',
+      'Desarrollo de Negocios',
+      'Alianzas Estratégicas',
+      'Comercial Exportación de Telas',
+      'Comercial Venta Local Textil'
+    ],
+    'Gestión Comercial (GCOM)': [
+      'Desarrollo de Producto',
+      'Desarrollo de Estampado y Bordado',
+      'Desarrollo Textil',
+      'Comercial Exportación de Prendas'
+    ],
+    'Planeamiento y Control de la Producción (PCP)': [
+      'PCP Textil',
+      'PCP Manufactura',
+      'PCP Estampado y Bordado'
+    ],
+    'Logística (LOG)': [
+      'Almacén',
+      'Comercio Exterior',
+      'Logística',
+      'Transporte'
+    ],
+    'Balance de Materia (BM)': [
+      'Balance de Materia'
+    ],
+    'Operaciones Textil (OPT)': [
+      'Hilandería',
+      'Tejeduría',
+      'Tintorería',
+      'Laboratorio de Color',
+      'Estampado Digital',
+      'Acabados Textil',
+      'Aseguramiento de Calidad Textil',
+      'Lavandería'
+    ],
+    'Operaciones Manufactura (OPM)': [
+      'Corte',
+      'Costura',
+      'Inspección',
+      'Acabados',
+      'Aseguramiento de la Calidad Manufactura',
+      'Consumos'
+    ],
+    'Servicio de Estampado y Bordado (SEB)': [
+      'Estampado',
+      'Bordado',
+      'Calidad Estampado y Bordado',
+      'Planeamiento y Programación de la Producción E&B'
+    ],
+    'Gestión Humana (GGHH)': [
+      'Gestión Humana',
+      'Administración de Personal',
+      'Capacitaciones y Desarrollo',
+      'Comunicaciones',
+      'Bienestar Social',
+      'Selección de Personal'
+    ],
+    'Administración y Finanzas (AFC)': [
+      'Administración',
+      'Finanzas',
+      'Contabilidad y Costos',
+      'Tesorería'
+    ],
+    'Ingeniería y Mejora Continua (IMC)': [
+      'Organización y Métodos',
+      'Mejora Continua',
+      'Investigación, Desarrollo e Innovación',
+      'Certificaciones'
+    ],
+    'Control Patrimonial (CPT)': [
+      'Control Patrimonial'
+    ],
+    'Auditoría Interna (AIO)': [
+      'Auditoría Interna'
+    ],
+    'Soporte (SOP)': [
+      'Tecnologías de la Información (Sistemas)',
+      'SSOMA (Seguridad, Salud Ocupacional y Medio Ambiente)',
+      'Seguridad Patrimonial',
+      'Mantenimiento e Infraestructura'
+    ]
+  };
+
   /**
    * Retorna los procesos agrupados en el formato { [tipoLabel]: string[] }
    * compatible con PROCESOS_GROUPS que usaban los componentes
@@ -51,15 +139,18 @@ export class ProcesosService {
   getProcesosAgrupados(sCodigoOrganizacion: string = '001'): Observable<{ [key: string]: string[] }> {
     return this.getListadoProcesos(sCodigoOrganizacion, '1').pipe(
       map((response: any) => {
-        const groups: { [key: string]: string[] } = {};
-        if (response && response.success && response.elements) {
+        const groups: { [key: string]: string[] } = { ...this.DEFAULT_PROCESOS };
+        if (response && response.success && response.elements && response.elements.length > 0) {
           for (const proc of response.elements) {
             const tipoCode = (proc.codigo_Tipo_Proceso || '').trim();
-            const label = this.TIPO_PROCESO_LABELS[tipoCode] || tipoCode;
+            const label = this.TIPO_PROCESO_LABELS[tipoCode] || tipoCode || 'Operativos / Cadena de Valor';
             if (!groups[label]) {
               groups[label] = [];
             }
-            groups[label].push(proc.proceso);
+            const pNom = (proc.proceso || proc.denominacion || proc.des_Proceso || '').trim();
+            if (pNom && !groups[label].includes(pNom)) {
+              groups[label].push(pNom);
+            }
           }
         }
         return groups;

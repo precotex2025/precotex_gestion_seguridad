@@ -60,6 +60,15 @@ export class LayoutComponent implements OnInit, OnDestroy {
     }
   }
 
+  onImgError(event: any): void {
+    if (event && event.target) {
+      const currentSrc = event.target.src || '';
+      if (!currentSrc.includes('logo.jpg') || currentSrc.includes('assets/')) {
+        event.target.src = 'logo.jpg';
+      }
+    }
+  }
+
   constructor(
     public router: Router,
     private puestosService: PuestosService,
