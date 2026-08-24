@@ -12,7 +12,7 @@
 /* Collapsible Banner */
 .banner-aviso-collapsible {
   background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line);
   border-left: 3px solid #6366f1;
   border-radius: 10px;
   padding: 10px 16px;
@@ -27,7 +27,7 @@
   align-items: center;
   gap: 10px;
   font-size: 0.82rem;
-  color: #cbd5e1;
+  color: var(--muted);
 }
 
 .banner-info-icon {
@@ -40,7 +40,7 @@
 .btn-close-banner {
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--muted);
   cursor: pointer;
   padding: 2px;
   display: flex;
@@ -49,7 +49,7 @@
 }
 
 .btn-close-banner:hover {
-  color: #f8fafc;
+  color: var(--txt);
   background: rgba(255, 255, 255, 0.1);
 }
 
@@ -65,9 +65,9 @@
   gap: 20px;
   flex-wrap: wrap;
   font-size: 0.76rem;
-  color: #94a3b8;
-  background: #151827;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--muted);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 10px;
   padding: 10px 16px;
 }
@@ -90,8 +90,8 @@
 
 /* Table Container & Gantt Architecture */
 .table-container {
-  background: #1a1a24;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 14px;
   overflow-x: auto;
 }
@@ -102,14 +102,14 @@
 }
 
 .prog-table th {
-  background: #151827;
-  color: #94a3b8;
+  background: var(--panel-2);
+  color: var(--muted);
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 12px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--line);
 }
 
 .th-audit {
@@ -124,7 +124,7 @@
 }
 
 .gantt-row {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--line);
   height: 48px;
   transition: background 0.15s ease;
 }
@@ -147,7 +147,7 @@
 
 .audit-details {
   font-size: 0.72rem;
-  color: #94a3b8;
+  color: var(--muted);
 }
 
 .dashed-grid-cell {
@@ -200,7 +200,7 @@
 
 /* Footer Summary */
 .tfoot-row {
-  background: #151827;
+  background: var(--panel-2);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -208,13 +208,13 @@
   padding: 12px 14px;
   font-size: 0.76rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--txt);
 }
 
 .td-foot-count {
   text-align: center;
   font-size: 0.76rem;
-  color: #64748b;
+  color: var(--muted);
   border-right: 1px dashed rgba(255, 255, 255, 0.05);
 }
 
@@ -226,7 +226,7 @@
 .td-empty {
   text-align: center;
   padding: 40px !important;
-  color: #64748b;
+  color: var(--muted);
 }
 
 .empty-icon {

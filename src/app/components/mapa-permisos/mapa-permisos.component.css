@@ -1,5 +1,5 @@
 /* ===================================================================
-   Mapa de Permisos & Security Matrix — Enterprise Premium Redesign
+   Mapa de Permisos & Security Matrix — Official Precotex Light Enterprise Theme
    =================================================================== */
 
 .contenedor {
@@ -11,15 +11,14 @@
 
 /* Collapsible Banner */
 .banner-aviso-collapsible {
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-left: 3px solid #6366f1;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--violet);
   border-radius: 10px;
   padding: 10px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  backdrop-filter: blur(8px);
 }
 
 .banner-info-left {
@@ -27,20 +26,20 @@
   align-items: center;
   gap: 10px;
   font-size: 0.82rem;
-  color: #cbd5e1;
+  color: var(--txt);
 }
 
 .banner-info-icon {
   font-size: 18px !important;
   width: 18px !important;
   height: 18px !important;
-  color: #818cf8;
+  color: var(--violet);
 }
 
 .btn-close-banner {
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--muted);
   cursor: pointer;
   padding: 2px;
   display: flex;
@@ -49,8 +48,8 @@
 }
 
 .btn-close-banner:hover {
-  color: #f8fafc;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--txt);
+  background: var(--line);
 }
 
 .btn-close-banner mat-icon {
@@ -60,7 +59,7 @@
 }
 
 /* -------------------------------------------------------------------
-   1. LANDSCAPE ROLE CARDS (COMPACT 1-ROW LAYOUT)
+   1. LANDSCAPE ROLE CARDS
    ------------------------------------------------------------------- */
 .roles-landscape-grid {
   display: grid;
@@ -75,24 +74,25 @@
 }
 
 .role-card-landscape {
-  background: #1a1a24;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 14px 18px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  box-shadow: 0 2px 8px rgba(30, 37, 69, 0.03);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .role-card-landscape:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 18px rgba(30, 37, 69, 0.08);
 }
 
-.border-purple { border-top: 3px solid #7c6cf0; }
-.border-green  { border-top: 3px solid #3ecf8e; }
-.border-blue   { border-top: 3px solid #5b8def; }
+.border-purple { border-top: 3px solid var(--violet); }
+.border-green  { border-top: 3px solid var(--green); }
+.border-blue   { border-top: 3px solid var(--blue); }
 
 .role-header-row {
   display: flex;
@@ -106,14 +106,14 @@
   height: 20px !important;
 }
 
-.color-purple { color: #7c6cf0; }
-.color-green  { color: #3ecf8e; }
-.color-blue   { color: #5b8def; }
+.color-purple { color: var(--violet); }
+.color-green  { color: var(--green); }
+.color-blue   { color: var(--blue); }
 
 .role-title {
   font-size: 0.95rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--txt);
 }
 
 .role-scope-pill {
@@ -124,13 +124,13 @@
   margin-left: auto;
 }
 
-.scope-purple { background: rgba(124, 108, 240, 0.12); color: #7c6cf0; }
-.scope-green  { background: rgba(62, 207, 142, 0.12); color: #3ecf8e; }
-.scope-blue   { background: rgba(91, 141, 239, 0.12); color: #5b8def; }
+.scope-purple { background: rgba(91, 75, 214, 0.1); color: var(--violet); }
+.scope-green  { background: rgba(18, 160, 106, 0.1); color: var(--green); }
+.scope-blue   { background: rgba(52, 102, 204, 0.1); color: var(--blue); }
 
 .role-desc-compact {
   font-size: 0.76rem;
-  color: #94a3b8;
+  color: var(--muted);
   margin: 0;
   line-height: 1.35;
 }
@@ -139,10 +139,11 @@
    2. MATRIX POLICY TABLE WITH ROW/COLUMN HIGHLIGHTING
    ------------------------------------------------------------------- */
 .panel-section {
-  background: #1a1a24;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: 20px;
+  box-shadow: 0 2px 8px rgba(30, 37, 69, 0.03);
 }
 
 .panel-section-header {
@@ -154,21 +155,22 @@
 
 .panel-section-title {
   font-size: 1.05rem;
-  font-weight: 700;
-  color: #f8fafc;
+  font-weight: 800;
+  color: var(--txt) !important;
   margin: 0;
+  letter-spacing: 0.02em;
 }
 
 .panel-section-subtitle {
   font-size: 0.78rem;
-  color: #64748b;
+  color: var(--muted) !important;
   margin: 2px 0 0 0;
 }
 
 .btn-ghost-danger {
-  background: rgba(240, 87, 107, 0.1);
-  color: #f0576b;
-  border: 1px solid rgba(240, 87, 107, 0.2);
+  background: rgba(210, 58, 84, 0.1);
+  color: var(--red);
+  border: 1px solid rgba(210, 58, 84, 0.25);
   border-radius: 8px;
   padding: 6px 12px;
   font-size: 0.75rem;
@@ -181,26 +183,27 @@
 }
 
 .btn-ghost-danger:hover {
-  background: rgba(240, 87, 107, 0.2);
+  background: rgba(210, 58, 84, 0.2);
 }
 
 .table-container {
   overflow-x: auto;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  background: var(--panel);
 }
 
 .matrix-table th.col-active {
-  background: rgba(124, 108, 240, 0.12) !important;
-  color: #ffffff !important;
+  background: rgba(91, 75, 214, 0.1) !important;
+  color: var(--violet) !important;
 }
 
 .matrix-table tr.row-active {
-  background: rgba(124, 108, 240, 0.04) !important;
+  background: rgba(91, 75, 214, 0.03) !important;
 }
 
 .matrix-table td.cell-highlight {
-  background: rgba(124, 108, 240, 0.15) !important;
+  background: rgba(91, 75, 214, 0.08) !important;
 }
 
 .micro-chips-wrapper {
@@ -236,7 +239,7 @@
   gap: 16px;
   flex-wrap: wrap;
   font-size: 0.74rem;
-  color: #cbd5e1 !important;
+  color: var(--muted) !important;
 }
 
 .legend-general span {
@@ -251,12 +254,12 @@
   border-radius: 50%;
 }
 
-.dot-blue   { background: #5b8def; }
-.dot-green  { background: #3ecf8e; }
-.dot-yellow { background: #f0b429; }
-.dot-red    { background: #f0576b; }
-.dot-purple { background: #a99bff; }
-.dot-gray   { background: #6f7590; }
+.dot-blue   { background: var(--blue); }
+.dot-green  { background: var(--green); }
+.dot-yellow { background: var(--amber); }
+.dot-red    { background: var(--red); }
+.dot-purple { background: var(--violet); }
+.dot-gray   { background: var(--muted); }
 
 /* -------------------------------------------------------------------
    3. CLEAN EXECUTIVE USER TABLE
@@ -272,36 +275,38 @@
 
 .user-full-name {
   font-size: 0.84rem;
-  font-weight: 600;
-  color: #ffffff !important;
+  font-weight: 700;
+  color: var(--txt) !important;
 }
 
 .user-login-sub {
-  font-size: 0.72rem;
-  color: #cbd5e1 !important;
+  font-size: 0.74rem;
+  color: var(--muted) !important;
+  font-weight: 500;
 }
 
 .permissions-summary-text {
   font-size: 0.78rem;
-  color: #cbd5e1 !important;
+  color: var(--muted) !important;
   display: flex;
   align-items: center;
   gap: 6px;
+  font-weight: 500;
 }
 
 .icon-small {
   font-size: 16px !important;
   width: 16px !important;
   height: 16px !important;
-  color: #818cf8;
+  color: var(--violet);
 }
 
 .btn-config-drawer {
-  background: rgba(124, 108, 240, 0.12);
-  color: #a78bfa;
-  border: 1px solid rgba(124, 108, 240, 0.25);
+  background: rgba(91, 75, 214, 0.1);
+  color: var(--violet);
+  border: 1px solid rgba(91, 75, 214, 0.25);
   border-radius: 8px;
-  padding: 5px 12px;
+  padding: 5px 14px;
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
@@ -312,7 +317,7 @@
 }
 
 .btn-config-drawer:hover {
-  background: rgba(124, 108, 240, 0.25);
+  background: rgba(91, 75, 214, 0.2);
   transform: translateY(-1px);
 }
 
@@ -323,7 +328,7 @@
 }
 
 /* -------------------------------------------------------------------
-   4. SLIDE-OVER DRAWER ARCHITECTURE (GLASSMORPHISM)
+   4. SLIDE-OVER DRAWER ARCHITECTURE
    ------------------------------------------------------------------- */
 .slide-over-backdrop {
   position: fixed;
@@ -331,9 +336,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(30, 37, 69, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 1000;
   animation: fadeIn 0.25s ease;
 }
@@ -345,9 +350,9 @@
   bottom: 0;
   width: 480px;
   max-width: 90vw;
-  background: #0f172a;
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.6);
+  background: #ffffff;
+  border-left: 1px solid var(--line);
+  box-shadow: -10px 0 40px rgba(30, 37, 69, 0.15);
   z-index: 1001;
   display: flex;
   flex-direction: column;
@@ -361,8 +366,8 @@
 
 .drawer-header {
   padding: 24px;
-  background: #151827;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -378,32 +383,32 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7c6cf0 0%, #a78bfa 100%);
+  background: linear-gradient(135deg, var(--violet) 0%, var(--violet-soft) 100%);
   color: #ffffff;
   font-weight: 800;
   font-size: 1.1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 15px rgba(124, 108, 240, 0.4);
+  box-shadow: 0 4px 12px rgba(91, 75, 214, 0.3);
 }
 
 .drawer-user-name {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--txt);
   margin: 0;
 }
 
 .drawer-user-sub {
   font-size: 0.78rem;
-  color: #94a3b8;
+  color: var(--muted);
 }
 
 .drawer-close-btn {
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--muted);
   cursor: pointer;
   padding: 4px;
   border-radius: 6px;
@@ -413,8 +418,8 @@
 }
 
 .drawer-close-btn:hover {
-  color: #f8fafc;
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--txt);
+  background: var(--line);
 }
 
 .drawer-body {
@@ -435,7 +440,7 @@
 .drawer-label {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -446,13 +451,13 @@
 
 .drawer-select {
   width: 100%;
-  background: #1e293b;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 1px solid var(--line);
   border-radius: 10px;
   padding: 10px 14px;
-  color: #f8fafc;
+  color: var(--txt);
   font-size: 0.88rem;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--sn-font-family);
   outline: none;
 }
 
@@ -461,19 +466,19 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--line);
 }
 
 .module-selected-title {
   font-size: 0.92rem;
   font-weight: 700;
-  color: #a78bfa;
+  color: var(--violet);
 }
 
 .btn-reset-drawer {
   background: transparent;
   border: none;
-  color: #f0576b;
+  color: var(--red);
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
@@ -488,8 +493,8 @@
 
 /* Toggle Group Card */
 .toggle-group-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -500,9 +505,9 @@
 .toggle-group-title {
   font-size: 0.84rem;
   font-weight: 700;
-  color: #cbd5e1;
+  color: var(--txt);
   margin: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--line);
   padding-bottom: 8px;
 }
 
@@ -528,19 +533,19 @@
 .toggle-action-name {
   font-size: 0.82rem;
   font-weight: 600;
-  color: #f8fafc;
+  color: var(--txt);
 }
 
 .toggle-inherited-desc {
   font-size: 0.7rem;
-  color: #64748b;
+  color: var(--muted);
 }
 
 .toggle-inherited-desc.inherited-active {
-  color: #3ecf8e;
+  color: var(--green);
 }
 
-/* iOS / Android Style Toggle Switch */
+/* Toggle Switch */
 .ios-switch {
   position: relative;
   display: inline-block;
@@ -561,7 +566,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #334155;
+  background-color: var(--line);
   transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   border-radius: 24px;
 }
@@ -576,12 +581,11 @@
   background-color: white;
   transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 input:checked + .switch-slider {
-  background-color: #3ecf8e;
-  box-shadow: 0 0 10px rgba(62, 207, 142, 0.4);
+  background-color: var(--green);
 }
 
 input:checked + .switch-slider:before {
@@ -590,41 +594,41 @@ input:checked + .switch-slider:before {
 
 /* Premium Select Box inside cells */
 .grid-select {
-  background: rgba(21, 24, 39, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
-  padding: 4px 8px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 5px 10px;
   font-size: 0.78rem;
   font-weight: 600;
   outline: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  width: 105px;
+  width: 110px;
   text-align: center;
   margin: 0 auto;
   display: block;
+  box-shadow: 0 1px 3px rgba(30, 37, 69, 0.04);
 }
 
 .grid-select:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--violet);
 }
 
 .grid-select option {
-  background: #151827;
-  color: #f8fafc;
+  background: #ffffff;
+  color: var(--txt);
 }
 
 .grid-select option[value="Sin acceso"] {
-  color: rgba(148, 163, 184, 0.6) !important;
+  color: var(--muted) !important;
 }
 
 .grid-select option[value="Ver"] {
-  color: #5b8def !important;
+  color: var(--blue) !important;
 }
 
 .grid-select option[value="Editar"] {
-  color: #3ecf8e !important;
+  color: var(--green) !important;
 }
 
 /* User status cell colors legends */
@@ -633,7 +637,7 @@ input:checked + .switch-slider:before {
   gap: 16px;
   flex-wrap: wrap;
   font-size: 0.74rem;
-  color: #cbd5e1 !important;
+  color: var(--muted) !important;
   margin-top: 16px;
 }
 
@@ -644,5 +648,5 @@ input:checked + .switch-slider:before {
 }
 
 .dot-gray-faint {
-  background: rgba(148, 163, 184, 0.4) !important;
+  background: var(--muted) !important;
 }

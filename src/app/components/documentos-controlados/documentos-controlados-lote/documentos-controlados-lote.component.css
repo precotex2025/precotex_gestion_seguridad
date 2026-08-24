@@ -1,8 +1,8 @@
 .dialog-lote {
-  background-color: #0f172a;
-  border: 1px solid #1e293b;
+  background-color: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 16px;
-  color: #f8fafc;
+  color: var(--txt);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   overflow: hidden;
   display: flex;
@@ -13,7 +13,7 @@
 
 .dialog-header {
   padding: 20px 24px;
-  background: #1e293b;
+  background: var(--panel);
   border-bottom: 1px solid #334155;
   display: flex;
   align-items: center;
@@ -48,7 +48,7 @@
 
 .dialog-subtitle {
   margin: 0;
-  color: #94a3b8;
+  color: var(--muted);
   font-size: 12.5px;
 }
 
@@ -66,7 +66,7 @@
   display: grid;
   grid-template-columns: 1fr 1.2fr;
   gap: 16px;
-  background: #1e293b;
+  background: var(--panel);
   padding: 16px;
   border-radius: 12px;
   border: 1px solid #334155;
@@ -80,11 +80,11 @@
 
 .form-label {
   font-size: 12px;
-  color: #cbd5e1;
+  color: var(--muted);
 }
 
 .form-input {
-  background-color: #0f172a;
+  background-color: var(--panel-2);
   border: 1px solid #334155;
   border-radius: 8px;
   color: #ffffff;
@@ -144,7 +144,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #f8fafc;
+  color: var(--txt);
   font-size: 14px;
 }
 
@@ -158,9 +158,9 @@
 }
 
 .btn-quick-action {
-  background: #1e293b;
+  background: var(--panel);
   border: 1px solid #475569;
-  color: #cbd5e1;
+  color: var(--muted);
   padding: 4px 10px;
   border-radius: 6px;
   font-size: 11.5px;
@@ -193,7 +193,7 @@
 }
 
 .file-card-item {
-  background-color: #1e293b;
+  background-color: var(--panel);
   border: 1px solid #334155;
   border-radius: 12px;
   padding: 14px 16px;
@@ -260,7 +260,7 @@
 
 .file-name-sub {
   font-size: 10px;
-  color: #94a3b8;
+  color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -302,13 +302,13 @@
 .field-label {
   font-size: 10.5px;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
 
 .form-control-sm {
-  background-color: #0f172a;
+  background-color: var(--panel-2);
   border: 1px solid #334155;
   border-radius: 6px;
   color: #ffffff;
@@ -348,7 +348,7 @@
 
 .status-badge-inline {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--muted);
   background: #334155;
   padding: 3px 8px;
   border-radius: 12px;
@@ -368,7 +368,7 @@
 .btn-remove-item {
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--muted);
   cursor: pointer;
   padding: 6px;
   border-radius: 50%;
@@ -386,7 +386,7 @@
 /* DIALOG ACTIONS */
 .dialog-actions {
   padding: 16px 24px;
-  background: #1e293b;
+  background: var(--panel);
   border-top: 1px solid #334155;
   display: flex;
   justify-content: flex-end;
@@ -396,7 +396,7 @@
 .btn-ghost {
   background: transparent;
   border: 1px solid #475569;
-  color: #cbd5e1;
+  color: var(--muted);
   padding: 10px 20px;
   border-radius: 8px;
   font-size: 13px;
@@ -434,7 +434,7 @@
 .btn-primary:disabled {
   background-color: #334155;
   border-color: #334155;
-  color: #64748b;
+  color: var(--muted);
   cursor: not-allowed;
   box-shadow: none;
 }

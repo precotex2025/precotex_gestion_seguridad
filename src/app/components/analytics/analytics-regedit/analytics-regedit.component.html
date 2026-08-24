@@ -1,12 +1,18 @@
 <div class="dialog-container">
   
-  <mat-toolbar class="banner-header">
-    <span class="titulo">{{ data.Title }}</span>
+  <div class="dialog-header">
+    <div class="dialog-icon-container">
+      <mat-icon>insights</mat-icon>
+    </div>
+    <div class="dialog-header-text">
+      <h2 class="dialog-title">{{ data.Title || 'Registro de Indicador SIG' }}</h2>
+      <p class="dialog-subtitle">Configuración y definición de indicadores de gestión y procesos</p>
+    </div>
     <span class="flex-spacer"></span>
     <button type="button" class="btn-close-header" (click)="onCancelar()" title="Cerrar">
       <mat-icon>close</mat-icon>
     </button>
-  </mat-toolbar>
+  </div>
 
   <form [formGroup]="formulario" (ngSubmit)="onGuardar()">
     
@@ -157,11 +163,12 @@
     </mat-dialog-content>
 
     <mat-dialog-actions class="dialog-actions-row">
-      <button type="submit" class="BtnGuardarPlan" mat-flat-button>
-        Guardar Indicador
+      <button type="submit" class="BtnGuardarPlan">
+        <mat-icon style="font-size: 18px; width: 18px; height: 18px;">save</mat-icon>
+        <span>Guardar Indicador</span>
       </button>
-      <button type="button" class="BtnCancelarPlan" mat-flat-button (click)="onCancelar()">
-        Cancelar
+      <button type="button" class="BtnCancelarPlan" (click)="onCancelar()">
+        <span>Cancelar</span>
       </button>
     </mat-dialog-actions>
     

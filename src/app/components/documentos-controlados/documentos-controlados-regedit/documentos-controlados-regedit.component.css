@@ -1,9 +1,9 @@
 .dialog-form {
-  background: #0f172a;
+  background: var(--panel-2);
   border-radius: 12px;
   overflow: hidden;
   font-family: 'Inter', sans-serif;
-  color: #f8fafc;
+  color: var(--txt);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -11,8 +11,8 @@
 
 .dialog-header {
   padding: 20px 24px;
-  background: #1e293b;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
   display: flex;
   align-items: center;
   gap: 16px;
@@ -48,7 +48,7 @@
 .dialog-subtitle {
   margin: 2px 0 0 0;
   font-size: 0.76rem;
-  color: #94a3b8;
+  color: var(--muted);
 }
 
 .dialog-content {
@@ -80,13 +80,13 @@
 .form-label {
   font-size: 0.78rem;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--muted);
   margin-bottom: 6px;
 }
 
 .form-input {
-  background: #1e293b;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 10px 14px;
   font-size: 0.82rem;
@@ -106,13 +106,13 @@ select.form-input {
 }
 
 select.form-input optgroup {
-  background: #1e293b;
+  background: var(--panel);
   color: #a5b4fc;
   font-weight: 700;
 }
 
 select.form-input option {
-  background: #1e293b;
+  background: var(--panel);
   color: #ffffff;
 }
 
@@ -134,7 +134,7 @@ select.form-input option {
   align-items: center;
   gap: 6px;
   background: #334155;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line);
   color: #ffffff;
   padding: 6px 12px;
   border-radius: 6px;
@@ -155,12 +155,12 @@ select.form-input option {
 
 .file-name-label {
   font-size: 0.78rem;
-  color: #94a3b8;
+  color: var(--muted);
 }
 
 .dialog-actions {
   padding: 16px 24px;
-  background: #1e293b;
+  background: var(--panel);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   justify-content: flex-end;
@@ -169,8 +169,8 @@ select.form-input option {
 
 .btn-ghost {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #cbd5e1;
+  border: 1px solid var(--line);
+  color: var(--muted);
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 0.8rem;

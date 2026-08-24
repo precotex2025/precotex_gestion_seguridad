@@ -12,11 +12,11 @@
     <mat-dialog-content class="form-content">
       
       <!-- RIE-18: BANNER DE NOTA EXPLICATIVA DEL FLUJO DE TRABAJO -->
-      <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 10px;">
-        <mat-icon style="color: #818cf8; font-size: 20px; width: 20px; height: 20px; margin-top: 1px;">info</mat-icon>
-        <div style="font-size: 11px; color: #cbd5e1; line-height: 1.45;">
-          <strong style="color: #f8fafc; font-size: 12px; display: block; margin-bottom: 2px;">Flujo del Proceso de Gestión de Riesgos (IPERC):</strong>
-          Todo nuevo riesgo declarado nace automáticamente en estado <span style="color: #f87171; font-weight: 700;">"Sin control" / "En seguimiento"</span>. Las medidas de control definitivas, sus evidencias y la revaluación del riesgo residual se gestionarán posteriormente en la pestaña <strong style="color: #818cf8;">"Seguimiento de controles"</strong>.
+      <div style="background: rgba(91, 75, 214, 0.06); border: 1px solid rgba(91, 75, 214, 0.2); border-left: 4px solid var(--violet); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 10px;">
+        <mat-icon style="color: var(--violet); font-size: 20px; width: 20px; height: 20px; margin-top: 1px;">info</mat-icon>
+        <div style="font-size: 11.5px; color: var(--txt); line-height: 1.45;">
+          <strong style="color: var(--txt); font-size: 12px; display: block; margin-bottom: 2px;">Flujo del Proceso de Gestión de Riesgos (IPERC):</strong>
+          Todo nuevo riesgo declarado nace automáticamente en estado <span style="color: var(--red); font-weight: 700;">"Sin control" / "En seguimiento"</span>. Las medidas de control definitivas, sus evidencias y la revaluación del riesgo residual se gestionarán posteriormente en la pestaña <strong style="color: var(--violet);">"Seguimiento de controles"</strong>.
         </div>
       </div>
 
@@ -32,7 +32,7 @@
       <div class="grid-4-cols">
         <div class="form-section-item">
           <div class="form-label">CÓDIGO (AUTOGENERADO)</div>
-          <input type="text" formControlName="codigo" class="full-width-input" readonly style="background: rgba(255, 255, 255, 0.03); color: #818cf8; font-weight: 700; cursor: not-allowed; border: 1px solid rgba(129, 140, 248, 0.3);" placeholder="RSG-2026-XXX">
+          <input type="text" formControlName="codigo" class="full-width-input" readonly style="background: var(--panel-2); color: var(--violet); font-weight: 700; cursor: not-allowed; border: 1px solid var(--line);" placeholder="RSG-2026-XXX">
         </div>
         <div class="form-section-item">
           <div class="form-label">PERIODO (*)</div>
@@ -99,32 +99,32 @@
       </div>
 
       <!-- RIE-13: SECCIÓN MATRIZ DE EVALUACIÓN VISUAL 5x5 (PROBABILIDAD X IMPACTO) -->
-      <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 10px; padding: 14px 16px; margin: 12px 0 16px 0;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <div style="font-size: 0.75rem; font-weight: 800; color: #818cf8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
-            <mat-icon style="font-size: 16px; width: 16px; height: 16px;">grid_on</mat-icon>
+      <div style="background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin: 12px 0 16px 0; box-shadow: 0 1px 4px rgba(30,37,69,0.03);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div style="font-size: 0.78rem; font-weight: 800; color: var(--txt); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
+            <mat-icon style="font-size: 18px; width: 18px; height: 18px; color: var(--violet);">grid_on</mat-icon>
             <span>Matriz de Evaluación Visual 5x5</span>
           </div>
-          <div style="font-size: 0.8rem; font-weight: 700; color: #f8fafc; background: #0b0f19; border: 1px solid rgba(255,255,255,0.12); padding: 4px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px;">
-            <span>Score: <strong style="color: #6366f1;">{{ getScoreCalculado() }}</strong></span>
-            <span style="display: inline-block; width: 1px; height: 12px; background: rgba(255,255,255,0.2);"></span>
+          <div style="font-size: 0.82rem; font-weight: 700; color: var(--txt); background: #ffffff; border: 1px solid var(--line); padding: 6px 14px; border-radius: 20px; display: flex; align-items: center; gap: 8px; box-shadow: 0 1px 3px rgba(30,37,69,0.04);">
+            <span>Score: <strong style="color: var(--violet);">{{ getScoreCalculado() }}</strong></span>
+            <span style="display: inline-block; width: 1px; height: 12px; background: var(--line);"></span>
             <span>Nivel Calculado: <strong [style.color]="getNivelColor(formulario.get('nivel')?.value)">{{ formulario.get('nivel')?.value }}</strong></span>
           </div>
         </div>
 
         <div style="display: grid; grid-template-columns: 180px 1fr; gap: 16px; align-items: center;">
-          <div style="background: #0b0f19; padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
-            <div style="display: grid; grid-template-columns: 24px repeat(5, 1fr); gap: 4px; text-align: center; font-size: 10px; font-weight: 700; color: #94a3b8; margin-bottom: 4px;">
+          <div style="background: #ffffff; padding: 10px; border-radius: 8px; border: 1px solid var(--line);">
+            <div style="display: grid; grid-template-columns: 24px repeat(5, 1fr); gap: 4px; text-align: center; font-size: 10px; font-weight: 700; color: var(--muted); margin-bottom: 4px;">
               <div></div>
               <div>I1</div><div>I2</div><div>I3</div><div>I4</div><div>I5</div>
             </div>
             <div *ngFor="let p of probRows" style="display: grid; grid-template-columns: 24px repeat(5, 1fr); gap: 4px; margin-top: 4px; align-items: center;">
-              <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-align: center;">P{{ p }}</div>
+              <div style="font-size: 10px; font-weight: 700; color: var(--muted); text-align: center;">P{{ p }}</div>
               <div *ngFor="let i of impCols" 
                 (click)="seleccionarCeldaMatriz(p, i)"
                 [style.background]="getCeldaColorMatriz(p, i)"
-                [style.border]="isCeldaSeleccionada(p, i) ? '2px solid #ffffff' : '1px solid rgba(255,255,255,0.1)'"
-                [style.box-shadow]="isCeldaSeleccionada(p, i) ? '0 0 12px rgba(99, 102, 241, 0.9)' : 'none'"
+                [style.border]="isCeldaSeleccionada(p, i) ? '2px solid #ffffff' : '1px solid rgba(255,255,255,0.2)'"
+                [style.box-shadow]="isCeldaSeleccionada(p, i) ? '0 0 10px rgba(91, 75, 214, 0.7)' : 'none'"
                 [style.transform]="isCeldaSeleccionada(p, i) ? 'scale(1.12)' : 'scale(1)'"
                 style="height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #ffffff; cursor: pointer; transition: all 0.2s ease;">
                 {{ p * i }}
@@ -132,13 +132,13 @@
             </div>
           </div>
 
-          <div style="font-size: 11px; color: #cbd5e1; line-height: 1.5;">
-            <div style="font-weight: 700; color: #f8fafc; margin-bottom: 4px;">Selección rápida de matriz:</div>
-            <p style="margin: 0 0 8px 0; color: #94a3b8;">Haz clic en cualquier celda de la matriz 5x5 para asignar la Probabilidad e Impacto de forma visual e intuitiva:</p>
-            <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 10px; font-weight: 700;">
-              <span style="background: rgba(239, 68, 68, 0.25); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 3px 8px; border-radius: 6px;">🔴 Alto (15 - 25)</span>
-              <span style="background: rgba(245, 158, 11, 0.25); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); padding: 3px 8px; border-radius: 6px;">🟡 Medio (8 - 14)</span>
-              <span style="background: rgba(34, 197, 94, 0.25); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); padding: 3px 8px; border-radius: 6px;">🟢 Bajo (1 - 7)</span>
+          <div style="font-size: 11.5px; color: var(--txt); line-height: 1.5;">
+            <div style="font-weight: 700; color: var(--txt); margin-bottom: 4px;">Selección rápida de matriz:</div>
+            <p style="margin: 0 0 8px 0; color: var(--muted);">Haz clic en cualquier celda de la matriz 5x5 para asignar la Probabilidad e Impacto de forma visual e intuitiva:</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 11px; font-weight: 700;">
+              <span style="background: rgba(210, 58, 84, 0.1); color: var(--red); border: 1px solid rgba(210, 58, 84, 0.25); padding: 4px 10px; border-radius: 6px;">🔴 Alto (15 - 25)</span>
+              <span style="background: rgba(184, 121, 10, 0.1); color: var(--amber); border: 1px solid rgba(184, 121, 10, 0.25); padding: 4px 10px; border-radius: 6px;">🟡 Medio (8 - 14)</span>
+              <span style="background: rgba(18, 160, 106, 0.1); color: var(--green); border: 1px solid rgba(18, 160, 106, 0.25); padding: 4px 10px; border-radius: 6px;">🟢 Bajo (1 - 7)</span>
             </div>
           </div>
         </div>

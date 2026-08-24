@@ -4,10 +4,10 @@
 
 .dialog-wrapper {
   padding: 24px 28px;
-  background: #111827;
+  background: var(--panel);
   border-radius: 12px;
   font-family: 'Inter', sans-serif;
-  color: #f1f5f9;
+  color: var(--txt);
 }
 
 /* --- Header --- */
@@ -32,10 +32,10 @@
   font-size: 0.8rem;
   font-weight: 600;
   color: #a5b4fc;
-  background: #1e293b;
+  background: var(--panel);
   padding: 3px 10px;
   border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line);
 }
 
 /* --- Form Fields --- */
@@ -75,7 +75,7 @@
 .form-label {
   font-size: 0.68rem;
   font-weight: 700;
-  color: rgba(148, 163, 184, 0.6);
+  color: var(--txt);
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
@@ -89,8 +89,8 @@
 .form-select,
 .form-input-date,
 .form-textarea {
-  background: #1e293b;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 8px;
   color: #ffffff;
   font-size: 0.85rem;
@@ -108,7 +108,7 @@
 .form-input-date:focus,
 .form-textarea:focus {
   border-color: #7c6cf0;
-  background: #1e293b;
+  background: var(--panel);
   box-shadow: 0 0 0 2px rgba(124, 108, 240, 0.2);
 }
 
@@ -151,9 +151,9 @@
 
 .btn-cancelar {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--line);
   border-radius: 8px;
-  color: #94a3b8;
+  color: var(--muted);
   height: 38px;
   padding: 0 20px;
   font-family: 'Inter', sans-serif;

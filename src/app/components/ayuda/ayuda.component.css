@@ -14,13 +14,12 @@
    ------------------------------------------------------------------- */
 .search-banner-hero {
   position: relative;
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-top: 3px solid #7c6cf0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--violet);
   border-radius: 16px;
   padding: 36px 28px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(30, 37, 69, 0.04);
   overflow: hidden;
 }
 
@@ -40,8 +39,8 @@
   gap: 6px;
   font-size: 0.72rem;
   font-weight: 700;
-  color: #a78bfa;
-  background: rgba(167, 139, 250, 0.12);
+  color: var(--violet);
+  background: rgba(91, 75, 214, 0.1);
   padding: 4px 12px;
   border-radius: 20px;
   letter-spacing: 0.06em;
@@ -56,17 +55,17 @@
 .search-hero-title {
   font-size: 1.8rem;
   font-weight: 800;
-  color: #f8fafc;
+  color: var(--txt);
   margin: 0;
 }
 
 .search-hero-subtitle {
   font-size: 0.85rem;
-  color: #94a3b8;
+  color: var(--muted);
   margin: 0;
 }
 
-/* Glassmorphic Search Box with Keyboard Shortcut */
+/* Search Box with Keyboard Shortcut */
 .glass-search-box {
   position: relative;
   width: 100%;
@@ -77,23 +76,22 @@
 
 .glass-search-input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 12px 100px 12px 42px;
-  color: #ffffff;
+  color: var(--txt);
   font-size: 0.92rem;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--sn-font-family);
   outline: none;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(30, 37, 69, 0.04);
   transition: all 0.25s ease;
 }
 
 .glass-search-input:focus {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(124, 108, 240, 0.6);
-  box-shadow: 0 0 20px rgba(124, 108, 240, 0.3);
+  background: #ffffff;
+  border-color: var(--violet);
+  box-shadow: 0 0 0 2px rgba(91, 75, 214, 0.15);
 }
 
 .glass-search-box .search-icon {
@@ -102,7 +100,7 @@
   font-size: 20px !important;
   width: 20px !important;
   height: 20px !important;
-  color: #818cf8;
+  color: var(--violet);
   pointer-events: none;
 }
 
@@ -117,19 +115,19 @@
 
 .kbd-key {
   background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--line);
   border-radius: 4px;
   padding: 2px 6px;
   font-size: 0.68rem;
   font-weight: 700;
-  color: #cbd5e1;
+  color: var(--muted);
   font-family: 'JetBrains Mono', monospace;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
 }
 
 .kbd-plus {
   font-size: 0.7rem;
-  color: #64748b;
+  color: var(--muted);
 }
 
 /* -------------------------------------------------------------------
@@ -144,13 +142,13 @@
 .section-title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--txt);
   margin: 0;
 }
 
 .section-subtitle {
   font-size: 0.78rem;
-  color: #64748b;
+  color: var(--muted);
 }
 
 .btn-primary-glow {
@@ -188,8 +186,8 @@
 }
 
 .manual-card {
-  background: #1a1a24;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-top: 3px solid #7c6cf0;
   border-radius: 14px;
   padding: 20px;
@@ -235,7 +233,7 @@
 .manual-title {
   font-size: 0.95rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--txt);
   margin: 0;
 }
 
@@ -266,7 +264,7 @@
 
 .manual-desc {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--muted);
   margin: 0;
   line-height: 1.4;
 }
@@ -283,14 +281,14 @@
   display: flex;
   flex-direction: column;
   font-size: 0.72rem;
-  color: #64748b;
+  color: var(--muted);
 }
 
 /* Ghost Button for Download PDF */
 .btn-ghost-pdf {
   background: transparent;
-  color: #f8fafc;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--txt);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 6px 14px;
   font-size: 0.76rem;
@@ -321,8 +319,8 @@
    3. ANIMATED ACCORDION FAQS
    ------------------------------------------------------------------- */
 .panel-section {
-  background: #1a1a24;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: 20px;
 }
@@ -332,7 +330,7 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--line);
   margin-bottom: 16px;
 }
 
@@ -352,8 +350,8 @@
 }
 
 .faq-accordion-item {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 10px;
   overflow: hidden;
   transition: border-color 0.2s ease;
@@ -389,14 +387,14 @@
 .faq-question-text {
   font-size: 0.88rem;
   font-weight: 600;
-  color: #f8fafc;
+  color: var(--txt);
 }
 
 .faq-arrow-icon {
   font-size: 20px !important;
   width: 20px !important;
   height: 20px !important;
-  color: #64748b;
+  color: var(--muted);
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -421,7 +419,7 @@
 
 .faq-answer-text {
   font-size: 0.82rem;
-  color: #cbd5e1;
+  color: var(--muted);
   margin: 0;
   line-height: 1.5;
 }
@@ -429,7 +427,7 @@
 .faq-empty {
   text-align: center;
   padding: 40px;
-  color: #64748b;
+  color: var(--muted);
 }
 
 .empty-icon {
@@ -490,7 +488,7 @@
 
 .contact-subtitle {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--muted);
   margin: 0;
 }
 
@@ -508,7 +506,7 @@
 
 .btn-contact-card {
   background: rgba(255, 255, 255, 0.015);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -523,7 +521,7 @@
 
 .btn-contact-card:hover {
   transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--panel-2);
 }
 
 .card-oym:hover {
@@ -567,32 +565,32 @@
 .contact-name {
   font-size: 0.95rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--txt);
 }
 
 .contact-role {
   font-size: 0.76rem;
-  color: #94a3b8;
+  color: var(--muted);
 }
 
 .contact-email {
   font-size: 0.74rem;
   font-family: 'JetBrains Mono', monospace;
-  color: #7c6cf0;
+  color: var(--violet);
   margin-top: 4px;
 }
 
 .card-sistemas .contact-email {
-  color: #3ecf8e;
+  color: var(--green);
 }
 
 /* ===================================================================
    INDICADORES POR TIPO DE DOCUMENTO (CDA-03)
    =================================================================== */
 .indicadores-cda-container {
-  background: #1a1a24;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-top: 3px solid #38bdf8;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--blue);
   border-radius: 16px;
   padding: 20px 24px;
   display: flex;
@@ -615,22 +613,22 @@
 .indicadores-title {
   font-size: 1.05rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--txt);
   margin: 0;
 }
 
 .indicadores-sub {
   font-size: 0.76rem;
-  color: #94a3b8;
+  color: var(--muted);
 }
 
 .badge-total-cda {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  color: #38bdf8;
+  background: rgba(52, 102, 204, 0.08);
+  border: 1px solid rgba(52, 102, 204, 0.25);
+  color: var(--blue);
   font-size: 0.75rem;
   font-weight: 700;
   padding: 4px 12px;
@@ -644,27 +642,28 @@
 }
 
 .kpi-chip-card {
-  background: #111119;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 12px 14px;
   display: flex;
   align-items: center;
   gap: 12px;
   cursor: pointer;
+  box-shadow: 0 1px 4px rgba(30, 37, 69, 0.03);
   transition: all 0.25s ease;
 }
 
 .kpi-chip-card:hover {
-  background: #161622;
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--panel-2);
+  border-color: var(--muted);
   transform: translateY(-2px);
 }
 
 .kpi-chip-card.active {
-  background: rgba(56, 189, 248, 0.12);
-  border-color: #38bdf8;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+  background: rgba(91, 75, 214, 0.08);
+  border-color: var(--violet);
+  box-shadow: 0 0 12px rgba(91, 75, 214, 0.15);
 }
 
 .chip-icon-box {
@@ -674,7 +673,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--panel-2);
 }
 
 .chip-icon-box.color-indigo { background: rgba(124, 108, 240, 0.15); color: #818cf8; }
@@ -691,7 +690,7 @@
 
 .chip-label {
   font-size: 0.72rem;
-  color: #94a3b8;
+  color: var(--muted);
   font-weight: 600;
 }
 

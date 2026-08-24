@@ -37,9 +37,9 @@
 }
 
 .btn-ghost-header {
-  background: rgba(255, 255, 255, 0.05);
-  color: #cbd5e1;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--panel-2);
+  color: var(--muted);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 8px 14px;
   font-size: 12.5px;
@@ -78,8 +78,8 @@
 
 /* DRAWER ARCHIVOS SUBIDOS */
 .archivos-subidos-panel {
-  background-color: #151827;
-  border: 1px solid #262b40;
+  background-color: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 16px;
@@ -101,9 +101,9 @@
 
 .btn-ghost-sm {
   background: transparent;
-  border: 1px solid #262b40;
+  border: 1px solid var(--line);
   border-radius: 6px;
-  color: #8b90a8;
+  color: var(--muted);
   padding: 4px 10px;
   font-size: 11px;
   cursor: pointer;
@@ -114,7 +114,7 @@
   align-items: center;
   gap: 12px;
   padding: 10px 0;
-  border-bottom: 1px solid #262b40;
+  border-bottom: 1px solid var(--line);
 }
 
 .archivo-item:last-child {
@@ -143,7 +143,7 @@
 }
 
 .archivo-sub {
-  color: #5a6078;
+  color: var(--muted);
   font-size: 11px;
   margin-top: 2px;
 }
@@ -161,8 +161,8 @@
 
 /* PANEL TARJETA CONTENEDOR */
 .panel-card {
-  background: #1a1a24;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-top: 3px solid #7c6cf0;
   border-radius: 14px;
   padding: 16px;
@@ -246,17 +246,17 @@
 }
 
 .panel-card-title {
-  color: #ffffff;
-  font-size: 0.78rem;
+  color: var(--txt);
+  font-size: 0.85rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
   margin: 0;
   text-transform: uppercase;
 }
 
 .panel-card-sub {
-  color: #5a6078;
-  font-size: 10.5px;
+  color: var(--muted);
+  font-size: 11px;
 }
 
 /* DISTRIBUCIÓN Y DONUT */
@@ -286,9 +286,9 @@
   margin: 0 auto 6px;
 }
 
-.dot-green { background-color: #3ecf8e; }
-.dot-orange { background-color: #f0b429; }
-.dot-purple { background-color: #7c6cf0; }
+.dot-green { background-color: var(--green); }
+.dot-orange { background-color: var(--amber); }
+.dot-purple { background-color: var(--violet); }
 
 .tool-val {
   font-size: 34px;
@@ -296,20 +296,21 @@
   line-height: 1;
 }
 
-.val-green { color: #3ecf8e; }
-.val-orange { color: #f0b429; }
-.val-purple { color: #7c6cf0; }
+.val-green { color: var(--green); }
+.val-orange { color: var(--amber); }
+.val-purple { color: var(--violet); }
 
 .tool-name {
-  color: #ffffff;
+  color: var(--txt);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   margin-top: 4px;
 }
 
 .tool-sub {
-  color: #5a6078;
+  color: var(--muted);
   font-size: 11px;
+  font-weight: 500;
 }
 
 /* GRID DE ANALÍTICA (2 PANELES) */
@@ -328,8 +329,9 @@
 
 .bar-label {
   width: 130px;
-  color: #8b90a8;
+  color: var(--txt);
   font-size: 11.5px;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -337,9 +339,9 @@
 
 .bar-track {
   flex: 1;
-  height: 9px;
-  border-radius: 5px;
-  background-color: #1b1f30;
+  height: 8px;
+  border-radius: 4px;
+  background-color: var(--line);
   overflow: hidden;
   display: flex;
 }
@@ -349,14 +351,14 @@
   transition: width 0.3s ease;
 }
 
-.seg-green { background-color: #3ecf8e; }
-.seg-orange { background-color: #f0b429; }
-.seg-purple { background-color: #7c6cf0; }
+.seg-green { background-color: var(--green); }
+.seg-orange { background-color: var(--amber); }
+.seg-purple { background-color: var(--violet); }
 
 .bar-count {
   width: 65px;
   text-align: right;
-  color: #5a6078;
+  color: var(--muted);
   font-size: 11px;
   font-weight: 600;
 }
@@ -366,6 +368,12 @@
   text-align: right;
   font-size: 11px;
   font-weight: 600;
+}
+
+.iniciativa-title-text {
+  font-weight: 700;
+  color: var(--txt) !important;
+  display: block;
 }
 
 /* DISPOSICIÓN ÁRBOL + TABLA */
@@ -378,8 +386,8 @@
 
 /* Left panel: Tree structure */
 .tree-panel {
-  background-color: #151827;
-  border: 1px solid #262b40;
+  background-color: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 10px;
   max-height: 80vh;
@@ -387,7 +395,7 @@
 }
 
 .tree-header {
-  color: #8b90a8;
+  color: var(--muted);
   font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
@@ -407,14 +415,14 @@
   align-items: center;
   padding: 7px 10px;
   border-radius: 6px;
-  color: #8b90a8;
+  color: var(--muted);
   cursor: pointer;
   font-size: 11.5px;
   transition: all 0.15s ease;
 }
 
 .tree-node:hover {
-  background-color: #1b1f30;
+  background-color: var(--panel-2);
   color: #ffffff;
 }
 
@@ -425,17 +433,17 @@
 }
 
 .node-count {
-  color: #5a6078;
+  color: var(--muted);
   font-size: 9.5px;
   font-style: normal;
   font-weight: 700;
-  background-color: #1b1f30;
+  background-color: var(--panel-2);
   padding: 1px 5px;
   border-radius: 10px;
 }
 
 .tree-node.active .node-count {
-  background-color: #151827;
+  background-color: var(--panel-2);
   color: #7c6cf0;
 }
 
@@ -465,8 +473,8 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 16px;
-  background: #151827;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 12px 20px;
 }
@@ -481,11 +489,11 @@
 
 .inline-search-input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 8px 12px 8px 36px;
-  color: #f1f5f9;
+  color: var(--txt);
   font-size: 0.78rem;
   outline: none;
   transition: all 0.2s ease;
@@ -503,7 +511,7 @@
   font-size: 18px !important;
   width: 18px !important;
   height: 18px !important;
-  color: #64748b;
+  color: var(--muted);
   pointer-events: none;
 }
 
@@ -536,9 +544,9 @@
 }
 
 .btn-ghost-action {
-  background: rgba(255, 255, 255, 0.04);
-  color: #cbd5e1;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--panel-2);
+  color: var(--muted);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 7px 14px;
   font-size: 0.78rem;
@@ -590,8 +598,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 6px 12px;
 }
@@ -608,9 +616,9 @@
 .chip-green { color: #34d399; }
 
 .chip-select {
-  background: #1b1f30;
-  color: #f8fafc;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--panel-2);
+  color: var(--txt);
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 4px 10px;
   font-size: 11px;
@@ -620,8 +628,8 @@
 }
 
 .table-container {
-  background: #1a1a24;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 14px;
   overflow-x: auto;
 }
@@ -633,21 +641,21 @@
 }
 
 .mat-mdc-header-cell {
-  background: #151827 !important;
-  color: #94a3b8 !important;
+  background: var(--panel-2) !important;
+  color: var(--muted) !important;
   font-size: 0.74rem !important;
   font-weight: 700 !important;
   letter-spacing: 0.05em !important;
   text-transform: uppercase !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-bottom: 1px solid var(--line) !important;
   padding: 12px 14px !important;
   white-space: nowrap;
 }
 
 .mat-mdc-cell {
-  color: #cbd5e1 !important;
+  color: var(--muted) !important;
   font-size: 0.78rem !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  border-bottom: 1px solid var(--line) !important;
   padding: 12px 14px !important;
 }
 
@@ -656,7 +664,7 @@
 }
 
 .fila:hover {
-  background-color: rgba(255, 255, 255, 0.03) !important;
+  background-color: var(--panel-2) !important;
 }
 
 .norma-cell {
@@ -679,7 +687,7 @@
 }
 
 .desc-cell {
-  color: #cbd5e1 !important;
+  color: var(--muted) !important;
 }
 
 .actions-wrapper {
@@ -690,9 +698,9 @@
 }
 
 .action-btn {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--panel-2);
   border: none;
-  color: #94a3b8;
+  color: var(--muted);
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -743,7 +751,7 @@
 
 .tree-panel-filemanager {
   background: rgba(255, 255, 255, 0.015);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: 16px;
   display: flex;
@@ -756,7 +764,7 @@
   align-items: center;
   gap: 8px;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--line);
 }
 
 .tree-header-icon {
@@ -769,7 +777,7 @@
 .tree-header-title {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--muted);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -792,7 +800,7 @@
 }
 
 .tree-node-item:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--panel-2);
 }
 
 .tree-node-item.active {
@@ -815,7 +823,7 @@
 .accordion-arrow-btn {
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--muted);
   cursor: pointer;
   padding: 0;
   display: flex;
@@ -845,7 +853,7 @@
 
 .node-name {
   font-size: 0.8rem;
-  color: #cbd5e1;
+  color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -864,8 +872,8 @@
 .mini-count-pill {
   font-size: 0.68rem;
   font-weight: 600;
-  color: #64748b;
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  background: var(--panel-2);
   padding: 2px 7px;
   border-radius: 10px;
 }

@@ -18,10 +18,11 @@
       <label class="form-label">Tipo de Registro (*)</label>
       <div style="display: flex; gap: 12px;">
         <label *ngFor="let opt of tiposRegistroOpts" 
-               [style.background]="formulario.get('tipoRegistro')?.value === opt ? 'rgba(99, 102, 241, 0.25)' : 'rgba(255, 255, 255, 0.04)'"
-               [style.border]="formulario.get('tipoRegistro')?.value === opt ? '2px solid #818cf8' : '1px solid rgba(255, 255, 255, 0.1)'"
-               style="flex: 1; padding: 10px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 13px; color: #f8fafc; transition: all 0.2s ease;">
-          <input type="radio" formControlName="tipoRegistro" [value]="opt" style="accent-color: #6366f1;">
+               [style.background]="formulario.get('tipoRegistro')?.value === opt ? 'rgba(91, 75, 214, 0.08)' : '#ffffff'"
+               [style.border]="formulario.get('tipoRegistro')?.value === opt ? '2px solid var(--violet)' : '1px solid var(--line)'"
+               [style.color]="formulario.get('tipoRegistro')?.value === opt ? 'var(--violet)' : 'var(--txt)'"
+               style="flex: 1; padding: 10px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 13px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(30,37,69,0.03);">
+          <input type="radio" formControlName="tipoRegistro" [value]="opt" style="accent-color: var(--violet);">
           <span>{{ opt === 'Incidencia' ? '🚨 Incidencia de Mejora' : '💡 Iniciativa de Mejora' }}</span>
         </label>
       </div>
@@ -43,7 +44,7 @@
           <option *ngFor="let p of procesosActuales" [value]="p">{{ p }}</option>
         </select>
         <small *ngIf="formulario.get('sede')?.value && procesosActuales.length === 0"
-               style="color: #f0b429; font-size: 11px; margin-top: 4px; display: block;">
+               style="color: var(--amber); font-size: 11px; margin-top: 4px; display: block;">
           ⚠️ Esta sede no tiene procesos asignados. Asígnelos desde Organización → Estructura organizacional.
         </small>
       </div>
@@ -59,7 +60,7 @@
                 [class.active]="herramientaSeleccionada === item.key"
                 [style.--card-color]="item.color"
                 (click)="selectHerramienta(item.key)">
-          <div class="herr-title" [style.color]="herramientaSeleccionada === item.key ? item.color : '#e7e9f2'">
+          <div class="herr-title" [style.color]="herramientaSeleccionada === item.key ? item.color : 'var(--txt)'">
             {{ item.label }}
           </div>
           <div class="herr-sub">{{ item.sub }}</div>

@@ -22,23 +22,24 @@
       </button>
     </div>
 
-    <mat-nav-list (click)="onNavListClick($event)">
+    <mat-nav-list (click)="onNavListClick($event)" class="sidebar-nav-list">
 
       <!-- INICIO -->
       <a *ngIf="matchesSidebar('Inicio')" mat-list-item routerLink="/principal"
         [class.active-link]="currentUrl === '/principal' || currentUrl === '/principal/'" class="nav-item">
         <div class="active-indicator-bar"></div>
-        <span class="menu-bullet"></span>
+        <mat-icon class="nav-module-icon">home</mat-icon>
         <span class="nav-label">Inicio</span>
       </a>
+
       <div class="nav-divider"></div>
-      <span class="nav-section-label">GESTIÓN</span>
+      <span class="nav-section-label">GESTIÓN DOCUMENTARIA & SIG</span>
 
       <!-- ORGANIZACION -->
       <a *ngIf="matchesSidebar('Organización')" mat-list-item routerLink="/principal/normas"
         [class.active-link]="currentModule === 'Organización'" class="nav-item">
         <div class="active-indicator-bar"></div>
-        <span class="menu-bullet"></span>
+        <mat-icon class="nav-module-icon">corporate_fare</mat-icon>
         <span class="nav-label">Organización</span>
       </a>
 
@@ -46,7 +47,7 @@
       <a *ngIf="isAdmin() && matchesSidebar('Puestos')" mat-list-item routerLink="/principal/puestos"
         [class.active-link]="currentModule === 'Puestos'" class="nav-item">
         <div class="active-indicator-bar"></div>
-        <span class="menu-bullet"></span>
+        <mat-icon class="nav-module-icon">group</mat-icon>
         <span class="nav-label">Puestos</span>
       </a>
 
@@ -55,7 +56,7 @@
         routerLink="/principal/documentosControlados" [class.active-link]="currentModule === 'Documentación'"
         class="nav-item">
         <div class="active-indicator-bar"></div>
-        <span class="menu-bullet"></span>
+        <mat-icon class="nav-module-icon">description</mat-icon>
         <span class="nav-label">Documentación</span>
       </a>
 
@@ -63,7 +64,7 @@
       <a *ngIf="hasAccess('auditorias') && matchesSidebar('Auditorías')" mat-list-item
         routerLink="/principal/auditorias" [class.active-link]="currentModule === 'Auditorías'" class="nav-item">
         <div class="active-indicator-bar"></div>
-        <span class="menu-bullet"></span>
+        <mat-icon class="nav-module-icon">fact_check</mat-icon>
         <span class="nav-label">Auditorías</span>
       </a>
 
@@ -72,7 +73,7 @@
         routerLink="/principal/accionesCorrectivas" [class.active-link]="currentModule === 'No conformidades'"
         class="nav-item">
         <div class="active-indicator-bar"></div>
-        <span class="menu-bullet"></span>
+        <mat-icon class="nav-module-icon">warning_amber</mat-icon>
         <span class="nav-label">No conformidades</span>
       </a>
 
@@ -80,7 +81,7 @@
       <a *ngIf="hasAccess('indicadores') && matchesSidebar('Indicadores')" mat-list-item
         routerLink="/principal/analytics" [class.active-link]="currentModule === 'Indicadores'" class="nav-item">
         <div class="active-indicator-bar"></div>
-        <span class="menu-bullet"></span>
+        <mat-icon class="nav-module-icon">insights</mat-icon>
         <span class="nav-label">Indicadores</span>
       </a>
 
@@ -89,7 +90,7 @@
         routerLink="/principal/planificacionObjetivos" [class.active-link]="currentModule === 'Objetivos'"
         class="nav-item">
         <div class="active-indicator-bar"></div>
-        <span class="menu-bullet"></span>
+        <mat-icon class="nav-module-icon">track_changes</mat-icon>
         <span class="nav-label">Objetivos</span>
       </a>
 
@@ -97,7 +98,7 @@
       <a *ngIf="hasAccess('riesgos') && matchesSidebar('Riesgos')" mat-list-item
         routerLink="/principal/evaluacionRiesgos" [class.active-link]="currentModule === 'Riesgos'" class="nav-item">
         <div class="active-indicator-bar"></div>
-        <span class="menu-bullet"></span>
+        <mat-icon class="nav-module-icon">security</mat-icon>
         <span class="nav-label">Riesgos</span>
       </a>
 
@@ -106,7 +107,7 @@
         routerLink="/principal/portafolioMejora" [class.active-link]="currentModule === 'Portafolio de Mejora'"
         class="nav-item">
         <div class="active-indicator-bar"></div>
-        <span class="menu-bullet"></span>
+        <mat-icon class="nav-module-icon">autorenew</mat-icon>
         <span class="nav-label">Portafolio de Mejora</span>
       </a>
 
@@ -114,19 +115,28 @@
       <a *ngIf="hasAccess('legal') && matchesSidebar('Req. legal')" mat-list-item routerLink="/principal/reqLegal"
         [class.active-link]="currentModule === 'Req. legal'" class="nav-item">
         <div class="active-indicator-bar"></div>
-        <span class="menu-bullet"></span>
-        <span class="nav-label">Req. legal</span>
+        <mat-icon class="nav-module-icon">gavel</mat-icon>
+        <span class="nav-label">Gestión Legal</span>
       </a>
 
       <!-- AYUDA -->
       <a *ngIf="matchesSidebar('Centro de ayuda')" mat-list-item routerLink="/principal/ayuda"
         [class.active-link]="currentModule === 'Centro de ayuda'" class="nav-item">
         <div class="active-indicator-bar"></div>
-        <span class="menu-bullet"></span>
+        <mat-icon class="nav-module-icon">help_outline</mat-icon>
         <span class="nav-label">Centro de ayuda</span>
       </a>
 
     </mat-nav-list>
+
+    <!-- Sidebar Bottom User Box -->
+    <div class="sidebar-userbox">
+      <div class="userbox-title">Usuario / Perfil</div>
+      <div class="userbox-name">{{ userName || 'Colaborador Precotex' }}</div>
+      <div class="userbox-actions">
+        <span class="userbox-link" (click)="onLogout()">Cerrar sesión</span>
+      </div>
+    </div>
 
   </mat-sidenav>
 

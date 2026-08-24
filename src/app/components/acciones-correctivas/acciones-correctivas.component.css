@@ -12,7 +12,7 @@
 /* Collapsible Banner */
 .banner-aviso-collapsible {
   background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line);
   border-left: 3px solid #6366f1;
   border-radius: 10px;
   padding: 10px 16px;
@@ -27,7 +27,7 @@
   align-items: center;
   gap: 10px;
   font-size: 0.82rem;
-  color: #cbd5e1;
+  color: var(--muted);
 }
 
 .banner-info-icon {
@@ -40,7 +40,7 @@
 .btn-close-banner {
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--muted);
   cursor: pointer;
   padding: 2px;
   display: flex;
@@ -49,7 +49,7 @@
 }
 
 .btn-close-banner:hover {
-  color: #f8fafc;
+  color: var(--txt);
   background: rgba(255, 255, 255, 0.1);
 }
 
@@ -80,8 +80,8 @@
 
 .stat-card-compact {
   position: relative;
-  background: #1a1a24;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 14px 16px;
   overflow: hidden;
@@ -143,7 +143,7 @@
 .stat-card-title {
   font-size: 0.65rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--muted);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -154,7 +154,7 @@
   line-height: 1.1;
 }
 
-.text-white { color: #f8fafc; }
+.text-white { color: var(--txt); }
 .text-green { color: #3ecf8e; }
 .text-blue  { color: #5b8def; }
 .text-yellow { color: #f0b429; }
@@ -162,7 +162,7 @@
 
 .stat-card-sub {
   font-size: 0.72rem;
-  color: #94a3b8;
+  color: var(--muted);
   font-weight: 500;
 }
 
@@ -173,8 +173,8 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 16px;
-  background: #151827;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 12px 20px;
 }
@@ -189,14 +189,14 @@
 .seccion-titulo {
   font-size: 1.05rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--txt);
   margin: 0;
 }
 
 .view-segment-control {
   display: flex;
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 20px;
   padding: 3px;
   gap: 2px;
@@ -205,7 +205,7 @@
 .segment-btn {
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--muted);
   border-radius: 16px;
   padding: 5px 12px;
   font-size: 0.75rem;
@@ -246,11 +246,11 @@
 
 .inline-search-input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 7px 12px 7px 34px;
-  color: #f1f5f9;
+  color: var(--txt);
   font-size: 0.78rem;
   font-family: 'Inter', sans-serif;
   outline: none;
@@ -269,7 +269,7 @@
   font-size: 16px !important;
   width: 16px !important;
   height: 16px !important;
-  color: #64748b;
+  color: var(--muted);
   pointer-events: none;
 }
 
@@ -325,7 +325,7 @@
 
 .kanban-column {
   background: rgba(255, 255, 255, 0.015);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: 14px;
   display: flex;
@@ -344,7 +344,7 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--line);
 }
 
 .col-title-box {
@@ -367,15 +367,15 @@
 .column-title {
   font-size: 0.76rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--txt);
   letter-spacing: 0.05em;
 }
 
 .column-count-badge {
   font-size: 0.7rem;
   font-weight: 700;
-  color: #94a3b8;
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  background: var(--panel-2);
   padding: 2px 8px;
   border-radius: 10px;
 }
@@ -388,8 +388,8 @@
 
 /* Kanban Action Cards */
 .kanban-card {
-  background: #1a1a24;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 14px;
   display: flex;
@@ -421,8 +421,8 @@
 .card-type-tag {
   font-size: 0.68rem;
   font-weight: 600;
-  color: #94a3b8;
-  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  background: var(--panel-2);
   padding: 2px 7px;
   border-radius: 6px;
 }
@@ -435,7 +435,7 @@
 .card-action-title {
   font-size: 0.88rem;
   font-weight: 600;
-  color: #f8fafc;
+  color: var(--txt);
   margin: 0;
   line-height: 1.35;
 }
@@ -445,7 +445,7 @@
   justify-content: space-between;
   align-items: center;
   font-size: 0.72rem;
-  color: #64748b;
+  color: var(--muted);
   gap: 8px;
 }
 
@@ -570,7 +570,7 @@
   border-radius: 10px;
   padding: 30px 10px;
   text-align: center;
-  color: #64748b;
+  color: var(--muted);
   font-size: 0.76rem;
 }
 
@@ -578,8 +578,8 @@
    CLEAN TABLE LIST VIEW
    ------------------------------------------------------------------- */
 .table-container {
-  background: #1a1a24;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 14px;
   overflow: hidden;
 }
@@ -634,7 +634,7 @@
 
 .resp-name-text {
   font-size: 0.8rem;
-  color: #cbd5e1;
+  color: var(--muted);
 }
 
 /* Soft Badges */
@@ -737,7 +737,7 @@
   bottom: 0;
   width: 480px;
   max-width: 90vw;
-  background: #0f172a;
+  background: var(--panel-2);
   border-left: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: -10px 0 40px rgba(0, 0, 0, 0.6);
   z-index: 1001;
@@ -753,8 +753,8 @@
 
 .drawer-header {
   padding: 24px;
-  background: #151827;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -793,14 +793,14 @@
 .drawer-doc-name {
   font-size: 1rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--txt);
   margin: 2px 0 0 0;
 }
 
 .drawer-close-btn {
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--muted);
   cursor: pointer;
   padding: 4px;
   border-radius: 6px;
@@ -809,7 +809,7 @@
 }
 
 .drawer-close-btn:hover {
-  color: #f8fafc;
+  color: var(--txt);
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -829,8 +829,8 @@
 }
 
 .meta-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 10px;
   padding: 10px 14px;
   display: flex;
@@ -841,19 +841,19 @@
 .meta-label {
   font-size: 0.68rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--muted);
   text-transform: uppercase;
 }
 
 .meta-value-text {
   font-size: 0.84rem;
   font-weight: 600;
-  color: #f8fafc;
+  color: var(--txt);
 }
 
 .drawer-description-box {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -864,13 +864,13 @@
 .desc-title {
   font-size: 0.84rem;
   font-weight: 700;
-  color: #cbd5e1;
+  color: var(--muted);
   margin: 0;
 }
 
 .desc-text {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--muted);
   margin: 0;
   line-height: 1.45;
 }

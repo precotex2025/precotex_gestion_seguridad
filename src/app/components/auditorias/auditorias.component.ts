@@ -270,86 +270,86 @@ export class AuditoriasComponent implements OnInit {
     };
 
     const auditOptions = this.dataSource.data.length > 0 
-      ? this.dataSource.data.map(a => `<option value="${a.codigo_Auditoria}" style="background:#1a1a24;color:#fff;">${a.codigo_Auditoria} (${a.norma})</option>`).join('')
-      : `<option value="AUD-INT-2025-001" style="background:#1a1a24;color:#fff;">AUD-INT-2025-001 (ISO 9001)</option><option value="AUD-INT-2025-002" style="background:#1a1a24;color:#fff;">AUD-INT-2025-002 (ISO 45001)</option>`;
+      ? this.dataSource.data.map(a => `<option value="${a.codigo_Auditoria}">${a.codigo_Auditoria} (${a.norma})</option>`).join('')
+      : `<option value="AUD-INT-2025-001">AUD-INT-2025-001 (ISO 9001)</option><option value="AUD-INT-2025-002">AUD-INT-2025-002 (ISO 45001)</option>`;
 
     const modalHtml = `
-      <div style="text-align: left; font-size: 13px; color: #cbd5e1; line-height: 1.6;">
+      <div style="text-align: left; font-size: 13px; color: #1e2545; line-height: 1.6; font-family: var(--sn-font-family);">
         
         <!-- SECCIÓN 1: AUDITORÍA EJECUTADA -->
-        <h4 style="color: #818cf8; border-bottom: 1px solid rgba(129, 140, 248, 0.25); padding-bottom: 6px; margin-top: 0; margin-bottom: 12px; font-size: 13px; font-weight: 700; letter-spacing: 0.3px;">
+        <h4 style="color: #5b4bd6; border-bottom: 2px solid rgba(91, 75, 214, 0.15); padding-bottom: 6px; margin-top: 0; margin-bottom: 12px; font-size: 13px; font-weight: 700; letter-spacing: 0.3px;">
           📋 1. AUDITORÍA EJECUTADA
         </h4>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
           <div>
-            <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Código de Auditoría (*)</label>
-            <select id="swal-auditoria" style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">
+            <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Código de Auditoría (*)</label>
+            <select id="swal-auditoria" style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #ffffff; color: #1e2545; outline: none; cursor: pointer;">
               ${auditOptions}
             </select>
           </div>
           <div>
-            <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Fecha de Ejecución (*)</label>
-            <input type="date" id="swal-fecha" value="${item.fecha}" style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">
+            <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Fecha de Ejecución (*)</label>
+            <input type="date" id="swal-fecha" value="${item.fecha}" style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #ffffff; color: #1e2545; cursor: pointer;">
           </div>
         </div>
         <div style="margin-bottom: 14px;">
-          <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Auditados / Participantes Entrevistados</label>
-          <input type="text" id="swal-auditados" value="${item.auditados || ''}" placeholder="Ej. Carlos Ríos, Jefes de Línea" style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">
+          <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Auditados / Participantes Entrevistados</label>
+          <input type="text" id="swal-auditados" value="${item.auditados || ''}" placeholder="Ej. Carlos Ríos, Jefes de Línea" style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #ffffff; color: #1e2545;">
         </div>
 
         <!-- SECCIÓN 2: HALLAZGO Y EVIDENCIA -->
-        <h4 style="color: #818cf8; border-bottom: 1px solid rgba(129, 140, 248, 0.25); padding-bottom: 6px; margin-top: 14px; margin-bottom: 12px; font-size: 13px; font-weight: 700; letter-spacing: 0.3px;">
+        <h4 style="color: #5b4bd6; border-bottom: 2px solid rgba(91, 75, 214, 0.15); padding-bottom: 6px; margin-top: 14px; margin-bottom: 12px; font-size: 13px; font-weight: 700; letter-spacing: 0.3px;">
           🔍 2. HALLAZGO Y EVIDENCIAS
         </h4>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
           <div>
-            <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Tipo de Hallazgo (*)</label>
-            <select id="swal-tipo" style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">
-              <option value="Conformidad" ${item.tipo === 'Conformidad' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">🟢 Conformidad</option>
-              <option value="Observación" ${item.tipo === 'Observación' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">🟡 Observación</option>
-              <option value="Oportunidad de mejora" ${item.tipo === 'Oportunidad de mejora' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">🔵 Oportunidad de mejora</option>
-              <option value="No conformidad" ${item.tipo === 'No conformidad' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">🔴 No conformidad</option>
-              <option value="Checklist" ${item.tipo === 'Checklist' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">🟣 Checklist</option>
-              <option value="Evidencia / Informe" ${item.tipo === 'Evidencia / Informe' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">🟣 Evidencia / Informe</option>
+            <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Tipo de Hallazgo (*)</label>
+            <select id="swal-tipo" style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #ffffff; color: #1e2545; outline: none; cursor: pointer;">
+              <option value="Conformidad" ${item.tipo === 'Conformidad' ? 'selected' : ''}>🟢 Conformidad</option>
+              <option value="Observación" ${item.tipo === 'Observación' ? 'selected' : ''}>🟡 Observación</option>
+              <option value="Oportunidad de mejora" ${item.tipo === 'Oportunidad de mejora' ? 'selected' : ''}>🔵 Oportunidad de mejora</option>
+              <option value="No conformidad" ${item.tipo === 'No conformidad' ? 'selected' : ''}>🔴 No conformidad</option>
+              <option value="Checklist" ${item.tipo === 'Checklist' ? 'selected' : ''}>🟣 Checklist</option>
+              <option value="Evidencia / Informe" ${item.tipo === 'Evidencia / Informe' ? 'selected' : ''}>🟣 Evidencia / Informe</option>
             </select>
           </div>
           <div>
-            <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Estado</label>
-            <select id="swal-estado" style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">
-              <option value="Abierto" ${item.estado === 'Abierto' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">⏳ Abierto</option>
-              <option value="Cerrado" ${item.estado === 'Cerrado' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">✅ Cerrado</option>
+            <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Estado</label>
+            <select id="swal-estado" style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #ffffff; color: #1e2545; outline: none; cursor: pointer;">
+              <option value="Abierto" ${item.estado === 'Abierto' ? 'selected' : ''}>⏳ Abierto</option>
+              <option value="Cerrado" ${item.estado === 'Cerrado' ? 'selected' : ''}>✅ Cerrado</option>
             </select>
           </div>
         </div>
 
         <div style="margin-bottom: 12px;">
-          <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Descripción del Hallazgo / Detalle (*)</label>
-          <textarea id="swal-descripcion" rows="3" placeholder="Describe la evidencia encontrada..." style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">${item.descripcion || ''}</textarea>
+          <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Descripción del Hallazgo / Detalle (*)</label>
+          <textarea id="swal-descripcion" rows="3" placeholder="Describe la evidencia encontrada..." style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #ffffff; color: #1e2545; resize: vertical;">${item.descripcion || ''}</textarea>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
           <div>
-            <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">NC Vinculada (si aplica)</label>
-            <input type="text" id="swal-nc" value="${item.nc || ''}" placeholder="Ej. NC-INT-2025-001" style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">
+            <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">NC Vinculada (si aplica)</label>
+            <input type="text" id="swal-nc" value="${item.nc || ''}" placeholder="Ej. NC-INT-2025-001" style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #ffffff; color: #1e2545;">
           </div>
           <div>
-            <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Auditor / Responsable</label>
-            <input type="text" id="swal-responsable" value="${item.responsable || ''}" placeholder="Nombre del auditor" style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">
+            <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Auditor / Responsable</label>
+            <input type="text" id="swal-responsable" value="${item.responsable || ''}" placeholder="Nombre del auditor" style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #ffffff; color: #1e2545;">
           </div>
         </div>
 
         <div style="margin-bottom: 14px;">
-          <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Archivo de Evidencia / Checklist</label>
-          <input type="file" id="swal-archivo" style="width: 100%; padding: 6px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 11px; background: #111119; color: #cbd5e1;">
-          ${item.archivo ? `<small style="color: #60a5fa; display: block; margin-top: 4px;">📎 Archivo actual: <strong>${item.archivo}</strong></small>` : ''}
+          <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Archivo de Evidencia / Checklist</label>
+          <input type="file" id="swal-archivo" style="width: 100%; padding: 8px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 12px; background: #f4f6fc; color: #1e2545;">
+          ${item.archivo ? `<small style="color: #5b4bd6; display: block; margin-top: 4px; font-weight: 600;">📎 Archivo actual: <strong>${item.archivo}</strong></small>` : ''}
         </div>
 
         <!-- SECCIÓN 3: NOTAS -->
-        <h4 style="color: #818cf8; border-bottom: 1px solid rgba(129, 140, 248, 0.25); padding-bottom: 6px; margin-top: 14px; margin-bottom: 12px; font-size: 13px; font-weight: 700; letter-spacing: 0.3px;">
+        <h4 style="color: #5b4bd6; border-bottom: 2px solid rgba(91, 75, 214, 0.15); padding-bottom: 6px; margin-top: 14px; margin-bottom: 12px; font-size: 13px; font-weight: 700; letter-spacing: 0.3px;">
           📝 3. NOTAS ADICIONALES
         </h4>
         <div>
-          <textarea id="swal-notas" rows="2" placeholder="Comentarios adicionales o recomendaciones..." style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">${item.notas || ''}</textarea>
+          <textarea id="swal-notas" rows="2" placeholder="Comentarios adicionales o recomendaciones..." style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #ffffff; color: #1e2545; resize: vertical;">${item.notas || ''}</textarea>
         </div>
 
       </div>
@@ -359,13 +359,13 @@ export class AuditoriasComponent implements OnInit {
       title: isEdit ? '✏️ Editar Hallazgo / Evidencia' : '➕ Registrar Hallazgo / Evidencia (Ejecución)',
       html: modalHtml,
       width: '720px',
-      background: '#1a1a24',
-      color: '#f8fafc',
+      background: '#ffffff',
+      color: '#1e2545',
       showCancelButton: true,
       confirmButtonText: isEdit ? 'Guardar Cambios' : 'Registrar Hallazgo',
       cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#6366f1',
-      cancelButtonColor: '#334155',
+      confirmButtonColor: '#5b4bd6',
+      cancelButtonColor: '#94a3b8',
       preConfirm: () => {
         const auditoria = (document.getElementById('swal-auditoria') as HTMLSelectElement)?.value;
         const fecha = (document.getElementById('swal-fecha') as HTMLInputElement)?.value;
@@ -429,13 +429,13 @@ export class AuditoriasComponent implements OnInit {
       title: '¿Eliminar registro de hallazgo?',
       text: `Se eliminará el hallazgo: ${item.descripcion}`,
       icon: 'warning',
-      background: '#1a1a24',
-      color: '#f8fafc',
+      background: '#ffffff',
+      color: '#1e2545',
       showCancelButton: true,
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#334155'
+      confirmButtonColor: '#d23a54',
+      cancelButtonColor: '#94a3b8'
     }).then((res) => {
       if (res.isConfirmed) {
         this.ejecucionList = this.ejecucionList.filter(e => e.id !== item.id);

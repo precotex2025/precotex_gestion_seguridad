@@ -1,8 +1,17 @@
 <div class="dialog-wrapper">
   
   <header class="dialog-header">
-    <mat-icon class="header-icon">business</mat-icon>
-    <h2 class="header-title">{{ data.Title.replace('::. ', '').replace(' .::', '') }}</h2>
+    <div class="dialog-icon-container">
+      <mat-icon>business</mat-icon>
+    </div>
+    <div class="dialog-header-text">
+      <h2 class="header-title">{{ data.Title ? data.Title.replace('::. ', '').replace(' .::', '') : 'Sede Operativa' }}</h2>
+      <p class="dialog-subtitle">Gestión de sedes y asignación de procesos operativos Precotex</p>
+    </div>
+    <span class="flex-spacer"></span>
+    <button type="button" class="btn-close-header" (click)="onClose()" title="Cerrar">
+      <mat-icon>close</mat-icon>
+    </button>
   </header>
 
   <form [formGroup]="formulario" #formDirective="ngForm" class="dialog-form">
@@ -68,16 +77,15 @@
 
     </div>
 
-    <!-- Acciones / Botones -->
+    <!-- Acciones / Botones (Siempre visibles al pie) -->
     <div class="button-row"> 
       <button type="button" class="btn-primary" (click)="onSave()"> 
-        <mat-icon>save</mat-icon>
-        <span>Grabar</span>
+        <mat-icon style="font-size: 18px; width: 18px; height: 18px;">save</mat-icon>
+        <span>Grabar Sede</span>
       </button>
 
       <button type="button" class="btn-secondary" mat-dialog-close (click)="onClose()">
-        <mat-icon>close</mat-icon>
-        <span>Salir</span>
+        <span>Cerrar</span>
       </button>
     </div>   
   </form>

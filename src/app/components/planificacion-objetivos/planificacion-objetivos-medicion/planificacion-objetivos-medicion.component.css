@@ -1,13 +1,13 @@
 .dialog-container {
   padding: 10px;
   font-family: Roboto, "Helvetica Neue", sans-serif;
-  background-color: #f8fafc;
+  background-color: var(--txt);
 }
 
 .banner-header {
   display: flex;
   justify-content: space-between;
-  background: #0f172a !important;
+  background: var(--panel-2) !important;
   color: white !important;
   padding: 10px 20px;
   max-height: 50px;
@@ -98,7 +98,7 @@
 .tabla-wrapper {
   margin-top: 15px;
   border: 1px solid #cbd5e1;
-  background: #151827;
+  background: var(--panel-2);
   color: white;
 }
 
@@ -124,7 +124,7 @@
 
 .meta-label-sub {
   font-size: 0.68rem;
-  color: #64748b;
+  color: var(--muted);
 }
 
 .mini-progress-track {

@@ -75,19 +75,19 @@
       <!-- GRÁFICO DONUT SVG -->
       <div class="donut-box">
         <svg width="140" height="140" viewBox="0 0 42 42" class="donut-svg">
-          <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#1b1f30" stroke-width="5"/>
+          <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#e2e7f1" stroke-width="5"/>
           <!-- Segmento 1: 5W-2H (Verde) -->
-          <circle *ngIf="pct5W2H > 0" cx="21" cy="21" r="15.9155" fill="none" stroke="#3ecf8e" stroke-width="5" 
+          <circle *ngIf="pct5W2H > 0" cx="21" cy="21" r="15.9155" fill="none" stroke="#12a06a" stroke-width="5" 
                   [attr.stroke-dasharray]="pct5W2H + ' ' + (100 - pct5W2H)" stroke-dashoffset="25"/>
           <!-- Segmento 2: ACR (Naranja) -->
-          <circle *ngIf="pctACR > 0" cx="21" cy="21" r="15.9155" fill="none" stroke="#f0b429" stroke-width="5" 
+          <circle *ngIf="pctACR > 0" cx="21" cy="21" r="15.9155" fill="none" stroke="#b8790a" stroke-width="5" 
                   [attr.stroke-dasharray]="pctACR + ' ' + (100 - pctACR)" [attr.stroke-dashoffset]="offsetACR"/>
           <!-- Segmento 3: Iniciativa (Púrpura) -->
-          <circle *ngIf="pctIniciativas > 0" cx="21" cy="21" r="15.9155" fill="none" stroke="#7c6cf0" stroke-width="5" 
+          <circle *ngIf="pctIniciativas > 0" cx="21" cy="21" r="15.9155" fill="none" stroke="#5b4bd6" stroke-width="5" 
                   [attr.stroke-dasharray]="pctIniciativas + ' ' + (100 - pctIniciativas)" [attr.stroke-dashoffset]="offsetIniciativas"/>
           <!-- Texto Central -->
-          <text x="21" y="20.5" text-anchor="middle" font-size="8" font-weight="800" fill="#ffffff">{{ stats.total }}</text>
-          <text x="21" y="26" text-anchor="middle" font-size="2.6" fill="#8b90a8">total</text>
+          <text x="21" y="20.5" text-anchor="middle" font-size="8" font-weight="800" fill="#1e2545">{{ stats.total }}</text>
+          <text x="21" y="26" text-anchor="middle" font-size="2.6" fill="#5a6178">total</text>
         </svg>
       </div>
 
@@ -207,7 +207,7 @@
                  [class.active]="selectedProceso === proc"
                  (click)="setFilter(proc)">
               <div class="node-left">
-                <mat-icon class="folder-icon process-folder">insert_drive_file</mat-icon>
+                <mat-icon class="folder-icon process-folder">folder_open</mat-icon>
                 <span class="node-abbr">[{{ getAbreviaturaProceso(proc) }}]</span>
                 <span class="node-name" [title]="proc">{{ proc }}</span>
               </div>
@@ -266,7 +266,7 @@
           <ng-container matColumnDef="titulo">
             <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 230px;">Título / Iniciativa</th>
             <td mat-cell *matCellDef="let row" class="norma-cell">
-              <span style="font-weight: 700; color: #f8fafc; display: block;">{{ row.titulo }}</span>
+              <span class="iniciativa-title-text">{{ row.titulo }}</span>
               <div *ngIf="row.archivo" class="file-tag">
                 <span class="material-icons text-icon">description</span> {{ row.archivo }}
               </div>

@@ -5,9 +5,9 @@
 .dialog-container {
   width: 100%;
   max-width: 100%;
-  background-color: #0b0f19;
+  background-color: var(--panel);
   border-radius: 12px;
-  color: #cbd5e1;
+  color: var(--muted);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   overflow: hidden;
 }
@@ -17,22 +17,22 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(90deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.4) 100%);
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-2);
 }
 
 .dialog-title {
   font-size: 1.15rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--txt);
   margin: 0;
   letter-spacing: -0.01em;
 }
 
 .btn-close-header {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #94a3b8;
+  border: 1px solid var(--line);
+  color: var(--muted);
   border-radius: 8px;
   width: 32px;
   height: 32px;
@@ -70,7 +70,7 @@
 .form-label {
   font-size: 0.7rem;
   font-weight: 700;
-  color: #94a3b8;
+  color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 6px;
@@ -78,11 +78,11 @@
 
 .full-width-input {
   width: 100%;
-  background: #111625;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 10px 14px;
-  color: #f8fafc;
+  color: var(--txt);
   font-size: 0.85rem;
   outline: none;
   box-sizing: border-box;
@@ -93,7 +93,7 @@
 .full-width-input:focus {
   border-color: #6366f1;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-  background: #161c2e;
+  background: #ffffff;
 }
 
 select.full-width-input {
@@ -107,14 +107,14 @@ select.full-width-input {
 }
 
 select.full-width-input optgroup {
-  background: #0b0f19;
+  background: var(--panel);
   color: #818cf8;
   font-weight: 700;
 }
 
 select.full-width-input option {
-  background: #111625;
-  color: #f8fafc;
+  background: #ffffff;
+  color: var(--txt);
   padding: 8px;
 }
 
@@ -124,10 +124,10 @@ textarea.full-width-input {
 }
 
 .form-section-banner {
-  background: linear-gradient(90deg, rgba(99, 102, 241, 0.18) 0%, rgba(15, 23, 42, 0.3) 100%);
-  border-left: 3px solid #6366f1;
-  padding: 8px 14px;
-  border-radius: 4px 8px 8px 4px;
+  background: rgba(91, 75, 214, 0.08);
+  border-left: 4px solid var(--violet);
+  padding: 10px 14px;
+  border-radius: 6px;
   margin-top: 18px;
   margin-bottom: 14px;
   display: flex;
@@ -136,9 +136,9 @@ textarea.full-width-input {
 }
 
 .form-section-banner-title {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 800;
-  color: #f8fafc;
+  color: var(--txt);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   display: flex;
@@ -150,21 +150,21 @@ textarea.full-width-input {
   font-size: 18px;
   width: 18px;
   height: 18px;
-  color: #818cf8;
+  color: var(--violet);
 }
 
 .dialog-actions-row {
-  background-color: #090d16;
+  background-color: var(--panel-2);
   padding: 16px 24px !important;
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--line);
   margin: 0 !important;
 }
 
 .BtnGuardarPlan {
-  background: #6366f1 !important;
+  background: linear-gradient(135deg, var(--violet) 0%, var(--violet-soft) 100%) !important;
   color: #ffffff !important;
   font-weight: 700 !important;
   font-size: 0.85rem !important;
@@ -172,18 +172,18 @@ textarea.full-width-input {
   border-radius: 8px !important;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 4px 14px rgba(91, 75, 214, 0.3);
 }
 
 .BtnGuardarPlan:hover {
-  background: #4f46e5 !important;
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(91, 75, 214, 0.45);
 }
 
 .BtnCancelarPlan {
-  background: transparent !important;
-  color: #cbd5e1 !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: #ffffff !important;
+  color: var(--txt) !important;
+  border: 1px solid var(--line) !important;
   font-weight: 600 !important;
   font-size: 0.85rem !important;
   padding: 10px 22px !important;
@@ -193,8 +193,8 @@ textarea.full-width-input {
 }
 
 .BtnCancelarPlan:hover {
-  background: rgba(255, 255, 255, 0.05) !important;
-  color: #ffffff !important;
+  background: var(--panel-2) !important;
+  border-color: var(--muted) !important;
 }
 
 @media (max-width: 900px) {

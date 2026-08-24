@@ -12,7 +12,7 @@
 /* Collapsible Banner */
 .banner-aviso-collapsible {
   background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line);
   border-left: 3px solid #6366f1;
   border-radius: 10px;
   padding: 10px 16px;
@@ -27,7 +27,7 @@
   align-items: center;
   gap: 10px;
   font-size: 0.82rem;
-  color: #cbd5e1;
+  color: var(--muted);
 }
 
 .banner-info-icon {
@@ -40,7 +40,7 @@
 .btn-close-banner {
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--muted);
   cursor: pointer;
   padding: 2px;
   display: flex;
@@ -49,7 +49,7 @@
 }
 
 .btn-close-banner:hover {
-  color: #f8fafc;
+  color: var(--txt);
   background: rgba(255, 255, 255, 0.1);
 }
 
@@ -69,8 +69,8 @@
 
 .indicadores-segment-tabs {
   display: inline-flex;
-  background: #151827;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 20px;
   padding: 4px;
   gap: 4px;
@@ -78,7 +78,7 @@
 
 .indicadores-tab-btn {
   background: transparent;
-  color: #94a3b8;
+  color: var(--muted);
   border-radius: 16px;
   padding: 8px 18px;
   font-size: 0.82rem;
@@ -98,8 +98,8 @@
 }
 
 .indicadores-tab-btn:hover {
-  color: #f8fafc;
-  background: rgba(255, 255, 255, 0.04);
+  color: var(--txt);
+  background: var(--panel-2);
 }
 
 .indicadores-tab-btn.active {
@@ -125,8 +125,8 @@
 
 .gauge-stat-card {
   position: relative;
-  background: #1a1a24;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: 16px 20px;
   display: flex;
@@ -170,7 +170,7 @@
   line-height: 1;
 }
 
-.text-white { color: #f8fafc; }
+.text-white { color: var(--txt); }
 .text-green { color: #3ecf8e; }
 .text-yellow { color: #f0b429; }
 .text-red   { color: #f0576b; }
@@ -184,14 +184,14 @@
 .gauge-title {
   font-size: 0.68rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--muted);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .gauge-sub {
   font-size: 0.76rem;
-  color: #cbd5e1;
+  color: var(--muted);
 }
 
 /* -------------------------------------------------------------------
@@ -203,8 +203,8 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 16px;
-  background: #151827;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 12px 20px;
 }
@@ -218,7 +218,7 @@
 .seccion-titulo {
   font-size: 1.05rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--txt);
   margin: 0;
 }
 
@@ -247,11 +247,11 @@
 
 .inline-search-input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 7px 12px 7px 34px;
-  color: #f1f5f9;
+  color: var(--txt);
   font-size: 0.78rem;
   font-family: 'Inter', sans-serif;
   outline: none;
@@ -270,7 +270,7 @@
   font-size: 16px !important;
   width: 16px !important;
   height: 16px !important;
-  color: #64748b;
+  color: var(--muted);
   pointer-events: none;
 }
 
@@ -306,15 +306,15 @@
    4. DATA VIZ TABLE & COMBINED VALUE / TARGET
    ------------------------------------------------------------------- */
 .table-container {
-  background: #1a1a24;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 14px;
   overflow: hidden;
 }
 
 .tabla th, .mat-mdc-header-cell {
-  color: #94a3b8 !important;
-  background: #151827 !important;
+  color: var(--muted) !important;
+  background: var(--panel-2) !important;
   font-size: 0.74rem !important;
   font-weight: 700 !important;
   letter-spacing: 0.05em !important;
@@ -323,7 +323,7 @@
 }
 
 .tabla td, .mat-mdc-cell {
-  color: #cbd5e1 !important;
+  color: var(--muted) !important;
   font-size: 0.82rem !important;
   padding: 12px 14px !important;
 }
@@ -335,11 +335,11 @@
 }
 
 .cat-cell {
-  color: #cbd5e1 !important;
+  color: var(--muted) !important;
 }
 
 .date-text {
-  color: #cbd5e1;
+  color: var(--muted);
 }
 
 /* Combined Value vs Target Box */
@@ -363,7 +363,7 @@
 
 .meta-label-sub {
   font-size: 0.7rem;
-  color: #64748b;
+  color: var(--muted);
 }
 
 /* Mini Horizontal Progress Bar */
@@ -489,7 +489,7 @@
   bottom: 0;
   width: 480px;
   max-width: 90vw;
-  background: #0f172a;
+  background: var(--panel-2);
   border-left: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: -10px 0 40px rgba(0, 0, 0, 0.6);
   z-index: 1001;
@@ -505,8 +505,8 @@
 
 .drawer-header {
   padding: 24px;
-  background: #151827;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -545,14 +545,14 @@
 .drawer-doc-name {
   font-size: 1rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--txt);
   margin: 2px 0 0 0;
 }
 
 .drawer-close-btn {
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--muted);
   cursor: pointer;
   padding: 4px;
   border-radius: 6px;
@@ -561,7 +561,7 @@
 }
 
 .drawer-close-btn:hover {
-  color: #f8fafc;
+  color: var(--txt);
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -575,8 +575,8 @@
 }
 
 .drawer-trend-preview {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -593,7 +593,7 @@
 .trend-title {
   font-size: 0.82rem;
   font-weight: 700;
-  color: #cbd5e1;
+  color: var(--muted);
 }
 
 .trend-badge-current {
@@ -618,7 +618,7 @@
 .form-section-title {
   font-size: 0.84rem;
   font-weight: 700;
-  color: #cbd5e1;
+  color: var(--muted);
   margin: 0;
 }
 
@@ -631,17 +631,17 @@
 .drawer-label {
   font-size: 0.72rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--muted);
   text-transform: uppercase;
 }
 
 .drawer-input, .drawer-textarea {
   width: 100%;
-  background: #1e293b;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 9px 12px;
-  color: #f8fafc;
+  color: var(--txt);
   font-size: 0.84rem;
   font-family: 'Inter', sans-serif;
   outline: none;

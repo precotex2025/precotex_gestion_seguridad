@@ -281,102 +281,102 @@ export class AccionesCorrectivasComponent implements OnInit {
 
     let procOptionsHtml = '';
     Object.keys(this.PROCESOS_GROUPS).forEach(grp => {
-      procOptionsHtml += `<optgroup label="${grp}" style="background:#111119;color:#818cf8;">`;
+      procOptionsHtml += `<optgroup label="${grp}">`;
       this.PROCESOS_GROUPS[grp].forEach(p => {
         const sel = p === item.proceso ? 'selected' : '';
-        procOptionsHtml += `<option value="${p}" ${sel} style="background:#1a1a24;color:#fff;">${p}</option>`;
+        procOptionsHtml += `<option value="${p}" ${sel}>${p}</option>`;
       });
       procOptionsHtml += `</optgroup>`;
     });
 
     const modalHtml = `
-      <div style="text-align: left; font-size: 13px; color: #cbd5e1; line-height: 1.6;">
+      <div style="text-align: left; font-size: 13px; color: #1e2545; line-height: 1.6; font-family: var(--sn-font-family);">
         
         <!-- SECCIÓN 1: IDENTIFICACIÓN DE LA NC -->
-        <h4 style="color: #818cf8; border-bottom: 1px solid rgba(129, 140, 248, 0.25); padding-bottom: 6px; margin-top: 0; margin-bottom: 12px; font-size: 13px; font-weight: 700;">
+        <h4 style="color: #5b4bd6; border-bottom: 2px solid rgba(91, 75, 214, 0.15); padding-bottom: 6px; margin-top: 0; margin-bottom: 12px; font-size: 13px; font-weight: 700;">
           📋 1. IDENTIFICACIÓN DE LA NO CONFORMIDAD
         </h4>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
           <div>
-            <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Código NC</label>
-            <input type="text" id="swal-nc-codigo" value="${item.codigo}" readonly style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #60a5fa; font-weight: 700;">
+            <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Código NC</label>
+            <input type="text" id="swal-nc-codigo" value="${item.codigo}" readonly style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #f4f6fc; color: #5b4bd6; font-weight: 700;">
           </div>
           <div>
-            <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Tipo de NC (*)</label>
-            <select id="swal-nc-tipo" style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">
-              <option value="Interna" ${item.tipo === 'Interna' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">🔵 Interna</option>
-              <option value="Externa" ${item.tipo === 'Externa' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">🟣 Externa</option>
+            <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Tipo de NC (*)</label>
+            <select id="swal-nc-tipo" style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #ffffff; color: #1e2545; outline: none; cursor: pointer;">
+              <option value="Interna" ${item.tipo === 'Interna' ? 'selected' : ''}>🔵 Interna</option>
+              <option value="Externa" ${item.tipo === 'Externa' ? 'selected' : ''}>🟣 Externa</option>
             </select>
           </div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
           <div>
-            <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Origen de la NC (*)</label>
-            <select id="swal-nc-origen" style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">
-              <option value="Auditoría interna" ${item.origen === 'Auditoría interna' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">Auditoría interna</option>
-              <option value="Auditoría externa" ${item.origen === 'Auditoría externa' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">Auditoría externa</option>
-              <option value="Reclamo de cliente" ${item.origen === 'Reclamo de cliente' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">Reclamo de cliente</option>
-              <option value="Incidente" ${item.origen === 'Incidente' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">Incidente</option>
-              <option value="Hallazgo de proceso" ${item.origen === 'Hallazgo de proceso' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">Hallazgo de proceso</option>
-              <option value="Revisión por dirección" ${item.origen === 'Revisión por dirección' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">Revisión por dirección</option>
-              <option value="Otro" ${item.origen === 'Otro' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">Otro</option>
+            <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Origen de la NC (*)</label>
+            <select id="swal-nc-origen" style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #ffffff; color: #1e2545; outline: none; cursor: pointer;">
+              <option value="Auditoría interna" ${item.origen === 'Auditoría interna' ? 'selected' : ''}>Auditoría interna</option>
+              <option value="Auditoría externa" ${item.origen === 'Auditoría externa' ? 'selected' : ''}>Auditoría externa</option>
+              <option value="Reclamo de cliente" ${item.origen === 'Reclamo de cliente' ? 'selected' : ''}>Reclamo de cliente</option>
+              <option value="Incidente" ${item.origen === 'Incidente' ? 'selected' : ''}>Incidente</option>
+              <option value="Hallazgo de proceso" ${item.origen === 'Hallazgo de proceso' ? 'selected' : ''}>Hallazgo de proceso</option>
+              <option value="Revisión por dirección" ${item.origen === 'Revisión por dirección' ? 'selected' : ''}>Revisión por dirección</option>
+              <option value="Otro" ${item.origen === 'Otro' ? 'selected' : ''}>Otro</option>
             </select>
           </div>
           <div>
-            <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Proceso Responsable (*)</label>
-            <select id="swal-nc-proceso" style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">
+            <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Proceso Responsable (*)</label>
+            <select id="swal-nc-proceso" style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #ffffff; color: #1e2545; outline: none; cursor: pointer;">
               ${procOptionsHtml}
             </select>
           </div>
         </div>
 
         <!-- SECCIÓN 2: DESCRIPCIÓN DEL HALLAZGO -->
-        <h4 style="color: #818cf8; border-bottom: 1px solid rgba(129, 140, 248, 0.25); padding-bottom: 6px; margin-top: 14px; margin-bottom: 12px; font-size: 13px; font-weight: 700;">
+        <h4 style="color: #5b4bd6; border-bottom: 2px solid rgba(91, 75, 214, 0.15); padding-bottom: 6px; margin-top: 14px; margin-bottom: 12px; font-size: 13px; font-weight: 700;">
           🔍 2. DESCRIPCIÓN DEL HALLAZGO Y REQUISITO
         </h4>
 
         <div style="margin-bottom: 12px;">
-          <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Descripción del Hallazgo (Qué se detectó y dónde) (*)</label>
-          <input type="text" id="swal-nc-hallazgo" value="${item.hallazgo || ''}" placeholder="Ej. Reproceso por costura fuera de especificación en línea 3" style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">
+          <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Descripción del Hallazgo (Qué se detectó y dónde) (*)</label>
+          <input type="text" id="swal-nc-hallazgo" value="${item.hallazgo || ''}" placeholder="Ej. Reproceso por costura fuera de especificación en línea 3" style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #ffffff; color: #1e2545;">
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
           <div>
-            <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Requisito Incumplido (*)</label>
-            <input type="text" id="swal-nc-requisito" value="${item.requisito || ''}" placeholder="Ej. ISO 9001 8.5.1 / procedimiento X" style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">
+            <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Requisito Incumplido (*)</label>
+            <input type="text" id="swal-nc-requisito" value="${item.requisito || ''}" placeholder="Ej. ISO 9001 8.5.1 / procedimiento X" style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #ffffff; color: #1e2545;">
           </div>
           <div>
-            <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Fecha de Detección (*)</label>
-            <input type="date" id="swal-nc-deteccion" value="${item.deteccion}" style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">
+            <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Fecha de Detección (*)</label>
+            <input type="date" id="swal-nc-deteccion" value="${item.deteccion}" style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #ffffff; color: #1e2545; cursor: pointer;">
           </div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
           <div>
-            <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Responsable (Quién reporta)</label>
-            <input type="text" id="swal-nc-responsable" value="${item.responsable || ''}" placeholder="Nombre del responsable" style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">
+            <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Responsable (Quién reporta)</label>
+            <input type="text" id="swal-nc-responsable" value="${item.responsable || ''}" placeholder="Nombre del responsable" style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #ffffff; color: #1e2545;">
           </div>
           <div>
-            <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Estado de la NC (*)</label>
-            <select id="swal-nc-estado" style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">
-              <option value="Abierta" ${item.estado === 'Abierta' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">🟡 Abierta</option>
-              <option value="En proceso" ${item.estado === 'En proceso' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">🔵 En proceso</option>
-              <option value="Cerrada" ${item.estado === 'Cerrada' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">🟢 Cerrada</option>
-              <option value="Fuera de plazo" ${item.estado === 'Fuera de plazo' ? 'selected' : ''} style="background:#1a1a24;color:#fff;">🔴 Fuera de plazo</option>
+            <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Estado de la NC (*)</label>
+            <select id="swal-nc-estado" style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #ffffff; color: #1e2545; outline: none; cursor: pointer;">
+              <option value="Abierta" ${item.estado === 'Abierta' ? 'selected' : ''}>🟡 Abierta</option>
+              <option value="En proceso" ${item.estado === 'En proceso' ? 'selected' : ''}>🔵 En proceso</option>
+              <option value="Cerrada" ${item.estado === 'Cerrada' ? 'selected' : ''}>🟢 Cerrada</option>
+              <option value="Fuera de plazo" ${item.estado === 'Fuera de plazo' ? 'selected' : ''}>🔴 Fuera de plazo</option>
             </select>
           </div>
         </div>
 
         <div style="margin-bottom: 12px;">
-          <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Archivo de Evidencia / Reporte</label>
-          <input type="file" id="swal-nc-evidencia" style="width: 100%; padding: 6px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 11px; background: #111119; color: #cbd5e1;">
-          ${item.evidencia ? `<small style="color: #60a5fa; display: block; margin-top: 4px;">📎 Archivo adjunto: <strong>${item.evidencia}</strong></small>` : ''}
+          <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Archivo de Evidencia / Reporte</label>
+          <input type="file" id="swal-nc-evidencia" style="width: 100%; padding: 8px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 12px; background: #f4f6fc; color: #1e2545;">
+          ${item.evidencia ? `<small style="color: #5b4bd6; display: block; margin-top: 4px; font-weight: 600;">📎 Archivo adjunto: <strong>${item.evidencia}</strong></small>` : ''}
         </div>
 
         <div>
-          <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Detalle / Causa Raíz Preliminar</label>
-          <textarea id="swal-nc-desc" rows="3" placeholder="Contexto, evidencia objetiva o causa raíz preliminar..." style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">${item.desc || ''}</textarea>
+          <label style="font-size: 11px; font-weight: 700; color: #1e2545; text-transform: uppercase; display: block; margin-bottom: 4px;">Detalle / Causa Raíz Preliminar</label>
+          <textarea id="swal-nc-desc" rows="3" placeholder="Contexto, evidencia objetiva o causa raíz preliminar..." style="width: 100%; padding: 9px 12px; border: 1px solid #e2e7f1; border-radius: 8px; font-size: 13px; background: #ffffff; color: #1e2545; resize: vertical;">${item.desc || ''}</textarea>
         </div>
 
       </div>
@@ -386,13 +386,13 @@ export class AccionesCorrectivasComponent implements OnInit {
       title: isEdit ? '✏️ Editar No Conformidad Declarada' : '🚨 Declarar Nueva No Conformidad',
       html: modalHtml,
       width: '720px',
-      background: '#1a1a24',
-      color: '#f8fafc',
+      background: '#ffffff',
+      color: '#1e2545',
       showCancelButton: true,
       confirmButtonText: isEdit ? 'Guardar Cambios' : 'Declarar NC',
       cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#6366f1',
-      cancelButtonColor: '#334155',
+      confirmButtonColor: '#5b4bd6',
+      cancelButtonColor: '#94a3b8',
       preConfirm: () => {
         const codigo = (document.getElementById('swal-nc-codigo') as HTMLInputElement)?.value;
         const tipo = (document.getElementById('swal-nc-tipo') as HTMLSelectElement)?.value;
@@ -461,45 +461,45 @@ export class AccionesCorrectivasComponent implements OnInit {
   onVerNcDeclarada(item: any): void {
     Swal.fire({
       title: `📄 No Conformidad: ${item.codigo}`,
-      background: '#1a1a24',
-      color: '#f8fafc',
+      background: '#ffffff',
+      color: '#1e2545',
       width: '620px',
       html: `
-        <div style="text-align: left; font-size: 13px; color: #cbd5e1; line-height: 1.6;">
-          <div style="background: #111119; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 14px; margin-bottom: 12px;">
-            <div style="font-weight: 700; color: #818cf8; font-size: 15px; margin-bottom: 6px;">${item.codigo} — ${item.tipo} (${item.origen})</div>
-            <div><strong style="color:#94a3b8;">Proceso Responsable:</strong> ${item.proceso}</div>
-            <div><strong style="color:#94a3b8;">Fecha Detección:</strong> ${this.formatFechaDMY(item.deteccion)}</div>
-            <div><strong style="color:#94a3b8;">Responsable de Reporte:</strong> ${item.responsable}</div>
-            <div><strong style="color:#94a3b8;">Estado Actual:</strong> <span style="color:#f59e0b; font-weight:700;">${item.estado}</span></div>
+        <div style="text-align: left; font-size: 13px; color: #1e2545; line-height: 1.6; font-family: var(--sn-font-family);">
+          <div style="background: #f4f6fc; border: 1px solid #e2e7f1; border-radius: 10px; padding: 14px; margin-bottom: 12px;">
+            <div style="font-weight: 700; color: #5b4bd6; font-size: 15px; margin-bottom: 6px;">${item.codigo} — ${item.tipo} (${item.origen})</div>
+            <div><strong style="color:#5a6178;">Proceso Responsable:</strong> ${item.proceso}</div>
+            <div><strong style="color:#5a6178;">Fecha Detección:</strong> ${this.formatFechaDMY(item.deteccion)}</div>
+            <div><strong style="color:#5a6178;">Responsable de Reporte:</strong> ${item.responsable}</div>
+            <div><strong style="color:#5a6178;">Estado Actual:</strong> <span style="color:#b8790a; font-weight:700;">${item.estado}</span></div>
           </div>
 
           <div style="margin-bottom: 12px;">
-            <strong style="color:#818cf8;">Hallazgo Registrado:</strong>
-            <p style="background: #111119; border: 1px solid rgba(255, 255, 255, 0.1); color: #f8fafc; padding: 10px 12px; border-radius: 6px; margin: 4px 0;">${item.hallazgo}</p>
+            <strong style="color:#5b4bd6; font-size: 11px; text-transform: uppercase;">Hallazgo Registrado:</strong>
+            <p style="background: #ffffff; border: 1px solid #e2e7f1; color: #1e2545; padding: 10px 12px; border-radius: 8px; margin: 4px 0;">${item.hallazgo}</p>
           </div>
 
           <div style="margin-bottom: 12px;">
-            <strong style="color:#94a3b8;">Requisito Incumplido:</strong>
-            <div style="color: #f87171; font-weight: 600; margin-top: 2px;">${item.requisito}</div>
+            <strong style="color:#5a6178; font-size: 11px; text-transform: uppercase;">Requisito Incumplido:</strong>
+            <div style="color: #d23a54; font-weight: 700; margin-top: 2px;">${item.requisito}</div>
           </div>
 
           ${item.desc ? `
             <div style="margin-bottom: 12px;">
-              <strong style="color:#818cf8;">Causa Raíz Preliminar / Detalle:</strong>
-              <p style="background: #111119; border: 1px solid rgba(255, 255, 255, 0.1); color: #cbd5e1; padding: 8px 12px; border-radius: 6px; margin: 4px 0;">${item.desc}</p>
+              <strong style="color:#5b4bd6; font-size: 11px; text-transform: uppercase;">Causa Raíz Preliminar / Detalle:</strong>
+              <p style="background: #ffffff; border: 1px solid #e2e7f1; color: #1e2545; padding: 8px 12px; border-radius: 8px; margin: 4px 0;">${item.desc}</p>
             </div>
           ` : ''}
 
           ${item.evidencia ? `
-            <div style="margin-top: 12px; text-align: center; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); padding: 10px; border-radius: 6px; color: #a5b4fc;">
+            <div style="margin-top: 12px; text-align: center; background: rgba(91, 75, 214, 0.08); border: 1px solid rgba(91, 75, 214, 0.2); padding: 10px; border-radius: 8px; color: #5b4bd6; font-weight: 600;">
               📎 Evidencia adjunta: <strong>${item.evidencia}</strong>
             </div>
           ` : ''}
         </div>
       `,
       confirmButtonText: 'Cerrar',
-      confirmButtonColor: '#6366f1'
+      confirmButtonColor: '#5b4bd6'
     });
   }
 
@@ -508,13 +508,13 @@ export class AccionesCorrectivasComponent implements OnInit {
       title: '¿Eliminar No Conformidad declarada?',
       text: `Se eliminará el registro ${item.codigo}`,
       icon: 'warning',
-      background: '#1a1a24',
-      color: '#f8fafc',
+      background: '#ffffff',
+      color: '#1e2545',
       showCancelButton: true,
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#334155'
+      confirmButtonColor: '#d23a54',
+      cancelButtonColor: '#94a3b8'
     }).then((res) => {
       if (res.isConfirmed) {
         this.declaracionList = this.declaracionList.filter(d => d.codigo !== item.codigo);

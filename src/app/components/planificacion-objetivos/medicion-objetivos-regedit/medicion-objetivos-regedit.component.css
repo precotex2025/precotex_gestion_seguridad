@@ -5,7 +5,7 @@
 .dialog-container {
   width: 100%;
   max-width: 100%;
-  background-color: #0b0f19;
+  background-color: var(--panel);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -16,7 +16,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--line);
 }
 
 .dialog-title {
@@ -70,7 +70,7 @@
 .form-label {
   font-size: 0.68rem;
   font-weight: 800;
-  color: rgba(148, 163, 184, 0.6);
+  color: var(--txt);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-bottom: 6px;
@@ -78,8 +78,8 @@
 
 .full-width-input {
   width: 100%;
-  background: #1e293b;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 10px 12px;
   color: #ffffff;
@@ -100,12 +100,12 @@ select.full-width-input {
 }
 
 select.full-width-input optgroup {
-  background: #0b0f19;
+  background: var(--panel);
   color: #7c6cf0;
 }
 
 select.full-width-input option {
-  background: #1e293b;
+  background: var(--panel);
   color: #ffffff;
 }
 
@@ -115,7 +115,7 @@ select.full-width-input option {
 }
 
 .dialog-actions-row {
-  background-color: #090d16;
+  background-color: transparent;
   padding: 16px 24px !important;
   display: flex;
   justify-content: flex-end;
@@ -143,8 +143,8 @@ select.full-width-input option {
 
 .BtnCancelarPlan {
   background: transparent !important;
-  color: #cbd5e1 !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: var(--muted) !important;
+  border: 1px solid var(--line) !important;
   font-weight: 600 !important;
   font-size: 0.8rem !important;
   padding: 8px 18px !important;

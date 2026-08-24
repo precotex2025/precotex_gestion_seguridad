@@ -1,90 +1,88 @@
-<form class="container-cuerpo" [formGroup]="formulario" #formDirective="ngForm">
-     <mat-card class="example-card" appearance="outlined"></mat-card>
-     <mat-card-header>
-        <div mat-card-avatar class="example-header-image"></div>
-        <mat-card-title>{{data.Title}} </mat-card-title>
-        <!-- <mat-card-subtitle>Fecha Emisión: {{ data.Datos.fecha_Emisor | date: 'dd/MM/yyyy HH:mm' }}</mat-card-subtitle>  -->
-    </mat-card-header>  
-    
-    <mat-card-content>
+<div class="dialog-wrapper">
+  
+  <header class="dialog-header">
+    <div class="dialog-icon-container">
+      <mat-icon>store</mat-icon>
+    </div>
+    <div class="dialog-header-text">
+      <h2 class="header-title">{{ data.Title ? data.Title.replace('::. ', '').replace(' .::', '') : 'Registro de Sede' }}</h2>
+      <p class="dialog-subtitle">Mantenimiento y configuración de Sedes Precotex</p>
+    </div>
+    <span class="flex-spacer"></span>
+    <button type="button" class="btn-close-header" (click)="onClose()" title="Cerrar">
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
 
-        <div class="row" *ngIf="data?.Accion !== 'I'">
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Codigo</mat-label>
-                <input matInput formControlName="ctrol_codigo">
-            </mat-form-field>              
-        </div>       
-         
-        <div class="row">
+  <form class="dialog-form" [formGroup]="formulario" #formDirective="ngForm">
+    <div class="dialog-content">
+      
+      <div class="row" *ngIf="data?.Accion !== 'I'">
+        <mat-form-field appearance="outline" style="width: 100%;">
+          <mat-label>Código</mat-label>
+          <input matInput formControlName="ctrol_codigo">
+        </mat-form-field>              
+      </div>       
+       
+      <div class="row">
+        <mat-form-field appearance="outline" style="width: 100%;">
+          <mat-label>Organización (*)</mat-label>
+          <input matInput formControlName="ctrol_organizacion">
+        </mat-form-field>            
+      </div>        
 
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Organización (*)</mat-label>
-                <input matInput formControlName="ctrol_organizacion" >
-            </mat-form-field>            
+      <div class="row">
+        <mat-form-field appearance="outline" style="width: 100%;">
+          <mat-label>Denominación (*)</mat-label>
+          <input matInput formControlName="ctrol_denominacion" placeholder="Ingrese denominación">
+        </mat-form-field>                     
+      </div>      
 
-        </div>        
+      <div class="row">
+        <mat-form-field appearance="outline" style="width: 100%;">
+          <mat-label>Acrónimo</mat-label>
+          <input matInput formControlName="ctrol_acronimo" placeholder="Ingrese acrónimo">
+        </mat-form-field>   
+      </div>
 
-        <div class="row">
+      <div class="row">
+        <mat-form-field appearance="outline" style="width: 100%;">
+          <mat-label>Dirección</mat-label>
+          <input matInput formControlName="ctrol_direccion" placeholder="Ingrese dirección">
+        </mat-form-field>                    
+      </div>   
 
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Denominación (*)</mat-label>
-                <input matInput formControlName="ctrol_denominacion" placeholder="Ingrese denominacion" >
-            </mat-form-field>                     
-
-        </div>      
-
-        <div class="row">
-
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Acrónimo</mat-label>
-                <input matInput formControlName="ctrol_acronimo" placeholder="Ingrese acrónimo" >
-            </mat-form-field>   
-
-        </div>
-
-        <div class="row">
-
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Dirección</mat-label>
-                <input matInput formControlName="ctrol_direccion" placeholder="Ingrese dirección" >
-            </mat-form-field>                    
-
-        </div>   
-
-        <div class="row">
-
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Localidad</mat-label>
-                <input matInput formControlName="ctrol_localidad" placeholder="Ingrese localidad" >
-            </mat-form-field>         
-            
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>Provincia</mat-label>
-                <input matInput formControlName="ctrol_provincia" placeholder="Ingrese provincia" >
-            </mat-form-field>                
-
-        </div>      
+      <div class="grid-2-cols" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <mat-form-field appearance="outline">
+          <mat-label>Localidad</mat-label>
+          <input matInput formControlName="ctrol_localidad" placeholder="Ingrese localidad">
+        </mat-form-field>         
         
-        <div class="row">
+        <mat-form-field appearance="outline">
+          <mat-label>Provincia</mat-label>
+          <input matInput formControlName="ctrol_provincia" placeholder="Ingrese provincia">
+        </mat-form-field>                
+      </div>      
+      
+      <div class="row">
+        <mat-form-field appearance="outline" style="width: 100%;">
+          <mat-label>País</mat-label>
+          <input matInput formControlName="ctrol_pais" placeholder="Ingrese país">
+        </mat-form-field>              
+      </div> 
 
-            <mat-form-field appearance="outline" style="flex: 1;">
-                <mat-label>País</mat-label>
-                <input matInput formControlName="ctrol_pais" placeholder="Ingrese pais" >
-            </mat-form-field>              
+    </div>
 
-        </div> 
+    <!-- Acciones / Botones (Siempre visibles al pie) -->
+    <div class="button-row"> 
+      <button type="button" class="btn-primary" (click)="onSave()"> 
+        <mat-icon style="font-size: 18px; width: 18px; height: 18px;">save</mat-icon>
+        <span>Grabar</span>
+      </button>
 
-    </mat-card-content>
-</form>
-
-<div class="button-row"> 
-    <!-- [disabled]="data.Datos.cod_Estado_Memo !== '04' && bEdita" -->
-    <button mat-flat-button color="primary" class="form-button" (click)="onSave()" > 
-        <mat-icon>save</mat-icon> Grabar
-    </button>
-
-    <button mat-flat-button color="warn" mat-dialog-close class="form-button" (click)="onClose()" >
-        <mat-icon>close</mat-icon> Salir
-    </button>
-    
+      <button type="button" class="btn-secondary" mat-dialog-close (click)="onClose()">
+        <span>Cerrar</span>
+      </button>
+    </div>  
+  </form>
 </div>  

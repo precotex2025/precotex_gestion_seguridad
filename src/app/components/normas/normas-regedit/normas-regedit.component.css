@@ -3,37 +3,94 @@
    =================================================================== */
 
 .dialog-wrapper {
-  padding: 24px 28px;
-  background: #111827; /* Dark background matching Image 2 */
-  border-radius: 12px;
+  padding: 0;
+  background: #ffffff;
+  border-radius: 16px;
   font-family: 'Inter', sans-serif;
-  color: #f1f5f9;
+  color: var(--txt);
+  display: flex;
+  flex-direction: column;
+  max-height: 88vh;
+  overflow: hidden;
 }
 
 /* --- Header --- */
 .dialog-header {
-  margin-bottom: 24px;
+  padding: 16px 24px;
+  background-color: var(--panel-2);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
 .header-title {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--txt);
   margin: 0;
   letter-spacing: -0.01em;
+}
+
+.dialog-subtitle {
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin: 2px 0 0;
+}
+
+.dialog-icon-container {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(91, 75, 214, 0.1);
+  color: var(--violet);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-spacer {
+  flex: 1 1 auto;
+}
+
+.btn-close-header {
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-close-header:hover {
+  color: #ef4444;
+  background: #fee2e2;
+  border-color: #fca5a5;
 }
 
 /* --- Form Fields --- */
 .dialog-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .dialog-content {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .form-row {
@@ -58,9 +115,9 @@
 }
 
 .form-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: rgba(148, 163, 184, 0.6); /* Muted slate gray */
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--txt);
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
@@ -70,13 +127,13 @@
 .form-select, 
 .form-input-date, 
 .form-textarea {
-  background: #1e293b;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #ffffff;
+  border: 1px solid var(--line);
   border-radius: 8px;
-  color: #ffffff;
-  font-size: 0.85rem;
-  font-family: 'Inter', sans-serif;
-  height: 42px; /* Fix heights so they match perfectly! */
+  color: var(--txt);
+  font-size: 0.86rem;
+  font-family: inherit;
+  height: 42px;
   padding: 0 14px;
   outline: none;
   width: 100%;
@@ -88,14 +145,13 @@
 .form-select:focus, 
 .form-input-date:focus, 
 .form-textarea:focus {
-  border-color: #6366f1;
-  background: #1e293b;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+  border-color: var(--violet);
+  box-shadow: 0 0 0 3px rgba(91, 75, 214, 0.12);
 }
 
 .form-input::placeholder, 
 .form-textarea::placeholder {
-  color: rgba(148, 163, 184, 0.35);
+  color: var(--muted);
 }
 
 .form-select {
@@ -125,49 +181,51 @@
   justify-content: flex-end;
   align-items: center;
   gap: 12px;
-  margin-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  padding-top: 20px;
+  background: var(--panel-2);
+  border-top: 1px solid var(--line);
+  padding: 16px 24px;
+  flex-shrink: 0;
+  margin: 0;
 }
 
-.btn-cancelar {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+.btn-secondary {
+  background: #ffffff;
+  border: 1px solid var(--line);
   border-radius: 8px;
-  color: #94a3b8;
-  height: 38px;
+  color: var(--txt);
+  height: 40px;
   padding: 0 20px;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.btn-cancelar:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
+.btn-secondary:hover {
+  background: var(--panel-2);
+  border-color: var(--muted);
 }
 
-.btn-guardar {
-  background: #6366f1;
+.btn-primary {
+  background: linear-gradient(135deg, var(--violet) 0%, var(--violet-soft) 100%);
   color: #ffffff;
   border: none;
   border-radius: 8px;
-  height: 38px;
+  height: 40px;
   padding: 0 24px;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: 0.85rem;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(91, 75, 214, 0.3);
   transition: all 0.2s ease;
 }
 
-.btn-guardar:hover {
-  background: #4f46e5;
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(91, 75, 214, 0.45);
 }
 
 /* --- File Upload Picker --- */
@@ -175,50 +233,37 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px dashed rgba(255, 255, 255, 0.18);
+  background: #f4f6fc;
+  border: 1.5px dashed rgba(91, 75, 214, 0.3);
   border-radius: 8px;
-  padding: 8px 12px;
-  transition: all 0.25s ease;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.file-upload-picker:hover {
-  border-color: #818cf8;
-  background: rgba(99, 102, 241, 0.08);
+  padding: 10px 14px;
 }
 
 .btn-picker {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%);
-  color: #a78bfa;
-  border: 1px solid rgba(167, 139, 250, 0.35);
-  border-radius: 6px;
-  padding: 6px 14px;
-  font-size: 0.8rem;
-  font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  color: var(--violet);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .btn-picker:hover {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.4) 0%, rgba(124, 58, 237, 0.4) 100%);
-  color: #ffffff;
-  border-color: rgba(167, 139, 250, 0.6);
-  transform: translateY(-1px);
+  background: rgba(91, 75, 214, 0.08);
 }
 
 .file-name-tag {
-  color: #34d399;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  font-family: 'JetBrains Mono', monospace;
-  background: rgba(16, 185, 129, 0.12);
+  color: var(--violet);
+  background: rgba(91, 75, 214, 0.08);
   padding: 4px 10px;
   border-radius: 4px;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  word-break: break-all;
+  border: 1px solid rgba(91, 75, 214, 0.2);
 }

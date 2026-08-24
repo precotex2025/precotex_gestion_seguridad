@@ -290,27 +290,30 @@ export class AyudaComponent implements OnInit {
 
     Swal.fire({
       title: '📁 Subir Documento de Ayuda / Manual (CDA-01)',
-      background: '#1a1a24',
-      color: '#f8fafc',
+      background: '#ffffff',
+      color: '#1e2545',
       width: '580px',
+      customClass: {
+        popup: 'shadow-premium'
+      },
       html: `
-        <div style="text-align: left; font-size: 13px; color: #cbd5e1; display: flex; flex-direction: column; gap: 12px;">
+        <div style="text-align: left; font-size: 13px; color: #1e2545; display: flex; flex-direction: column; gap: 12px; font-family: var(--sn-font-family);">
           
           <!-- Seleccionar Archivo -->
           <div>
-            <label style="font-weight: 700; color: #818cf8; font-size: 12px; display: block; margin-bottom: 4px;">
+            <label style="font-weight: 700; color: #1e2545; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px;">
               1. Seleccionar Archivo (PDF, Word, Excel) (*)
             </label>
             <input type="file" id="swal-manual-file" accept=".pdf,.doc,.docx,.xls,.xlsx"
-                   style="width: 100%; padding: 8px; background: #111119; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #f8fafc; font-size: 12px;">
+                   style="width: 100%; padding: 8px 12px; background: #f4f6fc; border: 1px solid #e2e7f1; border-radius: 8px; color: #1e2545; font-size: 12px;">
           </div>
 
           <!-- Tipo de Documento (DESPLEGABLE CDA-01) -->
           <div>
-            <label style="font-weight: 700; color: #38bdf8; font-size: 12px; display: block; margin-bottom: 4px;">
+            <label style="font-weight: 700; color: #1e2545; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px;">
               2. Tipo de Documento (*)
             </label>
-            <select id="swal-manual-tipo" style="width: 100%; padding: 8px 12px; background: #111119; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #f8fafc; font-size: 12px; outline: none; cursor: pointer;">
+            <select id="swal-manual-tipo" style="width: 100%; padding: 9px 12px; background: #ffffff; border: 1px solid #e2e7f1; border-radius: 8px; color: #1e2545; font-size: 13px; outline: none; cursor: pointer;">
               <option value="Manual de usuario" selected>Manual de usuario</option>
               <option value="Guías rápidas">Guías rápidas</option>
               <option value="Preguntas frecuentes">Preguntas frecuentes</option>
@@ -320,38 +323,38 @@ export class AyudaComponent implements OnInit {
 
           <!-- Título / Nombre -->
           <div>
-            <label style="font-weight: 700; color: #f8fafc; font-size: 12px; display: block; margin-bottom: 4px;">
+            <label style="font-weight: 700; color: #1e2545; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px;">
               3. Título del Documento / Manual (*)
             </label>
             <input type="text" id="swal-manual-titulo" placeholder="Ej: Manual del Sistema de Gestión de Seguridad ISO 45001"
-                   style="width: 100%; padding: 8px 12px; background: #111119; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #f8fafc; font-size: 12px;">
+                   style="width: 100%; padding: 9px 12px; background: #ffffff; border: 1px solid #e2e7f1; border-radius: 8px; color: #1e2545; font-size: 13px;">
           </div>
 
           <!-- Fecha de Vigencia (FECHA VIGENCIA CDA-01) -->
           <div>
-            <label style="font-weight: 700; color: #34d399; font-size: 12px; display: block; margin-bottom: 4px;">
+            <label style="font-weight: 700; color: #1e2545; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px;">
               4. Fecha de Vigencia (*)
             </label>
             <input type="date" id="swal-manual-vigencia" value="${dateVigenciaDefault}"
-                   style="width: 100%; padding: 10px 12px; background: #1e2436; border: 1.5px solid #38bdf8; border-radius: 8px; color: #ffffff; font-weight: 700; font-size: 14px; color-scheme: dark; cursor: pointer;">
+                   style="width: 100%; padding: 9px 12px; background: #ffffff; border: 1px solid #e2e7f1; border-radius: 8px; color: #1e2545; font-weight: 600; font-size: 13px; cursor: pointer;">
           </div>
 
           <!-- Descripción / Resumen -->
           <div>
-            <label style="font-weight: 700; color: #94a3b8; font-size: 12px; display: block; margin-bottom: 4px;">
+            <label style="font-weight: 700; color: #5a6178; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px;">
               5. Descripción o Resumen (Opcional)
             </label>
             <textarea id="swal-manual-desc" rows="2" placeholder="Breve resumen del contenido y alcance..."
-                      style="width: 100%; padding: 8px 12px; background: #111119; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #f8fafc; font-size: 12px; resize: vertical;"></textarea>
+                      style="width: 100%; padding: 9px 12px; background: #ffffff; border: 1px solid #e2e7f1; border-radius: 8px; color: #1e2545; font-size: 13px; resize: vertical;"></textarea>
           </div>
 
           <!-- Autor / Área -->
           <div>
-            <label style="font-weight: 700; color: #94a3b8; font-size: 12px; display: block; margin-bottom: 4px;">
+            <label style="font-weight: 700; color: #5a6178; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px;">
               6. Área / Autor Responsable
             </label>
             <input type="text" id="swal-manual-autor" value="Organización & Métodos"
-                   style="width: 100%; padding: 8px 12px; background: #111119; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #f8fafc; font-size: 12px;">
+                   style="width: 100%; padding: 9px 12px; background: #ffffff; border: 1px solid #e2e7f1; border-radius: 8px; color: #1e2545; font-size: 13px;">
           </div>
 
         </div>
@@ -359,8 +362,8 @@ export class AyudaComponent implements OnInit {
       showCancelButton: true,
       confirmButtonText: 'Subir Documento',
       cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#7c6cf0',
-      cancelButtonColor: '#334155',
+      confirmButtonColor: '#5b4bd6',
+      cancelButtonColor: '#94a3b8',
       didOpen: () => {
         const fileInput = document.getElementById('swal-manual-file') as HTMLInputElement;
         const titleInput = document.getElementById('swal-manual-titulo') as HTMLInputElement;
@@ -520,27 +523,27 @@ export class AyudaComponent implements OnInit {
 
   onGenerarPlanCapacitacion(): void {
     const htmlStats = `
-      <div style="text-align: left; font-size: 13px; color: #cbd5e1; line-height: 1.6;">
-        <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); padding: 10px 14px; border-radius: 8px; margin-bottom: 12px;">
-          <strong style="color: #38bdf8; font-size: 14px;">📊 Reporte de Consultas Recurrentes & Capacitaciones Sugeridas (CDA-04)</strong>
-          <p style="margin: 4px 0 0 0; font-size: 12px; color: #94a3b8;">Estadísticas consolidadas para planificar próximas capacitaciones del personal Precotex.</p>
+      <div style="text-align: left; font-size: 13px; color: #1e2545; line-height: 1.6; font-family: var(--sn-font-family);">
+        <div style="background: rgba(91, 75, 214, 0.08); border: 1px solid rgba(91, 75, 214, 0.2); padding: 12px 16px; border-radius: 10px; margin-bottom: 14px;">
+          <strong style="color: #5b4bd6; font-size: 14px;">📊 Reporte de Consultas Recurrentes & Capacitaciones Sugeridas (CDA-04)</strong>
+          <p style="margin: 4px 0 0 0; font-size: 12px; color: #5a6178;">Estadísticas consolidadas para planificar próximas capacitaciones del personal Precotex.</p>
         </div>
 
-        <div style="background: #111119; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin-bottom: 12px; max-height: 320px; overflow-y: auto;">
+        <div style="background: #f4f6fc; border: 1px solid #e2e7f1; border-radius: 10px; padding: 14px; margin-bottom: 14px; max-height: 320px; overflow-y: auto;">
           ${this.consultasFrecuentesStats.map((c, i) => `
-            <div style="margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed rgba(255,255,255,0.08);">
+            <div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #e2e7f1;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-weight: 700; color: #f8fafc;">${i + 1}. ${c.tema}</span>
-                <span style="background: rgba(124, 108, 240, 0.2); color: #a78bfa; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700;">${c.busquedas} Consultas</span>
+                <span style="font-weight: 700; color: #1e2545;">${i + 1}. ${c.tema}</span>
+                <span style="background: rgba(91, 75, 214, 0.1); color: #5b4bd6; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;">${c.busquedas} Consultas</span>
               </div>
-              <div style="font-size: 12px; color: #34d399; margin-top: 3px;">
+              <div style="font-size: 12px; color: #12a06a; margin-top: 4px; font-weight: 600;">
                 🎓 <strong>Capacitación Sugerida:</strong> ${c.capacitacion}
               </div>
             </div>
           `).join('')}
         </div>
 
-        <p style="font-size: 11px; color: #94a3b8; margin: 0;">
+        <p style="font-size: 11px; color: #5a6178; margin: 0;">
           💡 Este reporte identifica las brechas de conocimiento más consultadas por los usuarios para organizar capacitaciones focalizadas por áreas.
         </p>
       </div>
@@ -549,13 +552,14 @@ export class AyudaComponent implements OnInit {
     Swal.fire({
       title: '🎓 Plan Corporativo de Capacitaciones',
       html: htmlStats,
-      background: '#1a1a24',
-      color: '#f8fafc',
+      background: '#ffffff',
+      color: '#1e2545',
       width: '660px',
       confirmButtonText: 'Exportar Reporte Capacitación',
-      confirmButtonColor: '#7c6cf0',
+      confirmButtonColor: '#5b4bd6',
       showCancelButton: true,
-      cancelButtonText: 'Cerrar'
+      cancelButtonText: 'Cerrar',
+      cancelButtonColor: '#94a3b8'
     }).then((res) => {
       if (res.isConfirmed) {
         this.toastr.success('Plan de capacitación corporativa generado exitosamente.', 'Reporte CDA-04 Exportado');

@@ -3,7 +3,7 @@
 .toolbar{
   display:flex;
   justify-content:space-between;
-  background:#0f172a;
+  background: var(--panel-2);
   color:white;
   padding:10px 20px;
 }
