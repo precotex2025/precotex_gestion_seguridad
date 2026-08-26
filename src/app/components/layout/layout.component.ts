@@ -18,7 +18,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
   userName: string = GlobalVariable.vusu || 'Administrador';
   isMobile: boolean = false;
-  
+
   currentUrl: string = '';
   currentModule: string = '';
   activeModule: any = null;
@@ -74,7 +74,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     private puestosService: PuestosService,
     private permisosService: PermisosService,
     private toastr: ToastrService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.checkScreenSize();
@@ -258,10 +258,23 @@ export class LayoutComponent implements OnInit, OnDestroy {
       };
       this.activeSublink = url;
     } else if (url.includes('/principal/reqLegal')) {
-      this.currentModule = 'Req. legal';
+      const isMatriz = url.includes('/matriz');
+      this.currentModule = 'Gestión Legal';
       this.activeModule = {
-        title: 'Req. legal',
-        breadcrumb: 'Req. Legal · Normativas y Leyes',
+        title: 'Gestión Legal',
+        breadcrumb: 'Gestión Legal · Normativas y Leyes',
+        activeTab: isMatriz ? 'matriz' : 'documentos',
+        tabs: [
+          { id: 'documentos', label: 'Documentos y evidencias legales', route: '/principal/reqLegal' },
+          { id: 'matriz', label: 'Matriz de requisitos legales', route: '/principal/reqLegal/matriz' }
+        ]
+      };
+      this.activeSublink = url;
+    } else if (url.includes('/principal/proveedores')) {
+      this.currentModule = 'Proveedores';
+      this.activeModule = {
+        title: 'Proveedores',
+        breadcrumb: 'Proveedores y contratistas · Homologación & SST',
         tabs: []
       };
       this.activeSublink = url;
@@ -291,7 +304,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     // 1. Intentar cargar desde cache local para acceso inmediato
     const cachedAccesos = localStorage.getItem('precotex:puestos:accesos');
     const cachedPuestos = localStorage.getItem('precotex:puestos:listado');
-    
+
     if (cachedAccesos && cachedPuestos) {
       try {
         const accesosObj = JSON.parse(cachedAccesos);
@@ -337,7 +350,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
                 localStorage.setItem('precotex:puestos:accesos', JSON.stringify(accesosObj));
 
                 this.processPermissions(userLogin, puestosList, accesosObj);
-                
+
                 // Re-verificar la ruta actual por si los permisos cambiaron en caliente
                 this.updateHeaderConfig(this.router.url);
               }
@@ -379,7 +392,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
       const puestoName = (userPuesto.puesto || '').trim();
       const puestoCode = userPuesto.codigo_Puesto;
       const procesoPuesto = (userPuesto.proceso || 'General').trim();
-      
+
       // Guardar el proceso/área asignado al usuario
       localStorage.setItem('precotex:usuario:proceso', procesoPuesto);
       console.log('[Permisos] Proceso/Área asignado:', procesoPuesto);
@@ -387,10 +400,10 @@ export class LayoutComponent implements OnInit, OnDestroy {
       // Buscar permisos por nombre de puesto (con trim por CHAR padding de SQL Server)
       // Primero intento directo, luego con trim en cada clave del objeto
       let permisos = accesosObj[puestoName] || accesosObj[puestoCode];
-      
+
       if (!permisos) {
         // Buscar haciendo trim en todas las claves del objeto (SQL Server CHAR padding)
-        const matchingKey = Object.keys(accesosObj).find(key => 
+        const matchingKey = Object.keys(accesosObj).find(key =>
           key.trim().toLowerCase() === puestoName.toLowerCase()
         );
         if (matchingKey) {
@@ -413,7 +426,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     if (!login || !fullName || fullName === '—') return false;
     const cleanLogin = login.toLowerCase().trim();
     const cleanName = fullName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-    
+
     if (cleanName.replace(/\s+/g, '') === cleanLogin) return true;
 
     const parts = cleanName.split(/\s+/);
@@ -421,16 +434,16 @@ export class LayoutComponent implements OnInit, OnDestroy {
       const firstName = parts[0];
       const lastName = parts[1];
       const initial = firstName.charAt(0);
-      
+
       if (cleanLogin === initial + lastName) {
         return true;
       }
-      
+
       if (cleanLogin.startsWith(initial) && cleanLogin.includes(lastName)) {
         return true;
       }
     }
-    
+
     return cleanName.includes(cleanLogin);
   }
 
@@ -476,6 +489,9 @@ export class LayoutComponent implements OnInit, OnDestroy {
     }
     if (url.includes('/principal/reqLegal')) {
       return 'legal';
+    }
+    if (url.includes('/principal/proveedores')) {
+      return 'proveedores';
     }
     return '';
   }

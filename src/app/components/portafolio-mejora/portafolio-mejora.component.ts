@@ -34,6 +34,12 @@ export class PortafolioMejoraComponent implements OnInit {
   };
 
   mostrarArchivosSubidos: boolean = false;
+  treeColapsado: boolean = false;
+
+  toggleTree(): void {
+    this.treeColapsado = !this.treeColapsado;
+  }
+
   expandedMacros: { [key: string]: boolean } = {};
   procesosGroups: { [key: string]: string[] } = {
     'Estratégicos': ['Organización y Métodos', 'Auditoría Interna', 'Sistemas'],

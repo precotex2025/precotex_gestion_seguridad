@@ -78,31 +78,42 @@
   margin-bottom:15px;
 }
 
-.tabla-wrapper{
-  /*background:white;*/
-  border-radius:12px;
-  overflow:hidden;
+.tabla-wrapper {
+  background: #ffffff !important;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
 }
 
-.tabla{
-  width:100%;
+.tabla {
+  width: 100%;
+  background: #ffffff !important;
 }
 
 /* Header */
-.mat-header-row{
-  background:transparent;
+.mat-header-row {
+  background: var(--panel-2) !important;
   border-bottom: 1.5px solid #cbd5e1;
 }
 
-.mat-header-cell{
-  color:#334155 !important;
-  font-weight:600;
+.mat-header-cell {
+  color: #334155 !important;
+  font-weight: 600;
+}
+
+/* Filas de la tabla */
+tr.mat-row, tr.mat-mdc-row {
+  background-color: #ffffff !important;
+  transition: background-color 0.2s ease;
+}
+
+tr.mat-row:nth-child(even), tr.mat-mdc-row:nth-child(even) {
+  background-color: #fafbfe !important;
 }
 
 /* Hover filas */
-.fila:hover{
-  background:#f1f5f9;
-  transition:0.2s;
+tr.mat-row:hover, tr.mat-mdc-row:hover, .fila:hover {
+  background-color: #f1f5f9 !important;
 }
 
 /* Chips */

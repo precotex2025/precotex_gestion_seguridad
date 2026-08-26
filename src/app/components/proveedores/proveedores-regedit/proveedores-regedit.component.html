@@ -1,0 +1,138 @@
+<div class="dialog-wrapper">
+  
+  <header class="dialog-header">
+    <div class="dialog-icon-container">
+      <mat-icon>local_shipping</mat-icon>
+    </div>
+    <div class="dialog-header-text">
+      <h2 class="header-title">{{ data?.Accion === 'I' ? 'Nuevo Proveedor o Contratista' : 'Editar Proveedor / Contratista' }}</h2>
+      <p class="dialog-subtitle">Registro de homologación, evaluación y seguimiento de cumplimiento SST</p>
+    </div>
+    <span class="flex-spacer"></span>
+    <button type="button" class="btn-close-header" (click)="onClose()" title="Cerrar">
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
+
+  <form [formGroup]="formulario" class="dialog-form" (ngSubmit)="onSave()">
+    <div class="dialog-content">
+      
+      <!-- SECCIÓN 1: IDENTIFICACIÓN -->
+      <div class="section-title">1. Identificación del Proveedor</div>
+
+      <div class="form-row">
+        <div class="form-field full-width">
+          <label class="form-label">Razón Social <span class="required">*</span></label>
+          <input type="text" formControlName="razon" placeholder="Ej. Textiles Andinos S.A.C." class="form-input">
+        </div>
+      </div>
+
+      <div class="form-row split-2">
+        <div class="form-field">
+          <label class="form-label">RUC (11 dígitos) <span class="required">*</span></label>
+          <input type="text" formControlName="ruc" placeholder="Ej. 20481234567" class="form-input" maxlength="11">
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Tipo de Proveedor <span class="required">*</span></label>
+          <select formControlName="tipo" class="form-select">
+            <option *ngFor="let t of tiposOptions" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row split-2">
+        <div class="form-field">
+          <label class="form-label">Proceso / Área Requiriente <span class="required">*</span></label>
+          <select formControlName="proceso" class="form-select">
+            <optgroup *ngFor="let key of getProcesosKeys()" [label]="key">
+              <option *ngFor="let proc of PROCESOS_GROUPS[key]" [value]="proc">{{ proc }}</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Contacto (Nombre / Correo / Teléfono)</label>
+          <input type="text" formControlName="contacto" placeholder="Ej. ventas@proveedor.pe / 987654321" class="form-input">
+        </div>
+      </div>
+
+      <!-- SECCIÓN 2: HOMOLOGACIÓN Y EVALUACIÓN -->
+      <div class="section-title">2. Homologación y Evaluación de Desempeño</div>
+
+      <div class="form-row split-2">
+        <div class="form-field">
+          <label class="form-label">Estado de Homologación <span class="required">*</span></label>
+          <select formControlName="homologacion" class="form-select">
+            <option *ngFor="let h of homologacionOptions" [value]="h">{{ h }}</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Desempeño Operativo</label>
+          <select formControlName="desempeno" class="form-select">
+            <option *ngFor="let d of desempenoOptions" [value]="d">{{ d }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row split-2">
+        <div class="form-field">
+          <label class="form-label">Última Evaluación</label>
+          <input type="date" formControlName="evaluacion" class="form-input-date">
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Próxima Re-evaluación</label>
+          <input type="date" formControlName="reeval" class="form-input-date">
+        </div>
+      </div>
+
+      <!-- SECCIÓN 3: CUMPLIMIENTO SST (SOLO CONTRATISTAS) -->
+      <div *ngIf="isContratista" class="sst-section-box">
+        <div class="section-title title-sst">
+          <mat-icon style="font-size: 16px; width: 16px; height: 16px; margin-right: 4px;">shield</mat-icon>
+          3. Cumplimiento SST (Exclusivo para Contratistas)
+        </div>
+
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">Vencimiento SCTR</label>
+            <input type="date" formControlName="sctr" class="form-input-date">
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Vencimiento Inducción SST</label>
+            <input type="date" formControlName="induccion" class="form-input-date">
+          </div>
+        </div>
+
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">Vencimiento Matriz IPERC</label>
+            <input type="date" formControlName="iperc" class="form-input-date">
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Vencimiento Seguro / Póliza</label>
+            <input type="date" formControlName="seguro" class="form-input-date">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Acciones / Botones (Siempre visibles al pie) -->
+    <div class="button-row"> 
+      <button type="submit" class="btn-primary"> 
+        <mat-icon style="font-size: 18px; width: 18px; height: 18px;">save</mat-icon>
+        <span>Grabar Proveedor</span>
+      </button>
+
+      <button type="button" class="btn-secondary" (click)="onClose()">
+        <span>Cerrar</span>
+      </button>
+    </div>   
+  </form>
+
+</div>

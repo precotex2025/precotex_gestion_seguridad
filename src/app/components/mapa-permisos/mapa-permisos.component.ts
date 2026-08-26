@@ -22,7 +22,7 @@ export class MapaPermisosComponent implements OnInit {
     'Objetivos': { ger: ['Ver', 'Editar', 'Aprobar'], jef: ['Ver', 'Registrar', 'Editar'], ope: ['Ver', 'Registrar'] },
     'Riesgos': { ger: ['Ver', 'Aprobar'], jef: ['Ver', 'Registrar', 'Editar'], ope: ['Ver', 'Registrar'] },
     'Portafolio de Mejora': { ger: ['Ver'], jef: ['Ver', 'Registrar', 'Editar'], ope: ['Ver', 'Registrar'] },
-    'Req. legal': { ger: ['Ver', 'Aprobar'], jef: ['Ver', 'Registrar'], ope: ['Ver'] },
+    'Gestión Legal': { ger: ['Ver', 'Aprobar'], jef: ['Ver', 'Registrar'], ope: ['Ver'] },
     'Ayuda': { ger: ['Ver'], jef: ['Ver'], ope: ['Ver'] }
   };
 
@@ -39,7 +39,7 @@ export class MapaPermisosComponent implements OnInit {
     'Objetivos': ['Ver', 'Registrar', 'Editar', 'Aprobar'],
     'Riesgos': ['Ver', 'Registrar', 'Editar', 'Aprobar'],
     'Portafolio de Mejora': ['Ver', 'Registrar', 'Editar', 'Aprobar'],
-    'Req. legal': ['Ver', 'Registrar', 'Editar', 'Aprobar'],
+    'Gestión Legal': ['Ver', 'Registrar', 'Editar', 'Aprobar'],
     'Ayuda': ['Ver']
   };
 
@@ -126,7 +126,7 @@ export class MapaPermisosComponent implements OnInit {
       ['Iniciativas', 'Editar', 1, 1, 1],
       ['Cierre', 'Aprobar', 1, 1, 0]
     ],
-    'Req. legal': [
+    'Gestión Legal': [
       ['Matriz legal', 'Ver', 1, 1, 1],
       ['Matriz legal', 'Crear / Editar', 1, 1, 0],
       ['Matriz legal', 'Aprobar', 1, 0, 0],
@@ -180,6 +180,14 @@ export class MapaPermisosComponent implements OnInit {
     this.drawerUser = user;
     this.selectedUserId = user.id;
     this.drawerOpen = true;
+
+    // Desplazamiento automático suave hacia la sección de ajuste en la parte inferior
+    setTimeout(() => {
+      const el = document.getElementById('panel-ajuste-abajo');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 60);
   }
 
   closeDrawer(): void {

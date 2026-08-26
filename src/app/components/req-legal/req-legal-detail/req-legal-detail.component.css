@@ -1,0 +1,234 @@
+/* ===================================================================
+   ReqLegal Detail Component — Preview & Technical Metadata View Modal
+   =================================================================== */
+
+.view-dialog-wrapper {
+  background: #ffffff;
+  border-radius: 16px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #1e2545;
+  display: flex;
+  flex-direction: column;
+  max-width: 1050px;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* --- Header --- */
+.view-dialog-header {
+  padding: 24px 32px 16px 32px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.view-dialog-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1e2545;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.flex-spacer {
+  flex: 1 1 auto;
+}
+
+.btn-close-header {
+  color: #94a3b8;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-close-header:hover {
+  color: #ef4444;
+  background: #fee2e2;
+}
+
+/* --- Body Grid --- */
+.view-dialog-body {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 32px;
+  padding: 24px 32px;
+  max-height: 72vh;
+  overflow-y: auto;
+}
+
+/* --- Left Column: Preview --- */
+.view-preview-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.preview-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.preview-box {
+  background: #fafbfc;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 12px;
+  min-height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.preview-empty-state {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.preview-file-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.file-icon {
+  font-size: 48px !important;
+  width: 48px !important;
+  height: 48px !important;
+  color: #5b4bd6;
+}
+
+.file-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1e2545;
+}
+
+.btn-download-action {
+  background: #5b4bd6;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-download-action:hover {
+  background: #4a3ab8;
+}
+
+/* --- Right Column: Details List --- */
+.view-details-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.detail-val {
+  font-size: 0.86rem;
+  color: #334155;
+}
+
+.detail-val.bold {
+  font-weight: 700;
+  color: #1e2545;
+}
+
+.val-cumple {
+  color: #10b981 !important;
+}
+
+.val-proceso {
+  color: #f59e0b !important;
+}
+
+.val-nocumple {
+  color: #ef4444 !important;
+}
+
+/* --- Footer --- */
+.view-dialog-footer {
+  padding: 20px 32px 24px 32px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid #f1f5f9;
+  background: #ffffff;
+}
+
+.btn-secondary-pill {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 20px;
+  color: #334155;
+  height: 40px;
+  padding: 0 24px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary-pill:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #1e2545;
+}
+
+.btn-primary-pill {
+  background: linear-gradient(135deg, #5b4bd6 0%, #7c6cf0 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  height: 40px;
+  padding: 0 28px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(91, 75, 214, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-primary-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(91, 75, 214, 0.48);
+}

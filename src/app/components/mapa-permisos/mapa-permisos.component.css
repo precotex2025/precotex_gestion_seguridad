@@ -328,8 +328,107 @@
 }
 
 /* -------------------------------------------------------------------
-   4. SLIDE-OVER DRAWER ARCHITECTURE
+   4. BOTTOM ADJUSTMENT PANEL & SLIDE-OVER ARCHITECTURE
    ------------------------------------------------------------------- */
+.panel-ajuste-inferior {
+  border-top: 3px solid var(--violet);
+  background: var(--panel);
+  border-radius: 14px;
+  padding: 24px;
+}
+
+.drawer-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-cerrar-ajuste {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-cerrar-ajuste:hover {
+  background: var(--line);
+  color: var(--txt);
+}
+
+.btn-cerrar-ajuste mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+}
+
+/* Horizontal Module Tabs */
+.module-tabs-horizontal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.module-tab-chip {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.module-tab-chip:hover {
+  color: var(--violet);
+  border-color: rgba(91, 75, 214, 0.3);
+  background: rgba(91, 75, 214, 0.04);
+}
+
+.module-tab-chip.active {
+  background: var(--violet);
+  color: #ffffff;
+  border-color: var(--violet);
+  box-shadow: 0 3px 10px rgba(91, 75, 214, 0.25);
+}
+
+/* Toggles Responsive Grid Container */
+.toggles-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.toggle-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+}
+
+.icon-group {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  color: var(--violet);
+}
+
 .slide-over-backdrop {
   position: fixed;
   top: 0;

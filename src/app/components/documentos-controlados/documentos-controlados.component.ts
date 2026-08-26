@@ -29,9 +29,14 @@ export class DocumentosControladosComponent implements OnInit {
   isUserAdmin: boolean = false;
   // State for Accordion Sidebar, Quick View Drawer & Banner
   collapsedMacros: { [macro: string]: boolean } = {};
+  treeColapsado: boolean = false;
   quickViewOpen: boolean = false;
   selectedDoc: any = null;
   mostrarBanner: boolean = true;
+
+  toggleTree(): void {
+    this.treeColapsado = !this.treeColapsado;
+  }
 
   cerrarBanner(): void {
     this.mostrarBanner = false;

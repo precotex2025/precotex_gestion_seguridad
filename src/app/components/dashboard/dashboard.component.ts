@@ -136,7 +136,7 @@ export class DashboardComponent implements OnInit {
     private auditoriasService: AuditoriasService,
     private backupService: BackupService,
     private toastr: ToastrService
-  ) {}
+  ) { }
 
   /* Dynamic Animated Counter for Gauge */
   animatedGaugeValue: number = 0;
@@ -197,7 +197,7 @@ export class DashboardComponent implements OnInit {
             this.isGeneratingBackup = false;
             const newDate = new Date().toLocaleString('es-PE');
             localStorage.setItem('precotex:backup:last_execution', newDate);
-            
+
             if (res && res.data) {
               this.backupData.ultimaEjecucion = res.data.fecha;
               if (!this.backupData.historial) this.backupData.historial = [];
@@ -216,7 +216,7 @@ export class DashboardComponent implements OnInit {
             const newDate = new Date().toLocaleString('es-PE');
             this.backupData.ultimaEjecucion = newDate;
             localStorage.setItem('precotex:backup:last_execution', newDate);
-            
+
             // Descargar copia física resguardada de respaldo local
             this.descargarSnapshotBackupLocal();
             this.toastr.success('Copia de seguridad resguardada localmente con éxito.', 'Backup Completado (INI-01)');
@@ -297,7 +297,7 @@ export class DashboardComponent implements OnInit {
         if (res && res.elements) {
           this.dbCounts.documentos = res.elements.length;
           this.updateKpiValue('Docs. Controlados', this.dbCounts.documentos);
-          
+
           res.elements.forEach((doc: any) => {
             const fechaLim = doc.fec_Vencimiento || doc.vig || '';
             this.evaluarAlertasVencimiento(doc.nombre || doc.denominacion, fechaLim, 'Documento');
@@ -350,10 +350,10 @@ export class DashboardComponent implements OnInit {
       next: (res: any) => {
         if (res && res.elements) {
           this.dbCounts.legales = res.elements.length;
-          
+
           res.elements.forEach((req: any) => {
             const fechaLim = req.vencimiento || req.proxeval || '';
-            this.evaluarAlertasVencimiento(req.requisito || req.norma, fechaLim, 'Req. Legal');
+            this.evaluarAlertasVencimiento(req.requisito || req.norma, fechaLim, 'Gestión Legal');
           });
           this.updateCumplimientoChart();
         }
@@ -385,9 +385,9 @@ export class DashboardComponent implements OnInit {
     if (!fechaVencimientoStr) return;
     const hoy = new Date();
     const venc = new Date(fechaVencimientoStr);
-    
+
     if (isNaN(venc.getTime())) return;
-    
+
     const diffTime = venc.getTime() - hoy.getTime();
     const diffDias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -432,9 +432,9 @@ export class DashboardComponent implements OnInit {
 
     if (this.chartRiesgos && this.chartRiesgos.datasets && this.chartRiesgos.datasets[0]) {
       this.chartRiesgos.datasets[0].data = [
-        bajo || 5, 
-        medio || 8, 
-        alto || 4, 
+        bajo || 5,
+        medio || 8,
+        alto || 4,
         critico || riesgosList.length
       ];
       this.chartRiesgos = { ...this.chartRiesgos };
@@ -651,7 +651,7 @@ export class DashboardComponent implements OnInit {
   private initActividades(): void {
     this.actividades = [
       { id: 'ACT-001', accion: 'Registro en Portafolio de Mejora MEJ-2026-001', modulo: 'Mejora', usuario: 'SISTEMAS', fecha: 'Hoy 10:15', estado: 'Guardado BD', severidad: 'success' },
-      { id: 'ACT-002', accion: 'Requisito Legal Ley 29783 registrado', modulo: 'Req. legal', usuario: 'SISTEMAS', fecha: 'Hoy 09:30', estado: 'Guardado BD', severidad: 'success' },
+      { id: 'ACT-002', accion: 'Requisito Legal Ley 29783 registrado', modulo: 'Gestión Legal', usuario: 'SISTEMAS', fecha: 'Hoy 09:30', estado: 'Guardado BD', severidad: 'success' },
       { id: 'ACT-003', accion: 'Riesgo IPERC RSG-2026-001 evaluado', modulo: 'Riesgos', usuario: 'SISTEMAS', fecha: 'Ayer 16:20', estado: 'Guardado BD', severidad: 'info' },
       { id: 'ACT-004', accion: 'Objetivo de Calidad OBJ-2026-001 registrado', modulo: 'Objetivos', usuario: 'SISTEMAS', fecha: 'Ayer 14:10', estado: 'Guardado BD', severidad: 'info' }
     ];
@@ -663,7 +663,7 @@ export class DashboardComponent implements OnInit {
       { label: 'Organización', icon: 'pi pi-sitemap', route: '/principal/organizacion', color: '#a78bfa', description: 'Estructura organizacional' },
       { label: 'Documentos', icon: 'pi pi-folder-open', route: '/principal/documentosControlados', color: '#5b8def', description: 'Documentos controlados' },
       { label: 'Mejora', icon: 'pi pi-wrench', route: '/principal/portafolioMejora', color: '#3ecf8e', description: 'Portafolio de Mejora' },
-      { label: 'Req. legal', icon: 'pi pi-check-square', route: '/principal/reqLegal', color: '#f0b429', description: 'Matriz de Requisitos Legales' },
+      { label: 'Gestión Legal', icon: 'pi pi-check-square', route: '/principal/reqLegal', color: '#f0b429', description: 'Matriz de Requisitos Legales' },
       { label: 'Riesgos', icon: 'pi pi-exclamation-triangle', route: '/principal/evaluacionRiesgos', color: '#f0576b', description: 'Evaluación de riesgos' },
       { label: 'Ayuda', icon: 'pi pi-question-circle', route: '/principal/ayuda', color: '#a99bff', description: 'Centro de ayuda y manuales' }
     ];
@@ -691,8 +691,8 @@ export class DashboardComponent implements OnInit {
     switch (severidad) {
       case 'success': return 'success';
       case 'warning': return 'warn';
-      case 'danger':  return 'danger';
-      default:        return 'info';
+      case 'danger': return 'danger';
+      default: return 'info';
     }
   }
 }

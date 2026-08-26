@@ -1,0 +1,108 @@
+<div class="view-dialog-wrapper">
+
+  <!-- HEADER -->
+  <header class="view-dialog-header">
+    <h2 class="view-dialog-title">{{ item.requisito || item.norma }}</h2>
+    <span class="flex-spacer"></span>
+    <button type="button" class="btn-close-header" (click)="onCerrar()" title="Cerrar">
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
+
+  <!-- BODY GRID (2 COLUMNS) -->
+  <div class="view-dialog-body">
+
+    <!-- LEFT COLUMN: VISTA PREVIA DEL DOCUMENTO -->
+    <div class="view-preview-column">
+      <span class="preview-label">VISTA PREVIA DEL DOCUMENTO</span>
+
+      <div class="preview-box">
+        <div class="preview-empty-state" *ngIf="!item.evidencia && !item.evidenciadoc">
+          <span>Este registro no tiene archivo adjunto.</span>
+        </div>
+
+        <div class="preview-file-state" *ngIf="item.evidencia || item.evidenciadoc">
+          <mat-icon class="file-icon">description</mat-icon>
+          <span class="file-name">{{ item.evidencia || item.evidenciadoc }}</span>
+          <button type="button" class="btn-download-action" (click)="onDescargar()">
+            <mat-icon>download</mat-icon>
+            <span>Descargar Archivo</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: METADATA DETAILS LIST -->
+    <div class="view-details-column">
+
+      <div class="detail-row">
+        <span class="detail-label">REQUISITO / DOCUMENTO LEGAL</span>
+        <span class="detail-val bold">{{ item.requisito || item.norma }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">CARPETAS POR ÁREA</span>
+        <span class="detail-val">{{ item.tema || item.ambito || 'Formación y capacitaciones' }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">TIPO</span>
+        <span class="detail-val">{{ item.tipo || 'Programa' }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">NORMA QUE LO EXIGE</span>
+        <span class="detail-val">{{ item.norma || 'Ley 29783 / D.S. 005-2012-TR' }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">ENTIDAD</span>
+        <span class="detail-val">{{ item.entidad }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">ESTADO DE CUMPLIMIENTO</span>
+        <span class="detail-val bold" [ngClass]="getEstadoClass(item.estado)">{{ item.estado }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">RESPONSABLE</span>
+        <span class="detail-val">{{ item.responsable || '' }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">FRECUENCIA / VIGENCIA</span>
+        <span class="detail-val">{{ item.frecuencia || 'Anual' }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">ÚLTIMA EVALUACIÓN / EMISIÓN</span>
+        <span class="detail-val">{{ item.evaluacion || '—' }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">PRÓXIMA EVALUACIÓN</span>
+        <span class="detail-val">{{ item.proxeval || '—' }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">VENCIMIENTO</span>
+        <span class="detail-val">{{ item.vencimiento || '—' }}</span>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="view-dialog-footer">
+    <button type="button" class="btn-secondary-pill" (click)="onEditar()">
+      Editar
+    </button>
+
+    <button type="button" class="btn-primary-pill" (click)="onCerrar()">
+      Cerrar
+    </button>
+  </footer>
+
+</div>

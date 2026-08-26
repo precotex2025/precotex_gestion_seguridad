@@ -5,6 +5,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSortModule } from '@angular/material/sort';
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 /* PrimeNG */
 import { providePrimeNG } from 'primeng/config';
@@ -107,7 +108,10 @@ import { PortafolioMejoraComponent } from './components/portafolio-mejora/portaf
 import { PortafolioMejoraRegeditComponent } from './components/portafolio-mejora/portafolio-mejora-regedit/portafolio-mejora-regedit.component';
 import { ReqLegalComponent } from './components/req-legal/req-legal.component';
 import { ReqLegalRegeditComponent } from './components/req-legal/req-legal-regedit/req-legal-regedit.component';
+import { ReqLegalDetailComponent } from './components/req-legal/req-legal-detail/req-legal-detail.component';
 import { AyudaComponent } from './components/ayuda/ayuda.component';
+import { ProveedoresComponent } from './components/proveedores/proveedores.component';
+import { ProveedoresRegeditComponent } from './components/proveedores/proveedores-regedit/proveedores-regedit.component';
 
 @NgModule({
   declarations: [
@@ -170,7 +174,10 @@ import { AyudaComponent } from './components/ayuda/ayuda.component';
     PortafolioMejoraRegeditComponent,
     ReqLegalComponent,
     ReqLegalRegeditComponent,
-    AyudaComponent
+    ReqLegalDetailComponent,
+    AyudaComponent,
+    ProveedoresComponent,
+    ProveedoresRegeditComponent
   ],
   imports: [
     BrowserModule     ,
@@ -194,6 +201,7 @@ import { AyudaComponent } from './components/ayuda/ayuda.component';
     MatDatepickerModule,
     MatDialogModule,
     MatSortModule,
+    MatPaginatorModule,
     MatCheckboxModule,
     MatTooltipModule,
     ToastrModule.forRoot({

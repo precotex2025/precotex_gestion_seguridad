@@ -1,0 +1,196 @@
+<div class="proveedores-container sn-animate-in">
+
+  <!-- TOP HEADER BANNER -->
+  <div class="prov-header-banner shadow-premium">
+    <div class="header-left">
+      <div class="header-icon-box">
+        <mat-icon>local_shipping</mat-icon>
+      </div>
+      <div>
+        <h2 class="header-title">Proveedores y Contratistas</h2>
+        <p class="header-subtitle">Homologación, evaluación de desempeño y control de cumplimiento SST</p>
+      </div>
+    </div>
+
+    <button type="button" class="btn-primary-glow" (click)="onAgregar()">
+      <mat-icon>add</mat-icon>
+      <span>Nuevo proveedor</span>
+    </button>
+  </div>
+
+  <!-- STATS / KPI CARDS GRID -->
+  <div class="kpi-grid">
+
+    <!-- Total -->
+    <div class="stat-card card-total shadow-premium">
+      <div class="stat-icon-wrapper color-total">
+        <mat-icon>business</mat-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-lbl">Total Proveedores</span>
+        <span class="stat-num color-total">{{ stats.total }}</span>
+        <span class="stat-sub">Registrados</span>
+      </div>
+    </div>
+
+    <!-- Homologados Aptos -->
+    <div class="stat-card card-green shadow-premium">
+      <div class="stat-icon-wrapper color-green">
+        <mat-icon>verified</mat-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-lbl">Homologados</span>
+        <span class="stat-num color-green">{{ stats.homologados }}</span>
+        <span class="stat-sub">Aptos para operar</span>
+      </div>
+    </div>
+
+    <!-- En Evaluación -->
+    <div class="stat-card card-blue shadow-premium">
+      <div class="stat-icon-wrapper color-blue">
+        <mat-icon>sync</mat-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-lbl">En evaluación</span>
+        <span class="stat-num color-blue">{{ stats.enEvaluacion }}</span>
+        <span class="stat-sub">En proceso de revisión</span>
+      </div>
+    </div>
+
+    <!-- Alertas Activas -->
+    <div class="stat-card card-amber shadow-premium">
+      <div class="stat-icon-wrapper color-amber">
+        <mat-icon>warning</mat-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-lbl">Alertas activas</span>
+        <span class="stat-num color-amber">{{ stats.alertas }}</span>
+        <span class="stat-sub">Vencimientos & SST</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ALERTAS PANEL INTELIGENTE -->
+  <div class="alerts-panel shadow-premium" *ngIf="alertasProv.length > 0">
+    <div class="alerts-head">
+      <mat-icon style="color: #b8790a;">warning</mat-icon>
+      <h3>Alertas de proveedores y contratistas</h3>
+      <span class="alerts-count">{{ alertasProv.length }} requerimientos pendientes</span>
+    </div>
+
+    <div class="alerts-list">
+      <div *ngFor="let a of alertasProv" class="alert-item" [class.alert-red]="a.sev === 'red'" [class.alert-amber]="a.sev === 'amber'">
+        <span class="alert-tag" [class.tag-red]="a.sev === 'red'" [class.tag-amber]="a.sev === 'amber'">{{ a.tag }}</span>
+        <span [innerHTML]="a.txt" class="alert-text"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- LISTADO Y TABLA -->
+  <div class="panel-section shadow-premium">
+
+    <!-- Filter & Search Bar -->
+    <div class="table-toolbar">
+      <div class="search-box">
+        <mat-icon class="search-icon">search</mat-icon>
+        <input type="text" (keyup)="aplicarFiltro($event)" placeholder="Buscar por razón social, RUC, tipo o proceso..." class="search-input">
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="table-container">
+      <table mat-table [dataSource]="dataSource" matSort class="custom-table">
+
+        <!-- Razón Social -->
+        <ng-container matColumnDef="razon">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> Razón Social </th>
+          <td mat-cell *matCellDef="let row">
+            <div class="prov-name-box">
+              <span class="prov-razon">{{ row.razon }}</span>
+              <span class="prov-contacto" *ngIf="row.contacto">{{ row.contacto }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- RUC -->
+        <ng-container matColumnDef="ruc">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> RUC </th>
+          <td mat-cell *matCellDef="let row">
+            <span class="code-badge">{{ row.ruc }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Tipo -->
+        <ng-container matColumnDef="tipo">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> Tipo </th>
+          <td mat-cell *matCellDef="let row">
+            <span class="tipo-chip" [class.chip-contratista]="row.tipo === 'Contratista'">{{ row.tipo }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Proceso -->
+        <ng-container matColumnDef="proceso">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> Proceso </th>
+          <td mat-cell *matCellDef="let row"> {{ row.proceso }} </td>
+        </ng-container>
+
+        <!-- Estado Homologación -->
+        <ng-container matColumnDef="homologacion">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> Homologación </th>
+          <td mat-cell *matCellDef="let row">
+            <span class="status-badge" [ngClass]="getHomologacionClass(row.homologacion)">
+              {{ row.homologacion }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Desempeño -->
+        <ng-container matColumnDef="desempeno">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> Desempeño </th>
+          <td mat-cell *matCellDef="let row"> {{ row.desempeno || '—' }} </td>
+        </ng-container>
+
+        <!-- Próxima Re-evaluación -->
+        <ng-container matColumnDef="reeval">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> Próx. Re-evaluación </th>
+          <td mat-cell *matCellDef="let row">
+            <span class="date-text">{{ row.reeval || '—' }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Acciones -->
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef> Acciones </th>
+          <td mat-cell *matCellDef="let row" class="actions-cell">
+            <button type="button" class="btn-action-icon" (click)="onVer(row)" title="Ver detalles">
+              <mat-icon>visibility</mat-icon>
+            </button>
+
+            <button type="button" class="btn-action-icon" (click)="onEditar(row)" title="Editar">
+              <mat-icon>edit</mat-icon>
+            </button>
+
+            <button type="button" class="btn-action-icon delete" (click)="onEliminar(row)" title="Eliminar">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        <!-- Row when no matching data -->
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell empty-table" [attr.colspan]="displayedColumns.length">
+            No se encontraron proveedores que coincidan con la búsqueda.
+          </td>
+        </tr>
+      </table>
+
+      <mat-paginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons></mat-paginator>
+    </div>
+
+  </div>
+
+</div>

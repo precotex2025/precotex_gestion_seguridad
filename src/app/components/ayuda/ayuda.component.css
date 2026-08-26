@@ -480,16 +480,18 @@
 }
 
 .contact-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--txt);
+  margin: 0 0 4px 0;
+  letter-spacing: -0.01em;
 }
 
 .contact-subtitle {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: var(--muted);
   margin: 0;
+  line-height: 1.4;
 }
 
 .contact-actions-grid {
@@ -505,7 +507,7 @@
 }
 
 .btn-contact-card {
-  background: rgba(255, 255, 255, 0.015);
+  background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 16px;
@@ -525,13 +527,13 @@
 }
 
 .card-oym:hover {
-  border-color: rgba(124, 108, 240, 0.3);
-  box-shadow: 0 4px 15px rgba(124, 108, 240, 0.1);
+  border-color: rgba(91, 75, 214, 0.4);
+  box-shadow: 0 4px 15px rgba(91, 75, 214, 0.12);
 }
 
 .card-sistemas:hover {
-  border-color: rgba(62, 207, 142, 0.3);
-  box-shadow: 0 4px 15px rgba(62, 207, 142, 0.1);
+  border-color: rgba(22, 163, 74, 0.4);
+  box-shadow: 0 4px 15px rgba(22, 163, 74, 0.12);
 }
 
 .contact-card-badge {
@@ -541,19 +543,19 @@
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 6px;
   margin-bottom: 2px;
 }
 
 .card-oym .contact-card-badge {
-  background: rgba(124, 108, 240, 0.15);
-  color: #a78bfa;
+  background: rgba(91, 75, 214, 0.1);
+  color: var(--violet);
 }
 
 .card-sistemas .contact-card-badge {
-  background: rgba(62, 207, 142, 0.15);
-  color: #3ecf8e;
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
 }
 
 .contact-card-badge mat-icon {
@@ -578,10 +580,11 @@
   font-family: 'JetBrains Mono', monospace;
   color: var(--violet);
   margin-top: 4px;
+  font-weight: 600;
 }
 
 .card-sistemas .contact-email {
-  color: var(--green);
+  color: #16a34a;
 }
 
 /* ===================================================================
@@ -676,12 +679,35 @@
   background: var(--panel-2);
 }
 
-.chip-icon-box.color-indigo { background: rgba(124, 108, 240, 0.15); color: #818cf8; }
-.chip-icon-box.color-purple { background: rgba(167, 139, 250, 0.15); color: #a78bfa; }
-.chip-icon-box.color-emerald { background: rgba(62, 207, 142, 0.15); color: #34d399; }
-.chip-icon-box.color-amber { background: rgba(240, 180, 41, 0.15); color: #fbbf24; }
-.chip-icon-box.color-cyan { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
-.chip-icon-box.color-rose { background: rgba(244, 63, 94, 0.15); color: #fb7185; }
+.chip-icon-box.color-indigo {
+  background: rgba(124, 108, 240, 0.15);
+  color: #818cf8;
+}
+
+.chip-icon-box.color-purple {
+  background: rgba(167, 139, 250, 0.15);
+  color: #a78bfa;
+}
+
+.chip-icon-box.color-emerald {
+  background: rgba(62, 207, 142, 0.15);
+  color: #34d399;
+}
+
+.chip-icon-box.color-amber {
+  background: rgba(240, 180, 41, 0.15);
+  color: #fbbf24;
+}
+
+.chip-icon-box.color-cyan {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+}
+
+.chip-icon-box.color-rose {
+  background: rgba(244, 63, 94, 0.15);
+  color: #fb7185;
+}
 
 .chip-info {
   display: flex;
@@ -700,9 +726,26 @@
   line-height: 1.1;
 }
 
-.chip-val.color-indigo { color: #818cf8; }
-.chip-val.color-purple { color: #a78bfa; }
-.chip-val.color-emerald { color: #34d399; }
-.chip-val.color-amber { color: #fbbf24; }
-.chip-val.color-cyan { color: #38bdf8; }
-.chip-val.color-rose { color: #fb7185; }
+.chip-val.color-indigo {
+  color: #818cf8;
+}
+
+.chip-val.color-purple {
+  color: #a78bfa;
+}
+
+.chip-val.color-emerald {
+  color: #34d399;
+}
+
+.chip-val.color-amber {
+  color: #fbbf24;
+}
+
+.chip-val.color-cyan {
+  color: #38bdf8;
+}
+
+.chip-val.color-rose {
+  color: #fb7185;
+}

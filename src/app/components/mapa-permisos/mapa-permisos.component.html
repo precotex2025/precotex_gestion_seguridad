@@ -250,72 +250,75 @@
   </div>
 
   <!-- ===================================================================
-       SLIDE-OVER DRAWER FOR USER PERMISSION DETAILS (GLASSMORPHISM)
+       PANEL INFERIOR DE AJUSTE DE PERMISOS (DIRECTO EN LA PARTE DE ABAJO)
        =================================================================== -->
-  <div class="slide-over-backdrop" *ngIf="drawerOpen" (click)="closeDrawer()"></div>
-
-  <div class="slide-over-drawer" [class.drawer-active]="drawerOpen">
-    <div class="drawer-header">
-      <div class="drawer-title-box">
+  <div id="panel-ajuste-abajo" class="panel-section shadow-premium panel-ajuste-inferior sn-animate-in" *ngIf="drawerOpen && drawerUser" style="margin-top: 28px;">
+    <div class="panel-section-header flex-between">
+      <div class="user-avatar-cell">
         <div class="user-avatar-drawer">
           {{ initials(drawerUser?.usuario || drawerUser?.puesto || 'U') }}
         </div>
-        <div>
-          <h2 class="drawer-user-name">{{ drawerUser?.puesto }}</h2>
-          <span class="drawer-user-sub">{{ drawerUser?.usuario || 'Sin usuario' }} · {{ drawerUser?.nivel }}</span>
+        <div class="user-cell-meta">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <h3 class="panel-section-title" style="font-size: 1.15rem;">{{ drawerUser?.puesto }}</h3>
+            <span class="soft-badge soft-badge-vigente">
+              <span class="glowing-dot"></span> {{ drawerUser?.nivel }}
+            </span>
+          </div>
+          <span class="panel-section-subtitle">Usuario: <strong>{{ drawerUser?.usuario || 'Sin usuario asignado' }}</strong> — Ajuste fino de permisos interactivos</span>
         </div>
       </div>
-      <button type="button" class="drawer-close-btn" (click)="closeDrawer()">
-        <mat-icon>close</mat-icon>
+
+      <div class="drawer-header-actions">
+        <button type="button" class="btn-reset-drawer" (click)="resetFino()">
+          <mat-icon style="font-size: 16px; width: 16px; height: 16px;">refresh</mat-icon>
+          <span>Restablecer a su nivel</span>
+        </button>
+        <button type="button" class="btn-cerrar-ajuste" (click)="closeDrawer()" title="Cerrar panel de ajuste">
+          <mat-icon>close</mat-icon>
+          <span>Cerrar</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- SELECTOR DE MÓDULO HORIZONTAL -->
+    <div class="module-tabs-horizontal">
+      <button type="button" 
+              *ngFor="let m of getModulesKeys()" 
+              class="module-tab-chip"
+              [class.active]="selectedModule === m"
+              (click)="selectedModule = m">
+        {{ m }}
       </button>
     </div>
 
-    <div class="drawer-body">
-      <!-- Selector de Módulo -->
-      <div class="drawer-module-selector">
-        <label class="drawer-label">Módulo del Sistema</label>
-        <div class="custom-select-wrapper">
-          <select [(ngModel)]="selectedModule" class="drawer-select">
-            <option *ngFor="let m of getModulesKeys()" [value]="m">{{ m }}</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Action Button Reset -->
-      <div class="drawer-actions-bar">
-        <span class="module-selected-title">{{ selectedModule }}</span>
-        <button type="button" class="btn-reset-drawer" (click)="resetFino()">
-          <mat-icon style="font-size: 14px; width: 14px; height: 14px;">refresh</mat-icon>
-          Restablecer a su nivel
-        </button>
-      </div>
-
-      <!-- iOS / Android Toggle Switches List -->
-      <div class="toggles-tree-list" *ngIf="getSelectedUser()">
-        <div *ngFor="let group of getGroupedTreeForSelectedModule()" class="toggle-group-card">
+    <!-- TOGGLES DE PERMISOS EN GRID ADAPTATIVO -->
+    <div class="toggles-grid-container" *ngIf="getSelectedUser()">
+      <div *ngFor="let group of getGroupedTreeForSelectedModule()" class="toggle-group-card">
+        <div class="toggle-group-head">
+          <mat-icon class="icon-group">folder_open</mat-icon>
           <h4 class="toggle-group-title">{{ group.name }}</h4>
-          
-          <div class="toggle-items-list">
-            <div *ngFor="let item of group.items" class="toggle-item-row">
-              <div class="toggle-info-col">
-                <span class="toggle-action-name">{{ item.acc }}</span>
-                <span class="toggle-inherited-desc" [class.inherited-active]="[item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)]">
-                  Nivel {{ getSelectedUser()?.nivel }}: {{ [item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)] ? 'Permitido' : 'Sin acceso' }}
-                </span>
-              </div>
-
-              <!-- iOS / Android Style Toggle Switch -->
-              <label class="ios-switch">
-                <input type="checkbox"
-                       [checked]="finoGet(selectedUserId, getSelectedUser()?.nivel, selectedModule, group.name, item.acc, [item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)])"
-                       (change)="toggleFinoCheckbox(selectedUserId, selectedModule, group.name, item.acc, $any($event.target).checked)">
-                <span class="switch-slider"></span>
-              </label>
+        </div>
+        
+        <div class="toggle-items-list">
+          <div *ngFor="let item of group.items" class="toggle-item-row">
+            <div class="toggle-info-col">
+              <span class="toggle-action-name">{{ item.acc }}</span>
+              <span class="toggle-inherited-desc" [class.inherited-active]="[item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)]">
+                Nivel {{ getSelectedUser()?.nivel }}: {{ [item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)] ? 'Permitido' : 'Sin acceso' }}
+              </span>
             </div>
+
+            <!-- iOS / Android Style Toggle Switch -->
+            <label class="ios-switch">
+              <input type="checkbox"
+                     [checked]="finoGet(selectedUserId, getSelectedUser()?.nivel, selectedModule, group.name, item.acc, [item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)])"
+                     (change)="toggleFinoCheckbox(selectedUserId, selectedModule, group.name, item.acc, $any($event.target).checked)">
+              <span class="switch-slider"></span>
+            </label>
           </div>
         </div>
       </div>
-
     </div>
   </div>
 

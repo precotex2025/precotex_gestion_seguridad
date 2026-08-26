@@ -7,21 +7,17 @@
         <mat-icon>help_center</mat-icon>
         <span>MESA DE AYUDA CORPORATIVA</span>
       </div>
-      
+
       <h2 class="search-hero-title">¿En qué podemos ayudarte?</h2>
-      <p class="search-hero-subtitle">Encuentra respuestas rápidas, manuales de usuario oficiales y guías operativas del SIG.</p>
-      
+      <p class="search-hero-subtitle">Encuentra respuestas rápidas, manuales de usuario oficiales y guías operativas del
+        SIG.</p>
+
       <!-- Glassmorphic Search Box with Keyboard Shortcut -->
       <div class="glass-search-box">
         <mat-icon class="search-icon">search</mat-icon>
-        <input 
-          type="text" 
-          [(ngModel)]="searchText" 
-          (input)="onSearchChange()" 
-          placeholder="Buscar por módulo, proceso, manual o término clave..."
-          class="glass-search-input"
-          id="globalSearchInput"
-        >
+        <input type="text" [(ngModel)]="searchText" (input)="onSearchChange()"
+          placeholder="Buscar por módulo, proceso, manual o término clave..." class="glass-search-input"
+          id="globalSearchInput">
         <div class="shortcut-badge-box">
           <kbd class="kbd-key">Ctrl</kbd>
           <span class="kbd-plus">+</span>
@@ -38,7 +34,8 @@
         <mat-icon style="color: #38bdf8;">analytics</mat-icon>
         <div>
           <h4 class="indicadores-title">Indicadores por Tipo de Documento</h4>
-          <span class="indicadores-sub">Clasificación oficial de manuales, requisitos, guías, preguntas y conceptos</span>
+          <span class="indicadores-sub">Clasificación oficial de manuales, requisitos, guías, preguntas y
+            conceptos</span>
         </div>
       </div>
       <span class="badge-total-cda">
@@ -60,7 +57,8 @@
       </div>
 
       <!-- Manuales de Usuario -->
-      <div class="kpi-chip-card" [class.active]="selectedTipoFilter === 'Manual de usuario'" (click)="setTipoFilter('Manual de usuario')">
+      <div class="kpi-chip-card" [class.active]="selectedTipoFilter === 'Manual de usuario'"
+        (click)="setTipoFilter('Manual de usuario')">
         <div class="chip-icon-box color-purple">
           <mat-icon>menu_book</mat-icon>
         </div>
@@ -71,7 +69,8 @@
       </div>
 
       <!-- Guías Rápidas -->
-      <div class="kpi-chip-card" [class.active]="selectedTipoFilter === 'Guías rápidas'" (click)="setTipoFilter('Guías rápidas')">
+      <div class="kpi-chip-card" [class.active]="selectedTipoFilter === 'Guías rápidas'"
+        (click)="setTipoFilter('Guías rápidas')">
         <div class="chip-icon-box color-emerald">
           <mat-icon>speed</mat-icon>
         </div>
@@ -82,7 +81,8 @@
       </div>
 
       <!-- Preguntas Frecuentes -->
-      <div class="kpi-chip-card" [class.active]="selectedTipoFilter === 'Preguntas frecuentes'" (click)="setTipoFilter('Preguntas frecuentes')">
+      <div class="kpi-chip-card" [class.active]="selectedTipoFilter === 'Preguntas frecuentes'"
+        (click)="setTipoFilter('Preguntas frecuentes')">
         <div class="chip-icon-box color-amber">
           <mat-icon>quiz</mat-icon>
         </div>
@@ -104,7 +104,8 @@
       </div>
 
       <!-- Requisitos -->
-      <div class="kpi-chip-card" [class.active]="selectedTipoFilter === 'Requisitos'" (click)="setTipoFilter('Requisitos')">
+      <div class="kpi-chip-card" [class.active]="selectedTipoFilter === 'Requisitos'"
+        (click)="setTipoFilter('Requisitos')">
         <div class="chip-icon-box color-rose">
           <mat-icon>gavel</mat-icon>
         </div>
@@ -120,7 +121,8 @@
   <div class="section-header">
     <div>
       <h3 class="section-title">Manuales y Documentos Oficiales</h3>
-      <span class="section-subtitle">Filtro activo: <strong>{{ selectedTipoFilter }}</strong> ({{ filteredManualesList.length }} mostrados)</span>
+      <span class="section-subtitle">Filtro activo: <strong>{{ selectedTipoFilter }}</strong> ({{
+        filteredManualesList.length }} mostrados)</span>
     </div>
     <button type="button" class="btn-primary-glow" (click)="onSubirManual()">
       <mat-icon>cloud_upload</mat-icon>
@@ -138,7 +140,7 @@
           <h4 class="manual-title">{{ m.titulo }}</h4>
           <span class="manual-sub" [style.color]="m.color">{{ m.subtitulo }}</span>
         </div>
-        
+
         <!-- Hover Fade-in Delete Button -->
         <button class="btn-delete-manual hover-fade" (click)="onEliminarManual(m)" title="Eliminar manual">
           <mat-icon>delete</mat-icon>
@@ -146,7 +148,7 @@
       </div>
 
       <p class="manual-desc">{{ m.descripcion }}</p>
-      
+
       <div class="manual-footer">
         <div class="manual-meta">
           <span class="font-mono text-purple">{{ m.version }}</span>
@@ -158,7 +160,7 @@
             ⌛ Vigencia exacta: {{ m.fechaVigencia }}
           </small>
         </div>
-        
+
         <!-- Ghost Button for Download -->
         <button class="btn-ghost-pdf" (click)="onDescargarManual(m)">
           <mat-icon>picture_as_pdf</mat-icon>
@@ -170,13 +172,15 @@
 
   <!-- SECTION: CONTROL DE CONSULTAS MÁS FRECUENTES & CAPACITACIONES (CDA-04) -->
   <div class="panel-section margin-top-lg shadow-premium">
-    <div class="section-header-faq border-bottom" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px;">
+    <div class="section-header-faq border-bottom"
+      style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px;">
       <div>
         <h3 class="section-title" style="display: flex; align-items: center; gap: 8px;">
           <mat-icon style="color: var(--violet);">insights</mat-icon>
           Control de Consultas Frecuentes & Plan de Capacitaciones (CDA-04)
         </h3>
-        <span class="section-subtitle">Identificación de temas más consultados por los usuarios para planificar futuras capacitaciones</span>
+        <span class="section-subtitle">Identificación de temas más consultados por los usuarios para planificar futuras
+          capacitaciones</span>
       </div>
       <button type="button" class="btn-primary-glow" (click)="onGenerarPlanCapacitacion()">
         <mat-icon>school</mat-icon>
@@ -185,12 +189,14 @@
     </div>
 
     <!-- Ranking Grid of Consultas Frecuentes -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; padding-top: 16px;">
-      <div *ngFor="let item of consultasFrecuentesStats; let i = index" 
-           style="background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; box-shadow: 0 2px 6px rgba(30,37,69,0.02);">
-        
+    <div
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; padding-top: 16px;">
+      <div *ngFor="let item of consultasFrecuentesStats; let i = index"
+        style="background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; box-shadow: 0 2px 6px rgba(30,37,69,0.02);">
+
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-          <span style="background: rgba(91, 75, 214, 0.1); color: var(--violet); font-weight: 800; font-size: 11px; padding: 2px 8px; border-radius: 6px;">
+          <span
+            style="background: rgba(91, 75, 214, 0.1); color: var(--violet); font-weight: 800; font-size: 11px; padding: 2px 8px; border-radius: 6px;">
             TOP #{{ i + 1 }}
           </span>
           <span style="color: var(--blue); font-weight: 800; font-size: 13px;">
@@ -202,7 +208,8 @@
           {{ item.tema }}
         </h5>
 
-        <div style="background: rgba(18, 160, 106, 0.08); border: 1px solid rgba(18, 160, 106, 0.2); border-radius: 6px; padding: 6px 10px; font-size: 11px; color: var(--green); font-weight: 600;">
+        <div
+          style="background: rgba(18, 160, 106, 0.08); border: 1px solid rgba(18, 160, 106, 0.2); border-radius: 6px; padding: 6px 10px; font-size: 11px; color: var(--green); font-weight: 600;">
           🎓 <strong>Capacitación Sugerida:</strong> {{ item.capacitacion }}
         </div>
       </div>
@@ -222,7 +229,7 @@
     <!-- Animated Accordion FAQs List -->
     <div class="faq-accordion-list">
       <div *ngFor="let f of filteredFaqs" class="faq-accordion-item" [class.expanded]="isFaqExpanded(f.id)">
-        
+
         <!-- Accordion Header -->
         <div class="faq-accordion-header" (click)="toggleFaq(f.id)">
           <div class="faq-q-left">
@@ -249,28 +256,36 @@
   <!-- SECTION: TICKET RÁPIDO Y CONTACTO A SOPORTE (AYU-03) -->
   <div class="panel-section margin-top-lg contact-support-section shadow-premium">
     <div class="contact-support-card" style="flex-direction: column; align-items: stretch; gap: 20px;">
-      
+
       <div class="contact-support-info">
         <div class="contact-support-icon-box">
           <mat-icon class="contact-support-icon">confirmation_number</mat-icon>
         </div>
         <div class="contact-support-text">
           <h3 class="contact-title">Generación de Ticket Rápido a Soporte O&M / Sistemas (AYU-03)</h3>
-          <p class="contact-subtitle">Ingresa tu consulta o incidencia para recibir soporte prioritario con número de atención inmediato.</p>
+          <p class="contact-subtitle">Ingresa tu consulta o incidencia para recibir soporte prioritario con número de
+            atención inmediato.</p>
         </div>
       </div>
 
       <!-- Ticket Form (AYU-03) -->
-      <div class="ticket-form-wrapper" style="display: flex; flex-direction: column; gap: 14px; background: var(--panel-2); padding: 18px; border-radius: 12px; border: 1px solid var(--line);">
+      <div class="ticket-form-wrapper"
+        style="display: flex; flex-direction: column; gap: 14px; background: var(--panel-2); padding: 18px; border-radius: 12px; border: 1px solid var(--line);">
         <div style="display: flex; gap: 14px; flex-wrap: wrap;">
           <div style="flex: 2; min-width: 250px;">
-            <label style="font-size: 11px; font-weight: 700; color: var(--txt); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Asunto / Título del Ticket:</label>
-            <input type="text" [(ngModel)]="ticketAsunto" placeholder="Ej: Error al adjuntar reporte en NC..." class="glass-search-input" style="width: 100%; border-radius: 8px; padding: 10px 14px; background: #ffffff; color: var(--txt); border: 1px solid var(--line); font-size: 13px;">
+            <label
+              style="font-size: 11px; font-weight: 700; color: var(--txt); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Asunto
+              / Título del Ticket:</label>
+            <input type="text" [(ngModel)]="ticketAsunto" placeholder="Ej: Error al adjuntar reporte en NC..."
+              class="glass-search-input"
+              style="width: 100%; border-radius: 8px; padding: 10px 14px; background: #ffffff; color: var(--txt); border: 1px solid var(--line); font-size: 13px;">
           </div>
-          
+
           <div style="flex: 1; min-width: 160px;">
-            <label style="font-size: 11px; font-weight: 700; color: var(--txt); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Prioridad:</label>
-            <select [(ngModel)]="ticketPrioridad" class="select-dark" style="width: 100%; height: 42px; background-color: #ffffff !important; color: var(--txt) !important; border: 1px solid var(--line) !important; border-radius: 8px !important; padding: 8px 12px !important; font-size: 13px;">
+            <label
+              style="font-size: 11px; font-weight: 700; color: var(--txt); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Prioridad:</label>
+            <select [(ngModel)]="ticketPrioridad" class="select-dark"
+              style="width: 100%; height: 42px; background-color: #ffffff !important; color: var(--txt) !important; border: 1px solid var(--line) !important; border-radius: 8px !important; padding: 8px 12px !important; font-size: 13px;">
               <option value="Baja">🟢 Baja</option>
               <option value="Normal">🟡 Normal</option>
               <option value="Alta / Urgente">🔴 Alta / Urgente</option>
@@ -279,8 +294,13 @@
         </div>
 
         <div>
-          <label style="font-size: 11px; font-weight: 700; color: var(--txt); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Descripción Detallada:</label>
-          <textarea [(ngModel)]="ticketDescripcion" rows="3" placeholder="Describe los pasos para reproducir la incidencia o el requerimiento..." class="glass-search-input" style="width: 100%; border-radius: 8px; padding: 10px 14px; background: #ffffff; color: var(--txt); border: 1px solid var(--line); font-size: 13px; resize: vertical;"></textarea>
+          <label
+            style="font-size: 11px; font-weight: 700; color: var(--txt); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Descripción
+            Detallada:</label>
+          <textarea [(ngModel)]="ticketDescripcion" rows="3"
+            placeholder="Describe los pasos para reproducir la incidencia o el requerimiento..."
+            class="glass-search-input"
+            style="width: 100%; border-radius: 8px; padding: 10px 14px; background: #ffffff; color: var(--txt); border: 1px solid var(--line); font-size: 13px; resize: vertical;"></textarea>
         </div>
 
         <div style="display: flex; justify-content: flex-end;">

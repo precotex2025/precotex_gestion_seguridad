@@ -111,12 +111,20 @@
         <span class="nav-label">Portafolio de Mejora</span>
       </a>
 
-      <!-- REQ. LEGAL -->
-      <a *ngIf="hasAccess('legal') && matchesSidebar('Req. legal')" mat-list-item routerLink="/principal/reqLegal"
-        [class.active-link]="currentModule === 'Req. legal'" class="nav-item">
+      <!-- GESTIÓN LEGAL -->
+      <a *ngIf="hasAccess('legal') && matchesSidebar('Gestión Legal')" mat-list-item routerLink="/principal/reqLegal"
+        [class.active-link]="currentModule === 'Gestión Legal'" class="nav-item">
         <div class="active-indicator-bar"></div>
         <mat-icon class="nav-module-icon">gavel</mat-icon>
         <span class="nav-label">Gestión Legal</span>
+      </a>
+
+      <!-- PROVEEDORES Y CONTRATISTAS -->
+      <a *ngIf="hasAccess('proveedores') && matchesSidebar('Proveedores')" mat-list-item
+        routerLink="/principal/proveedores" [class.active-link]="currentModule === 'Proveedores'" class="nav-item">
+        <div class="active-indicator-bar"></div>
+        <mat-icon class="nav-module-icon">local_shipping</mat-icon>
+        <span class="nav-label">Proveedores y contratistas</span>
       </a>
 
       <!-- AYUDA -->

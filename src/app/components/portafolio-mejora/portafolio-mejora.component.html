@@ -162,13 +162,25 @@
   </div>
 
   <!-- DISPOSICIÓN PRINCIPAL: ÁRBOL + TABLA -->
-  <div class="doc-layout">
+  <div class="doc-layout" [class.layout-stacked]="treeColapsado">
     
+    <!-- BOTÓN PARA RE-EXPANDIR SI ESTÁ COLAPSADO -->
+    <div class="expand-banner-row" *ngIf="treeColapsado">
+      <button type="button" class="btn-expand-carpetas shadow-premium" (click)="toggleTree()" title="Mostrar Estructura Documental">
+        <mat-icon>chevron_right</mat-icon>
+        <span>Estructura Documental</span>
+      </button>
+    </div>
+
     <!-- PANEL IZQUIERDO: ESTRUCTURA DOCUMENTAL ESTILO FILE MANAGER -->
-    <div class="tree-panel-filemanager">
+    <div class="tree-panel-filemanager" *ngIf="!treeColapsado">
       <div class="tree-header-row">
         <mat-icon class="tree-header-icon">snippet_folder</mat-icon>
         <span class="tree-header-title">ESTRUCTURA DOCUMENTAL</span>
+        <span class="flex-spacer"></span>
+        <button type="button" class="btn-toggle-carpetas" (click)="toggleTree()" title="Ocultar Estructura Documental">
+          <mat-icon style="font-size: 18px; width: 18px; height: 18px;">keyboard_double_arrow_left</mat-icon>
+        </button>
       </div>
       
       <!-- Root Node (Todos los procesos) -->

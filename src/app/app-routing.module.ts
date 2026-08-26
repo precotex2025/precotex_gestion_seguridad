@@ -31,6 +31,7 @@ import { AuditoriasComponent } from './components/auditorias/auditorias.componen
 import { PortafolioMejoraComponent } from './components/portafolio-mejora/portafolio-mejora.component';
 import { ReqLegalComponent } from './components/req-legal/req-legal.component';
 import { AyudaComponent } from './components/ayuda/ayuda.component';
+import { ProveedoresComponent } from './components/proveedores/proveedores.component';
 import { ProgramaAnualComponent } from './components/auditorias/programa-anual/programa-anual.component';
 import { MedicionIndicadoresComponent } from './components/analytics/medicion-indicadores/medicion-indicadores.component';
 
@@ -76,6 +77,8 @@ const routes: Routes = [
       { path: "auditorias/programa-anual", component: ProgramaAnualComponent },
       { path: "portafolioMejora", component: PortafolioMejoraComponent },
       { path: "reqLegal", component: ReqLegalComponent },
+      { path: "reqLegal/matriz", component: ReqLegalComponent },
+      { path: "proveedores", component: ProveedoresComponent },
       { path: "ayuda", component: AyudaComponent }
     ]
   },
