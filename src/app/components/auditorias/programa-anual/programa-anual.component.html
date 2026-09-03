@@ -11,6 +11,29 @@
     </button>
   </div>
 
+  <!-- TOOLBAR Y SELECTOR DE AÑO PROGRAMADO (AUD-08) -->
+  <div class="integrated-toolbar margin-bottom-toolbar">
+    <div class="toolbar-title-section">
+      <h2 class="seccion-titulo">PROGRAMA ANUAL DE AUDITORÍAS</h2>
+      <span class="results-badge badge-purple">{{ filteredAuditorias.length }} Auditorías</span>
+    </div>
+
+    <div class="toolbar-actions-section">
+      <div class="year-selector-container">
+        <span class="year-label">Año Fiscal:</span>
+        <div class="year-btn-group">
+          <button type="button" 
+                  *ngFor="let y of availableYears" 
+                  class="btn-year-tab" 
+                  [class.active-year]="selectedYear === y" 
+                  (click)="setYear(y)">
+            {{ y }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- LEYENDA PREMIUM DE BARRAS DE GANTT -->
   <div class="legend-container-gantt">
     <span class="legend-item"><i class="dot dot-realizada"></i>Realizada (Completada)</span>
@@ -24,11 +47,11 @@
       <thead>
         <tr>
           <th class="th-audit">Auditoría / Norma</th>
-          <th *ngFor="let mes of meses" class="th-month-header">{{ mes }}</th>
+          <th *ngFor="let mes of meses" class="th-month-header">{{ mes }} {{ selectedYear }}</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let audit of auditorias" class="gantt-row">
+        <tr *ngFor="let audit of filteredAuditorias" class="gantt-row">
           <td class="td-audit">
             <span class="audit-code font-mono text-purple">{{ audit.codigo_Auditoria }}</span>
             <span class="audit-details">
@@ -48,10 +71,10 @@
           </td>
         </tr>
 
-        <tr *ngIf="auditorias.length === 0">
+        <tr *ngIf="filteredAuditorias.length === 0">
           <td colspan="13" class="td-empty">
             <mat-icon class="empty-icon">event_busy</mat-icon>
-            <p>Sin auditorías registradas en el programa anual.</p>
+            <p>Sin auditorías registradas para el programa del año {{ selectedYear }}.</p>
           </td>
         </tr>
       </tbody>

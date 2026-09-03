@@ -1,5 +1,5 @@
 /* ===================================================================
-   Medicion Objetivos Regedit Modal — CSS Styles
+   Medicion Objetivos Regedit Modal — CSS Styles (OBJ-03)
    =================================================================== */
 
 .dialog-container {
@@ -10,13 +10,18 @@
   overflow: hidden;
 }
 
-
 .dialog-header {
-  padding: 20px 24px 10px 24px;
+  padding: 18px 24px 14px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--line);
+}
+
+.header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .dialog-title {
@@ -25,6 +30,21 @@
   font-weight: 700;
   color: #ffffff;
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-icon {
+  color: #7c6cf0;
+  font-size: 1.3rem;
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.header-subtitle {
+  font-size: 0.75rem;
+  color: var(--muted);
 }
 
 .btn-close-header {
@@ -43,28 +63,117 @@
 }
 
 .form-content {
-  padding: 24px !important;
-  max-height: 70vh;
+  padding: 20px 24px !important;
+  max-height: 72vh;
   overflow-y: auto;
 }
 
-/* Grids based on mockup */
-.grid-4-cols {
-  display: grid;
-  grid-template-columns: 2.5fr 1fr 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
+/* ===================================================================
+   OBJ-03: Sección Destacada de Búsqueda y Selección
+   =================================================================== */
+.search-objective-box {
+  background: rgba(124, 108, 240, 0.05);
+  border: 1px solid rgba(124, 108, 240, 0.3);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 20px;
 }
 
+.box-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.box-icon {
+  color: #7c6cf0;
+  font-size: 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.box-title {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #a394ff;
+  letter-spacing: 0.05em;
+}
+
+.search-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 14px;
+}
+
+.select-highlight {
+  border-color: rgba(124, 108, 240, 0.5) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  font-weight: 600;
+}
+
+.search-input {
+  border-color: rgba(124, 108, 240, 0.4) !important;
+}
+
+.selected-badge-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-top: 12px;
+  border-left: 3px solid #7c6cf0;
+}
+
+.badge-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.badge-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+.badge-value {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.code-pill {
+  color: #60a5fa !important;
+  font-family: monospace;
+  font-weight: 700;
+}
+
+.meta-pill {
+  color: #34d399 !important;
+  font-weight: 700;
+}
+
+/* Grids */
 .grid-3-cols {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
+}
+
+.grid-2-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 14px;
 }
 
 .form-section-item {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .form-label {
@@ -90,9 +199,54 @@
   transition: all 0.2s ease;
 }
 
-.full-width-input:focus {
-  border-color: #7c6cf0;
-  box-shadow: 0 0 0 2px rgba(124, 108, 240, 0.15);
+.fixed-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fixed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(148, 163, 184, 0.12);
+  color: #94a3b8;
+  font-size: 0.58rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.lock-icon {
+  font-size: 0.75rem !important;
+  width: 0.75rem !important;
+  height: 0.75rem !important;
+  color: #94a3b8;
+}
+
+.readonly-input {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.15) !important;
+  color: #cbd5e1 !important;
+  cursor: not-allowed;
+  font-weight: 500;
+}
+
+.readonly-input:focus {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: none !important;
+}
+
+.meta-readonly {
+  color: #34d399 !important;
+  font-weight: 700;
+}
+
+.valor-input {
+  border-color: rgba(52, 211, 153, 0.4) !important;
+  font-weight: 700;
+  color: #34d399 !important;
 }
 
 select.full-width-input {
@@ -109,9 +263,82 @@ select.full-width-input option {
   color: #ffffff;
 }
 
-.textarea-desc {
-  resize: vertical;
-  min-height: 80px;
+/* ===================================================================
+   OBJ-05: Estilos de Carga de Archivo de Evidencia
+   =================================================================== */
+.file-upload-wrapper {
+  margin-top: 4px;
+}
+
+.file-drop-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1.5px dashed rgba(124, 108, 240, 0.4);
+  border-radius: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.file-drop-card:hover {
+  background: rgba(124, 108, 240, 0.06);
+  border-color: #7c6cf0;
+}
+
+.file-drop-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(124, 108, 240, 0.15);
+  color: #a394ff;
+  flex-shrink: 0;
+}
+
+.file-drop-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.file-drop-main-text {
+  font-size: 0.8rem;
+  color: #e2e8f0;
+}
+
+.file-drop-main-text.text-selected {
+  color: #34d399;
+  font-weight: 700;
+}
+
+.file-drop-sub-text {
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.btn-clear-file {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-clear-file:hover {
+  background: #ef4444;
+  color: #ffffff;
 }
 
 .dialog-actions-row {
@@ -132,6 +359,9 @@ select.full-width-input option {
   padding: 8px 18px !important;
   border-radius: 6px !important;
   cursor: pointer;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
   transition: all 0.2s ease;
   box-shadow: 0 4px 12px rgba(124, 108, 240, 0.3);
 }
@@ -160,10 +390,11 @@ select.full-width-input option {
 
 /* Responsive Adjustments */
 @media (max-width: 900px) {
-  .grid-4-cols {
-    grid-template-columns: repeat(2, 1fr);
+  .search-grid {
+    grid-template-columns: 1fr;
   }
-  .grid-3-cols {
+  .grid-3-cols,
+  .grid-2-cols {
     grid-template-columns: 1fr;
   }
 }

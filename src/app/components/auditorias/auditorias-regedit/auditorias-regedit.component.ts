@@ -25,6 +25,15 @@ export class AuditoriasRegeditComponent implements OnInit {
   formulario!: FormGroup;
   objectKeys = Object.keys;
 
+  sedesList: string[] = [
+    'Sede Huachipa',
+    'Sede Ate',
+    'Sede Independencia',
+    'Sede San Juan de Lurigancho',
+    'Sede Principal / Administrativa',
+    'Todas las sedes'
+  ];
+
   PROCESOS_GROUPS: { [key: string]: string[] } = {
     'Estratégicos': [
       'Gestión de la Dirección',
@@ -84,7 +93,8 @@ export class AuditoriasRegeditComponent implements OnInit {
       ctrol_norma       : ['ISO 9001:2015'],
       ctrol_norma_otra  : [''],
       ctrol_responsable : [''],
-      ctrol_areas       : ['Costura'],
+      ctrol_sedes       : [['Sede Huachipa', 'Sede Ate']],
+      ctrol_areas       : [['Costura']],
       ctrol_inicio      : [''],
       ctrol_fin         : [''],
       ctrol_frecuencia  : ['Anual'],
@@ -115,7 +125,25 @@ export class AuditoriasRegeditComponent implements OnInit {
     }
 
     this.formulario.get('ctrol_responsable')?.setValue(d.responsable || '');
-    this.formulario.get('ctrol_areas')?.setValue(d.areas || '');
+
+    // Cargar sedes múltiples (AUD-05)
+    const loadedSedes = d.sedes || 'Sede Huachipa, Sede Ate';
+    if (typeof loadedSedes === 'string') {
+      const arrSedes = loadedSedes.split(',').map((s: string) => s.trim()).filter((s: string) => !!s);
+      this.formulario.get('ctrol_sedes')?.setValue(arrSedes.length > 0 ? arrSedes : ['Sede Huachipa']);
+    } else if (Array.isArray(loadedSedes)) {
+      this.formulario.get('ctrol_sedes')?.setValue(loadedSedes);
+    }
+
+    // Cargar áreas múltiples (AUD-05)
+    const loadedAreas = d.areas || 'Costura';
+    if (typeof loadedAreas === 'string') {
+      const arrAreas = loadedAreas.split(',').map((a: string) => a.trim()).filter((a: string) => !!a);
+      this.formulario.get('ctrol_areas')?.setValue(arrAreas.length > 0 ? arrAreas : ['Costura']);
+    } else if (Array.isArray(loadedAreas)) {
+      this.formulario.get('ctrol_areas')?.setValue(loadedAreas);
+    }
+
     this.formulario.get('ctrol_inicio')?.setValue(d.inicio || '');
     this.formulario.get('ctrol_fin')?.setValue(d.fin || '');
     this.formulario.get('ctrol_frecuencia')?.setValue(d.frecuencia || 'Anual');
@@ -141,7 +169,13 @@ export class AuditoriasRegeditComponent implements OnInit {
     }
 
     const sResponsable = String(this.formulario.get('ctrol_responsable')?.value || '').trim();
-    const sAreas       = String(this.formulario.get('ctrol_areas')?.value       || '').trim();
+
+    const rawSedes     = this.formulario.get('ctrol_sedes')?.value;
+    const sSedes       = Array.isArray(rawSedes) ? rawSedes.join(', ') : String(rawSedes || '').trim();
+
+    const rawAreas     = this.formulario.get('ctrol_areas')?.value;
+    const sAreas       = Array.isArray(rawAreas) ? rawAreas.join(', ') : String(rawAreas || '').trim();
+
     const sInicio      = String(this.formulario.get('ctrol_inicio')?.value      || '').trim();
     const sFin         = String(this.formulario.get('ctrol_fin')?.value         || '').trim();
     const sFrecuencia  = String(this.formulario.get('ctrol_frecuencia')?.value  || 'Anual').trim();
@@ -185,6 +219,7 @@ export class AuditoriasRegeditComponent implements OnInit {
           Tipo: sTipo,
           Norma: sNorma,
           Responsable: sResponsable,
+          Sedes: sSedes,
           Areas: sAreas,
           Fecha_Inicio: sInicio || null,
           Fecha_Fin: sFin || null,

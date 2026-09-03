@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
 import { MedicionObjetivosRegeditComponent } from '../planificacion-objetivos/medicion-objetivos-regedit/medicion-objetivos-regedit.component';
+import { AnalyticsDetalleComponent } from '../analytics/analytics-detalle/analytics-detalle.component';
 
 const STORAGE_KEY = 'precotex_mediciones_obj';
 
@@ -24,11 +25,13 @@ export class MedicionesPendientesComponent implements OnInit {
 
   displayedColumns: string[] = [
     'objetivo',
+    'indicador',
     'proceso',
+    'responsableSeguimiento',
     'frecuencia',
     'meta',
     'valor',
-    'periodo',
+    'avance',
     'semaforo',
     'acciones'
   ];
@@ -38,36 +41,51 @@ export class MedicionesPendientesComponent implements OnInit {
   private readonly seedData = [
     {
       id: 'MOB-001',
-      objetivo: 'Reducir defectos de calidad',
-      proceso: 'Calidad',
+      codigoObjetivo: 'OBJ-2026-001',
+      objetivo: 'Reducir el índice de accidentabilidad laboral en todas las sedes operativas',
+      indicador: 'Índice de Frecuencia de Accidentes (IFA)',
+      proceso: 'SSOMA',
+      responsableSeguimiento: 'Ana Gómez (Coordinador SIG)',
       frecuencia: 'Mensual',
-      meta: '≤10%',
-      valor: '9.8%',
-      periodo: 'Junio 2025',
+      meta: '1.5',
+      valor: '1.2',
+      avance: 95,
+      periodo: '2026-Q1',
       semaforo: 'En meta',
-      obs: ''
+      evidencia: 'Reporte_Mensual_Accidentabilidad_SSOMA.pdf',
+      obs: 'Cumplimiento adecuado tras capacitaciones preventivas'
     },
     {
       id: 'MOB-002',
-      objetivo: 'Cumplimiento prog. operativo',
-      proceso: 'Producción',
+      codigoObjetivo: 'OBJ-2026-002',
+      objetivo: 'Optimizar la eficiencia productiva en Tintorería y acabados textiles',
+      indicador: '% Rendimiento de Tintura',
+      proceso: 'Tintorería',
+      responsableSeguimiento: 'Manuel Rojas (Jefe Producción)',
       frecuencia: 'Mensual',
-      meta: '95%',
+      meta: '92%',
       valor: '88%',
-      periodo: 'Junio 2025',
+      avance: 85,
+      periodo: '2026-Q1',
       semaforo: 'En riesgo',
-      obs: ''
+      evidencia: 'Informe_Eficiencia_Tintoreria_Marzo.xlsx',
+      obs: 'Requiere ajuste en temperatura de teñido'
     },
     {
       id: 'MOB-003',
-      objetivo: 'Reducir merma de tela',
-      proceso: 'Corte',
-      frecuencia: 'Semanal',
-      meta: '≤8%',
-      valor: '15%',
-      periodo: 'Junio 2025',
-      semaforo: 'Crítico',
-      obs: 'Requiere plan de acción.'
+      codigoObjetivo: 'OBJ-2026-003',
+      objetivo: 'Cumplimiento del programa anual de auditorías internas del SIG',
+      indicador: '% Avance del Programa de Auditorías',
+      proceso: 'Gestión de Calidad',
+      responsableSeguimiento: 'Carlos Mendoza (Auditor Líder)',
+      frecuencia: 'Trimestral',
+      meta: '95%',
+      valor: '98%',
+      avance: 100,
+      periodo: '2026-Q1',
+      semaforo: 'En meta',
+      evidencia: 'Acta_Cierre_Auditorias_Q1.pdf',
+      obs: 'Auditorías cerradas sin observaciones críticas'
     }
   ];
 
@@ -83,7 +101,12 @@ export class MedicionesPendientesComponent implements OnInit {
   onListado(): void {
     const local = localStorage.getItem(STORAGE_KEY);
     if (local) {
-      const data = JSON.parse(local);
+      const data = JSON.parse(local).map((item: any) => ({
+        ...item,
+        indicador: item.indicador || '% Eficiencia / Cumplimiento',
+        responsableSeguimiento: item.responsableSeguimiento || item.responsable || 'Coordinador SIG',
+        avance: item.avance !== null && item.avance !== undefined ? item.avance : this.calcularAvanceAuto(item.valor, item.meta)
+      }));
       this.dataSource.data = data;
       this.calculateStats(data);
     } else {
@@ -91,6 +114,14 @@ export class MedicionesPendientesComponent implements OnInit {
       this.dataSource.data = this.seedData;
       this.calculateStats(this.seedData);
     }
+  }
+
+  calcularAvanceAuto(valor: any, meta: any): number {
+    const valNum = parseFloat(String(valor || '').replace(/[^0-9.]/g, '')) || 0;
+    const metaNum = parseFloat(String(meta || '').replace(/[^0-9.]/g, '')) || 100;
+    if (metaNum <= 0) return 80;
+    const pct = Math.round((valNum / metaNum) * 100);
+    return Math.min(Math.max(pct, 0), 100);
   }
 
   calculateStats(data: any[]): void {
@@ -176,6 +207,30 @@ export class MedicionesPendientesComponent implements OnInit {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
           this.toastr.success('Medición actualizada correctamente.', '', { timeOut: 2500 });
           this.onListado();
+        }
+      }
+    });
+  }
+
+  onVerDetalle(item: any): void {
+    this.dialog.open(AnalyticsDetalleComponent, {
+      width: '1050px',
+      maxWidth: '95vw',
+      panelClass: 'custom-large-dialog',
+      disableClose: false,
+      data: {
+        indicador: {
+          id: undefined,
+          idIndicador: undefined,
+          esObjetivo: true,
+          codigo: item.codigoObjetivo || item.codigo || 'OBJ-2026-001',
+          nombre: item.indicador || item.objetivo,
+          objetivo: item.objetivo,
+          proceso: item.proceso || 'SSOMA',
+          frecuencia: item.frecuencia || 'Mensual',
+          meta: parseFloat(String(item.meta || '90').replace(/[^0-9.]/g, '')) || 90,
+          norma: item.norma || 'ISO 9001:2015',
+          estado: 'Activo'
         }
       }
     });

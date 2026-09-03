@@ -18,10 +18,13 @@
     
     <mat-dialog-content class="form-content">
       
+      <!-- SECCIÓN 1: DEFINICIÓN DEL OBJETIVO -->
+      <div class="section-title">Definición del Objetivo</div>
+
       <!-- Objetivo -->
       <div class="form-section-item">
         <div class="form-label">Objetivo (*):</div>
-        <input type="text" formControlName="objetivo" class="full-width-input" placeholder="Ej. Reducir accidentes laborales en planta">
+        <input type="text" formControlName="objetivo" class="full-width-input" placeholder="Ej. Reducir incidentes y optimizar el consumo energético">
       </div>
 
       <!-- Proceso & Norma -->
@@ -42,11 +45,50 @@
         </div>
       </div>
 
+      <!-- Período & Responsable del Proceso (OBJ-01) -->
+      <div class="grid-2-cols">
+        <div class="form-section-item">
+          <div class="form-label">Período (*):</div>
+          <input type="text" formControlName="periodo" class="full-width-input" placeholder="Ej. 2026 / 2026-Q1">
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Responsable del Proceso (*):</div>
+          <input type="text" formControlName="responsableProceso" class="full-width-input" placeholder="Ej. Juan Pérez (Jefe de Proceso)">
+        </div>
+      </div>
+
+      <!-- Fecha de Inicio & Fecha de Fin (OBJ-01) -->
+      <div class="grid-2-cols">
+        <div class="form-section-item">
+          <div class="form-label">Fecha de Inicio:</div>
+          <input type="date" formControlName="fechaInicio" class="full-width-input">
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Fecha de Fin:</div>
+          <input type="date" formControlName="fechaFin" class="full-width-input">
+        </div>
+      </div>
+
+      <!-- Responsable de Seguimiento & Medio de Verificación (OBJ-01) -->
+      <div class="grid-2-cols">
+        <div class="form-section-item">
+          <div class="form-label">Responsable de Seguimiento (*):</div>
+          <input type="text" formControlName="responsableSeguimiento" class="full-width-input" placeholder="Ej. Ana Gómez (Coordinador SIG / SSOMA)">
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Medio de Verificación:</div>
+          <input type="text" formControlName="medioVerificacion" class="full-width-input" placeholder="Ej. Reporte mensual / Registro de auditoría">
+        </div>
+      </div>
+
+      <!-- SECCIÓN 2: INDICADOR, MÉTRICAS Y AVANCE -->
+      <div class="section-title">Métricas y Avance</div>
+
       <!-- Indicador & Frecuencia -->
       <div class="grid-2-cols">
         <div class="form-section-item">
           <div class="form-label">Indicador (*):</div>
-          <input type="text" formControlName="indicador" class="full-width-input" placeholder="Ej. N° accidentes">
+          <input type="text" formControlName="indicador" class="full-width-input" placeholder="Ej. % Eficiencia de Operaciones">
         </div>
         <div class="form-section-item">
           <div class="form-label">Frecuencia (*):</div>
@@ -56,15 +98,38 @@
         </div>
       </div>
 
-      <!-- Línea base & Meta -->
+      <!-- Fórmula de Cálculo & Unidad de Medida (OBJ-01) -->
       <div class="grid-2-cols">
         <div class="form-section-item">
-          <div class="form-label">Línea base:</div>
-          <input type="text" formControlName="base" class="full-width-input" placeholder="Ej. 2 en 2024">
+          <div class="form-label">Fórmula de Cálculo:</div>
+          <input type="text" formControlName="formulaCalculo" class="full-width-input" placeholder="Ej. (Producción Real / Producción Esperada) * 100">
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Unidad de Medida:</div>
+          <select formControlName="unidadMedida" class="full-width-input">
+            <option value="%">% (Porcentaje)</option>
+            <option value="N°">N° (Cantidad)</option>
+            <option value="Días">Días</option>
+            <option value="Horas">Horas</option>
+            <option value="Puntos">Puntos</option>
+            <option value="Unidades">Unidades</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Línea Base, Meta & Avance (%) (OBJ-01) -->
+      <div class="grid-3-cols">
+        <div class="form-section-item">
+          <div class="form-label">Línea Base:</div>
+          <input type="text" formControlName="base" class="full-width-input" placeholder="Ej. 70%">
         </div>
         <div class="form-section-item">
           <div class="form-label">Meta (*):</div>
-          <input type="text" formControlName="meta" class="full-width-input" placeholder="Ej. 0">
+          <input type="text" formControlName="meta" class="full-width-input" placeholder="Ej. 85%">
+        </div>
+        <div class="form-section-item">
+          <div class="form-label">Avance (%):</div>
+          <input type="number" min="0" max="100" formControlName="avance" class="full-width-input" placeholder="Ej. 65">
         </div>
       </div>
 
@@ -76,16 +141,10 @@
         </select>
       </div>
 
-      <!-- Cómo se cumplirá -->
+      <!-- Cómo se cumplirá / Estrategia -->
       <div class="form-section-item">
         <div class="form-label">Cómo se cumplirá / Estrategia:</div>
-        <textarea formControlName="desc" rows="3" class="full-width-input textarea-desc" placeholder="Describe la estrategia o acciones principales..."></textarea>
-      </div>
-
-      <!-- Observaciones (ORG-01) -->
-      <div class="form-section-item">
-        <div class="form-label">Observaciones (ORG-01):</div>
-        <textarea formControlName="observaciones" rows="2" class="full-width-input textarea-desc" placeholder="Observaciones adicionales o notas de seguimiento del objetivo..."></textarea>
+        <textarea formControlName="desc" rows="3" class="full-width-input textarea-desc" placeholder="Describe la estrategia o plan de acción..."></textarea>
       </div>
 
     </mat-dialog-content>

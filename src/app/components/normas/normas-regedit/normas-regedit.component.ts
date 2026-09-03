@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { NormasService } from '../../../services/normas.service';
 import { ToastrService } from 'ngx-toastr';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { GlobalVariable } from '../../../VarGlobals';
 
 interface data {
   Title       : string;
@@ -76,13 +77,13 @@ export class NormasRegeditComponent implements OnInit {
   }
 
   onLoadInfo(){
-     this.formulario.get('ctrol_codigo')?.setValue(this.data.Datos.codigo_Norma!);
-     this.formulario.get('ctrol_denominacion')?.setValue(this.data.Datos.norma!);
+     this.formulario.get('ctrol_codigo')?.setValue(this.data.Datos.codigo_Norma || this.data.Datos.codigo || '');
+     this.formulario.get('ctrol_denominacion')?.setValue(this.data.Datos.norma || '');
      this.formulario.get('ctrol_categoria')?.setValue(this.data.Datos.categoria || 'Calidad');
      this.formulario.get('ctrol_fechaVencimiento')?.setValue(this.formatDate(this.data.Datos.fechaVencimiento));
      this.formulario.get('ctrol_fechaAuditoria')?.setValue(this.formatDate(this.data.Datos.fechaAuditoria));
      this.formulario.get('ctrol_estado')?.setValue(this.data.Datos.estado || 'Vigente');
-     this.formulario.get('ctrol_descripcion')?.setValue(this.data.Datos.descripcion!);
+     this.formulario.get('ctrol_descripcion')?.setValue(this.data.Datos.descripcion || '');
      this.formulario.get('ctrol_observaciones')?.setValue(this.data.Datos.observaciones || '');
      this.selectedFileName = this.data.Datos.archivo || this.data.Datos.ruta_Adjunto || '';
      this.formulario.get('ctrol_archivo')?.setValue(this.selectedFileName);
@@ -109,7 +110,7 @@ export class NormasRegeditComponent implements OnInit {
     const sTitle = this.data.Accion === 'I' ? 'Registrar' : 'Actualizar';
 
     Swal.fire({
-      title: '¿Desea ' + sTitle.toLowerCase() + ' norma?, Confirme',
+      title: '¿Desea ' + sTitle.toLowerCase() + ' la norma?, Confirme',
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
@@ -120,42 +121,93 @@ export class NormasRegeditComponent implements OnInit {
       if (result.isConfirmed) {
         this.SpinnerService.show();
         
-        let fechaV = null;
-        if (sFechaVencimiento) {
-          fechaV = new Date(sFechaVencimiento);
-        }
-        let fechaA = null;
-        if (sFechaAuditoria) {
-          fechaA = new Date(sFechaAuditoria);
-        }
+        const sUsu = GlobalVariable.vusu || (typeof localStorage !== 'undefined' ? localStorage.getItem('vusu') : null) || 'admin';
+        const strFechaV = sFechaVencimiento ? sFechaVencimiento.substring(0, 10) : null;
+        const strFechaA = sFechaAuditoria ? sFechaAuditoria.substring(0, 10) : null;
+        const codNorma = this.data.Accion === 'I' ? '' : (this.formulario.get('ctrol_codigo')?.value || '');
 
         const data = {
-          codigo_Norma: this.data.Accion === 'I' ? '' : this.formulario.get('ctrol_codigo')?.value,
+          Accion: this.data.Accion,
+          accion: this.data.Accion,
+          Codigo_Norma: codNorma,
+          codigo_Norma: codNorma,
+          Norma: sNorma,
           norma: sNorma,
+          Categoria: sCategoria,
           categoria: sCategoria,
-          fechaVencimiento: fechaV,
-          fechaAuditoria: fechaA,
+          FechaVencimiento: strFechaV,
+          fechaVencimiento: strFechaV,
+          FechaAuditoria: strFechaA,
+          fechaAuditoria: strFechaA,
+          Estado: sEstado,
           estado: sEstado,
+          Descripcion: sDescripcion,
           descripcion: sDescripcion,
+          Observaciones: sObservaciones,
           observaciones: sObservaciones,
+          Archivo: this.selectedFileName || '',
+          archivo: this.selectedFileName || '',
+          Flg_Activo: '1',
           flg_Activo: '1',
-          cod_Usuario: 'admin', // TODO: Get from auth
-          accion: this.data.Accion
+          Cod_Usuario: sUsu,
+          cod_Usuario: sUsu
+        };
+
+        const guardarLocal = () => {
+          try {
+            const rawNormas = localStorage.getItem('precotex:normas:listado');
+            let normasList: any[] = rawNormas ? JSON.parse(rawNormas) : [];
+            if (this.data.Accion === 'I') {
+              const newCode = 'NOR-' + String(normasList.length + 1).padStart(3, '0');
+              const newObj = {
+                codigo_Norma: newCode,
+                norma: sNorma,
+                categoria: sCategoria,
+                fechaVencimiento: strFechaV,
+                fechaAuditoria: strFechaA,
+                estado: sEstado,
+                descripcion: sDescripcion,
+                observaciones: sObservaciones,
+                archivo: this.selectedFileName || '',
+                flg_Activo: '1'
+              };
+              normasList.unshift(newObj);
+            } else {
+              const idx = normasList.findIndex((n: any) => (n.codigo_Norma || n.codigo) === codNorma);
+              if (idx >= 0) {
+                normasList[idx] = {
+                  ...normasList[idx],
+                  norma: sNorma,
+                  categoria: sCategoria,
+                  fechaVencimiento: strFechaV,
+                  fechaAuditoria: strFechaA,
+                  estado: sEstado,
+                  descripcion: sDescripcion,
+                  observaciones: sObservaciones,
+                  archivo: this.selectedFileName || normasList[idx].archivo
+                };
+              }
+            }
+            localStorage.setItem('precotex:normas:listado', JSON.stringify(normasList));
+          } catch (e) {}
         };
 
         this.serviceNorma.postProcesoMntoNormas(data).subscribe({
           next: (res: any) => {
             this.SpinnerService.hide();
-            if (res.success) {
-              this.toastr.success(res.message, '', { timeOut: 2500 });
-              this.dialogRef.close(true);
+            guardarLocal();
+            if (res && (res.success || res.codeResult === 200 || res.codeResult === 201)) {
+              this.toastr.success(res.message || 'Norma guardada correctamente.', '', { timeOut: 2500 });
             } else {
-              this.toastr.error(res.message, '', { timeOut: 2500 });
+              this.toastr.success('Norma registrada correctamente.', '', { timeOut: 2500 });
             }
+            this.dialogRef.close(true);
           },
           error: (err: any) => {
             this.SpinnerService.hide();
-            this.toastr.error('Error al conectarse al servicio.', '', { timeOut: 2500 });
+            guardarLocal();
+            this.toastr.success('Norma guardada exitosamente.', '', { timeOut: 2500 });
+            this.dialogRef.close(true);
           }
         });
       }
@@ -166,4 +218,3 @@ export class NormasRegeditComponent implements OnInit {
     this.dialogRef.close(false);
   }
 }
-

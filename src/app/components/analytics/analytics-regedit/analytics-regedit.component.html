@@ -23,8 +23,11 @@
       
       <div class="grid-2-cols">
         <div class="form-section-item">
-          <div class="form-label">Código del Indicador (*):</div>
-          <input type="text" formControlName="codigo" class="full-width-input" placeholder="Ej. IND-COS-001">
+          <div class="form-label">
+            Código del Indicador (*): 
+            <span style="font-size: 10px; color: #a78bfa; font-weight: 600; margin-left: 4px;">(Autogenerado)</span>
+          </div>
+          <input type="text" formControlName="codigo" class="full-width-input" readonly style="background: rgba(255,255,255,0.06); color: #a78bfa; font-weight: 700; cursor: not-allowed;" placeholder="Autogenerado...">
         </div>
         <div class="form-section-item">
           <div class="form-label">Nombre (*):</div>
@@ -70,10 +73,10 @@
 
       <div class="grid-2-cols">
         <div class="form-section-item">
-          <div class="form-label">Sede donde aplica (*):</div>
-          <select formControlName="sede" class="full-width-input">
-            <option *ngFor="let opt of sedesOptions" [value]="opt">{{ opt }}</option>
-          </select>
+          <div class="form-label">Sedes donde aplica (*) (Múltiple):</div>
+          <mat-select formControlName="sede" multiple class="full-width-input form-select-mat" placeholder="-- Seleccionar Sedes --">
+            <mat-option *ngFor="let opt of sedesOptions" [value]="opt">{{ opt }}</mat-option>
+          </mat-select>
         </div>
         <div class="form-section-item">
           <div class="form-label">Proceso (*):</div>
@@ -83,11 +86,6 @@
             </optgroup>
           </select>
         </div>
-      </div>
-
-      <div class="form-section-item">
-        <div class="form-label">Procesos con acceso (separado por comas):</div>
-        <input type="text" formControlName="areasacc" class="full-width-input" placeholder="Ej. Costura, Calidad, Gerencia">
       </div>
 
       <!-- SECCIÓN 3: TEMPORALIDAD -->
@@ -113,9 +111,14 @@
         </div>
         <div class="form-section-item">
           <div class="form-label">Fuente de datos (*):</div>
-          <select formControlName="fuente" class="full-width-input">
+          <input type="text" 
+                 formControlName="fuente" 
+                 list="fuentesDatalist" 
+                 class="full-width-input" 
+                 placeholder="Selecciona o digita la fuente de datos...">
+          <datalist id="fuentesDatalist">
             <option *ngFor="let opt of fuentesOptions" [value]="opt">{{ opt }}</option>
-          </select>
+          </datalist>
         </div>
       </div>
 

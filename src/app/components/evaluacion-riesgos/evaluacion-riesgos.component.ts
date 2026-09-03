@@ -18,6 +18,8 @@ export interface RiesgoItem {
   responsable: string;
   revision: string; // YYYY-MM-DD
   medidacontrol?: string;
+  planaccion?: string; // RIE-21: Plan de acción / acción correctiva
+  evidencia?: string;   // RIE-21: Evidencia de sustento (matriz IPERC, informe de verificación)
   avance?: number;
   probabilidad?: number;
   impacto?: number;
@@ -142,14 +144,62 @@ export class EvaluacionRiesgosComponent implements OnInit {
           </div>
         </div>
 
-        <div style="margin-bottom: 12px;">
-          <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Porcentaje de Avance del Plan (${currAvance}%)</label>
-          <input type="range" id="swal-seg-avance" min="0" max="100" step="10" value="${currAvance}" style="width: 100%; accent-color: #6366f1;">
+        <div style="margin-bottom: 14px; background: #111119; padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em;">
+              Porcentaje de Avance del Plan (*)
+            </label>
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <input type="number" 
+                     id="swal-seg-avance-num" 
+                     min="0" 
+                     max="100" 
+                     step="1" 
+                     value="${currAvance}" 
+                     style="width: 68px; text-align: center; font-weight: 800; font-size: 14px; color: #34d399; background: #1e293b; border: 1.5px solid #6366f1; border-radius: 6px; padding: 4px 6px; outline: none;">
+              <span style="font-weight: 700; color: #34d399; font-size: 14px;">%</span>
+            </div>
+          </div>
+          
+          <input type="range" 
+                 id="swal-seg-avance" 
+                 min="0" 
+                 max="100" 
+                 step="1" 
+                 value="${currAvance}" 
+                 style="width: 100%; accent-color: #6366f1; cursor: pointer;">
+          
+          <div style="display: flex; justify-content: space-between; gap: 6px; margin-top: 8px;">
+            <button type="button" class="swal-pct-btn" data-pct="0" style="flex: 1; padding: 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #94a3b8; font-size: 11px; font-weight: 600; cursor: pointer;">0%</button>
+            <button type="button" class="swal-pct-btn" data-pct="25" style="flex: 1; padding: 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #94a3b8; font-size: 11px; font-weight: 600; cursor: pointer;">25%</button>
+            <button type="button" class="swal-pct-btn" data-pct="50" style="flex: 1; padding: 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #94a3b8; font-size: 11px; font-weight: 600; cursor: pointer;">50%</button>
+            <button type="button" class="swal-pct-btn" data-pct="75" style="flex: 1; padding: 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #94a3b8; font-size: 11px; font-weight: 600; cursor: pointer;">75%</button>
+            <button type="button" class="swal-pct-btn" data-pct="100" style="flex: 1; padding: 4px; background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.3); border-radius: 4px; color: #34d399; font-size: 11px; font-weight: 700; cursor: pointer;">100%</button>
+          </div>
         </div>
 
         <div style="margin-bottom: 12px;">
           <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Medida de Control / Acción Implementada (*)</label>
-          <textarea id="swal-seg-medida" rows="3" placeholder="Describe el avance del control, barrera o inspección..." style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">${item.medidacontrol || ''}</textarea>
+          <textarea id="swal-seg-medida" rows="2" placeholder="Describe el avance del control, barrera o inspección..." style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">${item.medidacontrol || ''}</textarea>
+        </div>
+
+        <!-- RIE-21: Plan de Acción / Acción Correctiva -->
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Plan de Acción / Acción Correctiva (*)</label>
+          <textarea id="swal-seg-plan" rows="2" placeholder="Describe el plan de acción correctiva (ej. Inspección técnica, colocación de guardas, capacitación operativa según matriz IPERC)..." style="width: 100%; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; font-size: 12px; background: #111119; color: #f8fafc;">${item.planaccion || ''}</textarea>
+        </div>
+
+        <!-- RIE-21: Evidencia de Sustento (Matriz IPERC, Informe de Verificación) -->
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Evidencia de Sustento (Matriz IPERC / Informe de Verificación)</label>
+          <input type="file" id="swal-seg-file-input" accept=".pdf,.xlsx,.xls,.doc,.docx,.png,.jpg,.jpeg" style="display:none;">
+          <div id="swal-seg-dropzone" style="border: 1.5px dashed #6366f1; background: rgba(99, 102, 241, 0.08); padding: 10px 14px; border-radius: 8px; text-align: center; cursor: pointer; transition: background 0.2s ease;">
+            <div style="font-size: 12px; font-weight: 600; color: #818cf8; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <span>📁</span>
+              <span id="swal-seg-filename" data-filename="${item.evidencia || ''}">${item.evidencia ? item.evidencia : 'Adjuntar archivo (PDF, Excel, Imagen)'}</span>
+            </div>
+            <div style="font-size: 10.5px; color: #94a3b8; margin-top: 3px;">Formatos: PDF, XLSX, XLS, DOCX (Máx. 10MB) • Clic para seleccionar o arrastrar</div>
+          </div>
         </div>
 
         <div>
@@ -163,7 +213,7 @@ export class EvaluacionRiesgosComponent implements OnInit {
     Swal.fire({
       title: '🛠️ Actualizar Seguimiento de Control',
       html: modalHtml,
-      width: '620px',
+      width: '640px',
       background: '#1a1a24',
       color: '#f8fafc',
       showCancelButton: true,
@@ -171,11 +221,69 @@ export class EvaluacionRiesgosComponent implements OnInit {
       cancelButtonText: 'Cancelar',
       confirmButtonColor: '#6366f1',
       cancelButtonColor: '#334155',
+      didOpen: () => {
+        const range = document.getElementById('swal-seg-avance') as HTMLInputElement;
+        const num = document.getElementById('swal-seg-avance-num') as HTMLInputElement;
+        const estadoSelect = document.getElementById('swal-seg-estado') as HTMLSelectElement;
+
+        const updateAvance = (val: number) => {
+          const clamped = isNaN(val) ? 0 : Math.min(Math.max(val, 0), 100);
+          if (range) range.value = clamped.toString();
+          if (num) num.value = clamped.toString();
+
+          if (estadoSelect) {
+            if (clamped === 100 && estadoSelect.value !== 'Controlado') {
+              estadoSelect.value = 'Controlado';
+            } else if (clamped > 0 && clamped < 100 && estadoSelect.value === 'Sin control') {
+              estadoSelect.value = 'En seguimiento';
+            }
+          }
+        };
+
+        if (range && num) {
+          range.addEventListener('input', (e: any) => updateAvance(parseInt(e.target.value, 10)));
+          num.addEventListener('input', (e: any) => updateAvance(parseInt(e.target.value, 10)));
+        }
+
+        document.querySelectorAll('.swal-pct-btn').forEach(btn => {
+          btn.addEventListener('click', (e: any) => {
+            const pct = parseInt(e.target.getAttribute('data-pct') || '0', 10);
+            updateAvance(pct);
+          });
+        });
+
+        // RIE-21: Manejador de carga de archivo evidencia
+        const dropzone = document.getElementById('swal-seg-dropzone');
+        const fileInput = document.getElementById('swal-seg-file-input') as HTMLInputElement;
+        const filenameSpan = document.getElementById('swal-seg-filename');
+
+        if (dropzone && fileInput && filenameSpan) {
+          dropzone.addEventListener('click', () => fileInput.click());
+          
+          fileInput.addEventListener('change', (e: any) => {
+            if (e.target.files && e.target.files.length > 0) {
+              const file = e.target.files[0];
+              if (file.size > 10 * 1024 * 1024) {
+                this.toastr.warning('El archivo supera el límite de 10 MB');
+                return;
+              }
+              filenameSpan.innerText = `📄 ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+              filenameSpan.setAttribute('data-filename', file.name);
+            }
+          });
+        }
+      },
       preConfirm: () => {
         const estado = (document.getElementById('swal-seg-estado') as HTMLSelectElement)?.value;
         const fecha = (document.getElementById('swal-seg-fecha') as HTMLInputElement)?.value;
-        const avance = parseInt((document.getElementById('swal-seg-avance') as HTMLInputElement)?.value || '0', 10);
+        const numInput = document.getElementById('swal-seg-avance-num') as HTMLInputElement;
+        const rangeInput = document.getElementById('swal-seg-avance') as HTMLInputElement;
+        const rawAvance = numInput ? numInput.value : (rangeInput ? rangeInput.value : '0');
+        const avance = Math.min(Math.max(parseInt(rawAvance || '0', 10), 0), 100);
         const medida = (document.getElementById('swal-seg-medida') as HTMLTextAreaElement)?.value;
+        const plan = (document.getElementById('swal-seg-plan') as HTMLTextAreaElement)?.value;
+        const filenameSpan = document.getElementById('swal-seg-filename');
+        const evidencia = filenameSpan ? (filenameSpan.getAttribute('data-filename') || filenameSpan.innerText) : '';
         const resp = (document.getElementById('swal-seg-resp') as HTMLInputElement)?.value;
 
         if (!medida || !fecha) {
@@ -183,7 +291,15 @@ export class EvaluacionRiesgosComponent implements OnInit {
           return false;
         }
 
-        return { estado, revision: fecha, avance, medidacontrol: medida, responsable: resp };
+        return { 
+          estado, 
+          revision: fecha, 
+          avance, 
+          medidacontrol: medida, 
+          planaccion: plan,
+          evidencia: evidencia.includes('Adjuntar archivo') ? '' : evidencia,
+          responsable: resp 
+        };
       }
     }).then((res) => {
       if (res.isConfirmed && res.value) {
@@ -192,6 +308,8 @@ export class EvaluacionRiesgosComponent implements OnInit {
         item.revision = val.revision;
         item.avance = val.avance;
         item.medidacontrol = val.medidacontrol;
+        item.planaccion = val.planaccion;
+        item.evidencia = val.evidencia;
         if (val.responsable) item.responsable = val.responsable;
 
         if (val.estado === 'Controlado') {

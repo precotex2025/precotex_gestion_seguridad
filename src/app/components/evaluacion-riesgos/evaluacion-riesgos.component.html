@@ -339,7 +339,7 @@
         <!-- Segment Chips for Urgency -->
         <div class="view-segment-control">
           <button type="button" class="segment-btn" [class.active]="segUrgFilter === 'all'" (click)="setSegUrgFilter('all')">
-            <span>Todos ({{ riesgos.length }})</span>
+            <span>Todos ({{ riesgosFiltrados.length }})</span>
           </button>
           <button type="button" class="segment-btn" [class.active]="segUrgFilter === 'venc'" (click)="setSegUrgFilter('venc')">
             <span [style.color]="segUrgFilter === 'venc' ? '#ffffff' : '#f87171'">🔴 Vencidos</span>
@@ -359,10 +359,42 @@
           <input type="text" 
                  [formControl]="$any(formularioBusqueda.get('termino'))" 
                  (input)="onBuscar()" 
-                 placeholder="Buscar riesgo, responsable..." 
+                 placeholder="Buscar por código, descripción o responsable..." 
                  class="inline-search-input">
         </div>
       </div>
+    </div>
+
+    <!-- FILTROS AVANZADOS RIE-22 (SEDE, PROCESO, ESTADO) -->
+    <div class="filters-row-bar" [formGroup]="formularioBusqueda" style="margin-top: 12px; margin-bottom: 16px;">
+      <div class="filter-field">
+        <label class="filter-label">Sede:</label>
+        <select formControlName="sede" (change)="onBuscar()" class="filter-select">
+          <option value="">Todas las Sedes</option>
+          <option *ngFor="let s of sedesOptions" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+
+      <div class="filter-field">
+        <label class="filter-label">Proceso:</label>
+        <select formControlName="proceso" (change)="onBuscar()" class="filter-select">
+          <option value="">Todos los Procesos</option>
+          <option *ngFor="let p of procesosOptions" [value]="p">{{ p }}</option>
+        </select>
+      </div>
+
+      <div class="filter-field">
+        <label class="filter-label">Estado:</label>
+        <select formControlName="estado" (change)="onBuscar()" class="filter-select">
+          <option value="">Todos los Estados</option>
+          <option *ngFor="let e of estadosOptions" [value]="e">{{ e }}</option>
+        </select>
+      </div>
+
+      <button type="button" class="btn-reset-filters" (click)="limpiarFiltros()" title="Limpiar todos los filtros de búsqueda">
+        <mat-icon>filter_alt_off</mat-icon>
+        <span>Limpiar filtros</span>
+      </button>
     </div>
 
     <!-- TABLA DE SEGUIMIENTO DE CONTROLES -->
@@ -370,14 +402,15 @@
       <table class="tabla">
         <thead>
           <tr>
-            <th style="width: 130px;">Código</th>
-            <th style="min-width: 240px;">Riesgo / Descripción</th>
-            <th style="width: 120px; text-align: center;">Nivel (5x5)</th>
-            <th style="width: 140px;">Estado Control</th>
-            <th style="width: 140px;">Avance Plan</th>
-            <th style="width: 120px; text-align: center;">Próx. Revisión</th>
-            <th style="width: 150px; text-align: center;">Urgencia</th>
-            <th style="width: 100px; text-align: center;">Acciones</th>
+            <th style="width: 120px;">Código</th>
+            <th style="min-width: 220px;">Riesgo / Descripción</th>
+            <th style="width: 100px; text-align: center;">Nivel (5x5)</th>
+            <th style="width: 130px;">Estado Control</th>
+            <th style="width: 130px;">Avance Plan</th>
+            <th style="width: 140px;">Evidencia IPERC</th>
+            <th style="width: 110px; text-align: center;">Próx. Revisión</th>
+            <th style="width: 130px; text-align: center;">Urgencia</th>
+            <th style="width: 90px; text-align: center;">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -419,6 +452,16 @@
               </div>
             </td>
 
+            <!-- RIE-21: Evidencia IPERC / Informe -->
+            <td>
+              <span *ngIf="item.evidencia" class="soft-badge soft-badge-blue" style="font-size: 11px; padding: 3px 8px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;" [title]="item.evidencia">
+                📄 {{ item.evidencia }}
+              </span>
+              <span *ngIf="!item.evidencia" style="color: #64748b; font-size: 11px; font-style: italic;">
+                Sin adjunto
+              </span>
+            </td>
+
             <td style="text-align: center;" class="date-cell">{{ formatearFecha(item.revision) }}</td>
 
             <!-- Urgencia Badge -->
@@ -441,7 +484,7 @@
 
           <!-- Empty state -->
           <tr *ngIf="getSeguimientoList().length === 0">
-            <td colspan="8" class="empty-row">
+            <td colspan="9" class="empty-row">
               <mat-icon class="empty-icon">security</mat-icon>
               <p>No se encontraron registros de seguimiento para el filtro seleccionado.</p>
             </td>

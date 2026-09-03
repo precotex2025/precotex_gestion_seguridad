@@ -80,6 +80,11 @@
                  class="inline-search-input">
         </div>
 
+        <button type="button" class="btn-primary-glow btn-export-green" (click)="exportarDeclaracionesExcel()" title="Descargar reporte Excel de No Conformidades">
+          <mat-icon>file_download</mat-icon>
+          <span>Descargar reporte Excel</span>
+        </button>
+
         <button type="button" class="btn-primary-glow" (click)="onDeclararNc()">
           <mat-icon>add_alert</mat-icon>
           <span>Declarar NC</span>
@@ -169,11 +174,14 @@
 
           <!-- Acciones -->
           <ng-container matColumnDef="acciones">
-            <th mat-header-cell *matHeaderCellDef style="width: 120px; text-align: center;">Acciones</th>
+            <th mat-header-cell *matHeaderCellDef style="width: 140px; text-align: center;">Acciones</th>
             <td mat-cell *matCellDef="let row" class="acciones-cell">
               <div class="actions-wrapper hover-fade">
                 <button class="action-btn btn-view" (click)="onVerNcDeclarada(row)" title="Ver detalle de NC">
                   <mat-icon>visibility</mat-icon>
+                </button>
+                <button class="action-btn btn-download" (click)="onDescargarNcDeclarada(row)" title="Descargar ficha de NC">
+                  <mat-icon>file_download</mat-icon>
                 </button>
                 <button class="action-btn btn-edit" (click)="onDeclararNc(row)" title="Editar NC">
                   <mat-icon>edit</mat-icon>
@@ -277,6 +285,11 @@
                  placeholder="Buscar por NC, acción, responsable..." 
                  class="inline-search-input">
         </div>
+
+        <button type="button" class="btn-primary-glow btn-export-green" (click)="exportarAccionesExcel()" title="Descargar reporte Excel de Acciones Correctivas">
+          <mat-icon>file_download</mat-icon>
+          <span>Descargar reporte Excel</span>
+        </button>
 
         <button type="button" class="btn-primary-glow" (click)="onAgregar()">
           <mat-icon>add</mat-icon>
@@ -556,9 +569,12 @@
 
       <!-- Acciones con Hover Fade-In -->
       <ng-container matColumnDef="acciones">
-        <th mat-header-cell *matHeaderCellDef style="width: 90px; text-align: center;">Acciones</th>
+        <th mat-header-cell *matHeaderCellDef style="width: 120px; text-align: center;">Acciones</th>
         <td mat-cell *matCellDef="let e" class="acciones-cell">
           <div class="actions-wrapper hover-fade">
+            <button class="action-btn btn-download" (click)="onDescargarAccion(e)" title="Descargar ficha de acción">
+              <mat-icon>file_download</mat-icon>
+            </button>
             <button class="action-btn btn-edit" (click)="onEditar(e)" title="Editar">
               <mat-icon>edit</mat-icon>
             </button>
@@ -653,6 +669,12 @@
         <h4 class="desc-title">Código de Auditoría Asociada</h4>
         <span class="font-mono text-purple font-bold">{{ selectedNc.codigoAuditoria }}</span>
       </div>
+
+      <!-- Drawer Download Action -->
+      <button type="button" class="btn-primary-glow btn-export-green" (click)="onDescargarAccion(selectedNc)" style="width: 100%; justify-content: center; margin-top: 10px;">
+        <mat-icon>file_download</mat-icon>
+        <span>Descargar Ficha de Acción Correctiva</span>
+      </button>
 
     </div>
   </div>

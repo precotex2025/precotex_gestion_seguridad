@@ -60,6 +60,32 @@ export class ProgramaAnualComponent implements OnInit {
     });
   }
 
+  availableYears: number[] = [2025, 2026, 2027, 2028];
+  selectedYear: number = 2026;
+
+  setYear(year: number): void {
+    this.selectedYear = year;
+    this.calcularMensualCounts();
+  }
+
+  getFechaYear(fechaStr: string): number {
+    if (!fechaStr) return -1;
+    const parts = fechaStr.split('-');
+    if (parts.length >= 1 && parts[0].length === 4) {
+      return parseInt(parts[0], 10);
+    }
+    return -1;
+  }
+
+  getStartYear(audit: any): number {
+    return this.getFechaYear(audit.inicio);
+  }
+
+  getEndYear(audit: any): number {
+    const endY = this.getFechaYear(audit.fin);
+    return endY !== -1 ? endY : this.getStartYear(audit);
+  }
+
   getMesIndex(fechaStr: string): number {
     if (!fechaStr) return -1;
     const parts = fechaStr.split('-');
@@ -82,28 +108,47 @@ export class ProgramaAnualComponent implements OnInit {
     return end;
   }
 
+  get filteredAuditorias(): any[] {
+    return this.auditorias.filter(audit => {
+      const startY = this.getStartYear(audit);
+      const endY = this.getEndYear(audit);
+      if (startY === -1) return true; // Si no tiene fecha, mostrar para no ocultarla
+      return startY === this.selectedYear || endY === this.selectedYear || (startY <= this.selectedYear && endY >= this.selectedYear);
+    });
+  }
+
   isInRange(audit: any, monthIdx: number): boolean {
-    const start = this.getStartMonthIndex(audit);
-    const end = this.getEndMonthIndex(audit);
-    if (start === -1) return false;
-    return monthIdx >= start && monthIdx <= end;
+    const startY = this.getStartYear(audit);
+    const endY = this.getEndYear(audit);
+    const startM = this.getStartMonthIndex(audit);
+    const endM = this.getEndMonthIndex(audit);
+
+    if (startY === -1 || startM === -1) return false;
+
+    const startAbs = startY * 12 + startM;
+    const endAbs = (endY !== -1 ? endY : startY) * 12 + (endM !== -1 ? endM : startM);
+    const currentCellAbs = this.selectedYear * 12 + monthIdx;
+
+    return currentCellAbs >= startAbs && currentCellAbs <= endAbs;
   }
 
   isStartMonth(audit: any, monthIdx: number): boolean {
-    return monthIdx === this.getStartMonthIndex(audit);
+    const startY = this.getStartYear(audit);
+    const startM = this.getStartMonthIndex(audit);
+    return startY === this.selectedYear && monthIdx === startM;
   }
 
   isEndMonth(audit: any, monthIdx: number): boolean {
-    return monthIdx === this.getEndMonthIndex(audit);
+    const endY = this.getEndYear(audit);
+    const endM = this.getEndMonthIndex(audit);
+    return (endY === this.selectedYear || (endY === -1 && this.getStartYear(audit) === this.selectedYear)) && monthIdx === endM;
   }
 
   calcularMensualCounts(): void {
     this.counts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    this.auditorias.forEach(a => {
-      const start = this.getStartMonthIndex(a);
-      const end = this.getEndMonthIndex(a);
-      if (start >= 0 && start < 12) {
-        for (let m = start; m <= Math.min(end, 11); m++) {
+    this.filteredAuditorias.forEach(a => {
+      for (let m = 0; m < 12; m++) {
+        if (this.isInRange(a, m)) {
           this.counts[m]++;
         }
       }

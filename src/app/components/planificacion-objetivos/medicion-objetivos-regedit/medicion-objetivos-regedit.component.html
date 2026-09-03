@@ -1,7 +1,13 @@
 <div class="dialog-container">
   
   <div class="dialog-header">
-    <h2 class="dialog-title">{{ data.Accion === 'I' ? 'Nuevo registro' : 'Editar registro' }}</h2>
+    <div class="header-info">
+      <h2 class="dialog-title">
+        <mat-icon class="header-icon">speed</mat-icon>
+        {{ data.Accion === 'I' ? 'Registrar Medición de Objetivo' : 'Editar Medición de Objetivo' }}
+      </h2>
+      <span class="header-subtitle">Selecciona el objetivo planificado para ingresar su medición periódica (OBJ-03)</span>
+    </div>
     <button type="button" class="btn-close-header" (click)="onCancelar()" title="Cerrar">
       <mat-icon>close</mat-icon>
     </button>
@@ -11,63 +17,174 @@
     
     <mat-dialog-content class="form-content">
       
-      <!-- Fila 1: 4 Columnas (OBJETIVO, PROCESO, FRECUENCIA, META) -->
-      <div class="grid-4-cols">
-        <div class="form-section-item">
-          <div class="form-label">OBJETIVO</div>
-          <input type="text" formControlName="objetivo" list="objetivosList" class="full-width-input" placeholder="Ej. Reducir defectos de calidad">
-          <datalist id="objetivosList">
-            <option *ngFor="let obj of objetivos" [value]="obj.objetivo"></option>
-          </datalist>
+      <!-- OBJ-03: SECCIÓN DE BÚSQUEDA Y SELECCIÓN DE OBJETIVO REGISTRADO -->
+      <div class="search-objective-box">
+        <div class="box-header">
+          <mat-icon class="box-icon">search</mat-icon>
+          <span class="box-title">BÚSQUEDA Y SELECCIÓN DE OBJETIVO REGISTRADO (*)</span>
         </div>
-        <div class="form-section-item">
-          <div class="form-label">PROCESO</div>
-          <select formControlName="proceso" class="full-width-input">
-            <optgroup *ngFor="let key of getProcesosKeys()" [label]="key">
-              <option *ngFor="let proc of procesosGroups[key]" [value]="proc">{{ proc }}</option>
-            </optgroup>
-          </select>
+
+        <div class="search-grid">
+          <!-- Dropdown con Objetivos Registrados -->
+          <div class="form-section-item">
+            <div class="form-label">SELECCIONAR OBJETIVO DEL CATÁLOGO</div>
+            <select formControlName="objetivo" (change)="onSelectObjetivoChange($event)" class="full-width-input select-highlight">
+              <option value="" disabled selected>-- Selecciona un objetivo registrado --</option>
+              <option *ngFor="let obj of objetivos" [value]="obj.objetivo || obj.nombre">
+                [{{ obj.codigo }}] {{ obj.objetivo || obj.nombre }} ({{ obj.proceso }} - Meta: {{ obj.meta }})
+              </option>
+            </select>
+          </div>
+
+          <!-- Buscador por texto rápido -->
+          <div class="form-section-item">
+            <div class="form-label">O ESCRIBE PARA BUSCAR POR CÓDIGO / NOMBRE</div>
+            <input type="text" 
+                   list="objetivosDatalist" 
+                   (input)="onSearchObjetivoChange($event)" 
+                   class="full-width-input search-input" 
+                   placeholder="🔍 Ej. OBJ-2026-001, Tintorería, Accidentabilidad...">
+            <datalist id="objetivosDatalist">
+              <option *ngFor="let obj of objetivos" [value]="obj.codigo + ' - ' + (obj.objetivo || obj.nombre)">
+                {{ obj.proceso }} | Meta: {{ obj.meta }}
+              </option>
+            </datalist>
+          </div>
         </div>
-        <div class="form-section-item">
-          <div class="form-label">FRECUENCIA</div>
-          <select formControlName="frecuencia" class="full-width-input">
-            <option *ngFor="let opt of frecuenciasOptions" [value]="opt">{{ opt }}</option>
-          </select>
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">META</div>
-          <input type="text" formControlName="meta" class="full-width-input" placeholder="Ej. ≤10%">
+
+        <!-- Tarjeta Informativa del Objetivo Seleccionado -->
+        <div *ngIf="objetivoSeleccionado" class="selected-badge-card">
+          <div class="badge-item">
+            <span class="badge-label">CÓDIGO</span>
+            <span class="badge-value code-pill">{{ objetivoSeleccionado.codigo }}</span>
+          </div>
+          <div class="badge-item">
+            <span class="badge-label">PROCESO</span>
+            <span class="badge-value">{{ objetivoSeleccionado.proceso }}</span>
+          </div>
+          <div class="badge-item">
+            <span class="badge-label">NORMA</span>
+            <span class="badge-value">{{ objetivoSeleccionado.norma }}</span>
+          </div>
+          <div class="badge-item">
+            <span class="badge-label">FRECUENCIA</span>
+            <span class="badge-value">{{ objetivoSeleccionado.frecuencia }}</span>
+          </div>
+          <div class="badge-item">
+            <span class="badge-label">META PLANIFICADA</span>
+            <span class="badge-value meta-pill">{{ objetivoSeleccionado.meta }}</span>
+          </div>
         </div>
       </div>
 
-      <!-- Fila 2: 3 Columnas (VALOR OBTENIDO, PERÍODO, SEMÁFORO) -->
+      <!-- OBJ-04: Fila de Metadatos Fijos Automáticos (No editables: PROCESO, FRECUENCIA, META) -->
       <div class="grid-3-cols">
         <div class="form-section-item">
-          <div class="form-label">VALOR OBTENIDO</div>
-          <input type="text" formControlName="valor" class="full-width-input" placeholder="Ej. 9.8%">
+          <div class="form-label fixed-label">
+            <span>PROCESO ASOCIADO</span>
+            <span class="fixed-badge"><mat-icon class="lock-icon">lock</mat-icon> AUTOMÁTICO</span>
+          </div>
+          <input type="text" 
+                 formControlName="proceso" 
+                 class="full-width-input readonly-input" 
+                 readonly 
+                 placeholder="Se autocompleta al seleccionar el objetivo">
         </div>
+
         <div class="form-section-item">
-          <div class="form-label">PERÍODO</div>
-          <input type="text" formControlName="periodo" class="full-width-input" placeholder="Ej. Junio 2025">
+          <div class="form-label fixed-label">
+            <span>FRECUENCIA DE MEDICIÓN</span>
+            <span class="fixed-badge"><mat-icon class="lock-icon">lock</mat-icon> AUTOMÁTICA</span>
+          </div>
+          <input type="text" 
+                 formControlName="frecuencia" 
+                 class="full-width-input readonly-input" 
+                 readonly 
+                 placeholder="Se autocompleta al seleccionar el objetivo">
         </div>
+
         <div class="form-section-item">
-          <div class="form-label">SEMÁFORO</div>
-          <select formControlName="semaforo" class="full-width-input">
+          <div class="form-label fixed-label">
+            <span>META PLANIFICADA</span>
+            <span class="fixed-badge"><mat-icon class="lock-icon">lock</mat-icon> AUTOMÁTICA</span>
+          </div>
+          <input type="text" 
+                 formControlName="meta" 
+                 class="full-width-input readonly-input meta-readonly" 
+                 readonly 
+                 placeholder="Se autocompleta al seleccionar el objetivo">
+        </div>
+      </div>
+
+      <!-- Fila: DATOS DE LA MEDICIÓN REAL -->
+      <div class="grid-3-cols">
+        <div class="form-section-item">
+          <div class="form-label">VALOR OBTENIDO / MEDICIÓN REAL (*)</div>
+          <input type="text" formControlName="valor" class="full-width-input valor-input" placeholder="Ej. 96.5% o 1.2">
+        </div>
+
+        <div class="form-section-item">
+          <div class="form-label">PERÍODO DE MEDICIÓN (*)</div>
+          <input type="text" formControlName="periodo" class="full-width-input" placeholder="Ej. 2026-Q1 / Marzo 2026">
+        </div>
+
+        <div class="form-section-item">
+          <div class="form-label">ESTADO / SEMÁFORO (*)</div>
+          <select formControlName="semaforo" class="full-width-input semaforo-select" [ngClass]="formulario.get('semaforo')?.value?.toLowerCase()?.replace(' ', '-')">
             <option *ngFor="let opt of semaforosOptions" [value]="opt">{{ opt }}</option>
           </select>
         </div>
       </div>
 
-      <!-- Fila 3: Full width (OBSERVACIONES) -->
+      <!-- OBJ-05: Fila de Carga de Archivo de Evidencia (PDF / Excel / Imagen) -->
       <div class="form-section-item">
-        <div class="form-label">OBSERVACIONES</div>
-        <textarea formControlName="obs" rows="3" class="full-width-input textarea-desc" placeholder="Comentario opcional..."></textarea>
+        <div class="form-label">EVIDENCIA DE MEDICIÓN (SUBIR ARCHIVO PDF / EXCEL / IMAGEN):</div>
+        <div class="file-upload-wrapper">
+          <input type="file" 
+                 #fileEvidenciaInput 
+                 (change)="onFileEvidenciaSelected($event)" 
+                 accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.doc,.docx" 
+                 style="display: none;">
+          
+          <div class="file-drop-card" (click)="fileEvidenciaInput.click()">
+            <div class="file-drop-icon">
+              <mat-icon>cloud_upload</mat-icon>
+            </div>
+            
+            <div class="file-drop-info">
+              <span class="file-drop-main-text" *ngIf="!nombreArchivoEvidencia">
+                <strong>Haz clic aquí</strong> para adjuntar evidencia de medición (PDF, Excel o Imagen)
+              </span>
+              <span class="file-drop-main-text text-selected" *ngIf="nombreArchivoEvidencia">
+                📄 {{ nombreArchivoEvidencia }}
+              </span>
+              <span class="file-drop-sub-text">
+                Formatos compatibles: PDF, Excel (.xlsx, .xls), Imágenes (.png, .jpg), Word (.docx) — Máximo 10 MB
+              </span>
+            </div>
+
+            <button type="button" 
+                    *ngIf="nombreArchivoEvidencia" 
+                    class="btn-clear-file" 
+                    (click)="$event.stopPropagation(); onRemoveEvidencia(fileEvidenciaInput)" 
+                    title="Quitar archivo">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fila: Observaciones / Comentarios -->
+      <div class="form-section-item">
+        <div class="form-label">OBSERVACIONES / COMENTARIO DE SEGUIMIENTO:</div>
+        <textarea formControlName="obs" rows="2" class="full-width-input textarea-desc" placeholder="Comentarios del análisis del resultado o justificación de la medición..."></textarea>
       </div>
 
     </mat-dialog-content>
 
     <mat-dialog-actions class="dialog-actions-row">
       <button type="submit" class="BtnGuardarPlan" mat-flat-button>
+        <mat-icon>check_circle</mat-icon>
         Guardar Medición
       </button>
       <button type="button" class="BtnCancelarPlan" mat-flat-button (click)="onCancelar()">

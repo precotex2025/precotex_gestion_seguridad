@@ -16,7 +16,7 @@
     <div class="indicadores-segment-tabs">
       <a class="indicadores-tab-btn" routerLink="/principal/analytics">
         <mat-icon>tune</mat-icon>
-        <span>Alta de Indicadores</span>
+        <span>Indicadores</span>
       </a>
       <a class="indicadores-tab-btn active" routerLink="/principal/analytics/medicion">
         <mat-icon>show_chart</mat-icon>
@@ -115,7 +115,7 @@
                class="inline-search-input">
       </div>
 
-      <button type="button" class="btn-primary-glow" (click)="openDrawer()">
+      <button type="button" class="btn-primary-glow" (click)="onAgregar()">
         <mat-icon>add</mat-icon>
         <span>Registrar medición</span>
       </button>
@@ -126,83 +126,62 @@
   <div class="table-container shadow-premium">
     <table mat-table [dataSource]="dataSource" matSort class="tabla">
 
+      <!-- Código -->
+      <ng-container matColumnDef="codigoIndicador">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 140px;">Código</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="code-badge-font">{{ row.codigoIndicador }}</span>
+        </td>
+      </ng-container>
+
       <!-- Indicador -->
       <ng-container matColumnDef="indicador">
         <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 220px;">Indicador</th>
         <td mat-cell *matCellDef="let row" class="norma-cell-title">
-          <div class="indicador-title-cell">
-            <span class="ind-code-sub">{{ row.codigoIndicador }}</span>
-            <span class="ind-name-main">{{ row.indicador }}</span>
-          </div>
+          <span class="ind-name-main">{{ row.indicador }}</span>
         </td>
+      </ng-container>
+
+      <!-- Tipo -->
+      <ng-container matColumnDef="tipo">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 120px;">Tipo</th>
+        <td mat-cell *matCellDef="let row" class="simple-type-text">{{ row.tipo || 'Eficiencia' }}</td>
       </ng-container>
 
       <!-- Sede -->
       <ng-container matColumnDef="sede">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 110px;">Sede</th>
-        <td mat-cell *matCellDef="let row" class="cat-cell">{{ row.sede || 'Todas' }}</td>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 130px;">Sede</th>
+        <td mat-cell *matCellDef="let row" class="cat-cell">{{ row.sede || 'Sede Huachipa' }}</td>
       </ng-container>
 
-      <!-- Proceso -->
-      <ng-container matColumnDef="proceso">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 140px;">Proceso</th>
-        <td mat-cell *matCellDef="let row" class="cat-cell">{{ row.proceso || 'General' }}</td>
+      <!-- Norma ISO -->
+      <ng-container matColumnDef="norma">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px;">Norma ISO</th>
+        <td mat-cell *matCellDef="let row" class="cat-cell">{{ row.norma || 'ISO 9001:2015' }}</td>
       </ng-container>
 
       <!-- Frecuencia de Medición (IND-02) -->
-      <ng-container matColumnDef="meta">
-        <th mat-header-cell *matHeaderCellDef style="width: 110px;">Frecuencia</th>
+      <ng-container matColumnDef="frecuencia">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 110px;">Frecuencia</th>
         <td mat-cell *matCellDef="let row" class="col-tabular font-mono">
-          <span style="color: #a78bfa; font-weight: 600; font-size: 11px;">{{ row.frecuencia || 'Mensual' }}</span>
+          <span style="color: #6366f1; font-weight: 600; font-size: 11px;">{{ row.frecuencia || 'Mensual' }}</span>
         </td>
       </ng-container>
 
-      <!-- COMBINED VALOR OBTENIDO VS META WITH MINI PROGRESS BAR -->
-      <ng-container matColumnDef="valor">
-        <th mat-header-cell *matHeaderCellDef style="width: 170px;">Valor Obtenido vs Meta</th>
-        <td mat-cell *matCellDef="let row">
-          <div class="combined-val-meta-box">
-            <div class="val-meta-numbers">
-              <span class="val-big-number" [style.color]="getSemaforoColor(row.semaforo)">{{ row.valor || '0%' }}</span>
-              <span class="meta-label-sub">Meta: {{ row.meta || '100%' }}</span>
-            </div>
-            <!-- Mini Horizontal Progress Bar -->
-            <div class="mini-progress-track">
-              <div class="mini-progress-fill" 
-                   [style.width.%]="getProgressPercent(row)" 
-                   [style.background]="getSemaforoColor(row.semaforo)">
-              </div>
-            </div>
-          </div>
+      <!-- Meta (IND-02) -->
+      <ng-container matColumnDef="meta">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 120px;">Meta</th>
+        <td mat-cell *matCellDef="let row" class="col-tabular">
+          <span style="font-weight: 700; color: var(--txt, #0f172a); background: rgba(99, 102, 241, 0.08); padding: 4px 8px; border-radius: 6px;">{{ row.meta || '0%' }}</span>
         </td>
       </ng-container>
 
-      <!-- Período -->
-      <ng-container matColumnDef="periodo">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 110px;">Período</th>
-        <td mat-cell *matCellDef="let row" class="col-tabular date-text">{{ row.periodo || '2026-Q1' }}</td>
-      </ng-container>
-
-      <!-- Semáforo Automático (IND-03) -->
-      <ng-container matColumnDef="semaforo">
-        <th mat-header-cell *matHeaderCellDef style="width: 140px;">Semáforo (IND-03)</th>
-        <td mat-cell *matCellDef="let row">
-          <span class="soft-badge" 
-                [style.background]="getSemaforoColor(row.semaforo) + '1A'"
-                [style.color]="getSemaforoColor(row.semaforo)"
-                [style.borderColor]="getSemaforoColor(row.semaforo) + '40'">
-            <span class="glowing-dot" [style.background]="getSemaforoColor(row.semaforo)"></span>
-            <span>{{ row.semaforo || 'En meta' }}</span>
-          </span>
-        </td>
-      </ng-container>
-
-      <!-- Tendencia Dinámica por Proceso (IND-01) -->
+      <!-- Tendencia Dinámica por Proceso (IND-01, IND-02) -->
       <ng-container matColumnDef="tendencia">
         <th mat-header-cell *matHeaderCellDef style="width: 120px; text-align: center;">Tendencia</th>
         <td mat-cell *matCellDef="let row" style="text-align: center;">
           <div class="sparkline-area-wrapper" 
-               [matTooltip]="'Proceso ' + row.proceso + ': Tendencia actualizada'" 
+               [matTooltip]="'Proceso ' + row.proceso + ': Tendencia acumulada'" 
                matTooltipPosition="above">
             <svg width="84" height="28" viewBox="0 0 84 28">
               <defs>
@@ -219,15 +198,15 @@
         </td>
       </ng-container>
 
-      <!-- Acciones con Ficha Técnica y Editar (IND-04) -->
+      <!-- Acciones con Ficha Técnica y Editar (IND-02, IND-04) -->
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef style="width: 100px; text-align: center;">Acciones</th>
         <td mat-cell *matCellDef="let row" class="acciones-cell">
           <div class="actions-wrapper hover-fade">
-            <button class="action-btn" (click)="exportarFichaTecnica(row)" title="Exportar Ficha Técnica (IND-04)" style="color: #a78bfa; background: rgba(167,139,250,0.1);">
+            <button class="action-btn" (click)="exportarFichaTecnica(row)" title="Exportar Ficha Técnica (IND-04)" style="color: #6366f1; background: rgba(99, 102, 241, 0.1);">
               <mat-icon>description</mat-icon>
             </button>
-            <button class="action-btn btn-edit" (click)="openDrawer(row)" title="Editar">
+            <button class="action-btn btn-edit" (click)="onEditar(row)" title="Editar">
               <mat-icon>edit</mat-icon>
             </button>
           </div>
@@ -243,78 +222,6 @@
     <div *ngIf="dataSource.filteredData.length === 0" class="empty-state">
       <mat-icon class="empty-icon">show_chart</mat-icon>
       <p>No se encontraron mediciones registradas.</p>
-    </div>
-  </div>
-
-  <!-- ===================================================================
-       SLIDE-OVER DRAWER FOR REGISTRAR MEDICIÓN & HISTÓRICO
-       =================================================================== -->
-  <div class="slide-over-backdrop" *ngIf="drawerOpen" (click)="closeDrawer()"></div>
-
-  <div class="slide-over-drawer" [class.drawer-active]="drawerOpen">
-    <div class="drawer-header">
-      <div class="drawer-title-box">
-        <div class="indicador-avatar-drawer">
-          <mat-icon>show_chart</mat-icon>
-        </div>
-        <div>
-          <span class="drawer-code-badge">{{ selectedMedicion?.codigoIndicador || 'HCP-ABO-001' }}</span>
-          <h2 class="drawer-doc-name">Registrar Medición de Indicador</h2>
-        </div>
-      </div>
-      <button type="button" class="drawer-close-btn" (click)="closeDrawer()">
-        <mat-icon>close</mat-icon>
-      </button>
-    </div>
-
-    <div class="drawer-body">
-      
-      <!-- Big Historical Trend Preview Box -->
-      <div class="drawer-trend-preview">
-        <div class="trend-header-row">
-          <span class="trend-title">Histórico de Mediciones Recientes</span>
-          <span class="trend-badge-current font-mono">Meta: {{ selectedMedicion?.meta || '95%' }}</span>
-        </div>
-
-        <div class="big-trend-chart-box">
-          <svg width="100%" height="90" viewBox="0 0 400 90" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="bigTrendGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#3ecf8e" stop-opacity="0.4"/>
-                <stop offset="100%" stop-color="#3ecf8e" stop-opacity="0.0"/>
-              </linearGradient>
-            </defs>
-            <path d="M 0 70 C 80 40, 160 55, 240 25 C 320 35, 360 15, 400 20 L 400 90 L 0 90 Z" fill="url(#bigTrendGrad)"/>
-            <path d="M 0 70 C 80 40, 160 55, 240 25 C 320 35, 360 15, 400 20" fill="none" stroke="#3ecf8e" stroke-width="3" stroke-linecap="round"/>
-          </svg>
-        </div>
-      </div>
-
-      <!-- Registration Minimal Form -->
-      <div class="drawer-form-box">
-        <h4 class="form-section-title">Ingresar Nuevo Valor Periódico</h4>
-        
-        <div class="drawer-field-group">
-          <label class="drawer-label">Período de Medición</label>
-          <input type="text" class="drawer-input" placeholder="Ej. Feb-2026 / Trimestre II">
-        </div>
-
-        <div class="drawer-field-group">
-          <label class="drawer-label">Valor Obtenido (%)</label>
-          <input type="text" class="drawer-input font-bold" placeholder="Ej. 94.5%">
-        </div>
-
-        <div class="drawer-field-group">
-          <label class="drawer-label">Comentarios u Observaciones</label>
-          <textarea class="drawer-textarea" rows="3" placeholder="Ingresa los hallazgos o justificación del resultado..."></textarea>
-        </div>
-
-        <button type="button" class="drawer-download-primary" (click)="closeDrawer()">
-          <mat-icon>check_circle</mat-icon>
-          <span>Guardar Medición en BD</span>
-        </button>
-      </div>
-
     </div>
   </div>
 

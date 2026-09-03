@@ -45,7 +45,7 @@
         </div>
       </div>
 
-      <!-- Fila 2: Responsable y Procesos -->
+      <!-- Fila 2: Responsable y Sedes -->
       <div class="form-row split-2">
         <div class="form-field">
           <label class="form-label">Responsable <span class="req">*</span></label>
@@ -56,13 +56,22 @@
         </div>
 
         <div class="form-field">
-          <label class="form-label">Procesos / Áreas <span class="req">*</span></label>
-          <select formControlName="ctrol_areas" class="form-select">
-            <option value="">-- Seleccionar Proceso / Área --</option>
-            <optgroup *ngFor="let group of objectKeys(PROCESOS_GROUPS)" [label]="group">
-              <option *ngFor="let p of PROCESOS_GROUPS[group]" [value]="p">{{ p }}</option>
-            </optgroup>
-          </select>
+          <label class="form-label">Sedes participantes <span class="req">*</span></label>
+          <mat-select formControlName="ctrol_sedes" multiple class="form-select-mat" placeholder="-- Seleccionar Sedes --">
+            <mat-option *ngFor="let s of sedesList" [value]="s">{{ s }}</mat-option>
+          </mat-select>
+        </div>
+      </div>
+
+      <!-- Fila 2b: Procesos / Áreas Auditadas -->
+      <div class="form-row">
+        <div class="form-field full-width">
+          <label class="form-label">Procesos / Áreas participantes <span class="req">*</span></label>
+          <mat-select formControlName="ctrol_areas" multiple class="form-select-mat" placeholder="-- Seleccionar Procesos / Áreas --">
+            <mat-optgroup *ngFor="let group of objectKeys(PROCESOS_GROUPS)" [label]="group">
+              <mat-option *ngFor="let p of PROCESOS_GROUPS[group]" [value]="p">{{ p }}</mat-option>
+            </mat-optgroup>
+          </mat-select>
         </div>
       </div>
 

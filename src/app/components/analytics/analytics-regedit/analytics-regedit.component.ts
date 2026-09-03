@@ -25,7 +25,17 @@ export class AnalyticsRegeditComponent implements OnInit {
   estadosOptions = ['Activo', 'Inactivo'];
   sedesOptions = ['Sede Central — Lima', 'Sede Ate', 'Sede San Juan', 'Sede Chorrillos', 'Todas'];
   frecuenciasOptions = ['Diario', 'Semanal', 'Mensual', 'Trimestral'];
-  fuentesOptions = ['Reporte de producción', 'Reporte de calidad', 'Reporte SSOMA', 'Sistema ERP', 'Registro manual'];
+  fuentesOptions = [
+    'Reporte de producción',
+    'Reporte de calidad',
+    'Reporte SSOMA',
+    'Sistema ERP',
+    'Registro manual',
+    'Informe de Auditoría',
+    'Parte Diario de Mantenimiento',
+    'Checklist de Operaciones',
+    'Matriz IPERC'
+  ];
   unidadesOptions = ['Porcentaje (%)', 'Número', 'Días', 'kWh', 'Soles'];
   tipometasOptions = ['Mayor o igual (≥)', 'Menor o igual (≤)', 'Igual (=)'];
   sentidosOptions = ['↑ Sube es bueno', '↓ Baja es bueno'];
@@ -54,7 +64,7 @@ export class AnalyticsRegeditComponent implements OnInit {
       responsable: ['', Validators.required],
       respmed: ['', Validators.required],
       estado: ['Activo', Validators.required],
-      sede: ['Todas', Validators.required],
+      sede: [['Todas'], Validators.required],
       proceso: ['SSOMA', Validators.required],
       areasacc: [''],
       inicio: ['', Validators.required],
@@ -69,8 +79,20 @@ export class AnalyticsRegeditComponent implements OnInit {
       sentido: ['↑ Sube es bueno', Validators.required]
     });
 
-    if (this.data.Accion === 'U' && this.data.Datos) {
-      this.formulario.patchValue(this.data.Datos);
+    if (this.data.Accion === 'I') {
+      const autoCode = this.data.Datos?.codigo || `IND-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 900) + 100)}`;
+      this.formulario.patchValue({ 
+        codigo: autoCode,
+        sede: ['Todas']
+      });
+    } else if (this.data.Accion === 'U' && this.data.Datos) {
+      const datosCopy = { ...this.data.Datos };
+      if (typeof datosCopy.sede === 'string' && datosCopy.sede.trim() !== '') {
+        datosCopy.sede = datosCopy.sede.split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0);
+      } else if (!Array.isArray(datosCopy.sede)) {
+        datosCopy.sede = ['Todas'];
+      }
+      this.formulario.patchValue(datosCopy);
     }
   }
 
@@ -83,7 +105,11 @@ export class AnalyticsRegeditComponent implements OnInit {
       this.toastr.warning('Por favor complete los campos obligatorios (*)', 'Formulario Incompleto');
       return;
     }
-    this.dialogRef.close(this.formulario.value);
+    const val = { ...this.formulario.value };
+    if (Array.isArray(val.sede)) {
+      val.sede = val.sede.join(', ');
+    }
+    this.dialogRef.close(val);
   }
 
   onCancelar(): void {

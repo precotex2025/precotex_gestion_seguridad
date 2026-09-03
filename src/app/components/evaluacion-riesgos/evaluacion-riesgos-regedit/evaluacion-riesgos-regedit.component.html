@@ -58,9 +58,14 @@
       <div class="grid-4-cols">
         <div class="form-section-item" style="grid-column: span 2;">
           <div class="form-label">CLÁUSULA / REQUISITO ISO (*)</div>
-          <select formControlName="clausula" class="full-width-input">
-            <option *ngFor="let c of clausulasOptions" [value]="c">{{ c }}</option>
-          </select>
+          <input type="text" 
+                 formControlName="clausula" 
+                 list="clausulasList" 
+                 class="full-width-input" 
+                 placeholder="Selecciona de la lista o escribe una cláusula personalizada...">
+          <datalist id="clausulasList">
+            <option *ngFor="let c of clausulasOptions" [value]="c"></option>
+          </datalist>
         </div>
         <div class="form-section-item" style="grid-column: span 2;">
           <div class="form-label">PROCESO (*)</div>
@@ -199,6 +204,54 @@
           </span>
         </div>
         <textarea formControlName="medidacontrol" class="full-width-input" rows="3" placeholder="Ej. Propuesta inicial: Uso obligatorio de EPP dieléctrico, señalización de peligro y mantenimiento preventivo mensual (se gestiona en Seguimiento de controles)..."></textarea>
+      </div>
+
+      <!-- DOCUMENTO / EVIDENCIA DE SUSTENTO (SUBIR ARCHIVO PDF/EXCEL/IMAGEN) -->
+      <div class="form-section-item" style="margin-top: 16px;">
+        <div class="form-label">DOCUMENTO DE SUSTENTO / MATRIZ IPERC (OPCIONAL)</div>
+        
+        <!-- Dropzone interactive card -->
+        <div class="file-upload-card" 
+             [class.dragging]="isDragging"
+             (dragover)="onDragOver($event)" 
+             (dragleave)="onDragLeave($event)" 
+             (drop)="onFileDropped($event)"
+             (click)="fileInput.click()">
+          
+          <input #fileInput 
+                 type="file" 
+                 (change)="onFileSelected($event)" 
+                 accept=".pdf,.xlsx,.xls,.doc,.docx,.png,.jpg,.jpeg" 
+                 style="display: none;">
+
+          <div *ngIf="!nombreArchivoEvidencia" class="dropzone-placeholder">
+            <mat-icon class="dropzone-icon">cloud_upload</mat-icon>
+            <div class="dropzone-text-primary">
+              Haz clic para seleccionar o arrastra aquí tu documento de sustento
+            </div>
+            <div class="dropzone-text-sub">
+              Formatos admitidos: <strong>PDF, Excel (.xlsx, .xls), Word (.docx) o Imágenes</strong> (Máx. 10MB)
+            </div>
+          </div>
+
+          <div *ngIf="nombreArchivoEvidencia" class="file-selected-badge" (click)="$event.stopPropagation()">
+            <div class="file-info-left">
+              <mat-icon class="file-type-icon">description</mat-icon>
+              <div class="file-details">
+                <span class="file-name">{{ nombreArchivoEvidencia }}</span>
+                <span class="file-status">✓ Documento adjunto y listo para registrar</span>
+              </div>
+            </div>
+            <button *ngIf="data.Accion !== 'V'" 
+                    type="button" 
+                    class="btn-remove-file" 
+                    (click)="onRemoveFile($event)" 
+                    title="Quitar archivo">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </div>
+
+        </div>
       </div>
 
     </mat-dialog-content>

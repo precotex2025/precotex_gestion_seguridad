@@ -28,11 +28,11 @@ export class ObjetivosService {
     return this.http.get(this.baseUrl + 'SNObjetivo/getListadoObjetivos', { headers, params });
   }
 
-  getListadoObjetivoMediciones(idObjetivo?: number, sFiltro: string = ''): Observable<any> {
+  getListadoObjetivoMediciones(idObjetivo?: any, sFiltro: string = ''): Observable<any> {
     const headers = this.Header;
     let params = new HttpParams();
-    if (idObjetivo) {
-      params = params.append('idObjetivo', idObjetivo.toString());
+    if (idObjetivo !== undefined && idObjetivo !== null && !isNaN(Number(idObjetivo)) && String(idObjetivo).trim() !== '') {
+      params = params.append('idObjetivo', Number(idObjetivo).toString());
     }
     if (sFiltro) {
       params = params.append('sFiltro', sFiltro);

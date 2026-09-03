@@ -28,11 +28,11 @@ export class IndicadoresService {
     return this.http.get(this.baseUrl + 'SNIndicador/getListadoIndicadores', { headers, params });
   }
 
-  getListadoIndicadorMediciones(idIndicador?: number, sFiltro: string = ''): Observable<any> {
+  getListadoIndicadorMediciones(idIndicador?: any, sFiltro: string = ''): Observable<any> {
     const headers = this.Header;
     let params = new HttpParams();
-    if (idIndicador) {
-      params = params.append('idIndicador', idIndicador.toString());
+    if (idIndicador !== undefined && idIndicador !== null && !isNaN(Number(idIndicador)) && String(idIndicador).trim() !== '') {
+      params = params.append('idIndicador', Number(idIndicador).toString());
     }
     if (sFiltro) {
       params = params.append('sFiltro', sFiltro);

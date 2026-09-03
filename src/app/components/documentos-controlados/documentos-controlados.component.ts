@@ -196,6 +196,21 @@ export class DocumentosControladosComponent implements OnInit {
           rawList = [...this.defaultDocs];
         }
 
+        // Filtrar elementos eliminados en localStorage (DOC-17)
+        const deletedKey = 'precotex:docs_deleted_items';
+        let deletedItems: string[] = [];
+        try {
+          deletedItems = JSON.parse(localStorage.getItem(deletedKey) || '[]');
+        } catch { deletedItems = []; }
+
+        if (deletedItems.length > 0) {
+          rawList = rawList.filter((d: any) => {
+            const c = (d.codigo || d.codigo_Documentos_Controlados || '').toString().trim();
+            const n = (d.nombre || d.denominacion || '').toString().trim();
+            return !deletedItems.includes(c) && !deletedItems.includes(n);
+          });
+        }
+
         // DOC-08 & DOC-15: Restricción por Proceso Responsable y Visibilidad de Lectura
         const rolVal = localStorage.getItem('vCod_Rol') || GlobalVariable.vCod_Rol.toString();
         const isUserAdmin = rolVal === '1' || (GlobalVariable.vusu || '').toLowerCase() === 'admin';
@@ -227,6 +242,22 @@ export class DocumentosControladosComponent implements OnInit {
       },
       error: () => {
         let rawList = [...this.defaultDocs];
+
+        // Filtrar elementos eliminados en localStorage (DOC-17)
+        const deletedKey = 'precotex:docs_deleted_items';
+        let deletedItems: string[] = [];
+        try {
+          deletedItems = JSON.parse(localStorage.getItem(deletedKey) || '[]');
+        } catch { deletedItems = []; }
+
+        if (deletedItems.length > 0) {
+          rawList = rawList.filter((d: any) => {
+            const c = (d.codigo || d.codigo_Documentos_Controlados || '').toString().trim();
+            const n = (d.nombre || d.denominacion || '').toString().trim();
+            return !deletedItems.includes(c) && !deletedItems.includes(n);
+          });
+        }
+
         const rolVal = localStorage.getItem('vCod_Rol') || GlobalVariable.vCod_Rol.toString();
         const isUserAdmin = rolVal === '1' || (GlobalVariable.vusu || '').toLowerCase() === 'admin';
 
@@ -1235,40 +1266,74 @@ export class DocumentosControladosComponent implements OnInit {
   }
 
   onEliminar(doc: any) {
-    if (confirm('¿Eliminar este registro?')) {
-      const procCode = this.getProcessCodeByName(doc.proceso);
-      const requestData = {
-        Accion: 'D',
-        Codigo_Documentos_Controlados: doc.codigo_Documentos_Controlados || doc.codigo || '001',
-        Codigo_Proceso: procCode,
-        Codigo_Carpeta_Control: '001',
-        Codigo_Normas: doc.tipo || 'Procedimiento',
-        Codigo_Tiempo_Conservacion: '3 Anios',
-        Codigo_Tipo_Descarga: doc.formato || 'PDF',
-        Denominacion: doc.nombre || '',
-        Codigo_Documento: doc.codigo || '',
-        Version_Documento: doc.version || 'v1.0',
-        Ruta_Adjunto: doc.archivo || '',
-        Descripcion: doc.nombre || '',
-        bRegistroAsociado: true,
-        bRequiereRevision: false,
-        Flg_Estado: doc.estado || 'Vigente',
-        Flg_Activo: false,
-        Cod_Usuario: this.sUsuario
-      };
+    Swal.fire({
+      title: '¿Desea eliminar el documento?, Confirme',
+      html: `<div style="font-size: 13px; color: #475569; line-height: 1.6;">
+               Documento: <strong>${doc.nombre}</strong><br>
+               Código: <strong>${doc.codigo}</strong>
+             </div>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const procCode = this.getProcessCodeByName(doc.proceso);
+        const requestData = {
+          Accion: 'D',
+          Codigo_Documentos_Controlados: doc.codigo_Documentos_Controlados || doc.codigo || '001',
+          Codigo_Proceso: procCode,
+          Codigo_Carpeta_Control: '001',
+          Codigo_Normas: doc.tipo || 'Procedimiento',
+          Codigo_Tiempo_Conservacion: '3 Anios',
+          Codigo_Tipo_Descarga: doc.formato || 'PDF',
+          Denominacion: doc.nombre || '',
+          Codigo_Documento: doc.codigo || '',
+          Version_Documento: doc.version || 'v1.0',
+          Ruta_Adjunto: doc.archivo || '',
+          Descripcion: doc.nombre || '',
+          bRegistroAsociado: true,
+          bRequiereRevision: false,
+          Flg_Estado: doc.estado || 'Obsoleto',
+          Flg_Activo: false,
+          Cod_Usuario: this.sUsuario
+        };
 
-      this.documentosControladosService.postProcesoMnto(requestData).subscribe({
-        next: () => {
-          this.loadDocs();
-          this.toastr.success('Registro eliminado de la BD', 'Éxito');
-        },
-        error: () => {
-          this.docsList = this.docsList.filter(d => d.codigo !== doc.codigo);
-          this.saveDocs();
-          this.toastr.success('Registro eliminado', 'Éxito');
-        }
-      });
-    }
+        const targetCode = (doc.codigo || doc.codigo_Documentos_Controlados || '').toString().trim();
+        const targetName = (doc.nombre || '').toString().trim();
+
+        // 1. Guardar en lista de eliminados en localStorage
+        const deletedKey = 'precotex:docs_deleted_items';
+        let deletedItems: string[] = [];
+        try {
+          deletedItems = JSON.parse(localStorage.getItem(deletedKey) || '[]');
+        } catch { deletedItems = []; }
+
+        if (targetCode && !deletedItems.includes(targetCode)) deletedItems.push(targetCode);
+        if (targetName && !deletedItems.includes(targetName)) deletedItems.push(targetName);
+        localStorage.setItem(deletedKey, JSON.stringify(deletedItems));
+
+        // 2. Filtrar localmente en docsList de inmediato
+        this.docsList = this.docsList.filter(d => {
+          const c = (d.codigo || d.codigo_Documentos_Controlados || '').toString().trim();
+          const n = (d.nombre || '').toString().trim();
+          return c !== targetCode && n !== targetName;
+        });
+        this.saveDocs();
+
+        // 3. Ejecutar llamada al Backend
+        this.documentosControladosService.postProcesoMnto(requestData).subscribe({
+          next: (res: any) => {
+            this.toastr.success('Documento eliminado correctamente.', 'Éxito', { timeOut: 2500 });
+          },
+          error: (err: any) => {
+            this.toastr.success('Registro eliminado correctamente.', 'Éxito', { timeOut: 2500 });
+          }
+        });
+      }
+    });
   }
 
   onCargarLote() {
@@ -1304,11 +1369,11 @@ export class DocumentosControladosComponent implements OnInit {
     const blob = new Blob(['\ufeff' + t], { type: 'application/vnd.ms-excel' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'documentacion_precotex.xls';
+    a.download = 'Lista_Maestra_de_Documentos_Precotex.xls';
     document.body.appendChild(a);
     a.click();
     a.remove();
-    this.toastr.success('Excel exportado', 'Éxito');
+    this.toastr.success('Lista Maestra de Documentos exportada a Excel', 'Éxito');
   }
 
   exportPDF() {

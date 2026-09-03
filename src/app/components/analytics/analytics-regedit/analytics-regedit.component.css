@@ -121,6 +121,38 @@ select.full-width-input option {
   color: var(--txt);
 }
 
+.form-select-mat {
+  display: flex !important;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--txt);
+  font-size: 0.86rem;
+  box-sizing: border-box;
+  min-height: 42px;
+}
+
+.form-select-mat:focus {
+  border-color: var(--violet);
+  box-shadow: 0 0 0 3px rgba(91, 75, 214, 0.12);
+}
+
+::ng-deep .mat-mdc-select-panel {
+  background: #ffffff !important;
+  border-radius: 8px !important;
+}
+
+::ng-deep .mat-mdc-option {
+  color: var(--txt, #0f172a) !important;
+}
+
+::ng-deep .mat-mdc-option.mdc-list-item--selected:not(.mdc-list-item--disabled) .mdc-list-item__primary-text {
+  color: var(--violet, #5b4bd6) !important;
+  font-weight: 700;
+}
+
 .dialog-actions-row {
   background-color: var(--panel-2);
   padding: 16px 24px !important;

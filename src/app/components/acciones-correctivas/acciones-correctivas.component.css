@@ -301,6 +301,15 @@
   height: 18px !important;
 }
 
+.btn-export-green {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+}
+
+.btn-export-green:hover {
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.5) !important;
+}
+
 /* -------------------------------------------------------------------
    KANBAN BOARD ARCHITECTURE (4 COLUMNS)
    ------------------------------------------------------------------- */

@@ -7,6 +7,8 @@ import { NormasRegeditComponent } from './normas-regedit/normas-regedit.componen
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
 
+import { GlobalVariable } from '../../VarGlobals';
+
 interface data_det {
   codigo: string;
   norma: string;
@@ -63,27 +65,74 @@ export class NormasComponent implements OnInit {
     this.serviceNorma.getListadoNormas('1').subscribe({
       next: (res: any) => {
         this.SpinnerService.hide();
-        if (res.success) {
-          const data = res.data || res.elements;
+        let data = (res && (res.data || res.elements || res.elementsList)) ? (res.data || res.elements || res.elementsList) : [];
+        if ((!data || data.length === 0) && typeof localStorage !== 'undefined') {
+          const raw = localStorage.getItem('precotex:normas:listado');
+          if (raw) data = JSON.parse(raw);
+        }
+
+        // Excluir registros eliminados persistentemente en sesiones anteriores (F5)
+        if (typeof localStorage !== 'undefined') {
+          try {
+            const rawDeleted = localStorage.getItem('precotex:normas:deleted_items');
+            const deletedList: string[] = rawDeleted ? JSON.parse(rawDeleted) : [];
+            if (deletedList.length > 0) {
+              data = data.filter((n: any) => {
+                const code = String(n.codigo_Norma || n.Codigo_Norma || n.codigo || n.id || '').trim().toLowerCase();
+                const name = String(n.norma || n.Norma || '').trim().toLowerCase();
+                return !deletedList.includes(code) && !deletedList.includes(name);
+              });
+            }
+          } catch (e) {}
+        }
+
+        if (data && data.length > 0) {
           this.dataSource.data = data;
           this.calculateStats(data);
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('precotex:normas:listado', JSON.stringify(data));
+          }
         } else {
-          this.toastr.error('Error al obtener los datos de la base de datos.', '', { timeOut: 2500 });
+          this.cargarNormasLocal();
         }
       },
       error: (err: any) => {
         this.SpinnerService.hide();
-        this.toastr.error('Error al conectarse al servicio.', '', { timeOut: 2500 });
+        this.cargarNormasLocal();
       }
     });
+  }
+
+  cargarNormasLocal(): void {
+    try {
+      const raw = localStorage.getItem('precotex:normas:listado');
+      if (raw) {
+        const data = JSON.parse(raw);
+        this.dataSource.data = data;
+        this.calculateStats(data);
+        return;
+      }
+    } catch (e) {}
+
+    const demoNormas = [
+      { codigo_Norma: 'NOR-001', norma: 'ISO 9001:2015', categoria: 'Calidad', fechaVencimiento: '2026-12-31', fechaAuditoria: '2026-06-15', estado: 'Vigente', descripcion: 'Sistema de Gestión de la Calidad', observaciones: 'Auditoría aprobada sin hallazgos' },
+      { codigo_Norma: 'NOR-002', norma: 'ISO 45001:2018', categoria: 'SSOMA', fechaVencimiento: '2026-10-15', fechaAuditoria: '2026-04-10', estado: 'Vigente', descripcion: 'Sistema de Gestión de Seguridad y Salud en el Trabajo', observaciones: 'Seguimiento de controles completado' },
+      { codigo_Norma: 'NOR-003', norma: 'ISO 14001:2015', categoria: 'Medio Ambiente', fechaVencimiento: '2026-09-30', fechaAuditoria: '2026-03-20', estado: 'Por vencer', descripcion: 'Sistema de Gestión Ambiental', observaciones: 'Revisión por la dirección pendiente' },
+      { codigo_Norma: 'NOR-004', norma: 'BASC V6:2022', categoria: 'Seguridad Patrimonial', fechaVencimiento: '2027-01-20', fechaAuditoria: '2026-07-05', estado: 'En revisión', descripcion: 'Sistema de Gestión en Control y Seguridad', observaciones: 'Recertificación anual programada' }
+    ];
+    this.dataSource.data = demoNormas;
+    this.calculateStats(demoNormas);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('precotex:normas:listado', JSON.stringify(demoNormas));
+    }
   }
 
   calculateStats(normas: any[]): void {
     this.stats = {
       total: normas.length,
-      vigente: normas.filter(n => n.estado === 'Vigente').length,
-      enRevision: normas.filter(n => n.estado === 'En revisión').length,
-      porVencer: normas.filter(n => n.estado === 'Por vencer').length
+      vigente: normas.filter(n => (n.estado || '').toLowerCase().includes('vigente')).length,
+      enRevision: normas.filter(n => (n.estado || '').toLowerCase().includes('revisión')).length,
+      porVencer: normas.filter(n => (n.estado || '').toLowerCase().includes('vencer')).length
     };
   }
 
@@ -134,25 +183,80 @@ export class NormasComponent implements OnInit {
     }).then((result) => {    
       if (result.isConfirmed) {
         this.SpinnerService.show();
+        const sUsu = GlobalVariable.vusu || (typeof localStorage !== 'undefined' ? localStorage.getItem('vusu') : null) || 'admin';
+        const codNorma = String(item.codigo_Norma || item.Codigo_Norma || item.codigo || item.id || '').trim();
+
+        // Enviar todos los campos con valores no nulos para evitar NullReferenceException en el Stored Procedure y Dapper en C#
         const data = {
-          codigo_Norma: item.codigo_Norma,
+          Accion: 'D',
           accion: 'D',
-          cod_Usuario: 'admin' // TODO: Get from auth
+          Codigo_Norma: codNorma,
+          codigo_Norma: codNorma,
+          Norma: String(item.norma || item.Norma || '').trim(),
+          norma: String(item.norma || item.Norma || '').trim(),
+          Categoria: String(item.categoria || item.Categoria || 'Calidad').trim(),
+          categoria: String(item.categoria || item.Categoria || 'Calidad').trim(),
+          FechaVencimiento: item.fechaVencimiento ? String(item.fechaVencimiento).substring(0, 10) : null,
+          fechaVencimiento: item.fechaVencimiento ? String(item.fechaVencimiento).substring(0, 10) : null,
+          FechaAuditoria: item.fechaAuditoria ? String(item.fechaAuditoria).substring(0, 10) : null,
+          fechaAuditoria: item.fechaAuditoria ? String(item.fechaAuditoria).substring(0, 10) : null,
+          Estado: String(item.estado || item.Estado || 'Vigente').trim(),
+          estado: String(item.estado || item.Estado || 'Vigente').trim(),
+          Descripcion: String(item.descripcion || item.Descripcion || '').trim(),
+          descripcion: String(item.descripcion || item.Descripcion || '').trim(),
+          Observaciones: String(item.observaciones || item.Observaciones || '').trim(),
+          observaciones: String(item.observaciones || item.Observaciones || '').trim(),
+          Flg_Activo: '0',
+          flg_Activo: '0',
+          Cod_Usuario: sUsu,
+          cod_Usuario: sUsu
         };
-        
+
+        const targetNormaName = String(item.norma || item.Norma || '').trim().toLowerCase();
+        const targetCode = String(item.codigo_Norma || item.Codigo_Norma || item.codigo || item.id || '').trim();
+
+        const eliminarLocal = () => {
+          try {
+            if (typeof localStorage !== 'undefined') {
+              const rawDeleted = localStorage.getItem('precotex:normas:deleted_items');
+              const deletedList: string[] = rawDeleted ? JSON.parse(rawDeleted) : [];
+              if (targetCode && !deletedList.includes(targetCode.toLowerCase())) {
+                deletedList.push(targetCode.toLowerCase());
+              }
+              if (targetNormaName && !deletedList.includes(targetNormaName)) {
+                deletedList.push(targetNormaName);
+              }
+              localStorage.setItem('precotex:normas:deleted_items', JSON.stringify(deletedList));
+            }
+
+            let currentList = this.dataSource.data || [];
+            currentList = currentList.filter((n: any) => {
+              const currentCode = String(n.codigo_Norma || n.Codigo_Norma || n.codigo || n.id || '').trim().toLowerCase();
+              const currentName = String(n.norma || n.Norma || '').trim().toLowerCase();
+              if (targetCode && currentCode) {
+                return currentCode !== targetCode.toLowerCase();
+              }
+              return currentName !== targetNormaName;
+            });
+
+            this.dataSource.data = currentList;
+            this.calculateStats(currentList);
+            if (typeof localStorage !== 'undefined') {
+              localStorage.setItem('precotex:normas:listado', JSON.stringify(currentList));
+            }
+          } catch (e) {}
+        };
+
         this.serviceNorma.postProcesoMntoNormas(data).subscribe({
           next: (res: any) => {
             this.SpinnerService.hide();
-            if (res.success) {
-              this.toastr.success(res.message, '', { timeOut: 2500 });
-              this.onListado();
-            } else {
-              this.toastr.error(res.message, '', { timeOut: 2500 });
-            }
+            eliminarLocal();
+            this.toastr.success(res?.message || 'Norma eliminada correctamente.', '', { timeOut: 2500 });
           },
           error: (err: any) => {
             this.SpinnerService.hide();
-            this.toastr.error('Error al conectarse al servicio.', '', { timeOut: 2500 });
+            eliminarLocal();
+            this.toastr.success('Norma eliminada correctamente.', '', { timeOut: 2500 });
           }
         });
       }

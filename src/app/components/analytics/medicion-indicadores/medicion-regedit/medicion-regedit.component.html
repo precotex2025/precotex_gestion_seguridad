@@ -1,24 +1,50 @@
 <div class="dialog-container">
   
-  <mat-toolbar class="banner-header">
-    <span class="titulo">{{ data.Title }}</span>
-    <span class="flex-spacer"></span>
-    <button type="button" class="btn-close-header" (click)="onCancelar()" title="Cerrar">
-      <mat-icon>close</mat-icon>
+  <!-- HEADER -->
+  <div class="dialog-header">
+    <div class="dialog-icon-box">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+        <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/>
+      </svg>
+    </div>
+    <div class="dialog-header-text">
+      <h2 class="dialog-title">{{ data.Title || '::. Registrar medición de indicador .::' }}</h2>
+      <p class="dialog-subtitle">Configuración y registro de valores periódicos de indicadores</p>
+    </div>
+    <button type="button" class="btn-close-x" (click)="onCancelar()" title="Cerrar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+      </svg>
     </button>
-  </mat-toolbar>
+  </div>
 
   <form [formGroup]="formulario" (ngSubmit)="onGuardar()">
     
     <mat-dialog-content class="form-content">
       
-      <!-- Fila 1: Indicador -->
+      <!-- SECCIÓN 1: IDENTIFICACIÓN -->
+      <div class="section-title">Identificación de la Medición</div>
+
+      <!-- Fila 1: Selector de Indicador con autollenado total de información (IND-07, IND-11) -->
       <div class="form-section-item">
-        <div class="form-label">Indicador (*):</div>
-        <select formControlName="indicador" class="full-width-input">
-          <option value="" disabled selected>Selecciona un indicador catalogado</option>
-          <option *ngFor="let ind of indicadores" [value]="ind.nombre">{{ ind.codigo }} - {{ ind.nombre }}</option>
+        <div class="form-label">Seleccionar Indicador Registrado (*):</div>
+        
+        <select formControlName="indicador" (change)="onSelectIndicadorChange($event)" class="full-width-input select-indicador-destacado">
+          <option value="" disabled selected>-- Selecciona un indicador registrado --</option>
+          <option *ngFor="let ind of indicadores" [value]="ind.nombre">
+            [{{ ind.codigo }}] — {{ ind.nombre }} (Proceso: {{ ind.proceso }} • Meta: {{ ind.meta }})
+          </option>
         </select>
+
+        <!-- Badge de información completa jalada automáticamente (IND-11) -->
+        <div *ngIf="indicadorSeleccionado" class="indicador-info-badge">
+          <span class="info-pill"><strong style="color: #6366f1;">Código:</strong> {{ indicadorSeleccionado.codigo }}</span>
+          <span class="info-pill"><strong style="color: #6366f1;">Sedes:</strong> {{ indicadorSeleccionado.sede || 'Todas' }}</span>
+          <span class="info-pill"><strong style="color: #6366f1;">Proceso:</strong> {{ indicadorSeleccionado.proceso }}</span>
+          <span class="info-pill"><strong style="color: #6366f1;">Norma:</strong> {{ indicadorSeleccionado.norma || 'ISO 9001:2015' }}</span>
+          <span class="info-pill"><strong style="color: #6366f1;">Frecuencia:</strong> {{ indicadorSeleccionado.frecuencia || 'Mensual' }}</span>
+          <span class="info-pill"><strong style="color: #6366f1;">Meta Base:</strong> {{ indicadorSeleccionado.meta }}</span>
+        </div>
       </div>
 
       <!-- Fila 2: Sede & Proceso -->
@@ -38,6 +64,9 @@
           </select>
         </div>
       </div>
+
+      <!-- SECCIÓN 2: VALORES Y METAS -->
+      <div class="section-title">Valores y Metas</div>
 
       <!-- Fila 3: Meta & Valor Obtenido -->
       <div class="grid-2-cols">
@@ -65,19 +94,67 @@
         </div>
       </div>
 
-      <!-- Fila 5: Observaciones -->
+      <!-- SECCIÓN 3: EVIDENCIA Y OBSERVACIONES -->
+      <div class="section-title">Evidencia y Observaciones</div>
+
+      <!-- Fila 5: Evidencia (IND-08) -->
+      <div class="form-section-item">
+        <div class="form-label">Evidencia de Medición (PDF / Excel / Imagen):</div>
+        <div class="file-upload-wrapper">
+          <input type="file" 
+                 #fileEvidenciaInput 
+                 (change)="onFileEvidenciaSelected($event)" 
+                 accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.doc,.docx" 
+                 style="display: none;">
+          
+          <div class="file-drop-card" (click)="fileEvidenciaInput.click()">
+            <div class="file-drop-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+              </svg>
+            </div>
+            
+            <div class="file-drop-info">
+              <span class="file-drop-main-text" *ngIf="!nombreArchivoEvidencia">
+                <strong>Haz clic aquí</strong> para adjuntar evidencia de medición
+              </span>
+              <span class="file-drop-main-text text-selected" *ngIf="nombreArchivoEvidencia">
+                📄 {{ nombreArchivoEvidencia }}
+              </span>
+              <span class="file-drop-sub-text">
+                Formatos soportados: PDF, Excel (.xlsx/.xls), Imágenes (.png/.jpg) (Máx 10MB)
+              </span>
+            </div>
+
+            <button type="button" 
+                    *ngIf="nombreArchivoEvidencia" 
+                    class="btn-clear-file" 
+                    (click)="$event.stopPropagation(); onRemoveEvidencia(fileEvidenciaInput)" 
+                    title="Quitar archivo">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fila 6: Observaciones -->
       <div class="form-section-item">
         <div class="form-label">Observaciones:</div>
-        <textarea formControlName="obs" rows="4" class="full-width-input textarea-desc" placeholder="Comentario u observación opcional..."></textarea>
+        <textarea formControlName="obs" rows="2" class="full-width-input" placeholder="Comentario u observación opcional sobre la medición..."></textarea>
       </div>
 
     </mat-dialog-content>
 
     <mat-dialog-actions class="dialog-actions-row">
-      <button type="submit" class="BtnGuardarPlan" mat-flat-button>
-        Guardar Medición
+      <button type="submit" class="BtnGuardarPlan">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+          <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+        </svg>
+        <span>Guardar Medición</span>
       </button>
-      <button type="button" class="BtnCancelarPlan" mat-flat-button (click)="onCancelar()">
+      <button type="button" class="BtnCancelarPlan" (click)="onCancelar()">
         Cancelar
       </button>
     </mat-dialog-actions>

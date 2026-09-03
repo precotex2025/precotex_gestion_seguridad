@@ -159,7 +159,8 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
       responsable: ['', Validators.required],
       revision: [new Date().toISOString().substring(0, 10)], // RIE-17: Valor inicial por defecto
       estado: ['Sin control'],                               // RIE-18: Nace inicialmente como 'Sin control'
-      medidacontrol: ['']
+      medidacontrol: [''],
+      archivoEvidencia: ['']                                 // Subir documento de sustento / Matriz IPERC
     });
 
     // RIE-12: Cálculo automático de nivel de riesgo residual (Probabilidad x Impacto)
@@ -183,6 +184,8 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
       const autoCod = this.data.NextCodigo || 'RSG-2026-001';
       this.formulario.patchValue({ codigo: autoCod });
     } else if ((this.data.Accion === 'U' || this.data.Accion === 'V') && this.data.Datos) {
+      const nomArch = this.data.Datos.archivoEvidencia || this.data.Datos.evidencia || '';
+      this.nombreArchivoEvidencia = nomArch;
       this.formulario.patchValue({
         codigo: this.data.Datos.codigo,
         periodo: this.data.Datos.periodo || new Date().getFullYear().toString(),
@@ -199,12 +202,61 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
         responsable: this.data.Datos.responsable,
         revision: this.data.Datos.revision,
         estado: this.data.Datos.estado,
-        medidacontrol: this.data.Datos.medidacontrol || ''
+        medidacontrol: this.data.Datos.medidacontrol || '',
+        archivoEvidencia: nomArch
       });
       if (this.data.Accion === 'V') {
         this.formulario.disable();
       }
     }
+  }
+
+  nombreArchivoEvidencia: string = '';
+  isDragging: boolean = false;
+
+  onFileSelected(event: any): void {
+    const file = event.target.files?.[0];
+    if (file) {
+      this.procesarArchivo(file);
+    }
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+  }
+
+  onFileDropped(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+    const file = event.dataTransfer?.files?.[0];
+    if (file) {
+      this.procesarArchivo(file);
+    }
+  }
+
+  procesarArchivo(file: File): void {
+    if (file.size > 10 * 1024 * 1024) {
+      this.toastr.warning('El archivo supera el límite permitido de 10 MB.', 'Archivo muy pesado');
+      return;
+    }
+    this.nombreArchivoEvidencia = file.name;
+    this.formulario.patchValue({ archivoEvidencia: file.name });
+    this.toastr.success(`Documento "${file.name}" adjuntado correctamente`, 'Archivo cargado', { timeOut: 2500 });
+  }
+
+  onRemoveFile(event?: Event): void {
+    if (event) event.stopPropagation();
+    this.nombreArchivoEvidencia = '';
+    this.formulario.patchValue({ archivoEvidencia: '' });
   }
 
   readonly probRows = [5, 4, 3, 2, 1]; // Filas de 5 a 1

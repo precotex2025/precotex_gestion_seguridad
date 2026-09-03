@@ -680,3 +680,11 @@ input[type="date"]:focus {
 #toast-container > .toast-warning {
   border-left: 5px solid var(--amber) !important;
 }
+
+/* ---- Custom Dialog Panel (no default padding) ---- */
+.custom-dialog-no-padding .mat-mdc-dialog-container,
+.custom-dialog-no-padding .mat-mdc-dialog-container .mdc-dialog__surface {
+  padding: 0 !important;
+  border-radius: 14px !important;
+  overflow: hidden;
+}

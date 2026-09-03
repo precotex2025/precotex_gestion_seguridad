@@ -59,6 +59,102 @@
   height: 16px !important;
 }
 
+/* Toolbar & Year Selector */
+.integrated-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 20px;
+}
+
+.margin-bottom-toolbar {
+  margin-bottom: 4px;
+}
+
+.toolbar-title-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.seccion-titulo {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--txt);
+  margin: 0;
+}
+
+.results-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #a78bfa;
+  background: rgba(167, 139, 250, 0.12);
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+
+.badge-purple {
+  background: rgba(124, 108, 240, 0.3);
+  color: #a99bff;
+}
+
+.toolbar-actions-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.year-selector-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.year-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.year-btn-group {
+  display: flex;
+  gap: 4px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: 3px;
+  border-radius: 8px;
+}
+
+.btn-year-tab {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  padding: 5px 14px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-year-tab:hover {
+  color: var(--txt);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-year-tab.active-year {
+  background: #7c6cf0;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(124, 108, 240, 0.35);
+}
+
 /* Legend Container */
 .legend-container-gantt {
   display: flex;

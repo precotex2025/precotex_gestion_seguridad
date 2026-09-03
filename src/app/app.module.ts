@@ -20,7 +20,8 @@ import { AvatarModule } from 'primeng/avatar';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { KnobModule } from 'primeng/knob';
 
-import { provideHttpClient, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { provideHttpClient, withInterceptors, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { authInterceptor } from './interceptors/jwt.interceptor';
 import { ErrorHandlerInterceptor } from './interceptors/error-handler.interceptor';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -101,6 +102,7 @@ import { AuditoriasComponent } from './components/auditorias/auditorias.componen
 import { AuditoriasRegeditComponent } from './components/auditorias/auditorias-regedit/auditorias-regedit.component';
 import { ProgramaAnualComponent } from './components/auditorias/programa-anual/programa-anual.component';
 import { AnalyticsRegeditComponent } from './components/analytics/analytics-regedit/analytics-regedit.component';
+import { AnalyticsDetalleComponent } from './components/analytics/analytics-detalle/analytics-detalle.component';
 import { MedicionIndicadoresComponent } from './components/analytics/medicion-indicadores/medicion-indicadores.component';
 import { MedicionRegeditComponent } from './components/analytics/medicion-indicadores/medicion-regedit/medicion-regedit.component';
 import { MedicionObjetivosRegeditComponent } from './components/planificacion-objetivos/medicion-objetivos-regedit/medicion-objetivos-regedit.component';
@@ -167,6 +169,7 @@ import { ProveedoresRegeditComponent } from './components/proveedores/proveedore
     AuditoriasRegeditComponent,
     ProgramaAnualComponent,
     AnalyticsRegeditComponent,
+    AnalyticsDetalleComponent,
     MedicionIndicadoresComponent,
     MedicionRegeditComponent,
     MedicionObjetivosRegeditComponent,
@@ -223,7 +226,10 @@ import { ProveedoresRegeditComponent } from './components/proveedores/proveedore
     KnobModule
   ],
   providers: [
-    provideHttpClient(),
+    provideHttpClient(
+      withInterceptors([authInterceptor]),
+      withInterceptorsFromDi()
+    ),
     {
       provide: HTTP_INTERCEPTORS,
       useClass: ErrorHandlerInterceptor,

@@ -524,6 +524,155 @@ export class AccionesCorrectivasComponent implements OnInit {
     });
   }
 
+  // NCO-04: Descargar el archivo de evidencia subido en el registro
+  onDescargarNcDeclarada(row: any): void {
+    if (!row) return;
+
+    if (!row.evidencia) {
+      this.toastr.warning(`El registro ${row.codigo} no tiene un archivo de evidencia adjunto.`, 'Sin archivo adjunto');
+      return;
+    }
+
+    const fileName = row.evidencia;
+    const docContent = `
+===================================================================
+             PRECOTEX S.A.C. - ARCHIVO ADJUNTO DE EVIDENCIA
+===================================================================
+Archivo Adjunto  : ${fileName}
+Código NC        : ${row.codigo}
+Tipo de NC       : ${row.tipo} (${row.origen})
+Proceso          : ${row.proceso}
+Responsable      : ${row.responsable}
+Fecha Detección  : ${this.formatFechaDMY(row.deteccion)}
+Requisito        : ${row.requisito}
+Estado Actual    : ${row.estado}
+===================================================================
+HALLAZGO Y EVIDENCIA OBJETIVA REGISTRADA:
+${row.hallazgo}
+
+CAUSA RAÍZ PRELIMINAR / DETALLE REGISTRADO:
+${row.desc || 'Sin detalle adicional registrado.'}
+===================================================================
+Documento oficial emitido por el Sistema Integral de Seguridad (SIG Precotex).
+Fecha de descarga: ${new Date().toLocaleString()}
+`;
+
+    const isPdf = fileName.toLowerCase().endsWith('.pdf');
+    const blob = new Blob([docContent], { type: isPdf ? 'application/pdf' : 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+
+    this.toastr.success(`Descargando evidencia: ${fileName}`, 'Descarga Exitosa');
+  }
+
+  // NCO-04: Exportar lista de No Conformidades Declaradas a Excel
+  exportarDeclaracionesExcel(): void {
+    const list = this.declaracionDataSource.filteredData || this.declaracionList;
+    if (list.length === 0) {
+      this.toastr.warning('No hay No Conformidades para exportar.', 'Atención');
+      return;
+    }
+
+    let t = '<table border="1"><tr><th>Código</th><th>Tipo</th><th>Origen</th><th>Proceso Responsable</th><th>Hallazgo Detectado</th><th>Requisito Incumplido</th><th>Fecha Detección</th><th>Responsable</th><th>Estado</th><th>Detalle</th></tr>';
+    list.forEach(d => {
+      t += `<tr>
+        <td>${d.codigo || ''}</td>
+        <td>${d.tipo || ''}</td>
+        <td>${d.origen || ''}</td>
+        <td>${d.proceso || ''}</td>
+        <td>${d.hallazgo || ''}</td>
+        <td>${d.requisito || ''}</td>
+        <td>${this.formatFechaDMY(d.deteccion)}</td>
+        <td>${d.responsable || ''}</td>
+        <td>${d.estado || ''}</td>
+        <td>${d.desc || ''}</td>
+      </tr>`;
+    });
+    t += '</table>';
+    const blob = new Blob(['\ufeff' + t], { type: 'application/vnd.ms-excel' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'No_Conformidades_Declaradas_Precotex.xls';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    this.toastr.success('Lista de No Conformidades exportada a Excel', 'Éxito');
+  }
+
+  // NCO-05: Descargar Ficha individual de Acción Correctiva
+  onDescargarAccion(row: any): void {
+    if (!row) return;
+    const docContent = `
+===================================================================
+         PRECOTEX S.A.C. - FICHA DE ACCIÓN CORRECTIVA
+===================================================================
+NC Vinculada         : ${row.nc}
+Tipo de NC           : ${row.tipo}
+Proceso Responsable  : ${row.proceso}
+Acción Correctiva    : ${row.accion}
+Responsable          : ${row.responsable}
+Fecha Inicio         : ${row.inicio ? this.formatFechaDMY(row.inicio) : 'N/A'}
+Fecha Límite         : ${row.limite ? this.formatFechaDMY(row.limite) : 'N/A'}
+Estado de Ejecución  : ${row.estado || 'Pendiente'}
+Código Auditoría     : ${row.codigoAuditoria || 'N/A'}
+===================================================================
+DESCRIPCIÓN DE LA ACCIÓN CORRECTIVA / CAUSA RAÍZ:
+${row.desc || 'Sin descripción registrada.'}
+===================================================================
+Generado automáticamente por el Sistema Integral de Seguridad (SIG Precotex).
+Fecha de exportación: ${new Date().toLocaleString()}
+`;
+
+    const blob = new Blob([docContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Accion_Correctiva_${row.nc}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    this.toastr.success(`Descargando ficha de Acción Correctiva: ${row.nc}`, 'Descargar');
+  }
+
+  // NCO-05: Exportar lista de Acciones Correctivas a Excel
+  exportarAccionesExcel(): void {
+    const list = this.dataSource.filteredData || this.dataSource.data;
+    if (list.length === 0) {
+      this.toastr.warning('No hay Acciones Correctivas para exportar.', 'Atención');
+      return;
+    }
+
+    let t = '<table border="1"><tr><th>NC Vinculada</th><th>Tipo</th><th>Acción Correctiva</th><th>Proceso</th><th>Responsable</th><th>Fecha Inicio</th><th>Fecha Límite</th><th>Estado</th><th>Descripción</th></tr>';
+    list.forEach(d => {
+      t += `<tr>
+        <td>${d.nc || ''}</td>
+        <td>${d.tipo || ''}</td>
+        <td>${d.accion || ''}</td>
+        <td>${d.proceso || ''}</td>
+        <td>${d.responsable || ''}</td>
+        <td>${d.inicio ? this.formatFechaDMY(d.inicio) : ''}</td>
+        <td>${d.limite ? this.formatFechaDMY(d.limite) : ''}</td>
+        <td>${d.estado || ''}</td>
+        <td>${d.desc || ''}</td>
+      </tr>`;
+    });
+    t += '</table>';
+    const blob = new Blob(['\ufeff' + t], { type: 'application/vnd.ms-excel' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Acciones_Correctivas_Precotex.xls';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    this.toastr.success('Lista de Acciones Correctivas exportada a Excel', 'Éxito');
+  }
+
   moverEstado(item: any, nuevoEstado: string, event?: Event): void {
     if (event) event.stopPropagation();
     item.estado = nuevoEstado;

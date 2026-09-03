@@ -134,9 +134,15 @@
           <h3 class="organigrama-titulo"><mat-icon class="icon-inline">account_tree</mat-icon> Organigrama Corporativo</h3>
           <p class="organigrama-sub">Estructura jerárquica oficial de la empresa resguardada (PDF, PNG, Word, Excel).</p>
         </div>
-        <button type="button" class="btn-download-doc" (click)="onDescargarArchivo('organigrama')" *ngIf="organigramaUrl">
-          <mat-icon>file_download</mat-icon> Descargar
-        </button>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" class="btn-toggle-preview" (click)="togglePreview('organigrama')" style="background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.3); color: #818cf8; padding: 6px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 12px; height: 34px; box-sizing: border-box;">
+            <mat-icon style="font-size: 16px; width: 16px; height: 16px;">{{ mostrarPreviewOrganigrama ? 'visibility_off' : 'visibility' }}</mat-icon>
+            <span>{{ mostrarPreviewOrganigrama ? 'Ocultar previsualización' : 'Ver previsualización' }}</span>
+          </button>
+          <button type="button" class="btn-download-doc" (click)="onDescargarArchivo('organigrama')" *ngIf="organigramaUrl">
+            <mat-icon>file_download</mat-icon> Descargar
+          </button>
+        </div>
       </div>
       
       <div class="upload-wrapper">
@@ -157,8 +163,8 @@
         </div>
       </div>
 
-      <!-- Previsualización inferior visible (ORG-07) -->
-      <div class="file-preview-box">
+      <!-- Previsualización inferior activa bajo demanda (ORG-15) -->
+      <div class="file-preview-box" *ngIf="mostrarPreviewOrganigrama">
         <div class="preview-header">
           <div class="preview-title">
             <mat-icon>visibility</mat-icon>
@@ -168,11 +174,8 @@
             </span>
           </div>
           <div class="preview-actions" *ngIf="organigramaUrl">
-            <button type="button" class="btn-preview-action" (click)="onVerPantallaCompleta('organigrama')" title="Ver pantalla completa">
-              <mat-icon>open_in_new</mat-icon> Fullscreen
-            </button>
-            <button type="button" class="btn-preview-action" (click)="onDescargarArchivo('organigrama')" title="Descargar">
-              <mat-icon>file_download</mat-icon> Descargar
+            <button type="button" class="btn-preview-action" (click)="onVerPantallaCompleta('organigrama')" title="Ver en pantalla completa (ORG-14)">
+              <mat-icon>open_in_new</mat-icon> Pantalla completa
             </button>
           </div>
         </div>
@@ -246,9 +249,15 @@
           <h3 class="organigrama-titulo"><mat-icon class="icon-inline">schema</mat-icon> Mapa de Procesos Corporativo</h3>
           <p class="organigrama-sub">Flujo de Macroprocesos Estratégicos, Operativos y de Soporte Precotex.</p>
         </div>
-        <button type="button" class="btn-download-doc" (click)="onDescargarArchivo('mapaprocesos')" *ngIf="mapaProcesosUrl">
-          <mat-icon>file_download</mat-icon> Descargar
-        </button>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" class="btn-toggle-preview" (click)="togglePreview('mapaprocesos')" style="background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.3); color: #818cf8; padding: 6px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 12px; height: 34px; box-sizing: border-box;">
+            <mat-icon style="font-size: 16px; width: 16px; height: 16px;">{{ mostrarPreviewMapaProcesos ? 'visibility_off' : 'visibility' }}</mat-icon>
+            <span>{{ mostrarPreviewMapaProcesos ? 'Ocultar previsualización' : 'Ver previsualización' }}</span>
+          </button>
+          <button type="button" class="btn-download-doc" (click)="onDescargarArchivo('mapaprocesos')" *ngIf="mapaProcesosUrl">
+            <mat-icon>file_download</mat-icon> Descargar
+          </button>
+        </div>
       </div>
       
       <div class="upload-wrapper">
@@ -269,8 +278,8 @@
         </div>
       </div>
 
-      <!-- Previsualización inferior visible (ORG-08) -->
-      <div class="file-preview-box">
+      <!-- Previsualización inferior activa bajo demanda (ORG-15) -->
+      <div class="file-preview-box" *ngIf="mostrarPreviewMapaProcesos">
         <div class="preview-header">
           <div class="preview-title">
             <mat-icon>visibility</mat-icon>
@@ -280,11 +289,8 @@
             </span>
           </div>
           <div class="preview-actions" *ngIf="mapaProcesosUrl">
-            <button type="button" class="btn-preview-action" (click)="onVerPantallaCompleta('mapaprocesos')" title="Ver pantalla completa">
-              <mat-icon>open_in_new</mat-icon> Fullscreen
-            </button>
-            <button type="button" class="btn-preview-action" (click)="onDescargarArchivo('mapaprocesos')" title="Descargar">
-              <mat-icon>file_download</mat-icon> Descargar
+            <button type="button" class="btn-preview-action" (click)="onVerPantallaCompleta('mapaprocesos')" title="Ver en pantalla completa (ORG-14)">
+              <mat-icon>open_in_new</mat-icon> Pantalla completa
             </button>
           </div>
         </div>

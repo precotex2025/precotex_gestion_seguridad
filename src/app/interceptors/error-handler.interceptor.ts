@@ -1,12 +1,14 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
+import { AuthService } from '../services/auth.service';
 import Swal from 'sweetalert2';
 
 @Injectable()
 export class ErrorHandlerInterceptor implements HttpInterceptor {
+  private authService = inject(AuthService);
 
   constructor(private toastr: ToastrService) {}
 
@@ -33,11 +35,13 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
             confirmButtonColor: '#6366f1'
           });
         } else if (error.status === 401 || error.status === 403) {
-          this.toastr.error('No tienes permisos suficientes o tu sesión ha expirado.', 'Acceso Restringido');
+          this.toastr.error('Su sesión ha expirado o no cuenta con permisos para esta acción.', 'Acceso Denegado');
+          this.authService.logout();
         } else if (error.status >= 500) {
           this.toastr.error('El servidor respondió con una incidencia interna. Reintente en breve.', 'Error del Servidor');
         } else {
-          this.toastr.error(error.error?.message || error.message || errorMessage, `Error ${error.status}`);
+          const apiMsg = error.error?.Message || error.error?.message || error.error?.MessageTransac || error.error?.messageTransac || error.message || errorMessage;
+          this.toastr.error(apiMsg, `Error ${error.status}`);
         }
 
         return throwError(() => error);

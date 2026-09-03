@@ -5,9 +5,14 @@
     <div class="inline-search-box">
       <mat-icon class="search-icon">search</mat-icon>
       <input type="text" 
+             [(ngModel)]="searchText"
+             (input)="buscar($event)" 
              (keyup)="buscar($event)" 
-             placeholder="Buscar por código, título, herramienta, sede o estado..." 
+             placeholder="Buscar palabra clave (código, título, proceso, sede, estado...)" 
              class="inline-search-input">
+      <button *ngIf="searchText" type="button" class="btn-clear-search" (click)="limpiarBusqueda()" title="Limpiar búsqueda">
+        <mat-icon style="font-size: 16px; width: 16px; height: 16px;">close</mat-icon>
+      </button>
     </div>
     
     <div class="toolbar-actions-section">
@@ -21,6 +26,11 @@
       <button type="button" class="btn-ghost-action" (click)="onDescargarPlantilla5W2H()" title="Descargar Plantilla Excel 5W-2H (POR-02)">
         <mat-icon style="color: #38bdf8;">table_view</mat-icon>
         <span>Plantilla 5W-2H</span>
+      </button>
+
+      <button type="button" class="btn-ghost-action" (click)="onDescargarPlantillaACR()" title="Descargar Plantilla Excel ACR / Causa Raíz (PDM-14)">
+        <mat-icon style="color: #fb923c;">account_tree</mat-icon>
+        <span>Plantilla ACR</span>
       </button>
 
       <button type="button" class="btn-ghost-action" (click)="onExportarExcelConsolidado()" title="Exportar Consolidado a Excel (POR-04)">
@@ -234,9 +244,9 @@
     <!-- PANEL DERECHO: LISTADO Y ACCIONES (POR-01 A POR-05) -->
     <div class="table-panel">
       
-      <!-- DETALLE DEL PORTAFOLIO DE MEJORA Y FILTROS (ESTILO IMAGEN 2) -->
+      <!-- DETALLE DEL PORTAFOLIO Y FILTROS (PDM-12) -->
       <div class="seccion-header-pdm margin-bottom-14">
-        <h2 class="seccion-titulo-pdm">DETALLE DEL PORTAFOLIO DE MEJORA</h2>
+        <h2 class="seccion-titulo-pdm">DETALLE DEL PORTAFOLIO</h2>
 
         <!-- FILTROS PDM-09 (IMAGEN 2) -->
         <div class="pdm-filters-row">
@@ -262,12 +272,21 @@
             <span class="chip-label chip-green">ESTADO:</span>
             <select [(ngModel)]="filterEstado" (change)="applyFilter()" class="chip-select">
               <option value="TODOS">TODOS</option>
-              <option value="Abierto">Abierto</option>
-              <option value="Desarrollo- Análisis">Desarrollo- Análisis</option>
-              <option value="Desarrollo- Acciones en ejecución">Desarrollo- Acciones en ejecución</option>
-              <option value="Cerrado">Cerrado</option>
+              <option value="Iniciado">Iniciado</option>
+              <option value="Análisis completado">Análisis completado</option>
+              <option value="Acciones en ejecución">Acciones en ejecución</option>
+              <option value="Finalizado">Finalizado</option>
             </select>
           </div>
+
+          <button *ngIf="filterSede !== 'TODAS' || filterHerramienta !== 'TODAS' || filterEstado !== 'TODOS' || searchText" 
+                  type="button" 
+                  class="btn-reset-filters" 
+                  (click)="filterSede='TODAS'; filterHerramienta='TODAS'; filterEstado='TODOS'; limpiarBusqueda();" 
+                  title="Restablecer todos los filtros y búsqueda">
+            <mat-icon style="font-size: 15px; width: 15px; height: 15px; vertical-align: middle;">filter_alt_off</mat-icon>
+            <span>Limpiar filtros</span>
+          </button>
         </div>
       </div>
 
@@ -325,37 +344,37 @@
             <td mat-cell *matCellDef="let row" class="desc-cell">{{ row.limite | date:'dd/MM/yyyy' }}</td>
           </ng-container>
 
-          <!-- Fecha Fin (PDM-06) -->
+          <!-- Fecha Fin (PDM-06 & PDM-11) -->
           <ng-container matColumnDef="fechaFin">
             <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 105px;">Fecha Fin</th>
             <td mat-cell *matCellDef="let row" class="desc-cell">
-              <span *ngIf="row.fechaFin || row.fecha_Fin || row.fechafin" style="color: #34d399; font-weight: 600;">
-                {{ (row.fechaFin || row.fecha_Fin || row.fechafin) | date:'dd/MM/yyyy' }}
+              <span *ngIf="row.fechaFin" style="color: #34d399; font-weight: 700;">
+                {{ formatearFechaTabla(row.fechaFin) }}
               </span>
-              <span *ngIf="!(row.fechaFin || row.fecha_Fin || row.fechafin)" style="color: #94a3b8; font-style: italic;">
+              <span *ngIf="!row.fechaFin" style="color: #94a3b8; font-style: italic;">
                 —
               </span>
             </td>
           </ng-container>
 
-          <!-- Estado (PDM-07: Se elimina porcentaje y barra, se muestra el estado) -->
+          <!-- Estado (PDM-10: Iniciado, Análisis completado, Acciones en ejecución, Finalizado) -->
           <ng-container matColumnDef="estado">
             <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 160px;">Estado</th>
             <td mat-cell *matCellDef="let row">
               <span class="badge-estado-pdm" 
                     [ngStyle]="{
-                      'background': row.estado === 'Cerrado' ? 'rgba(16,185,129,0.15)' :
-                                    (row.estado === 'Desarrollo- Acciones en ejecución' ? 'rgba(99,102,241,0.15)' :
-                                    (row.estado === 'Desarrollo- Análisis' ? 'rgba(245,158,11,0.15)' : 'rgba(56,189,248,0.15)')),
-                      'color': row.estado === 'Cerrado' ? '#34d399' :
-                               (row.estado === 'Desarrollo- Acciones en ejecución' ? '#818cf8' :
-                               (row.estado === 'Desarrollo- Análisis' ? '#fbbf24' : '#38bdf8')),
-                      'border': row.estado === 'Cerrado' ? '1px solid rgba(16,185,129,0.3)' :
-                                (row.estado === 'Desarrollo- Acciones en ejecución' ? '1px solid rgba(99,102,241,0.3)' :
-                                (row.estado === 'Desarrollo- Análisis' ? '1px solid rgba(245,158,11,0.3)' : '1px solid rgba(56,189,248,0.3)'))
+                      'background': (row.estado === 'Finalizado' || row.estado === 'Cerrado') ? 'rgba(16,185,129,0.15)' :
+                                    (row.estado === 'Acciones en ejecución' || row.estado === 'Desarrollo- Acciones en ejecución' ? 'rgba(99,102,241,0.15)' :
+                                    (row.estado === 'Análisis completado' || row.estado === 'Desarrollo- Análisis' ? 'rgba(245,158,11,0.15)' : 'rgba(56,189,248,0.15)')),
+                      'color': (row.estado === 'Finalizado' || row.estado === 'Cerrado') ? '#34d399' :
+                               (row.estado === 'Acciones en ejecución' || row.estado === 'Desarrollo- Acciones en ejecución' ? '#818cf8' :
+                               (row.estado === 'Análisis completado' || row.estado === 'Desarrollo- Análisis' ? '#fbbf24' : '#38bdf8')),
+                      'border': (row.estado === 'Finalizado' || row.estado === 'Cerrado') ? '1px solid rgba(16,185,129,0.3)' :
+                                (row.estado === 'Acciones en ejecución' || row.estado === 'Desarrollo- Acciones en ejecución' ? '1px solid rgba(99,102,241,0.3)' :
+                                (row.estado === 'Análisis completado' || row.estado === 'Desarrollo- Análisis' ? '1px solid rgba(245,158,11,0.3)' : '1px solid rgba(56,189,248,0.3)'))
                     }"
                     style="padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; display: inline-block; text-align: center;">
-                {{ row.estado || 'Abierto' }}
+                {{ row.estado || 'Iniciado' }}
               </span>
             </td>
           </ng-container>

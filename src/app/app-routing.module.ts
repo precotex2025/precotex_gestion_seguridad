@@ -34,7 +34,7 @@ import { AyudaComponent } from './components/ayuda/ayuda.component';
 import { ProveedoresComponent } from './components/proveedores/proveedores.component';
 import { ProgramaAnualComponent } from './components/auditorias/programa-anual/programa-anual.component';
 import { MedicionIndicadoresComponent } from './components/analytics/medicion-indicadores/medicion-indicadores.component';
-
+import { authGuard } from './guards/auth.guard';
 
 const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch:'full' },
@@ -42,7 +42,9 @@ const routes: Routes = [
   { path: "login", component: LoginComponent }, 
   //Layout Principal pes
   {
-    path: "principal", component : LayoutComponent, 
+    path: "principal",
+    component: LayoutComponent,
+    canActivate: [authGuard],
     children: [
       { path: "", component: DashboardComponent }, 
       { path: "dashboard", component: DashboardComponent },

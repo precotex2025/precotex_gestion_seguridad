@@ -42,6 +42,9 @@ export class OrganizacionComponent implements OnInit {
   mapaProcesosFileType: string = 'pdf';
   mapaProcesosFileSize: string = '';
 
+  mostrarPreviewOrganigrama: boolean = false;
+  mostrarPreviewMapaProcesos: boolean = false;
+
   sUsuario: string = GlobalVariable.vusu;
 
   constructor(
@@ -333,6 +336,14 @@ export class OrganizacionComponent implements OnInit {
     }
   }
 
+  togglePreview(type: 'organigrama' | 'mapaprocesos') {
+    if (type === 'organigrama') {
+      this.mostrarPreviewOrganigrama = !this.mostrarPreviewOrganigrama;
+    } else {
+      this.mostrarPreviewMapaProcesos = !this.mostrarPreviewMapaProcesos;
+    }
+  }
+
   onVerPantallaCompleta(type: string) {
     const url = type === 'organigrama' ? this.organigramaUrl : this.mapaProcesosUrl;
     const name = type === 'organigrama' ? this.organigramaNombre : this.mapaProcesosNombre;
@@ -418,11 +429,21 @@ export class OrganizacionComponent implements OnInit {
   }
 
   calculateStats(sedes: any[]): void {
+    const matchLocation = (s: any, keyword: string) => {
+      const fullText = (
+        (s.distrito || '') + ' ' + 
+        (s.nombre || '') + ' ' + 
+        (s.direccion || '') + ' ' + 
+        (s.localidad || '')
+      ).toLowerCase();
+      return fullText.includes(keyword.toLowerCase());
+    };
+
     this.stats = {
       total: sedes.length,
-      huachipa: sedes.filter(s => s.estado && s.estado.toLowerCase().includes('huachipa')).length,
-      independencia: sedes.filter(s => s.estado && s.estado.toLowerCase().includes('independencia')).length,
-      ate: sedes.filter(s => s.estado && s.estado.toLowerCase().includes('ate')).length
+      huachipa: sedes.filter(s => matchLocation(s, 'huachipa') || matchLocation(s, 'chosica') || matchLocation(s, 'lurigancho')).length,
+      independencia: sedes.filter(s => matchLocation(s, 'independencia')).length,
+      ate: sedes.filter(s => matchLocation(s, 'ate') || matchLocation(s, 'vitarte')).length
     };
   }
 

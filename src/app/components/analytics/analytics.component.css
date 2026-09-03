@@ -11,9 +11,9 @@
 
 /* Collapsible Banner */
 .banner-aviso-collapsible {
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid var(--line);
-  border-left: 3px solid #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-left: 4px solid #6366f1;
   border-radius: 10px;
   padding: 10px 16px;
   display: flex;
@@ -26,8 +26,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 0.82rem;
-  color: var(--muted);
+  font-size: 0.84rem;
+  color: var(--txt, #0f172a);
+  font-weight: 500;
 }
 
 .banner-info-icon {
@@ -390,4 +391,63 @@
 ::ng-deep .mat-mdc-row:hover .actions-wrapper.hover-fade {
   opacity: 1;
   transform: scale(1);
+}
+
+.action-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: var(--panel-2, #f8fafc);
+}
+
+.action-btn mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+}
+
+.btn-view {
+  color: #0ea5e9;
+  background: rgba(14, 165, 233, 0.1);
+  border-color: rgba(14, 165, 233, 0.25);
+}
+
+.btn-view:hover {
+  background: #0ea5e9;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(14, 165, 233, 0.35);
+}
+
+.btn-edit {
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.25);
+}
+
+.btn-edit:hover {
+  background: #6366f1;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.35);
+}
+
+.btn-delete {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.btn-delete:hover {
+  background: #ef4444;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.35);
 }

@@ -59,6 +59,26 @@
   margin-bottom: 8px;
 }
 
+.grid-3-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.section-title {
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+  padding: 6px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #6366f1;
+  margin: 16px 0 12px 0;
+}
+
 .form-section-item {
   margin-bottom: 12px;
 }

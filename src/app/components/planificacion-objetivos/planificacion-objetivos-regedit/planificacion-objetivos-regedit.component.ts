@@ -130,16 +130,25 @@ export class PlanificacionObjetivosRegeditComponent implements OnInit {
       error: () => {}
     });
     this.formulario = this.fb.group({
+      id: [null],
       objetivo: ['', Validators.required],
       proceso: ['SSOMA', Validators.required],
       norma: ['ISO 45001:2018', Validators.required],
+      periodo: ['2026', Validators.required],                         // OBJ-01: Período
+      responsableProceso: ['', Validators.required],                  // OBJ-01: Responsable del proceso
+      fechaInicio: [''],                                              // OBJ-01: Fecha de inicio
+      fechaFin: [''],                                                 // OBJ-01: Fecha de fin
+      responsableSeguimiento: ['', Validators.required],              // OBJ-01: Responsable de seguimiento
+      medioVerificacion: [''],                                        // OBJ-01: Medio de verificación
       indicador: ['', Validators.required],
+      formulaCalculo: [''],                                           // OBJ-01: Fórmula de cálculo
+      unidadMedida: ['%'],                                            // OBJ-01: Unidad de medida
       base: [''],
       meta: ['', Validators.required],
+      avance: [0],                                                    // OBJ-01: Avance (%)
       frecuencia: ['Mensual', Validators.required],
       estado: ['Planificado', Validators.required],
-      desc: [''],
-      observaciones: ['']
+      desc: ['']
     });
 
     if (this.data.Accion === 'U' && this.data.Datos) {

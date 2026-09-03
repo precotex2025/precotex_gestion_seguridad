@@ -5,6 +5,8 @@ import { HttpClient } from '@angular/common/http';
 import { GlobalVariable } from '../VarGlobals';
 import { ToastrService } from 'ngx-toastr';
 
+import { AuthService } from '../services/auth.service';
+
 @Component({
   selector: 'app-login',
   standalone: false,
@@ -23,7 +25,8 @@ export class LoginComponent implements OnInit {
     private formBuilder: FormBuilder, 
     private router: Router,
     private http: HttpClient,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private authService: AuthService
   ) {}
 
   onImgError(event: any) {
@@ -90,6 +93,14 @@ export class LoginComponent implements OnInit {
               this.registrarLogAccesoHistorial(uCode, uNom, account.cod_Rol || '0', uPuesto);
             }
 
+            this.authService.setToken('session_token_local_' + Date.now());
+            this.authService.currentUser.set({
+              cod_Usuario: uCode,
+              nombre: uNom,
+              puesto: uPuesto,
+              cod_Rol: GlobalVariable.vCod_Rol
+            });
+
             this.toastr.success(`Bienvenido al sistema, ${uNom}.`, 'Acceso Correcto');
             this.router.navigate(['/principal']);
             return true;
@@ -151,6 +162,22 @@ export class LoginComponent implements OnInit {
                 userPuesto
               );
             }
+
+            // Guardar token JWT si viene desde el backend
+            const tokenReceived = res.token || (res.elements[0] && res.elements[0].token);
+            if (tokenReceived) {
+              this.authService.setToken(tokenReceived);
+            } else {
+              // Token temporal para sesión mientras el backend habilita emisión de JWT
+              this.authService.setToken('session_token_' + Date.now());
+            }
+
+            this.authService.currentUser.set({
+              cod_Usuario: GlobalVariable.vusu,
+              nombre: userNombre,
+              puesto: userPuesto,
+              cod_Rol: GlobalVariable.vCod_Rol
+            });
 
             this.toastr.success(`Bienvenido al sistema, ${GlobalVariable.vusu}.`, 'Acceso Correcto');
             this.router.navigate(['/principal']);

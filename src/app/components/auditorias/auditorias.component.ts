@@ -52,6 +52,7 @@ export class AuditoriasComponent implements OnInit {
     'tipo',
     'norma',
     'responsable',
+    'sedes',
     'areas',
     'inicio',
     'fin',
@@ -137,6 +138,7 @@ export class AuditoriasComponent implements OnInit {
             tipo: d.tipo,
             norma: d.norma,
             responsable: d.responsable,
+            sedes: d.sedes || d.sede || 'Sede Huachipa, Sede Ate',
             areas: d.areas,
             inicio: d.fecha_Inicio ? d.fecha_Inicio.split('T')[0] : '',
             fin: d.fecha_Fin ? d.fecha_Fin.split('T')[0] : '',
@@ -481,6 +483,78 @@ export class AuditoriasComponent implements OnInit {
     });
   }
 
+  // AUD-07: Descargar informe individual de hallazgo/evidencia
+  onDescargarEjecucion(item: any): void {
+    const docContent = `
+===================================================================
+          PRECOTEX S.A.C. - INFORME DE HALLAZGO Y EVIDENCIA
+===================================================================
+Código Ejecución : ${item.id}
+Auditoría        : ${item.auditoria}
+Norma Auditada   : ${item.norma || 'ISO 9001'}
+Fecha Ejecución  : ${item.fecha || 'N/A'}
+Auditados        : ${item.auditados || 'N/A'}
+Tipo de Hallazgo : ${item.tipo}
+NC Vinculada     : ${item.nc || '—'}
+Auditor          : ${item.responsable}
+Estado           : ${item.estado}
+Archivo Adjunto  : ${item.archivo || 'evidencia.pdf'}
+===================================================================
+DESCRIPCIÓN DEL HALLAZGO / EVIDENCIA:
+${item.descripcion}
+===================================================================
+NOTAS ADICIONALES:
+${item.notas || 'Sin notas adicionales.'}
+===================================================================
+Generado automáticamente por el Sistema Integral de Seguridad (SIG Precotex).
+Fecha de emisión: ${new Date().toLocaleString()}
+`;
+
+    const blob = new Blob([docContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Informe_Ejecucion_${item.auditoria}_${item.id}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    this.toastr.success(`Descargando informe de hallazgo: ${item.id}`, 'Descargar');
+  }
+
+  // AUD-07: Exportar lista de Ejecución y Resultados a Excel
+  exportarEjecucionExcel(): void {
+    const list = this.getFilteredEjecucionList();
+    if (list.length === 0) {
+      this.toastr.warning('No hay registros de ejecución para exportar.', 'Atención');
+      return;
+    }
+
+    let t = '<table border="1"><tr><th>Auditoría</th><th>Norma</th><th>Fecha</th><th>Auditados</th><th>Tipo de Hallazgo</th><th>Descripción / Evidencia</th><th>NC Vinculada</th><th>Auditor / Responsable</th><th>Estado</th><th>Notas</th></tr>';
+    list.forEach(d => {
+      t += `<tr>
+        <td>${d.auditoria || ''}</td>
+        <td>${d.norma || ''}</td>
+        <td>${d.fecha || ''}</td>
+        <td>${d.auditados || ''}</td>
+        <td>${d.tipo || ''}</td>
+        <td>${d.descripcion || ''}</td>
+        <td>${d.nc || ''}</td>
+        <td>${d.responsable || ''}</td>
+        <td>${d.estado || ''}</td>
+        <td>${d.notas || ''}</td>
+      </tr>`;
+    });
+    t += '</table>';
+    const blob = new Blob(['\ufeff' + t], { type: 'application/vnd.ms-excel' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Ejecucion_y_Resultados_Auditorias_Precotex.xls';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    this.toastr.success('Informe de Ejecución y Resultados exportado a Excel', 'Éxito');
+  }
+
   getEstadoClass(estado: string): string {
     if (!estado) return 'programada';
     const s = estado.toLowerCase().trim();
@@ -569,6 +643,7 @@ export class AuditoriasComponent implements OnInit {
             <div style="font-weight: 700; color: #818cf8; font-size: 15px; margin-bottom: 6px;">${item.codigo_Auditoria} — ${item.norma}</div>
             <div><strong style="color:#94a3b8;">Tipo de Auditoría:</strong> ${item.tipo}</div>
             <div><strong style="color:#94a3b8;">Responsable Líder:</strong> ${item.responsable}</div>
+            <div><strong style="color:#94a3b8;">Sedes Participantes:</strong> ${item.sedes || 'Sede Huachipa, Sede Ate'}</div>
             <div><strong style="color:#94a3b8;">Procesos / Áreas Auditadas:</strong> ${item.areas || 'General'}</div>
             <div><strong style="color:#94a3b8;">Fechas Programadas:</strong> ${item.inicio ? (item.inicio + ' al ' + (item.fin || 'Pendiente')) : 'Por definir'}</div>
             <div><strong style="color:#94a3b8;">Frecuencia:</strong> ${item.frecuencia || 'Anual'}</div>
@@ -596,6 +671,7 @@ Código Auditoría : ${item.codigo_Auditoria}
 Tipo de Auditoría: ${item.tipo}
 Norma Auditada   : ${item.norma}
 Responsable Líder: ${item.responsable}
+Sedes            : ${item.sedes || 'Sede Huachipa, Sede Ate'}
 Procesos / Áreas : ${item.areas || 'General'}
 Fecha Inicio     : ${item.inicio || 'N/A'}
 Fecha Fin        : ${item.fin || 'N/A'}
