@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import { PuestosUsuariosRegeditComponent } from './puestos-usuarios-regedit/puestos-usuarios-regedit.component';
 import { PuestosService } from '../../services/puestos.service';
 import { GlobalVariable } from '../../VarGlobals';
+import * as XLSX from 'xlsx-js-style';
 
 @Component({
   selector: 'app-puestos',
@@ -30,6 +31,7 @@ export class PuestosComponent implements OnInit {
     'puesto',
     'proceso',
     'usuario',
+    'fecha_Registro',
     'nivel',
     'permisos',
     'estado',
@@ -52,14 +54,123 @@ export class PuestosComponent implements OnInit {
   }
 
   onListado() {
-    // 1. Asegurar cuenta local por defecto de Cynthia Aldana
-    const seedPuestos = [
+    // 1. Directorio maestro de Key Users asociados a puestos
+    const keyUserDirectory = [
+      {
+        id: 'PUE-001',
+        codigo_Puesto: '001',
+        puesto: 'Jefe de Seguridad y Salud Ocupacional',
+        proceso: 'SSOMA (Seguridad, Salud Ocupacional y Medio Ambiente)',
+        usuario: 'Luis Aldana',
+        fecha_Registro: '24/08/2026',
+        nivel: 'Gerencial',
+        permisos: 'Lectura + descarga + modificar',
+        estado: 'Activo',
+        email: 'laldana@precotexperu.com'
+      },
+      {
+        id: 'PUE-002',
+        codigo_Puesto: '002',
+        puesto: 'Supervisor de SST',
+        proceso: 'SSOMA (Seguridad, Salud Ocupacional y Medio Ambiente)',
+        usuario: 'Sayda Huaranga',
+        fecha_Registro: '25/08/2026',
+        nivel: 'Jefatura',
+        permisos: 'Lectura + descarga',
+        estado: 'Activo',
+        email: 'shuaranga@precotexperu.com'
+      },
+      {
+        id: 'PUE-003',
+        codigo_Puesto: '003',
+        puesto: 'Jefatura de Calidad',
+        proceso: 'Aseguramiento de Calidad Textil',
+        usuario: 'Elizabet Rivera',
+        fecha_Registro: '26/08/2026',
+        nivel: 'Jefatura',
+        permisos: 'Lectura + descarga + modificar',
+        estado: 'Activo',
+        email: 'erivera@precotexperu.com'
+      },
+      {
+        id: 'PUE-004',
+        codigo_Puesto: '004',
+        puesto: 'Analista de Auditoría Interna',
+        proceso: 'Auditoría Interna',
+        usuario: 'Cesar Lingan',
+        fecha_Registro: '28/08/2026',
+        nivel: 'Operativo',
+        permisos: 'Lectura + descarga',
+        estado: 'Activo',
+        email: 'clingan@precotexperu.com'
+      },
+      {
+        id: 'PUE-005',
+        codigo_Puesto: '005',
+        puesto: 'Coordinadora de Desarrollo y Capacitaciones',
+        proceso: 'Gestión Humana',
+        usuario: 'Mary Guevara',
+        fecha_Registro: '29/08/2026',
+        nivel: 'Jefatura',
+        permisos: 'Lectura + descarga + modificar',
+        estado: 'Activo',
+        email: 'mguevara@precotexperu.com'
+      },
+      {
+        id: 'PUE-006',
+        codigo_Puesto: '006',
+        puesto: 'Analista de Sistemas',
+        proceso: 'Tecnologías de la Información (Sistemas)',
+        usuario: 'Alfredo Toro',
+        fecha_Registro: '30/08/2026',
+        nivel: 'Operativo',
+        permisos: 'Lectura + descarga + modificar',
+        estado: 'Activo',
+        email: 'atoro@precotexperu.com'
+      },
+      {
+        id: 'PUE-007',
+        codigo_Puesto: '007',
+        puesto: 'Analista SIG',
+        proceso: 'Sistema de Gestión General',
+        usuario: 'Francisco Huamani',
+        fecha_Registro: '01/09/2026',
+        nivel: 'Operativo',
+        permisos: 'Lectura + descarga + modificar',
+        estado: 'Activo',
+        email: 'fhuamani@precotexperu.com'
+      },
+      {
+        id: 'PUE-008',
+        codigo_Puesto: '008',
+        puesto: 'Gerente de Comercial',
+        proceso: 'Gestión Comercial (GCOM)',
+        usuario: 'Karem Flores',
+        fecha_Registro: '01/09/2026',
+        nivel: 'Gerencial',
+        permisos: 'Lectura + descarga + modificar',
+        estado: 'Activo',
+        email: 'kflores@precotexperu.com'
+      },
+      {
+        id: 'PUE-009',
+        codigo_Puesto: '009',
+        puesto: 'Analista de Sistemas TI',
+        proceso: 'Tecnologías de la Información (Sistemas)',
+        usuario: 'Max Soria',
+        fecha_Registro: '02/09/2026',
+        nivel: 'Operativo',
+        permisos: 'Lectura + descarga + modificar',
+        estado: 'Activo',
+        email: 'msoria@precotexperu.com'
+      },
       {
         id: 'PUE-010',
         codigo_Puesto: '010',
         puesto: 'Coordinador de SSOMA',
         proceso: 'SSOMA (Seguridad, Salud Ocupacional y Medio Ambiente)',
         usuario: 'Cynthia Aldana',
+        fecha_Registro: '02/09/2026',
         nivel: 'Mando Medio',
         permisos: 'Lectura + descarga + modificar',
         estado: 'Activo',
@@ -70,29 +181,23 @@ export class PuestosComponent implements OnInit {
     try {
       const rawCuentas = localStorage.getItem('precotex_cuentas_usuarios');
       const cuentas = rawCuentas ? JSON.parse(rawCuentas) : [];
-      if (!cuentas.some((c: any) => (c.cod_Usuario || '').toLowerCase() === 'caldana')) {
-        cuentas.push({
-          cod_Usuario: 'caldana',
-          password: 'Precotex2026!',
-          nom_Usuario: 'Cynthia Aldana',
-          puesto: 'Coordinador de SSOMA',
-          email: 'caldana@precotexperu.com',
-          cod_Rol: '2',
-          des_Rol: 'Usuario SOMA',
-          flg_Activo: 1
-        });
-        cuentas.push({
-          cod_Usuario: 'cynthia.aldana',
-          password: 'Precotex2026!',
-          nom_Usuario: 'Cynthia Aldana',
-          puesto: 'Coordinador de SSOMA',
-          email: 'caldana@precotexperu.com',
-          cod_Rol: '2',
-          des_Rol: 'Usuario SOMA',
-          flg_Activo: 1
-        });
-        localStorage.setItem('precotex_cuentas_usuarios', JSON.stringify(cuentas));
-      }
+      keyUserDirectory.forEach(k => {
+        const userCode = k.email.split('@')[0];
+        if (!cuentas.some((c: any) => (c.cod_Usuario || '').toLowerCase() === userCode.toLowerCase() || (c.nom_Usuario || '').toLowerCase() === k.usuario.toLowerCase())) {
+          cuentas.push({
+            cod_Usuario: userCode,
+            password: 'Precotex2026!',
+            nom_Usuario: k.usuario,
+            puesto: k.puesto,
+            email: k.email,
+            fecha_Registro: k.fecha_Registro,
+            cod_Rol: k.nivel === 'Gerencial' ? '1' : '2',
+            des_Rol: k.nivel === 'Gerencial' ? 'ADMINISTRADOR' : 'Usuario SOMA',
+            flg_Activo: 1
+          });
+        }
+      });
+      localStorage.setItem('precotex_cuentas_usuarios', JSON.stringify(cuentas));
     } catch (e) {}
 
     this.puestosService.getListadoPuesto('001', '', '').subscribe({
@@ -105,6 +210,7 @@ export class PuestosComponent implements OnInit {
             puesto: p.denominacion,
             proceso: p.puesto_Descripcion || 'General',
             usuario: p.puesto_Funciones || '—',
+            fecha_Registro: this.formatFecha(p.fecha_Registro || p.fec_Registro || p.fecha_Creacion || p.fec_Creacion || '01/09/2026'),
             nivel: p.nivelRiesgo || p.codigo_Nivel_Riesgo || 'Operativo',
             permisos: p.puesto_Requisitos || 'Lectura',
             estado: p.puesto_Caracteristicas || 'Activo',
@@ -113,10 +219,40 @@ export class PuestosComponent implements OnInit {
           })).filter((p: any) => p.flg_Activo !== '0' && p.flg_Activo !== 0);
         }
 
-        // Combinar con los puestos semillas por defecto
-        seedPuestos.forEach(sp => {
-          if (!dbList.some(db => (db.puesto || '').toLowerCase() === sp.puesto.toLowerCase())) {
-            dbList.push(sp);
+        // Asociar automáticamente Key Users a los puestos de BD si están sin asignar ('—')
+        dbList.forEach((item: any) => {
+          if (!item.usuario || item.usuario === '—' || item.usuario.trim() === '') {
+            const pName = (item.puesto || '').toLowerCase();
+            const matchedKeyUser = keyUserDirectory.find(k => 
+              pName.includes(k.puesto.toLowerCase()) || 
+              k.puesto.toLowerCase().includes(pName) ||
+              (pName.includes('seguridad') && k.puesto.toLowerCase().includes('seguridad')) ||
+              (pName.includes('sst') && k.puesto.toLowerCase().includes('sst')) ||
+              (pName.includes('calidad') && k.puesto.toLowerCase().includes('calidad')) ||
+              (pName.includes('auditor') && k.puesto.toLowerCase().includes('auditor')) ||
+              (pName.includes('capacita') && k.puesto.toLowerCase().includes('capacita')) ||
+              (pName.includes('sig') && k.puesto.toLowerCase().includes('sig')) ||
+              (pName.includes('comercial') && k.puesto.toLowerCase().includes('comercial')) ||
+              (pName.includes('ssoma') && k.puesto.toLowerCase().includes('ssoma'))
+            );
+            if (matchedKeyUser) {
+              item.usuario = matchedKeyUser.usuario;
+              item.email = matchedKeyUser.email;
+              if (!item.fecha_Registro || item.fecha_Registro === '01/09/2026') item.fecha_Registro = matchedKeyUser.fecha_Registro;
+              if (!item.nivel || item.nivel === 'Operativo') item.nivel = matchedKeyUser.nivel;
+              if (!item.permisos || item.permisos === 'Lectura') item.permisos = matchedKeyUser.permisos;
+            }
+          }
+        });
+
+        // Combinar con los puestos y Key Users maestros
+        keyUserDirectory.forEach(ku => {
+          const exists = dbList.some(db => 
+            (db.puesto || '').toLowerCase() === ku.puesto.toLowerCase() ||
+            (db.usuario || '').toLowerCase() === ku.usuario.toLowerCase()
+          );
+          if (!exists) {
+            dbList.push({ ...ku });
           }
         });
 
@@ -141,7 +277,7 @@ export class PuestosComponent implements OnInit {
         this.calculateStats();
       },
       error: () => {
-        let list = [...seedPuestos];
+        let list = [...keyUserDirectory];
         const localData = localStorage.getItem('precotex_puestos_usuarios');
         if (localData) {
           const parsed = JSON.parse(localData);
@@ -176,6 +312,7 @@ export class PuestosComponent implements OnInit {
         (p.puesto || '').toLowerCase().includes(query) ||
         (p.proceso || '').toLowerCase().includes(query) ||
         (p.usuario || '').toLowerCase().includes(query) ||
+        (p.fecha_Registro || '').toLowerCase().includes(query) ||
         (p.nivel || '').toLowerCase().includes(query) ||
         (p.permisos || '').toLowerCase().includes(query) ||
         (p.estado || '').toLowerCase().includes(query)
@@ -319,6 +456,7 @@ export class PuestosComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        const todayStr = new Date().toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
         const requestData = {
           Accion: 'I',
           Codigo_Puesto: '',
@@ -336,6 +474,7 @@ export class PuestosComponent implements OnInit {
           Cod_Usuario: this.sUsuario,
           Email: (result.ctrol_email || '').trim(),
           Password: (result.ctrol_password || 'Precotex2026!').trim(),
+          Fecha_Registro: todayStr,
           Enviar_Correo: result.ctrol_enviar_credenciales ? 1 : 0
         };
 
@@ -346,6 +485,7 @@ export class PuestosComponent implements OnInit {
           usuario: (result.ctrol_usuario || '').trim(),
           email: (result.ctrol_email || '').trim(),
           password: (result.ctrol_password || 'Precotex2026!').trim(),
+          fecha_Registro: todayStr,
           nivel: result.ctrol_nivel,
           permisos: result.ctrol_permisos,
           estado: result.ctrol_estado
@@ -573,6 +713,304 @@ export class PuestosComponent implements OnInit {
         );
         this.calculateStats();
         this.toastr.success('Puesto eliminado correctamente.', '', { timeOut: 2500 });
+      }
+    });
+  }
+
+  onExportarReporte(): void {
+    if (!this.puestosList || this.puestosList.length === 0) {
+      this.toastr.warning('No hay puestos registrados para exportar.', 'Exportación');
+      return;
+    }
+
+    try {
+      const wb = XLSX.utils.book_new();
+
+      // Definir filas del reporte
+      const dataRows: any[] = [];
+
+      // Fila 1: Título Principal
+      dataRows.push(['PRECOTEX S.A.C. - SISTEMA DE GESTIÓN DE SEGURIDAD']);
+      // Fila 2: Subtítulo
+      dataRows.push(['REPORTE GENERAL DE PUESTOS Y USUARIOS ASIGNADOS (PUE-04)']);
+      // Fila 3: Metadatos
+      const fechaActual = new Date().toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const horaActual = new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+      dataRows.push([`Fecha de Emisión: ${fechaActual} ${horaActual}`, '', '', '', `Total de Puestos: ${this.puestosList.length}`, '', '', `Usuario: ${this.sUsuario || 'Administrador'}`]);
+      // Fila 4: Espacio en blanco
+      dataRows.push([]);
+
+      // Fila 5: Encabezados de Columna
+      const headers = [
+        'N°',
+        'CÓDIGO PUESTO',
+        'PUESTO / CARGO',
+        'PROCESO ASOCIADO',
+        'KEY USER / USUARIO ASIGNADO',
+        'CORREO ELECTRÓNICO',
+        'FECHA DE REGISTRO',
+        'NIVEL JERÁRQUICO',
+        'PERMISOS DE ACCESO',
+        'ESTADO'
+      ];
+      dataRows.push(headers);
+
+      // Filas de Datos
+      this.puestosList.forEach((p, index) => {
+        dataRows.push([
+          index + 1,
+          p.codigo_Puesto || p.id || `PUE-${String(index + 1).padStart(3, '0')}`,
+          p.puesto || '',
+          p.proceso || 'General',
+          (p.usuario && p.usuario !== '—') ? p.usuario : 'Sin asignar',
+          p.email || '—',
+          p.fecha_Registro || '01/09/2026',
+          p.nivel || 'Operativo',
+          p.permisos || 'Lectura',
+          p.estado || 'Activo'
+        ]);
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(dataRows);
+
+      // Configurar anchos de columna (wch)
+      ws['!cols'] = [
+        { wch: 6 },   // N°
+        { wch: 16 },  // CÓDIGO PUESTO
+        { wch: 38 },  // PUESTO / CARGO
+        { wch: 36 },  // PROCESO ASOCIADO
+        { wch: 30 },  // KEY USER / USUARIO ASIGNADO
+        { wch: 30 },  // CORREO ELECTRÓNICO
+        { wch: 18 },  // FECHA DE REGISTRO
+        { wch: 18 },  // NIVEL JERÁRQUICO
+        { wch: 32 },  // PERMISOS DE ACCESO
+        { wch: 15 }   // ESTADO
+      ];
+
+      // Combinaciones de celdas (Merges) para títulos
+      ws['!merges'] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }, // Título
+        { s: { r: 1, c: 0 }, e: { r: 1, c: 9 } }  // Subtítulo
+      ];
+
+      // Aplicar estilos corporativos Precotex con xlsx-js-style
+      const headerStyle = {
+        font: { name: 'Segoe UI', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
+        fill: { fgColor: { rgb: '1E293B' } },
+        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+        border: {
+          top: { style: 'thin', color: { rgb: 'CBD5E1' } },
+          bottom: { style: 'medium', color: { rgb: '0F172A' } },
+          left: { style: 'thin', color: { rgb: 'CBD5E1' } },
+          right: { style: 'thin', color: { rgb: 'CBD5E1' } }
+        }
+      };
+
+      const titleStyle = {
+        font: { name: 'Segoe UI', sz: 14, bold: true, color: { rgb: '1E3A8A' } },
+        alignment: { horizontal: 'center', vertical: 'center' }
+      };
+
+      const subtitleStyle = {
+        font: { name: 'Segoe UI', sz: 11, bold: true, color: { rgb: '475569' } },
+        alignment: { horizontal: 'center', vertical: 'center' }
+      };
+
+      const metaStyle = {
+        font: { name: 'Segoe UI', sz: 9, italic: true, color: { rgb: '64748B' } },
+        alignment: { vertical: 'center' }
+      };
+
+      const cellStyleNormal = {
+        font: { name: 'Segoe UI', sz: 10, color: { rgb: '1E293B' } },
+        alignment: { vertical: 'center' },
+        border: {
+          top: { style: 'thin', color: { rgb: 'E2E8F0' } },
+          bottom: { style: 'thin', color: { rgb: 'E2E8F0' } },
+          left: { style: 'thin', color: { rgb: 'E2E8F0' } },
+          right: { style: 'thin', color: { rgb: 'E2E8F0' } }
+        }
+      };
+
+      const cellStyleZebra = {
+        ...cellStyleNormal,
+        fill: { fgColor: { rgb: 'F8FAFC' } }
+      };
+
+      const cellStyleCenter = {
+        ...cellStyleNormal,
+        alignment: { horizontal: 'center', vertical: 'center' }
+      };
+
+      const cellStyleCenterZebra = {
+        ...cellStyleZebra,
+        alignment: { horizontal: 'center', vertical: 'center' }
+      };
+
+      const cellStyleDate = {
+        font: { name: 'Segoe UI', sz: 10, bold: true, color: { rgb: '2563EB' } },
+        alignment: { horizontal: 'center', vertical: 'center' },
+        border: cellStyleNormal.border
+      };
+
+      const cellStyleDateZebra = {
+        ...cellStyleDate,
+        fill: { fgColor: { rgb: 'F8FAFC' } }
+      };
+
+      // Recorrer todas las celdas para aplicar estilos
+      const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:J1');
+
+      for (let R = range.s.r; R <= range.e.r; ++R) {
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+          const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+          if (!ws[cellAddress]) continue;
+
+          if (R === 0) {
+            ws[cellAddress].s = titleStyle;
+          } else if (R === 1) {
+            ws[cellAddress].s = subtitleStyle;
+          } else if (R === 2) {
+            ws[cellAddress].s = metaStyle;
+          } else if (R === 4) {
+            ws[cellAddress].s = headerStyle;
+          } else if (R > 4) {
+            const isZebra = R % 2 === 1;
+            if (C === 0 || C === 1 || C === 7 || C === 9) {
+              ws[cellAddress].s = isZebra ? cellStyleCenterZebra : cellStyleCenter;
+            } else if (C === 6) {
+              // Columna de Fecha de Registro
+              ws[cellAddress].s = isZebra ? cellStyleDateZebra : cellStyleDate;
+            } else {
+              ws[cellAddress].s = isZebra ? cellStyleZebra : cellStyleNormal;
+            }
+          }
+        }
+      }
+
+      XLSX.utils.book_append_sheet(wb, ws, 'Puestos y Usuarios');
+      const filename = `Reporte_Puestos_y_Usuarios_Precotex_${new Date().toISOString().substring(0, 10)}.xlsx`;
+      XLSX.writeFile(wb, filename);
+      this.toastr.success(`El reporte se ha descargado exitosamente incluyendo las fechas de registro.`, '📊 Reporte Exportado');
+    } catch (error) {
+      console.error('Error al exportar reporte:', error);
+      this.toastr.error('Ocurrió un error al generar el reporte Excel.', 'Error');
+    }
+  }
+
+  formatFecha(val: any): string {
+    if (!val) return '—';
+    const str = String(val).trim();
+    if (!str || str === 'null' || str === 'undefined' || str === '—') return '—';
+
+    // Si ya viene en formato dd/MM/yyyy o dd-MM-yyyy (ej. 31/08/2026 o 31-08-2026)
+    const dmyMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (dmyMatch) {
+      const d = dmyMatch[1].padStart(2, '0');
+      const m = dmyMatch[2].padStart(2, '0');
+      const y = dmyMatch[3];
+      return `${d}/${m}/${y}`;
+    }
+
+    // Si viene en formato ISO o SQL yyyy-MM-dd... (ej. 2026-08-31T10:05:50...)
+    const isoMatch = str.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+    if (isoMatch) {
+      const y = isoMatch[1];
+      const m = isoMatch[2].padStart(2, '0');
+      const d = isoMatch[3].padStart(2, '0');
+      return `${d}/${m}/${y}`;
+    }
+
+    // Intentar formatear con objeto Date
+    try {
+      const parsed = new Date(str);
+      if (!isNaN(parsed.getTime())) {
+        const d = String(parsed.getDate()).padStart(2, '0');
+        const m = String(parsed.getMonth() + 1).padStart(2, '0');
+        const y = parsed.getFullYear();
+        return `${d}/${m}/${y}`;
+      }
+    } catch (e) {}
+
+    return str;
+  }
+
+  getEstadoBadgeClass(estado: string): string {
+    const est = (estado || '').toLowerCase().trim();
+    if (est === 'activo' || (est.includes('activo') && !est.includes('inactivo'))) return 'soft-badge-vigente';
+    if (est.includes('pendiente') || est.includes('activacion') || est.includes('activación')) return 'soft-badge-revision';
+    if (est.includes('suspendido')) return 'soft-badge-vencido';
+    if (est.includes('inactivo')) return 'soft-badge-inactivo';
+    return 'soft-badge-revision';
+  }
+
+  onConfirmarActivacion(item: any): void {
+    Swal.fire({
+      title: '¿Confirmar activación de cuenta?',
+      html: `<p style="font-size: 13.5px; color: #334155; margin-bottom: 8px;">
+              El usuario <strong>${item.usuario || item.puesto}</strong> ha verificado su correo electrónico.
+             </p>
+             <p style="font-size: 12.5px; color: #64748b;">
+              Al confirmar, el puesto pasará de estado <span style="color: #d97706; font-weight: bold;">Pendiente de activación</span> a <span style="color: #059669; font-weight: bold;">Activo</span>.
+             </p>`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Sí, confirmar y activar',
+      cancelButtonText: 'Cancelar'
+    }).then((res) => {
+      if (res.isConfirmed) {
+        item.estado = 'Activo';
+
+        // 1. Actualizar lista local de puestos
+        const localData = JSON.parse(localStorage.getItem('precotex_puestos_usuarios') || '[]');
+        const idx = localData.findIndex((p: any) => p.id === item.id || p.puesto === item.puesto);
+        if (idx !== -1) {
+          localData[idx].estado = 'Activo';
+          localStorage.setItem('precotex_puestos_usuarios', JSON.stringify(localData));
+        } else {
+          localData.push({ ...item, estado: 'Activo' });
+          localStorage.setItem('precotex_puestos_usuarios', JSON.stringify(localData));
+        }
+
+        // 2. Actualizar cuenta de acceso en localStorage
+        const cuentas = JSON.parse(localStorage.getItem('precotex_cuentas_usuarios') || '[]');
+        const cIdx = cuentas.findIndex((c: any) => 
+          (c.nom_Usuario || '').toLowerCase() === (item.usuario || '').toLowerCase() ||
+          (c.puesto || '').toLowerCase() === (item.puesto || '').toLowerCase()
+        );
+        if (cIdx !== -1) {
+          cuentas[cIdx].flg_Activo = 1;
+          localStorage.setItem('precotex_cuentas_usuarios', JSON.stringify(cuentas));
+        }
+
+        // 3. Notificar al backend
+        const codPuesto = (item.codigo_Puesto || item.id || '').toString().replace(/\D/g, '');
+        const requestData = {
+          Accion: 'U',
+          Codigo_Puesto: codPuesto ? codPuesto.padStart(3, '0') : (item.codigo_Puesto || item.id),
+          Codigo_Organizacion: '001',
+          Codigo_Sede: '001',
+          Denominacion: item.puesto || '',
+          Codigo_Nivel_Riesgo: item.nivel || 'Operativo',
+          Validacion_Periodica: true,
+          Puesto_Descripcion: item.proceso || '',
+          Puesto_Funciones: item.usuario || '',
+          Puesto_Requisitos: item.permisos || '',
+          Puesto_Caracteristicas: 'Activo',
+          Caracteristicas_Visible: true,
+          Flg_Activo: '1',
+          Cod_Usuario: this.sUsuario
+        };
+
+        this.puestosService.postProcesoMntoPuesto(requestData).subscribe({
+          next: () => {},
+          error: () => {}
+        });
+
+        this.calculateStats();
+        this.toastr.success(`Puesto y usuario "${item.usuario || item.puesto}" activados exitosamente tras confirmación por correo.`, '✅ Cuenta Activada');
       }
     });
   }

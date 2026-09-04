@@ -176,34 +176,16 @@
         </td>
       </ng-container>
 
-      <!-- Tendencia Dinámica por Proceso (IND-01, IND-02) -->
-      <ng-container matColumnDef="tendencia">
-        <th mat-header-cell *matHeaderCellDef style="width: 120px; text-align: center;">Tendencia</th>
-        <td mat-cell *matCellDef="let row" style="text-align: center;">
-          <div class="sparkline-area-wrapper" 
-               [matTooltip]="'Proceso ' + row.proceso + ': Tendencia acumulada'" 
-               matTooltipPosition="above">
-            <svg width="84" height="28" viewBox="0 0 84 28">
-              <defs>
-                <linearGradient [id]="'sparkGrad-' + row.id" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" [attr.stop-color]="getSemaforoColor(row.semaforo)" stop-opacity="0.35"/>
-                  <stop offset="100%" [attr.stop-color]="getSemaforoColor(row.semaforo)" stop-opacity="0.0"/>
-                </linearGradient>
-              </defs>
 
-              <path [attr.d]="getSparklineAreaPath(row.id)" [attr.fill]="'url(#sparkGrad-' + row.id + ')'"/>
-              <path [attr.d]="getSparklineLinePath(row.id)" fill="none" [attr.stroke]="getSemaforoColor(row.semaforo)" stroke-width="2.2" stroke-linecap="round" class="sparkline-glow-stroke"/>
-            </svg>
-          </div>
-        </td>
-      </ng-container>
-
-      <!-- Acciones con Ficha Técnica y Editar (IND-02, IND-04) -->
+      <!-- Acciones con Ver Detalle, Ficha Técnica y Editar -->
       <ng-container matColumnDef="acciones">
-        <th mat-header-cell *matHeaderCellDef style="width: 100px; text-align: center;">Acciones</th>
+        <th mat-header-cell *matHeaderCellDef style="width: 130px; text-align: center;">Acciones</th>
         <td mat-cell *matCellDef="let row" class="acciones-cell">
           <div class="actions-wrapper hover-fade">
-            <button class="action-btn" (click)="exportarFichaTecnica(row)" title="Exportar Ficha Técnica (IND-04)" style="color: #6366f1; background: rgba(99, 102, 241, 0.1);">
+            <button class="action-btn btn-view" (click)="onVerDetalle(row)" title="Ver Detalle y Mediciones" style="color: #6366f1; background: rgba(99, 102, 241, 0.1);">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button class="action-btn" (click)="exportarFichaTecnica(row)" title="Exportar Ficha Técnica" style="color: #6366f1; background: rgba(99, 102, 241, 0.1);">
               <mat-icon>description</mat-icon>
             </button>
             <button class="action-btn btn-edit" (click)="onEditar(row)" title="Editar">

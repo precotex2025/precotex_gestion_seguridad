@@ -18,6 +18,7 @@ interface DialogData {
 })
 export class PuestosUsuariosRegeditComponent implements OnInit {
   formulario!: FormGroup;
+  keyUsersList: any[] = [];
 
   procesosGroups: { [key: string]: string[] } = {
     'Gerencia General (GG)': [
@@ -116,6 +117,8 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.cargarKeyUsers();
+
     this.procesosService.getProcesosAgrupados().subscribe({
       next: (groups: any) => {
         if (groups && Object.keys(groups).length > 0) {
@@ -126,6 +129,7 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
         // Mantiene la lista por defecto
       }
     });
+
     this.formulario = this.fb.group({
       ctrol_puesto: ['', Validators.required],
       ctrol_proceso: ['', Validators.required],
@@ -133,8 +137,8 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
       ctrol_email: ['', [Validators.required, Validators.email]],
       ctrol_password: ['Precotex2026!', Validators.required],
       ctrol_nivel: ['Operativo', Validators.required],
-      ctrol_permisos: ['Lectura', Validators.required],
-      ctrol_estado: ['Activo', Validators.required],
+      ctrol_permisos: ['Lectura + descarga + modificar', Validators.required],
+      ctrol_estado: [this.data.Accion === 'I' ? 'Pendiente de activación' : 'Activo', Validators.required],
       ctrol_enviar_credenciales: [true]
     });
 
@@ -145,11 +149,72 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
         ctrol_usuario: this.data.Datos.usuario || '',
         ctrol_email: this.data.Datos.email || (this.data.Datos.usuario ? (this.data.Datos.usuario.toLowerCase().replace(/\s+/g, '.') + '@precotexperu.com') : ''),
         ctrol_password: this.data.Datos.password || 'Precotex2026!',
-        ctrol_nivel: this.data.Datos.nivel,
-        ctrol_permisos: this.data.Datos.permisos,
-        ctrol_estado: this.data.Datos.estado,
+        ctrol_nivel: this.data.Datos.nivel || 'Operativo',
+        ctrol_permisos: this.data.Datos.permisos || 'Lectura + descarga + modificar',
+        ctrol_estado: this.data.Datos.estado || 'Activo',
         ctrol_enviar_credenciales: false
       });
+    }
+  }
+
+  cargarKeyUsers(): void {
+    const defaultList = [
+      { nombre: 'Cynthia Aldana', email: 'caldana@precotexperu.com', puesto: 'Coordinador de SSOMA', proceso: 'SSOMA (Seguridad, Salud Ocupacional y Medio Ambiente)', nivel: 'Jefatura' },
+      { nombre: 'Luis Aldana', email: 'laldana@precotexperu.com', puesto: 'Jefe de Seguridad y Salud Ocupacional', proceso: 'SSOMA (Seguridad, Salud Ocupacional y Medio Ambiente)', nivel: 'Gerencial' },
+      { nombre: 'Sayda Huaranga', email: 'shuaranga@precotexperu.com', puesto: 'Supervisor de SST', proceso: 'SSOMA (Seguridad, Salud Ocupacional y Medio Ambiente)', nivel: 'Jefatura' },
+      { nombre: 'Elizabet Rivera', email: 'erivera@precotexperu.com', puesto: 'Jefatura de Calidad', proceso: 'Aseguramiento de Calidad Textil', nivel: 'Jefatura' },
+      { nombre: 'Cesar Lingan', email: 'clingan@precotexperu.com', puesto: 'Analista de Auditoría Interna', proceso: 'Auditoría Interna', nivel: 'Operativo' },
+      { nombre: 'Mary Guevara', email: 'mguevara@precotexperu.com', puesto: 'Coordinadora de Desarrollo y Capacitaciones', proceso: 'Capacitaciones y Desarrollo', nivel: 'Jefatura' },
+      { nombre: 'Alfredo Toro', email: 'atoro@precotexperu.com', puesto: 'Analista de Sistemas', proceso: 'Tecnologías de la Información (Sistemas)', nivel: 'Operativo' },
+      { nombre: 'Francisco Huamani', email: 'fhuamani@precotexperu.com', puesto: 'Analista SIG', proceso: 'Sistema de Gestión General', nivel: 'Operativo' },
+      { nombre: 'Max Soria', email: 'msoria@precotexperu.com', puesto: 'Analista de Sistemas', proceso: 'Tecnologías de la Información (Sistemas)', nivel: 'Operativo' },
+      { nombre: 'Karem Flores', email: 'kflores@precotexperu.com', puesto: 'Gerente de Comercial', proceso: 'Comercial Exportación de Prendas', nivel: 'Gerencial' }
+    ];
+
+    try {
+      const rawCuentas = localStorage.getItem('precotex_cuentas_usuarios');
+      if (rawCuentas) {
+        const cuentas = JSON.parse(rawCuentas);
+        cuentas.forEach((c: any) => {
+          const nom = c.nom_Usuario || c.cod_Usuario || '';
+          if (nom && !defaultList.some(d => d.nombre.toLowerCase() === nom.toLowerCase())) {
+            defaultList.push({
+              nombre: nom,
+              email: c.email || `${nom.toLowerCase().replace(/\s+/g, '.')}@precotexperu.com`,
+              puesto: c.puesto || '',
+              proceso: '',
+              nivel: c.cod_Rol === '1' ? 'Gerencial' : 'Operativo'
+            });
+          }
+        });
+      }
+    } catch (e) {}
+
+    this.keyUsersList = defaultList;
+  }
+
+  onSeleccionarKeyUser(event: any): void {
+    const selectedNom = event?.target?.value || '';
+    if (!selectedNom) return;
+
+    const matched = this.keyUsersList.find(u => u.nombre.toLowerCase() === selectedNom.toLowerCase() || (u.email && u.email.toLowerCase() === selectedNom.toLowerCase()));
+    if (matched) {
+      this.formulario.patchValue({
+        ctrol_usuario: matched.nombre,
+        ctrol_email: matched.email
+      });
+
+      if (matched.puesto && !this.formulario.get('ctrol_puesto')?.value) {
+        this.formulario.patchValue({ ctrol_puesto: matched.puesto });
+      }
+      if (matched.proceso && !this.formulario.get('ctrol_proceso')?.value) {
+        this.formulario.patchValue({ ctrol_proceso: matched.proceso });
+      }
+      if (matched.nivel && !this.formulario.get('ctrol_nivel')?.value) {
+        this.formulario.patchValue({ ctrol_nivel: matched.nivel });
+      }
+
+      this.toastr.info(`Key User "${matched.nombre}" vinculado. Correo autocompletado: ${matched.email}`, 'Key User Seleccionado', { timeOut: 2500 });
     }
   }
 

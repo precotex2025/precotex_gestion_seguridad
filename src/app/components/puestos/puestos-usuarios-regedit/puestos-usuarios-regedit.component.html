@@ -27,8 +27,22 @@
           </select>
         </div>
         <div class="form-section-item">
-          <div class="form-label">Usuario Asignado</div>
-          <input type="text" formControlName="ctrol_usuario" class="full-width-input" placeholder="Nombre del colaborador">
+          <div class="form-label">
+            Usuario Asignado (Key User)
+            <span style="font-size: 10px; color: #a5b4fc; text-transform: none; font-weight: normal; margin-left: 4px;">(Seleccione o escriba)</span>
+          </div>
+          <input type="text" 
+                 list="keyUsersDataList" 
+                 formControlName="ctrol_usuario" 
+                 (change)="onSeleccionarKeyUser($event)"
+                 (input)="onSeleccionarKeyUser($event)"
+                 class="full-width-input" 
+                 placeholder="Seleccione Key User creado...">
+          <datalist id="keyUsersDataList">
+            <option *ngFor="let u of keyUsersList" [value]="u.nombre">
+              {{ u.nombre }} — {{ u.puesto }} ({{ u.email }})
+            </option>
+          </datalist>
         </div>
         <div class="form-section-item">
           <div class="form-label">Nivel <span class="required">*</span></div>
@@ -53,8 +67,10 @@
         <div class="form-section-item">
           <div class="form-label">Estado <span class="required">*</span></div>
           <select formControlName="ctrol_estado" class="full-width-input">
+            <option value="Pendiente de activación">Pendiente de activación</option>
             <option value="Activo">Activo</option>
-            <option value="Sin permisos config.">Sin permisos config.</option>
+            <option value="Inactivo">Inactivo</option>
+            <option value="Suspendido">Suspendido</option>
           </select>
         </div>
         <div class="form-section-item">

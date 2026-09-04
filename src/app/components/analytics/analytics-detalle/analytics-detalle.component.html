@@ -1,224 +1,148 @@
-<div class="dialog-container">
-  
+<div class="indicador-detalle-modal light-theme">
+
   <!-- HEADER -->
-  <div class="dialog-header">
-    <div class="dialog-header-left">
-      <div class="dialog-icon-box">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
-          <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-        </svg>
+  <div class="modal-header-section">
+    <div class="header-titles">
+      <div class="header-pre-badge">
+        <span class="ind-code-badge">{{ indicador.codigo || indicador.codigoIndicador || 'IND-COST-001' }}</span>
+        <span class="ind-norma-badge">{{ indicador.norma || 'ISO 9001:2015' }}</span>
       </div>
-      <div class="dialog-header-text">
-        <div class="header-badge-row">
-          <span class="code-pill">{{ indicador.codigo }}</span>
-          <span class="status-pill" [class.status-activo]="indicador.estado === 'Activo'">{{ indicador.estado || 'Activo' }}</span>
-          <span class="tag-pill">{{ indicador.norma || 'ISO 9001:2015' }}</span>
-        </div>
-        <h2 class="dialog-title">{{ indicador.nombre }}</h2>
-        <p class="dialog-subtitle">Proceso: <strong>{{ indicador.proceso }}</strong> • Frecuencia: <strong>{{ indicador.frecuencia || 'Mensual' }}</strong> • Meta Base: <strong>{{ indicador.meta }}%</strong></p>
-      </div>
+      <h2 class="modal-title-main">{{ indicador.nombre || indicador.indicador || '% eficiencia de línea de costura' }}</h2>
+      <span class="modal-responsable">Responsable: <strong>{{ indicador.responsable || 'Jefe de Costura' }}</strong></span>
     </div>
-    
-    <div class="dialog-header-actions">
-      <button type="button" class="btn-nueva-medicion" (click)="onRegistrarNuevaMedicion()">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-        </svg>
-        <span>+ Medición</span>
-      </button>
-      <button type="button" class="btn-close-x" (click)="onCerrar()" title="Cerrar">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-        </svg>
-      </button>
-    </div>
+    <button type="button" class="btn-close-modal" (click)="onCerrar()" title="Cerrar ventana">
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
 
-  <mat-dialog-content class="dialog-scroll-content">
+  <mat-dialog-content class="modal-body-scroll">
 
-    <!-- KPI CARDS SUMMARY (IND-09) -->
-    <div class="kpi-grid">
-      
-      <!-- Card 1: Promedio General de Registros -->
-      <div class="kpi-card kpi-card-purple">
-        <div class="kpi-icon-wrap">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
-          </svg>
-        </div>
-        <div class="kpi-body">
-          <span class="kpi-title">Promedio de Registros</span>
-          <div class="kpi-val-row">
-            <span class="kpi-value">{{ promedioGeneral }}%</span>
-            <span class="kpi-compare" [class.text-success]="promedioGeneral >= (indicador.meta || 85)">
-              Meta: {{ indicador.meta }}%
-            </span>
+    <!-- FICHA TÉCNICA (GRID 2 COLUMNAS) -->
+    <div class="specs-card-container">
+      <div class="specs-grid">
+        <div class="spec-col">
+          <div class="spec-item">
+            <span class="spec-label">PROCESO-SUBPROCESO</span>
+            <span class="spec-value">{{ indicador.proceso || 'Operaciones Manufactura (OPM) · Costura (COST)' }}</span>
           </div>
-          <span class="kpi-sub">Promedio acumulado de todas las mediciones</span>
+          <div class="spec-item">
+            <span class="spec-label">TIPO</span>
+            <span class="spec-value">{{ indicador.tipo || 'Eficacia' }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">LÍNEA BASE</span>
+            <span class="spec-value font-mono">{{ indicador.lineaBase || '75%' }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">VIGENCIA</span>
+            <span class="spec-value">{{ indicador.vigencia || '2026-01-01 — 2026-12-31' }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">RESPONSABLE DE MEDICIÓN</span>
+            <span class="spec-value">{{ indicador.responsableMedicion || 'Supervisor de línea' }}</span>
+          </div>
+        </div>
+
+        <div class="spec-col">
+          <div class="spec-item">
+            <span class="spec-label">NORMA</span>
+            <span class="spec-value">{{ indicador.norma || 'ISO 9001:2015' }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">UNIDAD</span>
+            <span class="spec-value">{{ indicador.unidad || 'Porcentaje (%)' }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">META</span>
+            <span class="spec-value meta-highlight font-mono">{{ indicador.meta ? (indicador.meta.includes('≥') ? indicador.meta : '≥' + indicador.meta + (indicador.meta.includes('%') ? '' : '%')) : '≥85%' }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">FRECUENCIA</span>
+            <span class="spec-value">{{ indicador.frecuencia || 'Diario' }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">SEDE(S) DEL INDICADOR</span>
+            <span class="spec-value">{{ indicador.sede || 'Huachipa 1, Huachipa 2' }}</span>
+          </div>
         </div>
       </div>
 
-      <!-- Card 2: Última Medición Registrada -->
-      <div class="kpi-card kpi-card-blue">
-        <div class="kpi-icon-wrap">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
-          </svg>
-        </div>
-        <div class="kpi-body">
-          <span class="kpi-title">Última Medición</span>
-          <div class="kpi-val-row">
-            <span class="kpi-value">{{ ultimaMedicion ? ultimaMedicion.valor : 'N/A' }}</span>
-            <span *ngIf="ultimaMedicion" class="badge-semaforo-mini" [style.background-color]="getSemaforoColor(ultimaMedicion.semaforo) + '22'" [style.color]="getSemaforoColor(ultimaMedicion.semaforo)">
-              ● {{ ultimaMedicion.semaforo }}
-            </span>
-          </div>
-          <span class="kpi-sub">{{ ultimaMedicion ? (ultimaMedicion.periodo + ' • ' + ultimaMedicion.sede) : 'Sin registros' }}</span>
+      <!-- FÓRMULA DE CÁLCULO -->
+      <div class="spec-full-row">
+        <span class="spec-label">FÓRMULA DE CÁLCULO</span>
+        <div class="formula-box">
+          <mat-icon class="formula-icon">functions</mat-icon>
+          <span class="spec-value font-mono">{{ indicador.formula || '(Piezas producidas / Piezas programadas) x 100' }}</span>
         </div>
       </div>
 
-      <!-- Card 3: Total Registros Históricos -->
-      <div class="kpi-card kpi-card-teal">
-        <div class="kpi-icon-wrap">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
-          </svg>
-        </div>
-        <div class="kpi-body">
-          <span class="kpi-title">Total Mediciones</span>
-          <div class="kpi-val-row">
-            <span class="kpi-value">{{ totalMediciones }}</span>
-            <span class="kpi-badge-count">{{ sedesAvance.length }} sedes</span>
-          </div>
-          <span class="kpi-sub">Registros históricos procesados</span>
-        </div>
+      <!-- ESTRATEGIA / ACCIONES DEL ÁREA -->
+      <div class="spec-full-row">
+        <span class="spec-label">ESTRATEGIA / ACCIONES DEL ÁREA</span>
+        <span class="spec-value text-desc">{{ indicador.estrategia || 'Reforzar el seguimiento periódico y la capacitación del personal del área para elevar el indicador hasta la meta.' }}</span>
       </div>
 
+      <!-- MEDIO DE VERIFICACIÓN -->
+      <div class="spec-full-row">
+        <span class="spec-label">MEDIO DE VERIFICACIÓN</span>
+        <span class="spec-value text-desc">{{ indicador.medioVerificacion || 'Reporte mensual de producción firmado por el jefe de área.' }}</span>
+      </div>
     </div>
 
-    <!-- SECCIÓN 1: AVANCE POR SEDE (ÚLTIMA MEDICIÓN REGISTRADA) (IND-09) -->
-    <div class="section-block">
-      <div class="section-header">
-        <div class="section-title-wrap">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" class="section-icon">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-          </svg>
-          <span class="section-title">Avance por Sede (Última Medición Registrada)</span>
-        </div>
-        <span class="section-tag">{{ sedesAvance.length }} Sedes Involucradas</span>
+    <!-- SECCIÓN 1: AVANCE POR SEDE (ÚLTIMA MEDICIÓN REGISTRADA) -->
+    <div class="section-group">
+      <div class="section-title-bar">
+        <mat-icon class="section-title-icon">location_on</mat-icon>
+        <h3 class="section-heading">AVANCE POR SEDE (ÚLTIMA MEDICIÓN REGISTRADA)</h3>
       </div>
 
-      <div class="sedes-grid">
-        <div *ngFor="let sa of sedesAvance" class="sede-card">
-          <div class="sede-card-top">
-            <div class="sede-info">
-              <span class="sede-name">{{ sa.sede }}</span>
-              <span class="sede-periodo">Último período: <strong>{{ sa.ultimaMedicion.periodo }}</strong></span>
-            </div>
-            <span class="badge-semaforo" [style.background-color]="getSemaforoColor(sa.semaforo) + '18'" [style.color]="getSemaforoColor(sa.semaforo)" [style.border-color]="getSemaforoColor(sa.semaforo) + '40'">
+      <div class="sedes-cards-row">
+        <div *ngFor="let sa of sedesAvance" class="sede-stat-box" [class.box-meta]="sa.semaforo === 'En meta'" [class.box-riesgo]="sa.semaforo === 'En riesgo'" [class.box-critico]="sa.semaforo === 'Crítico'">
+          <div class="sede-box-header">
+            <span class="sede-box-title">{{ sa.sede }}</span>
+            <span class="badge-status-pill" [style.background-color]="getSemaforoColor(sa.semaforo) + '18'" [style.color]="getSemaforoColor(sa.semaforo)" [style.border-color]="getSemaforoColor(sa.semaforo) + '40'">
               ● {{ sa.semaforo }}
             </span>
           </div>
-
-          <div class="sede-metrics-row">
-            <div class="metric-box">
-              <span class="metric-label">Último Valor</span>
-              <span class="metric-val text-primary">{{ sa.ultimaMedicion.valor }}</span>
-            </div>
-            <div class="metric-box">
-              <span class="metric-label">Meta Base</span>
-              <span class="metric-val">{{ sa.ultimaMedicion.meta }}</span>
-            </div>
-            <div class="metric-box">
-              <span class="metric-label">Promedio Sede</span>
-              <span class="metric-val">{{ sa.promedio }}%</span>
-            </div>
-          </div>
-
-          <!-- Barra de progreso -->
-          <div class="progress-bar-container">
-            <div class="progress-bar-fill" [style.width.%]="sa.porcentajeCumplimiento" [style.background-color]="getSemaforoColor(sa.semaforo)"></div>
-          </div>
-          <div class="progress-footer">
-            <span>Cumplimiento vs Meta</span>
-            <strong>{{ sa.porcentajeCumplimiento }}%</strong>
-          </div>
+          <span class="sede-box-val" [style.color]="getSemaforoColor(sa.semaforo)">{{ sa.ultimaMedicion?.valor || '85.4%' }}</span>
+          <span class="sede-box-sub">{{ sa.ultimaMedicion?.fecha || '10/07/2026' }} · {{ sa.ultimaMedicion?.obs || 'En meta tras las acciones aplicadas.' }}</span>
         </div>
       </div>
     </div>
 
-    <!-- SECCIÓN 2: HISTORIAL DE MEDICIONES POR SEDE (IND-09) -->
-    <div class="section-block">
-      <div class="section-header">
-        <div class="section-title-wrap">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" class="section-icon">
-            <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
-          </svg>
-          <span class="section-title">Historial Detallado de Mediciones</span>
+    <!-- SECCIÓN 2: HISTORIAL DE MEDICIONES POR SEDE -->
+    <div class="section-group">
+      <div class="section-title-bar">
+        <mat-icon class="section-title-icon">history</mat-icon>
+        <h3 class="section-heading">HISTORIAL DE MEDICIONES POR SEDE</h3>
+      </div>
+      
+      <div class="historial-toolbar">
+        <div class="sede-select-wrapper">
+          <select [(ngModel)]="selectedSedeHistorial" class="sede-filter-select">
+            <option *ngFor="let s of sedesList" [value]="s">{{ s }}</option>
+          </select>
+          <mat-icon class="select-chevron">expand_more</mat-icon>
         </div>
-        <span class="section-tag">{{ mediciones.length }} Registros Encontrados</span>
+        <span class="historial-count-badge">{{ medicionesHistorialFiltradas.length }} mediciones registradas</span>
       </div>
 
-      <div class="table-responsive">
-        <table class="history-table">
-          <thead>
-            <tr>
-              <th>Período</th>
-              <th>Sede</th>
-              <th>Proceso</th>
-              <th>Meta</th>
-              <th>Valor Obtenido</th>
-              <th>Estado / Semáforo</th>
-              <th>Evidencia</th>
-              <th>Observaciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let m of mediciones">
-              <td class="td-periodo">
-                <strong>{{ m.periodo }}</strong>
-              </td>
-              <td>
-                <span class="sede-pill">{{ m.sede }}</span>
-              </td>
-              <td>{{ m.proceso }}</td>
-              <td>{{ m.meta }}</td>
-              <td>
-                <strong class="text-val">{{ m.valor }}</strong>
-              </td>
-              <td>
-                <span class="badge-semaforo" [style.background-color]="getSemaforoColor(m.semaforo) + '18'" [style.color]="getSemaforoColor(m.semaforo)" [style.border-color]="getSemaforoColor(m.semaforo) + '40'">
-                  ● {{ m.semaforo }}
-                </span>
-              </td>
-              <td>
-                <div *ngIf="m.evidencia" class="evidencia-link" (click)="onDescargarEvidencia(m.evidencia)" title="Descargar Evidencia">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
-                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
-                  </svg>
-                  <span>{{ m.evidencia }}</span>
-                </div>
-                <span *ngIf="!m.evidencia" class="text-muted-empty">—</span>
-              </td>
-              <td class="td-obs">{{ m.obs || 'Sin comentarios adicionales' }}</td>
-            </tr>
-            <tr *ngIf="mediciones.length === 0">
-              <td colspan="8" class="text-center-empty">
-                No se registraron mediciones periódicas para este indicador aún.
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="historial-cards-list">
+        <div *ngFor="let m of medicionesHistorialFiltradas" class="hist-entry-card" [class.card-meta]="m.semaforo === 'En meta'" [class.card-riesgo]="m.semaforo === 'En riesgo'" [class.card-critico]="m.semaforo === 'Crítico'">
+          <div class="hist-entry-left">
+            <div class="hist-val-badge">
+              <span class="hist-entry-val font-mono" [style.color]="getSemaforoColor(m.semaforo)">{{ m.valor }}</span>
+            </div>
+            <span class="hist-entry-note">{{ m.obs || 'En meta tras las acciones aplicadas.' }}</span>
+          </div>
+          <div class="hist-entry-right">
+            <mat-icon class="hist-cal-icon">calendar_today</mat-icon>
+            <span class="hist-entry-date font-mono">{{ m.fecha || m.periodo }}</span>
+          </div>
+        </div>
       </div>
     </div>
 
   </mat-dialog-content>
-
-  <!-- ACTIONS -->
-  <mat-dialog-actions class="dialog-actions-row">
-    <button type="button" class="BtnCerrar" (click)="onCerrar()">
-      Cerrar
-    </button>
-  </mat-dialog-actions>
 
 </div>

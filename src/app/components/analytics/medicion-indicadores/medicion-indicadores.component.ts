@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
 import { MedicionRegeditComponent } from './medicion-regedit/medicion-regedit.component';
+import { AnalyticsDetalleComponent } from '../analytics-detalle/analytics-detalle.component';
 import { IndicadoresService } from '../../../services/indicadores.service';
 
 @Component({
@@ -29,7 +30,6 @@ export class MedicionIndicadoresComponent implements OnInit {
     'norma',
     'frecuencia',
     'meta',
-    'tendencia',
     'acciones'
   ];
 
@@ -515,6 +515,39 @@ export class MedicionIndicadoresComponent implements OnInit {
             // Se mantiene visible localmente
           }
         });
+      }
+    });
+  }
+
+  onVerDetalle(row: any): void {
+    this.dialog.open(AnalyticsDetalleComponent, {
+      width: '900px',
+      maxWidth: '95vw',
+      panelClass: 'custom-indicador-detalle-dialog',
+      disableClose: false,
+      data: {
+        indicador: {
+          codigo: row.codigoIndicador || row.codigo,
+          codigoIndicador: row.codigoIndicador || row.codigo,
+          nombre: row.indicador || row.nombre,
+          indicador: row.indicador || row.nombre,
+          responsable: row.responsable || 'Jefe de Costura',
+          tipo: row.tipo || 'Eficacia',
+          sede: row.sede || 'Huachipa 1, Huachipa 2',
+          proceso: row.proceso || 'Operaciones Manufactura (OPM) · Costura (COST)',
+          norma: row.norma || 'ISO 9001:2015',
+          frecuencia: row.frecuencia || 'Diario',
+          meta: row.meta || '≥85%',
+          unidad: row.unidad || 'Porcentaje (%)',
+          lineaBase: row.lineaBase || '75%',
+          vigencia: row.vigencia || '2026-01-01 — 2026-12-31',
+          responsableMedicion: row.responsableMedicion || 'Supervisor de línea',
+          formula: row.formula || '(Piezas producidas / Piezas programadas) x 100',
+          estrategia: row.estrategia || 'Reforzar el seguimiento periódico y la capacitación del personal del área para elevar el indicador hasta la meta.',
+          medioVerificacion: row.medioVerificacion || 'Reporte mensual de producción firmado por el jefe de área.',
+          idIndicador: row.idIndicador || row.id,
+          id: row.id
+        }
       }
     });
   }

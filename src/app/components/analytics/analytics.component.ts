@@ -35,7 +35,6 @@ export class AnalyticsComponent implements OnInit {
     'norma',
     'frecuencia',
     'meta',
-    'tendencia',
     'acciones'
   ];
 
@@ -253,7 +252,7 @@ export class AnalyticsComponent implements OnInit {
       width: '900px',
       maxWidth: '95vw',
       disableClose: false,
-      panelClass: 'custom-dialog-no-padding',
+      panelClass: 'custom-indicador-detalle-dialog',
       data: {
         indicador: item
       }

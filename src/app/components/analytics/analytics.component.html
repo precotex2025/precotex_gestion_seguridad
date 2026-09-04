@@ -4,7 +4,8 @@
   <div class="banner-aviso-collapsible" *ngIf="mostrarBanner">
     <div class="banner-info-left">
       <mat-icon class="banner-info-icon">tune</mat-icon>
-      <span>Catálogo base e Indicadores del SIG. Define las especificaciones técnicas y metas para el posterior seguimiento en el tablero de mediciones.</span>
+      <span>Catálogo base e Indicadores del SIG. Define las especificaciones técnicas y metas para el posterior
+        seguimiento en el tablero de mediciones.</span>
     </div>
     <button type="button" class="btn-close-banner" (click)="cerrarBanner()" title="Cerrar aviso">
       <mat-icon>close</mat-icon>
@@ -16,7 +17,7 @@
     <div class="indicadores-segment-tabs">
       <a class="indicadores-tab-btn active" routerLink="/principal/analytics">
         <mat-icon>tune</mat-icon>
-        <span>Indicadores</span>
+        <span>Alta de Indicadores</span>
       </a>
       <a class="indicadores-tab-btn" routerLink="/principal/analytics/medicion">
         <mat-icon>show_chart</mat-icon>
@@ -27,7 +28,7 @@
 
   <!-- ESTADÍSTICAS CARDS COMPACTAS CON TOP GLOW -->
   <div class="stats-grid-compact">
-    
+
     <div class="stat-card-compact glow-border-total">
       <div class="stat-watermark"><mat-icon>analytics</mat-icon></div>
       <div class="stat-card-content">
@@ -68,10 +69,8 @@
       <!-- Buscador Inline Integrado -->
       <div class="inline-search-box">
         <mat-icon class="search-icon">search</mat-icon>
-        <input type="text" 
-               (keyup)="aplicarFiltro($event)" 
-               placeholder="Buscar por código, nombre, tipo, proceso..." 
-               class="inline-search-input">
+        <input type="text" (keyup)="aplicarFiltro($event)" placeholder="Buscar por código, nombre, tipo, proceso..."
+          class="inline-search-input">
       </div>
 
       <button type="button" class="btn-primary-glow" (click)="onAgregar()">
@@ -126,29 +125,9 @@
       <!-- Meta -->
       <ng-container matColumnDef="meta">
         <th mat-header-cell *matHeaderCellDef style="width: 120px;">Meta Base</th>
-        <td mat-cell *matCellDef="let row" class="col-tabular font-bold text-white">{{ row.meta }} {{ row.unidad }}</td>
+        <td mat-cell *matCellDef="let row" class="col-tabular font-bold" style="color: #0f172a;">{{ row.meta }} {{ row.unidad }}</td>
       </ng-container>
 
-      <!-- Tendencia (Sparkline Area Chart IND-02) -->
-      <ng-container matColumnDef="tendencia">
-        <th mat-header-cell *matHeaderCellDef style="width: 120px; text-align: center;">Tendencia</th>
-        <td mat-cell *matCellDef="let row" style="text-align: center;">
-          <div class="sparkline-area-wrapper" 
-               [matTooltip]="'Indicador ' + row.codigo + ': Tendencia acumulada'" 
-               matTooltipPosition="above">
-            <svg width="84" height="28" viewBox="0 0 84 28">
-              <defs>
-                <linearGradient [id]="'sparkGrad-' + row.codigo" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" [attr.stop-color]="getSemaforoColor(row.estado)" stop-opacity="0.35"/>
-                  <stop offset="100%" [attr.stop-color]="getSemaforoColor(row.estado)" stop-opacity="0.0"/>
-                </linearGradient>
-              </defs>
-              <path [attr.d]="getSparklineAreaPath(row.codigo)" [attr.fill]="'url(#sparkGrad-' + row.codigo + ')'"/>
-              <path [attr.d]="getSparklineLinePath(row.codigo)" fill="none" [attr.stroke]="getSemaforoColor(row.estado)" stroke-width="2.2" stroke-linecap="round"/>
-            </svg>
-          </div>
-        </td>
-      </ng-container>
 
       <!-- Acciones con Hover Fade-In (IND-09) -->
       <ng-container matColumnDef="acciones">

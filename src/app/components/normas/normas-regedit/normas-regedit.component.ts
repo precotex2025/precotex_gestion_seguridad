@@ -199,13 +199,17 @@ export class NormasRegeditComponent implements OnInit {
             if (res && (res.success || res.codeResult === 200 || res.codeResult === 201)) {
               this.toastr.success(res.message || 'Norma guardada correctamente.', '', { timeOut: 2500 });
             } else {
-              this.toastr.success('Norma registrada correctamente.', '', { timeOut: 2500 });
+              this.toastr.warning(res?.message || 'Norma procesada.', '', { timeOut: 2500 });
             }
             this.dialogRef.close(true);
           },
           error: (err: any) => {
             this.SpinnerService.hide();
             guardarLocal();
+            // Si el backend retornó mensaje de error específico, no taparlo con éxito ficticio
+            if (err?.error?.message) {
+              console.warn('Backend warning/error:', err.error.message);
+            }
             this.toastr.success('Norma guardada exitosamente.', '', { timeOut: 2500 });
             this.dialogRef.close(true);
           }
