@@ -67,6 +67,14 @@ export class NormasRegeditComponent implements OnInit {
     }
   }
 
+  removeFile(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.selectedFileName = '';
+    this.formulario.get('ctrol_archivo')?.setValue('');
+  }
+
   formatDate(dateVal: any): string {
     if (!dateVal) return '';
     const str = dateVal.toString();
@@ -158,7 +166,8 @@ export class NormasRegeditComponent implements OnInit {
             const rawNormas = localStorage.getItem('precotex:normas:listado');
             let normasList: any[] = rawNormas ? JSON.parse(rawNormas) : [];
             if (this.data.Accion === 'I') {
-              const newCode = 'NOR-' + String(normasList.length + 1).padStart(3, '0');
+              const anio = new Date().getFullYear();
+              const newCode = `OGR-${anio}-` + String(normasList.length + 1).padStart(3, '0');
               const newObj = {
                 codigo_Norma: newCode,
                 norma: sNorma,

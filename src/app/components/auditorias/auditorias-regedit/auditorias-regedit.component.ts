@@ -9,9 +9,10 @@ import { AuditoriasService } from '../../../services/auditorias.service';
 import { ProcesosService } from '../../../services/procesos.service';
 
 interface data {
-  Title  : string;
-  Accion : string;
-  Datos  : any;
+  Title          : string;
+  Accion         : string;
+  Datos          : any;
+  AuditoriasList?: any[];
 }
 
 @Component({
@@ -26,11 +27,14 @@ export class AuditoriasRegeditComponent implements OnInit {
   objectKeys = Object.keys;
 
   sedesList: string[] = [
-    'Sede Huachipa',
-    'Sede Ate',
-    'Sede Independencia',
-    'Sede San Juan de Lurigancho',
-    'Sede Principal / Administrativa',
+    'Santa Maria',
+    'Santa Cecilia',
+    'Santa Rosa',
+    'Huachipa 1',
+    'Huachipa 2',
+    'Huachipa 3',
+    'Independencia 1',
+    'Independencia 2',
     'Todas las sedes'
   ];
 
@@ -93,8 +97,8 @@ export class AuditoriasRegeditComponent implements OnInit {
       ctrol_norma       : ['ISO 9001:2015'],
       ctrol_norma_otra  : [''],
       ctrol_responsable : [''],
-      ctrol_sedes       : [['Sede Huachipa', 'Sede Ate']],
-      ctrol_areas       : [['Costura']],
+      ctrol_sedes       : [[]],
+      ctrol_areas       : [[]],
       ctrol_inicio      : [''],
       ctrol_fin         : [''],
       ctrol_frecuencia  : ['Anual'],
@@ -106,7 +110,72 @@ export class AuditoriasRegeditComponent implements OnInit {
 
     if (this.data.Accion === 'U') {
       this.onLoadInfo();
+    } else {
+      this.generarCodigoSecuencial();
     }
+
+    // Escuchar cambios de Tipo (Interna / Externa / Cliente) para actualizar prefijo dinámicamente manteniendo la secuencia
+    this.formulario.get('ctrol_tipo')?.valueChanges.subscribe((nuevoTipo) => {
+      if (this.data.Accion === 'I') {
+        const currentCode = String(this.formulario.get('ctrol_codigo')?.value || '').trim();
+        const tipoCode = nuevoTipo === 'Externa' ? 'EXT' : (nuevoTipo === 'Cliente' ? 'CLI' : 'INT');
+        if (currentCode && /^AUD-(?:INT|EXT|CLI)-\d+-\d+$/i.test(currentCode)) {
+          const updatedCode = currentCode.replace(/^AUD-(?:INT|EXT|CLI)/i, `AUD-${tipoCode}`);
+          this.formulario.get('ctrol_codigo')?.setValue(updatedCode);
+        } else {
+          this.generarCodigoSecuencial();
+        }
+      }
+    });
+  }
+
+  generarCodigoSecuencial(): void {
+    const sTipo = String(this.formulario.get('ctrol_tipo')?.value || 'Interna').trim();
+    const year = new Date().getFullYear();
+    const tipoCode = sTipo === 'Externa' ? 'EXT' : (sTipo === 'Cliente' ? 'CLI' : 'INT');
+
+    if (this.data.AuditoriasList && Array.isArray(this.data.AuditoriasList)) {
+      this.procesarCodigoConLista(this.data.AuditoriasList, tipoCode, year);
+    } else {
+      this.auditoriasService.getListadoAuditorias('').subscribe({
+        next: (res: any) => {
+          const list = res?.elements || [];
+          this.procesarCodigoConLista(list, tipoCode, year);
+        },
+        error: () => {
+          this.formulario.get('ctrol_codigo')?.setValue(`AUD-${tipoCode}-${year}-001`);
+        }
+      });
+    }
+  }
+
+  private procesarCodigoConLista(list: any[], tipoCode: string, year: number): void {
+    const existingNums: number[] = [];
+
+    list.forEach((item: any) => {
+      const code = String(item.codigo_Auditoria || item.Codigo_Auditoria || '').trim();
+      const match = code.match(/AUD-(?:INT|EXT|CLI)-\d+-(\d+)/i) || code.match(/-(\d+)$/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (!isNaN(num) && num > 0) {
+          // Filtrar números aleatorios previos (>= 100) si la cantidad total en BD es reducida (< 50)
+          const isLegacyRandom = list.length <= 50 && num >= 100;
+          if (!isLegacyRandom) {
+            existingNums.push(num);
+          }
+        }
+      }
+    });
+
+    let nextSeq = 1;
+    if (existingNums.length > 0) {
+      nextSeq = Math.max(...existingNums) + 1;
+    } else if (list.length > 0) {
+      nextSeq = list.length + 1;
+    }
+
+    const sCodigo = `AUD-${tipoCode}-${year}-${String(nextSeq).padStart(3, '0')}`;
+    this.formulario.get('ctrol_codigo')?.setValue(sCodigo);
   }
 
   onLoadInfo(): void {
@@ -127,21 +196,25 @@ export class AuditoriasRegeditComponent implements OnInit {
     this.formulario.get('ctrol_responsable')?.setValue(d.responsable || '');
 
     // Cargar sedes múltiples (AUD-05)
-    const loadedSedes = d.sedes || 'Sede Huachipa, Sede Ate';
+    const loadedSedes = d.sedes || d.sede || '';
     if (typeof loadedSedes === 'string') {
       const arrSedes = loadedSedes.split(',').map((s: string) => s.trim()).filter((s: string) => !!s);
-      this.formulario.get('ctrol_sedes')?.setValue(arrSedes.length > 0 ? arrSedes : ['Sede Huachipa']);
+      this.formulario.get('ctrol_sedes')?.setValue(arrSedes);
     } else if (Array.isArray(loadedSedes)) {
       this.formulario.get('ctrol_sedes')?.setValue(loadedSedes);
+    } else {
+      this.formulario.get('ctrol_sedes')?.setValue([]);
     }
 
     // Cargar áreas múltiples (AUD-05)
-    const loadedAreas = d.areas || 'Costura';
+    const loadedAreas = d.areas || d.area || '';
     if (typeof loadedAreas === 'string') {
       const arrAreas = loadedAreas.split(',').map((a: string) => a.trim()).filter((a: string) => !!a);
-      this.formulario.get('ctrol_areas')?.setValue(arrAreas.length > 0 ? arrAreas : ['Costura']);
+      this.formulario.get('ctrol_areas')?.setValue(arrAreas);
     } else if (Array.isArray(loadedAreas)) {
       this.formulario.get('ctrol_areas')?.setValue(loadedAreas);
+    } else {
+      this.formulario.get('ctrol_areas')?.setValue([]);
     }
 
     this.formulario.get('ctrol_inicio')?.setValue(d.inicio || '');
@@ -191,6 +264,24 @@ export class AuditoriasRegeditComponent implements OnInit {
       return;
     }
 
+    if (!sSedes) {
+      this.matSnackBar.open('¡Seleccione al menos una sede participante...!', 'Cerrar', {
+        horizontalPosition: 'center',
+        verticalPosition: 'top',
+        duration: 1500,
+      });
+      return;
+    }
+
+    if (!sAreas) {
+      this.matSnackBar.open('¡Seleccione al menos un proceso / área participante...!', 'Cerrar', {
+        horizontalPosition: 'center',
+        verticalPosition: 'top',
+        duration: 1500,
+      });
+      return;
+    }
+
     const sTitle = this.data.Accion === 'I' ? 'Registrar' : 'Actualizar';
 
     Swal.fire({
@@ -203,24 +294,29 @@ export class AuditoriasRegeditComponent implements OnInit {
       cancelButtonText: 'No'
     }).then(result => {
       if (result.isConfirmed) {
-        let sCodigo = '';
-        if (this.data.Accion === 'I') {
+        let sCodigo = String(this.formulario.get('ctrol_codigo')?.value || '').trim();
+        if (this.data.Accion === 'I' && !sCodigo) {
           const year = new Date().getFullYear();
           const tipoCode = sTipo === 'Externa' ? 'EXT' : 'INT';
-          const randomNum = Math.floor(Math.random() * 900) + 100;
-          sCodigo = `AUD-${tipoCode}-${year}-${randomNum}`;
-        } else {
-          sCodigo = String(this.formulario.get('ctrol_codigo')?.value || '');
+          sCodigo = `AUD-${tipoCode}-${year}-001`;
         }
 
         const requestData = {
           Accion: this.data.Accion,
+          Id_Auditoria: this.data.Datos?.id_Auditoria || this.data.Datos?.id || null,
+          Id: this.data.Datos?.id_Auditoria || this.data.Datos?.id || null,
           Codigo_Auditoria: sCodigo,
           Tipo: sTipo,
           Norma: sNorma,
           Responsable: sResponsable,
+          Sede: sSedes,
           Sedes: sSedes,
+          Sede_Auditoria: sSedes,
+          Sedes_Participantes: sSedes,
+          Area: sAreas,
           Areas: sAreas,
+          Proceso: sAreas,
+          Procesos: sAreas,
           Fecha_Inicio: sInicio || null,
           Fecha_Fin: sFin || null,
           Frecuencia: sFrecuencia,

@@ -143,6 +143,50 @@
   letter-spacing: 0.05em;
 }
 
+.year-nav-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-year-arrow {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--txt);
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+}
+
+.btn-year-arrow mat-icon {
+  font-size: 19px !important;
+  width: 19px !important;
+  height: 19px !important;
+  color: var(--muted);
+  transition: color 0.2s ease;
+}
+
+.btn-year-arrow:hover {
+  background: #7c6cf0;
+  border-color: #7c6cf0;
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(124, 108, 240, 0.3);
+}
+
+.btn-year-arrow:hover mat-icon {
+  color: #ffffff;
+}
+
+.btn-year-arrow:active {
+  transform: scale(0.96);
+}
+
 .year-btn-group {
   display: flex;
   gap: 4px;

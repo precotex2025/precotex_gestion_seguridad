@@ -510,36 +510,37 @@ export class DashboardComponent implements OnInit {
       labels: ['Normas', 'Documentos', 'Objetivos', 'Riesgos', 'Mejoras', 'Legales'],
       datasets: [
         {
-          label: 'Cumplimiento BD (%)',
+          label: 'Cumplimiento (%)',
           data: [normasPct, docsPct, objPct, rsgPct, mejPct, legPct],
           backgroundColor: [
-            'rgba(124, 108, 240, 0.85)',
-            'rgba(167, 139, 250, 0.85)',
-            'rgba(62, 207, 142, 0.85)',
-            'rgba(240, 87, 107, 0.85)',
-            'rgba(91, 141, 239, 0.85)',
-            'rgba(240, 180, 41, 0.85)'
+            'rgba(79, 70, 229, 0.85)',   // Indigo
+            'rgba(124, 58, 237, 0.85)',  // Violet
+            'rgba(16, 185, 129, 0.85)',  // Emerald
+            'rgba(244, 63, 94, 0.85)',   // Rose
+            'rgba(14, 165, 233, 0.85)',  // Sky
+            'rgba(245, 158, 11, 0.85)'   // Amber
           ],
-          borderColor: [
-            '#7c6cf0',
-            '#a78bfa',
-            '#3ecf8e',
-            '#f0576b',
-            '#5b8def',
-            '#f0b429'
+          hoverBackgroundColor: [
+            '#4338ca',
+            '#6d28d9',
+            '#059669',
+            '#e11d48',
+            '#0284c7',
+            '#d97706'
           ],
-          borderWidth: 1.5,
           borderRadius: 8,
-          borderSkipped: false
+          borderSkipped: false,
+          maxBarThickness: 38
         }
       ]
     };
   }
 
   private initCharts(): void {
-    const secondaryText = '#94a3b8';
-    const gridColor = 'rgba(255, 255, 255, 0.05)';
-    const cardBg = '#1b1f30';
+    const textColor = '#334155';
+    const textMuted = '#64748b';
+    const gridColor = '#f1f5f9';
+    const cardBg = '#ffffff';
 
     /* 1. Chart Cumplimiento por Categoría (Barras) */
     this.updateCumplimientoChart();
@@ -548,21 +549,23 @@ export class DashboardComponent implements OnInit {
       responsive: true,
       maintainAspectRatio: false,
       animation: {
-        duration: 1400,
+        duration: 1200,
         easing: 'easeOutQuart'
       },
       plugins: {
         legend: { display: false },
         tooltip: {
           backgroundColor: cardBg,
-          titleColor: '#ffffff',
-          bodyColor: '#38bdf8',
-          borderColor: 'rgba(255, 255, 255, 0.12)',
+          titleColor: '#0f172a',
+          bodyColor: '#4f46e5',
+          borderColor: '#e2e8f0',
           borderWidth: 1,
-          padding: 10,
-          displayColors: false,
+          padding: 12,
+          boxPadding: 4,
+          displayColors: true,
+          usePointStyle: true,
           callbacks: {
-            label: (context: any) => ` Cumplimiento: ${context.raw}%`
+            label: (context: any) => ` Nivel de Cumplimiento: ${context.raw}%`
           }
         }
       },
@@ -571,8 +574,8 @@ export class DashboardComponent implements OnInit {
           beginAtZero: true,
           max: 100,
           ticks: {
-            color: secondaryText,
-            font: { size: 11, weight: '600' },
+            color: textMuted,
+            font: { size: 11, weight: '600', family: 'system-ui, -apple-system, sans-serif' },
             callback: (value: any) => value + '%'
           },
           grid: {
@@ -582,8 +585,8 @@ export class DashboardComponent implements OnInit {
         },
         x: {
           ticks: {
-            color: '#f8fafc',
-            font: { size: 12, weight: '700' }
+            color: textColor,
+            font: { size: 12, weight: '700', family: 'system-ui, -apple-system, sans-serif' }
           },
           grid: { display: false }
         }
@@ -597,12 +600,12 @@ export class DashboardComponent implements OnInit {
         {
           data: [12, 8, 4, 1],
           backgroundColor: [
-            'rgba(62, 207, 142, 0.85)',
-            'rgba(240, 180, 41, 0.85)',
-            'rgba(249, 115, 22, 0.85)',
-            'rgba(240, 87, 107, 0.85)'
+            '#10b981',
+            '#f59e0b',
+            '#f97316',
+            '#ef4444'
           ],
-          borderColor: cardBg,
+          borderColor: '#ffffff',
           borderWidth: 3
         }
       ]
@@ -611,11 +614,11 @@ export class DashboardComponent implements OnInit {
     this.chartRiesgosOptions = {
       responsive: true,
       maintainAspectRatio: false,
-      cutout: '65%',
+      cutout: '68%',
       plugins: {
         legend: {
           position: 'bottom',
-          labels: { color: secondaryText }
+          labels: { color: textColor, font: { weight: '600', size: 12 } }
         }
       }
     };
@@ -628,8 +631,8 @@ export class DashboardComponent implements OnInit {
           label: 'Inspecciones Realizadas',
           data: [15, 28, 22, 35, 30, 42],
           fill: true,
-          borderColor: '#7c6cf0',
-          backgroundColor: 'rgba(124, 108, 240, 0.08)',
+          borderColor: '#4f46e5',
+          backgroundColor: 'rgba(79, 70, 229, 0.08)',
           tension: 0.4
         }
       ]
@@ -639,11 +642,11 @@ export class DashboardComponent implements OnInit {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { labels: { color: secondaryText } }
+        legend: { labels: { color: textColor } }
       },
       scales: {
-        y: { ticks: { color: secondaryText }, grid: { color: gridColor } },
-        x: { ticks: { color: secondaryText }, grid: { display: false } }
+        y: { ticks: { color: textMuted }, grid: { color: gridColor } },
+        x: { ticks: { color: textColor }, grid: { display: false } }
       }
     };
   }
@@ -659,20 +662,20 @@ export class DashboardComponent implements OnInit {
 
   private initAccesosRapidos(): void {
     this.accesosRapidos = [
-      { label: 'Normas', icon: 'pi pi-book', route: '/principal/normas', color: '#7c6cf0', description: 'Gestionar normas vigentes' },
-      { label: 'Organización', icon: 'pi pi-sitemap', route: '/principal/organizacion', color: '#a78bfa', description: 'Estructura organizacional' },
-      { label: 'Documentos', icon: 'pi pi-folder-open', route: '/principal/documentosControlados', color: '#5b8def', description: 'Documentos controlados' },
-      { label: 'Mejora', icon: 'pi pi-wrench', route: '/principal/portafolioMejora', color: '#3ecf8e', description: 'Portafolio de Mejora' },
-      { label: 'Gestión Legal', icon: 'pi pi-check-square', route: '/principal/reqLegal', color: '#f0b429', description: 'Matriz de Requisitos Legales' },
-      { label: 'Riesgos', icon: 'pi pi-exclamation-triangle', route: '/principal/evaluacionRiesgos', color: '#f0576b', description: 'Evaluación de riesgos' },
-      { label: 'Ayuda', icon: 'pi pi-question-circle', route: '/principal/ayuda', color: '#a99bff', description: 'Centro de ayuda y manuales' }
+      { label: 'Normas', icon: 'pi pi-book', route: '/principal/normas', color: '#4f46e5', description: 'Gestionar normas vigentes' },
+      { label: 'Organización', icon: 'pi pi-sitemap', route: '/principal/organizacion', color: '#7c3aed', description: 'Estructura organizacional' },
+      { label: 'Documentos', icon: 'pi pi-folder-open', route: '/principal/documentosControlados', color: '#0ea5e9', description: 'Documentos controlados' },
+      { label: 'Mejora', icon: 'pi pi-wrench', route: '/principal/portafolioMejora', color: '#10b981', description: 'Portafolio de Mejora' },
+      { label: 'Gestión Legal', icon: 'pi pi-check-square', route: '/principal/reqLegal', color: '#f59e0b', description: 'Matriz de Requisitos Legales' },
+      { label: 'Riesgos', icon: 'pi pi-exclamation-triangle', route: '/principal/evaluacionRiesgos', color: '#ef4444', description: 'Evaluación de riesgos' },
+      { label: 'Ayuda', icon: 'pi pi-question-circle', route: '/principal/ayuda', color: '#6366f1', description: 'Centro de ayuda y manuales' }
     ];
   }
 
   private initAlertas(): void {
     this.alertas = [
-      { titulo: 'Requisito Legal Ley 29783 activo en BD', tiempo: 'Hace 5 min', nivel: 'Info BD', severidad: 'info' },
-      { titulo: 'Iniciativa de mejora MEJ-2026-001 registrada con archivo Excel', tiempo: 'Hace 15 min', nivel: 'Ok BD', severidad: 'success' }
+      { titulo: 'Requisito Legal Ley 29783 activo en BD', tiempo: 'Hace 5 min', nivel: 'Información', severidad: 'info' },
+      { titulo: 'Iniciativa de mejora MEJ-2026-001 registrada con archivo Excel', tiempo: 'Hace 15 min', nivel: 'Procesado', severidad: 'success' }
     ];
   }
 
@@ -685,6 +688,27 @@ export class DashboardComponent implements OnInit {
 
   navigateTo(route: string): void {
     this.router.navigate([route]);
+  }
+
+  getModuleIcon(modulo: string): string {
+    const mod = (modulo || '').toLowerCase();
+    if (mod.includes('mejora')) return 'pi pi-wrench';
+    if (mod.includes('legal')) return 'pi pi-shield';
+    if (mod.includes('riesgo')) return 'pi pi-exclamation-triangle';
+    if (mod.includes('objetivo')) return 'pi pi-flag';
+    if (mod.includes('norma')) return 'pi pi-book';
+    if (mod.includes('doc')) return 'pi pi-file-check';
+    return 'pi pi-check-circle';
+  }
+
+  getModuleColorClass(modulo: string): string {
+    const mod = (modulo || '').toLowerCase();
+    if (mod.includes('mejora')) return 'mod-emerald';
+    if (mod.includes('legal')) return 'mod-amber';
+    if (mod.includes('riesgo')) return 'mod-rose';
+    if (mod.includes('objetivo')) return 'mod-sky';
+    if (mod.includes('norma')) return 'mod-indigo';
+    return 'mod-violet';
   }
 
   getSeverityClass(severidad: string): string {

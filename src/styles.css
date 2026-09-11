@@ -761,11 +761,15 @@ input[type="date"]:focus {
 }
 
 /* ---- Custom Dialog Panel (no default padding) ---- */
+.custom-dialog-container .mat-mdc-dialog-container,
+.custom-dialog-container .mat-mdc-dialog-container .mdc-dialog__surface,
+.custom-dialog-container .mat-dialog-container,
 .custom-dialog-no-padding .mat-mdc-dialog-container,
 .custom-dialog-no-padding .mat-mdc-dialog-container .mdc-dialog__surface {
   padding: 0 !important;
-  border-radius: 14px !important;
-  overflow: hidden;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  background: transparent !important;
 }
 
 /* ---- Custom Indicador Detalle Light Executive Modal Panel ---- */

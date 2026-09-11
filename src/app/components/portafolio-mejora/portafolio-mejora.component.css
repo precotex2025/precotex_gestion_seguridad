@@ -22,7 +22,7 @@
 }
 
 .main-title {
-  color: #ffffff;
+  color: var(--txt, #0f172a);
   font-size: 1.1rem;
   font-weight: 800;
   letter-spacing: 0.05em;
@@ -47,13 +47,13 @@
   cursor: pointer;
   backdrop-filter: blur(8px);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .btn-ghost-header:hover {
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.25);
-  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--txt, #0f172a);
+  border-color: #cbd5e1;
+  background-color: #f1f5f9;
   transform: translateY(-1px);
 }
 
@@ -78,11 +78,12 @@
 
 /* DRAWER ARCHIVOS SUBIDOS */
 .archivos-subidos-panel {
-  background-color: var(--panel-2);
-  border: 1px solid var(--line);
+  background-color: #ffffff;
+  border: 1px solid var(--line, #e2e8f0);
   border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -2px rgba(15, 23, 42, 0.04);
 }
 
 .archivos-header {
@@ -90,31 +91,79 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line, #e2e8f0);
+}
+
+.archivos-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.archivos-header-icon {
+  font-size: 20px !important;
+  color: #6366f1;
 }
 
 .archivos-title {
-  color: #ffffff;
-  font-size: 13px;
+  color: #0f172a !important;
+  font-size: 14px;
   font-weight: 700;
   margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.archivos-count-pill {
+  background: #ede9fe;
+  color: #6d28d9;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
 }
 
 .btn-ghost-sm {
-  background: transparent;
-  border: 1px solid var(--line);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f8fafc;
+  border: 1px solid var(--line, #e2e8f0);
   border-radius: 6px;
-  color: var(--muted);
-  padding: 4px 10px;
-  font-size: 11px;
+  color: #475569;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-ghost-sm:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.empty-archivos {
+  color: #64748b;
+  font-size: 13px;
+  text-align: center;
+  padding: 24px 0;
+  font-style: italic;
 }
 
 .archivo-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--line);
+  gap: 14px;
+  padding: 11px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.archivo-item:hover {
+  background-color: #f8fafc;
 }
 
 .archivo-item:last-child {
@@ -122,41 +171,68 @@
 }
 
 .archivo-icon-box {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background-color: rgba(124, 108, 240, 0.15);
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background-color: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #7c6cf0;
+  color: #6366f1;
+  flex-shrink: 0;
+}
+
+.archivo-icon-box .material-icons {
+  font-size: 20px;
 }
 
 .archivo-info {
   flex: 1;
+  min-width: 0;
 }
 
 .archivo-name {
-  color: #ffffff;
-  font-size: 12.5px;
+  color: #0f172a !important;
+  font-size: 13px;
   font-weight: 600;
+  line-height: 1.4;
+  word-break: break-all;
 }
 
 .archivo-sub {
-  color: var(--muted);
-  font-size: 11px;
-  margin-top: 2px;
+  color: #64748b !important;
+  font-size: 11.5px;
+  font-weight: 500;
+  margin-top: 3px;
 }
 
-.btn-download-sm {
-  background-color: rgba(62, 207, 142, 0.15);
-  border: 1px solid rgba(62, 207, 142, 0.3);
-  color: #3ecf8e;
-  border-radius: 6px;
-  padding: 5px 12px;
-  font-size: 11px;
-  font-weight: 600;
+.btn-descargar-archivo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #ffffff;
+  border: 1px solid var(--line, #cbd5e1);
+  border-radius: 8px;
+  color: #334155;
   cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+}
+
+.btn-descargar-archivo:hover {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+}
+
+.btn-descargar-archivo .material-icons {
+  font-size: 20px;
 }
 
 /* PANEL TARJETA CONTENEDOR */

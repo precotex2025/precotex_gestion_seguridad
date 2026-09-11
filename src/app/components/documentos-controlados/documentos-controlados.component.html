@@ -235,7 +235,18 @@
                 </div>
               </td>
 
-              <td class="process-cell" style="min-width: 180px;">{{ doc.proceso }} ({{ getAbreviaturaProceso(doc.proceso) }})</td>
+              <td class="process-cell" style="min-width: 180px;">
+                <ng-container *ngIf="getDocProcesosList(doc).length <= 1">
+                  <span>{{ doc.proceso }}</span>
+                  <span style="color: #64748b; font-size: 11px;" *ngIf="getAbreviaturaProceso(doc.proceso) !== 'GEN'"> ({{ getAbreviaturaProceso(doc.proceso) }})</span>
+                </ng-container>
+                <ng-container *ngIf="getDocProcesosList(doc).length > 1">
+                  <div class="multi-proc-cell" [title]="'Procesos autorizados: ' + getDocProcesosList(doc).join(', ')">
+                    <span class="proc-badge-primary">{{ getDocProcesosList(doc)[0] }}</span>
+                    <span class="proc-badge-more">+{{ getDocProcesosList(doc).length - 1 }} procesos</span>
+                  </div>
+                </ng-container>
+              </td>
               <td style="min-width: 110px; width: 110px; text-align: center;" class="date-cell">{{ doc.vig || '-' }}</td>
               
               <!-- Soft Badge for Status -->
@@ -335,7 +346,7 @@
       <div class="doc-meta-grid">
         
         <div class="meta-card">
-          <span class="meta-label">Proceso / Área</span>
+          <span class="meta-label">Proceso / Áreas Autorizadas (DOC-15)</span>
           <span class="meta-value-text">{{ selectedDoc.proceso }}</span>
         </div>
 

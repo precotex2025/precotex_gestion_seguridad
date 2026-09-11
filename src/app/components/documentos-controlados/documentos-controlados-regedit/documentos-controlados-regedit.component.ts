@@ -58,13 +58,35 @@ export class DocumentosControladosRegeditComponent implements OnInit {
     const initialVersion = row?.version || this.extraerVersionDelCodigo(row?.codigo) || 'v1';
     const initialProceso = row?.proceso || this.extraerProcesoDelCodigo(row?.codigo) || 'Organización y Métodos';
 
+    if (row) {
+      if (row.modoVisibilidad) {
+        this.modoVisibilidad = row.modoVisibilidad;
+      } else if (row.procesosVisibles && row.procesosVisibles.includes('Todos los procesos')) {
+        this.modoVisibilidad = 'TODOS';
+      } else {
+        this.modoVisibilidad = 'PERSONALIZADO';
+      }
+
+      if (row.procesos && Array.isArray(row.procesos) && row.procesos.length > 0) {
+        this.procesosSeleccionados = [...row.procesos];
+      } else if (row.procesosVisibles && Array.isArray(row.procesosVisibles) && row.procesosVisibles.length > 0 && !row.procesosVisibles.includes('Todos los procesos')) {
+        this.procesosSeleccionados = [...row.procesosVisibles];
+      } else if (row.proceso) {
+        this.procesosSeleccionados = row.proceso.split(',').map((s: string) => s.trim()).filter(Boolean);
+      }
+    } else {
+      this.modoVisibilidad = 'TODOS';
+      const autoProc = this.extraerProcesoDelCodigo(initialProceso) || initialProceso;
+      this.procesosSeleccionados = [autoProc || 'Organización y Métodos'];
+    }
+
     this.formulario = this.formBuilder.group({
       nombre: [row?.nombre || '', Validators.required],
       codigo: [row?.codigo || '', Validators.required],
       tipo: [initialTipo],
       version: [initialVersion],
       formato: [row?.formato || 'PDF'],
-      proceso: [initialProceso],
+      proceso: [this.modoVisibilidad === 'TODOS' ? 'Todos los procesos' : this.procesosSeleccionados.join(', ')],
       vig: [initialVig],
       estado: [initialEstado],
       archivo: [row?.archivo || '', Validators.required]
@@ -85,7 +107,16 @@ export class DocumentosControladosRegeditComponent implements OnInit {
 
         // Auto-extraer Proceso Responsable
         const autoProc = this.extraerProcesoDelCodigo(codeStr);
-        if (autoProc) patchObj.proceso = autoProc;
+        if (autoProc) {
+          patchObj.proceso = autoProc;
+          if (this.modoVisibilidad === 'PERSONALIZADO' && !this.procesosSeleccionados.includes(autoProc)) {
+            if (this.procesosSeleccionados.length === 1 && this.procesosSeleccionados[0] === 'Organización y Métodos') {
+              this.procesosSeleccionados = [autoProc];
+            } else {
+              this.procesosSeleccionados.push(autoProc);
+            }
+          }
+        }
 
         this.formulario.patchValue(patchObj, { emitEvent: false });
       }
@@ -280,39 +311,94 @@ export class DocumentosControladosRegeditComponent implements OnInit {
     }
   }
 
-  // DOC-15: Visibilidad y Permisos de lectura por Proceso
-  modoVisibilidad: 'TODOS' | 'SOLO_PROCESO' | 'PERSONALIZADO' = 'TODOS';
-  listaProcesosDisponibles = [
-    'Acabados Textil', 'Costura', 'Estampado', 'Hilandería', 'Tejitud',
-    'Organización y Métodos', 'Mejora Continua', 'Control de Calidad',
-    'Control Patrimonial', 'Sistemas', 'Mantenimiento', 'Auditoría Interna',
-    'Gestión Humana', 'SSOMA', 'Logística', 'Administración y Finanzas', 'Gerencia General'
-  ];
-  procesosVisiblesSeleccionados: string[] = ['Todos los procesos'];
+  // DOC-15: Visibilidad y Permisos de lectura por Proceso (permite seleccionar 2 o más)
+  modoVisibilidad: 'TODOS' | 'PERSONALIZADO' = 'TODOS';
+  procesosSeleccionados: string[] = ['Organización y Métodos'];
+  busquedaProceso: string = '';
 
   isProcesoSeleccionado(proc: string): boolean {
-    return this.procesosVisiblesSeleccionados.includes(proc);
+    return this.procesosSeleccionados.includes(proc);
   }
 
-  toggleProcesoVisibilidad(proc: string): void {
+  toggleProceso(proc: string): void {
     if (this.isProcesoSeleccionado(proc)) {
-      this.procesosVisiblesSeleccionados = this.procesosVisiblesSeleccionados.filter(p => p !== proc);
+      this.procesosSeleccionados = this.procesosSeleccionados.filter(p => p !== proc);
     } else {
-      this.procesosVisiblesSeleccionados.push(proc);
+      this.procesosSeleccionados.push(proc);
+    }
+    this.sincronizarControlProceso();
+  }
+
+  removeProceso(proc: string): void {
+    this.procesosSeleccionados = this.procesosSeleccionados.filter(p => p !== proc);
+    this.sincronizarControlProceso();
+  }
+
+  seleccionarTodosProcesos(): void {
+    const todos = this.obtenerTodosLosProcesosArray();
+    this.procesosSeleccionados = [...todos];
+    this.sincronizarControlProceso();
+  }
+
+  limpiarProcesos(): void {
+    this.procesosSeleccionados = [];
+    this.sincronizarControlProceso();
+  }
+
+  toggleMacroCompleto(macro: string): void {
+    const list = this.PROCESOS_GROUPS[macro] || [];
+    const todosMarcados = list.length > 0 && list.every(p => this.isProcesoSeleccionado(p));
+    if (todosMarcados) {
+      this.procesosSeleccionados = this.procesosSeleccionados.filter(p => !list.includes(p));
+    } else {
+      list.forEach(p => {
+        if (!this.isProcesoSeleccionado(p)) this.procesosSeleccionados.push(p);
+      });
+    }
+    this.sincronizarControlProceso();
+  }
+
+  isMacroTodoSeleccionado(macro: string): boolean {
+    const list = this.PROCESOS_GROUPS[macro] || [];
+    return list.length > 0 && list.every(p => this.isProcesoSeleccionado(p));
+  }
+
+  setModoVisibilidad(modo: 'TODOS' | 'PERSONALIZADO'): void {
+    this.modoVisibilidad = modo;
+    if (modo === 'TODOS') {
+      this.formulario.patchValue({ proceso: 'Todos los procesos' }, { emitEvent: false });
+    } else {
+      if (this.procesosSeleccionados.length === 0) {
+        this.procesosSeleccionados = ['Organización y Métodos'];
+      }
+      this.sincronizarControlProceso();
     }
   }
 
-  onModoVisibilidadChange(): void {
+  getProcesosFiltradosPorMacro(macro: string): string[] {
+    const list = this.PROCESOS_GROUPS[macro] || [];
+    if (!this.busquedaProceso.trim()) return list;
+    const q = this.busquedaProceso.toLowerCase().trim();
+    return list.filter(p => p.toLowerCase().includes(q));
+  }
+
+  obtenerTodosLosProcesosArray(): string[] {
+    const all: string[] = [];
+    for (const macro in this.PROCESOS_GROUPS) {
+      (this.PROCESOS_GROUPS[macro] || []).forEach(p => {
+        if (!all.includes(p)) all.push(p);
+      });
+    }
+    return all;
+  }
+
+  sincronizarControlProceso(): void {
     if (this.modoVisibilidad === 'TODOS') {
-      this.procesosVisiblesSeleccionados = ['Todos los procesos'];
-    } else if (this.modoVisibilidad === 'SOLO_PROCESO') {
-      const procActual = this.formulario?.get('proceso')?.value || 'Organización y Métodos';
-      this.procesosVisiblesSeleccionados = [procActual];
-    } else if (this.modoVisibilidad === 'PERSONALIZADO') {
-      const procActual = this.formulario?.get('proceso')?.value || 'Organización y Métodos';
-      if (this.procesosVisiblesSeleccionados.includes('Todos los procesos')) {
-        this.procesosVisiblesSeleccionados = [procActual];
-      }
+      this.formulario.patchValue({ proceso: 'Todos los procesos' }, { emitEvent: false });
+    } else if (this.procesosSeleccionados.length > 0) {
+      this.formulario.patchValue({ proceso: this.procesosSeleccionados.join(', ') }, { emitEvent: false });
+    } else {
+      this.formulario.patchValue({ proceso: '' }, { emitEvent: false });
     }
   }
 
@@ -321,10 +407,24 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       return;
     }
 
+    if (this.modoVisibilidad === 'PERSONALIZADO' && this.procesosSeleccionados.length === 0) {
+      this.formulario.get('proceso')?.setErrors({ required: true });
+      return;
+    }
+
     const val = this.formulario.value;
     val.estado = this.calcularEstadoPorFecha(val.vig, val.estado);
     val.modoVisibilidad = this.modoVisibilidad;
-    val.procesosVisibles = this.modoVisibilidad === 'TODOS' ? ['Todos los procesos'] : (this.modoVisibilidad === 'SOLO_PROCESO' ? [val.proceso] : this.procesosVisiblesSeleccionados);
+
+    if (this.modoVisibilidad === 'TODOS') {
+      val.proceso = this.procesosSeleccionados.length > 0 ? this.procesosSeleccionados[0] : 'General';
+      val.procesos = this.obtenerTodosLosProcesosArray();
+      val.procesosVisibles = ['Todos los procesos'];
+    } else {
+      val.proceso = this.procesosSeleccionados.join(', ');
+      val.procesos = [...this.procesosSeleccionados];
+      val.procesosVisibles = [...this.procesosSeleccionados];
+    }
 
     if (this.selectedFile) {
       this.isUploading = true;

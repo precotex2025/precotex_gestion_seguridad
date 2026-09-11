@@ -1,125 +1,232 @@
 <div class="dialog-wrapper">
-  
+  <!-- Accent Top Line Gradient -->
+  <div class="dialog-top-bar"></div>
+
+  <!-- Header -->
   <header class="dialog-header">
-    <div class="dialog-icon-container">
-      <mat-icon>verified</mat-icon>
+    <div class="header-left">
+      <div class="header-icon-box">
+        <mat-icon>{{ data.Accion === 'I' ? 'verified' : 'edit_note' }}</mat-icon>
+      </div>
+      <div class="header-text">
+        <h2 class="header-title">{{ data.Accion === 'I' ? 'Registrar Norma SIG' : 'Editar Norma SIG' }}</h2>
+        <p class="header-subtitle">Gestión y certificación del Sistema Integrado de Gestión</p>
+      </div>
     </div>
-    <div class="dialog-header-text">
-      <h2 class="header-title">{{ data.Accion === 'I' ? 'Nuevo registro de Norma' : 'Editar registro de Norma' }}</h2>
-      <p class="dialog-subtitle">Registro y certificación de normas del Sistema Integrado de Gestión</p>
+
+    <div class="header-right">
+      <div class="code-badge-pill" *ngIf="formulario.get('ctrol_codigo')?.value">
+        <mat-icon class="badge-icon">tag</mat-icon>
+        <span class="badge-text">{{ formulario.get('ctrol_codigo')?.value }}</span>
+      </div>
+      <button type="button" class="btn-close-header" (click)="onClose()" title="Cerrar ventana">
+        <mat-icon>close</mat-icon>
+      </button>
     </div>
-    <span class="flex-spacer"></span>
-    <button type="button" class="btn-close-header" (click)="onClose()" title="Cerrar">
-      <mat-icon>close</mat-icon>
-    </button>
   </header>
 
-  <form [formGroup]="formulario" #formDirective="ngForm" class="dialog-form">
-    <div class="dialog-content">
-      
-      <!-- Fila 1: Nombre de la norma -->
-      <div class="form-row">
-        <div class="form-field full-width">
-          <label class="form-label">Nombre de la norma (*)</label>
-          <input type="text" 
-                 formControlName="ctrol_denominacion" 
-                 placeholder="Ej. ISO 27001:2022" 
-                 class="form-input">
-        </div>
-      </div>
+  <!-- Form -->
+  <form [formGroup]="formulario" class="dialog-form">
+    <div class="dialog-scroll-body">
 
-      <!-- Fila 2: Categoría y Estado -->
-      <div class="form-row split-2">
-        <div class="form-field">
-          <label class="form-label">Categoría / Ámbito (*)</label>
-          <select formControlName="ctrol_categoria" class="form-select">
-            <option value="Calidad">Calidad</option>
-            <option value="Seguridad y Salud">Seguridad y Salud</option>
-            <option value="Medio Ambiente">Medio Ambiente</option>
-            <option value="Otros">Otros</option>
-          </select>
+      <!-- Sección 1: Información Principal -->
+      <div class="form-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">info</mat-icon>
+          <span class="section-title">1. Información Principal</span>
         </div>
 
-        <div class="form-field">
-          <label class="form-label">Estado (*)</label>
-          <select formControlName="ctrol_estado" class="form-select">
-            <option value="Vigente">Vigente</option>
-            <option value="En revisión">En revisión</option>
-            <option value="Por vencer">Por vencer</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Fila 3: Fechas -->
-      <div class="form-row split-2">
-        <div class="form-field">
-          <label class="form-label">Fecha de vencimiento</label>
-          <input type="date" 
-                 formControlName="ctrol_fechaVencimiento" 
-                 class="form-input-date">
+        <!-- Fila 1: Nombre de la norma -->
+        <div class="form-row">
+          <div class="form-field full-width">
+            <label class="form-label">
+              <mat-icon class="label-icon">verified_user</mat-icon>
+              Nombre de la Norma / Certificación <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" 
+                     formControlName="ctrol_denominacion" 
+                     placeholder="Ej. ISO 9001:2015, ISO 14001:2015, BASC, WRAP, OEKO-TEX..." 
+                     class="form-input">
+            </div>
+          </div>
         </div>
 
-        <div class="form-field">
-          <label class="form-label">Última auditoría</label>
-          <input type="date" 
-                 formControlName="ctrol_fechaAuditoria" 
-                 class="form-input-date">
-        </div>
-      </div>
+        <!-- Fila 2: Categoría y Estado -->
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">category</mat-icon>
+              Categoría / Ámbito <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="ctrol_categoria" class="form-select">
+                <option value="Calidad">Calidad</option>
+                <option value="Seguridad y Salud">Seguridad y Salud (SST)</option>
+                <option value="Medio Ambiente">Medio Ambiente</option>
+                <option value="Cadena de Suministro">Cadena de Suministro / BASC</option>
+                <option value="Textil Sostenible">Textil Sostenible (GOTS / OCS / GRS)</option>
+                <option value="Otros">Otros</option>
+              </select>
+            </div>
+          </div>
 
-      <!-- Fila 4: Archivo Adjunto de la Norma / Certificación (ORG-04) -->
-      <div class="form-row">
-        <div class="form-field full-width">
-          <label class="form-label">Documento o Certificado Adjunto (PDF / DOC)</label>
-          <div class="file-upload-picker">
-            <input type="file" #fileInput (change)="onFileSelected($event)" accept=".pdf,.doc,.docx" style="display: none;">
-            <button type="button" class="btn-picker" (click)="fileInput.click()">
-              <mat-icon>attach_file</mat-icon>
-              <span>Seleccionar archivo</span>
-            </button>
-            <span class="file-name-tag" *ngIf="selectedFileName">{{ selectedFileName }}</span>
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">pending_actions</mat-icon>
+              Estado de la Norma <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="ctrol_estado" class="form-select">
+                <option value="Vigente">Vigente</option>
+                <option value="En revisión">En revisión</option>
+                <option value="Por vencer">Por vencer</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Fila 5: Descripción Breve -->
-      <div class="form-row">
-        <div class="form-field full-width">
-          <label class="form-label">Descripción breve</label>
-          <textarea formControlName="ctrol_descripcion" 
-                    placeholder="Qué cubre esta norma para Precotex..." 
-                    class="form-textarea" 
-                    rows="3"></textarea>
+      <!-- Sección 2: Fechas & Programación -->
+      <div class="form-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">event_available</mat-icon>
+          <span class="section-title">2. Control de Fechas & Auditorías</span>
         </div>
-      </div>        
 
-      <!-- Fila 6: Observaciones de la Norma / Certificación (ORG-01) -->
-      <div class="form-row">
-        <div class="form-field full-width">
-          <label class="form-label">Observaciones adicionales</label>
-          <textarea formControlName="ctrol_observaciones" 
-                    placeholder="Detalles complementarios, notas de seguimiento, estado de auditoría..." 
-                    class="form-textarea" 
-                    rows="2"></textarea>
+        <!-- Fila 3: Fechas -->
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">calendar_today</mat-icon>
+              Fecha de Vencimiento
+            </label>
+            <div class="input-wrapper">
+              <input type="date" 
+                     formControlName="ctrol_fechaVencimiento" 
+                     class="form-input-date">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">history_edu</mat-icon>
+              Última Auditoría Realizada
+            </label>
+            <div class="input-wrapper">
+              <input type="date" 
+                     formControlName="ctrol_fechaAuditoria" 
+                     class="form-input-date">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 3: Evidencia / Certificado Adjunto -->
+      <div class="form-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">attach_file</mat-icon>
+          <span class="section-title">3. Documento o Certificado Oficial</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field full-width">
+            <label class="form-label">
+              <mat-icon class="label-icon">cloud_upload</mat-icon>
+              Archivo Adjunto (PDF, DOCX, DOC)
+            </label>
+            <div class="file-dropzone-box">
+              <input type="file" #fileInput (change)="onFileSelected($event)" accept=".pdf,.doc,.docx" style="display: none;">
+              
+              <div class="dropzone-content" *ngIf="!selectedFileName">
+                <div class="dropzone-icon-circle">
+                  <mat-icon>upload_file</mat-icon>
+                </div>
+                <div class="dropzone-texts">
+                  <span class="dropzone-main-text">Haga clic para subir el certificado de la norma</span>
+                  <span class="dropzone-sub-text">Formatos permitidos: PDF, DOCX o DOC (máx. 25MB)</span>
+                </div>
+                <button type="button" class="btn-browse-file" (click)="fileInput.click()">
+                  <mat-icon>folder_open</mat-icon>
+                  <span>Examinar</span>
+                </button>
+              </div>
+
+              <div class="file-active-badge" *ngIf="selectedFileName">
+                <div class="file-badge-left">
+                  <mat-icon class="file-icon">description</mat-icon>
+                  <div class="file-badge-info">
+                    <span class="file-name-text">{{ selectedFileName }}</span>
+                    <span class="file-status-text">Archivo listo para adjuntar</span>
+                  </div>
+                </div>
+                <div class="file-badge-actions">
+                  <button type="button" class="btn-action-icon" (click)="fileInput.click()" title="Cambiar archivo">
+                    <mat-icon>sync</mat-icon>
+                  </button>
+                  <button type="button" class="btn-action-icon remove" (click)="removeFile($event)" title="Quitar archivo">
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 4: Cobertura & Observaciones -->
+      <div class="form-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">notes</mat-icon>
+          <span class="section-title">4. Cobertura & Observaciones</span>
+        </div>
+
+        <!-- Fila: Descripción Breve -->
+        <div class="form-row">
+          <div class="form-field full-width">
+            <label class="form-label">
+              <mat-icon class="label-icon">description</mat-icon>
+              Descripción del Alcance / Cobertura
+            </label>
+            <div class="input-wrapper">
+              <textarea formControlName="ctrol_descripcion" 
+                        placeholder="Especifique qué procesos, sedes o líneas productivas cubre esta certificación para Precotex..." 
+                        class="form-textarea" 
+                        rows="3"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila: Observaciones -->
+        <div class="form-row">
+          <div class="form-field full-width">
+            <label class="form-label">
+              <mat-icon class="label-icon">comment</mat-icon>
+              Observaciones Adicionales
+            </label>
+            <div class="input-wrapper">
+              <textarea formControlName="ctrol_observaciones" 
+                        placeholder="Notas complementarias, certificadora auditora (Ej. Bureau Veritas, SGS, Control Union), etc..." 
+                        class="form-textarea" 
+                        rows="2"></textarea>
+            </div>
+          </div>
         </div>
       </div>
 
     </div>
 
-    <!-- Acciones / Botones (Siempre visibles al pie) -->
-    <div class="button-row"> 
-      <button type="button" class="btn-primary" (click)="onSave()"> 
-        <mat-icon style="font-size: 18px; width: 18px; height: 18px;">save</mat-icon>
-        <span>Guardar Norma</span>
+    <!-- Footer Actions -->
+    <footer class="dialog-footer">
+      <button type="button" class="btn-cancelar" (click)="onClose()">
+        <mat-icon>close</mat-icon>
+        <span>Cancelar</span>
       </button>
 
-      <button type="button" class="btn-secondary" (click)="onClose()">
-        <span>Cerrar</span>
+      <button type="button" class="btn-guardar" (click)="onSave()">
+        <mat-icon>save</mat-icon>
+        <span>{{ data.Accion === 'I' ? 'Guardar Norma' : 'Actualizar Norma' }}</span>
       </button>
-    </div>   
+    </footer>
   </form>
-
 </div>
-
-
-

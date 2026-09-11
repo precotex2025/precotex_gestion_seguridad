@@ -1,141 +1,225 @@
 <div class="dialog-wrapper">
+  <!-- Accent Top Line -->
+  <div class="dialog-top-bar"></div>
 
+  <!-- Header -->
   <header class="dialog-header">
-    <h2 class="header-title">{{ data.Accion === 'I' ? 'Planificar auditoría' : 'Editar auditoría' }}</h2>
-    <p class="header-sub" *ngIf="data.Accion === 'U'">
-      <span class="code-ref">{{ formulario.get('ctrol_codigo')?.value }}</span>
-    </p>
+    <div class="header-left">
+      <div class="header-icon-box">
+        <mat-icon>{{ data.Accion === 'I' ? 'assignment_add' : 'edit_note' }}</mat-icon>
+      </div>
+      <div class="header-text">
+        <h2 class="header-title">{{ data.Accion === 'I' ? 'Planificar Auditoría' : 'Editar Auditoría' }}</h2>
+        <p class="header-subtitle">Gestión del programa anual y alcance técnico</p>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="code-badge-pill" *ngIf="formulario.get('ctrol_codigo')?.value">
+        <mat-icon class="badge-icon">tag</mat-icon>
+        <span class="badge-text">{{ formulario.get('ctrol_codigo')?.value }}</span>
+      </div>
+      <button type="button" class="btn-close-header" (click)="onClose()" title="Cerrar ventana">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
   </header>
 
+  <!-- Form -->
   <form [formGroup]="formulario" class="dialog-form">
-    <div class="dialog-content">
+    <div class="dialog-scroll-body">
 
-      <!-- Fila 1: Tipo y Norma auditada -->
-      <div class="form-row split-2">
-        <div class="form-field">
-          <label class="form-label">Tipo de auditoría</label>
-          <select formControlName="ctrol_tipo" class="form-select">
-            <option value="Interna">Interna</option>
-            <option value="Externa">Externa</option>
-          </select>
+      <!-- Sección 1: Información General -->
+      <div class="form-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">info</mat-icon>
+          <span class="section-title">1. Información Principal</span>
         </div>
 
-        <div class="form-field">
-          <label class="form-label">Norma auditada</label>
-          <select formControlName="ctrol_norma" class="form-select">
-            <option value="ISO 9001:2015">ISO 9001:2015</option>
-            <option value="ISO 45001:2018">ISO 45001:2018</option>
-            <option value="ISO 14001:2015">ISO 14001:2015</option>
-            <option value="OCS">OCS</option>
-            <option value="BASC">BASC</option>
-            <option value="WRAP">WRAP</option>
-            <option value="GOTS">GOTS</option>
-            <option value="GRS">GRS</option>
-            <option value="OEKO-TEX">OEKO-TEX</option>
-            <option value="Otro">Otro (Especificar norma)</option>
-          </select>
+        <!-- Fila 1: Tipo y Norma auditada -->
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">category</mat-icon>
+              Tipo de auditoría <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="ctrol_tipo" class="form-select">
+                <option value="Interna">Interna</option>
+                <option value="Externa">Externa</option>
+                <option value="Cliente">Cliente</option>
+              </select>
+            </div>
+          </div>
 
-          <!-- Campo dinámico para digitar una nueva norma personalizada -->
-          <input *ngIf="formulario.get('ctrol_norma')?.value === 'Otro'"
-                 type="text"
-                 formControlName="ctrol_norma_otra"
-                 placeholder="Escriba la nueva norma auditada..."
-                 class="form-input"
-                 style="margin-top: 8px;">
-        </div>
-      </div>
-
-      <!-- Fila 2: Responsable y Sedes -->
-      <div class="form-row split-2">
-        <div class="form-field">
-          <label class="form-label">Responsable <span class="req">*</span></label>
-          <input type="text"
-                 formControlName="ctrol_responsable"
-                 placeholder="Ej. Ana Torres"
-                 class="form-input">
-        </div>
-
-        <div class="form-field">
-          <label class="form-label">Sedes participantes <span class="req">*</span></label>
-          <mat-select formControlName="ctrol_sedes" multiple class="form-select-mat" placeholder="-- Seleccionar Sedes --">
-            <mat-option *ngFor="let s of sedesList" [value]="s">{{ s }}</mat-option>
-          </mat-select>
-        </div>
-      </div>
-
-      <!-- Fila 2b: Procesos / Áreas Auditadas -->
-      <div class="form-row">
-        <div class="form-field full-width">
-          <label class="form-label">Procesos / Áreas participantes <span class="req">*</span></label>
-          <mat-select formControlName="ctrol_areas" multiple class="form-select-mat" placeholder="-- Seleccionar Procesos / Áreas --">
-            <mat-optgroup *ngFor="let group of objectKeys(PROCESOS_GROUPS)" [label]="group">
-              <mat-option *ngFor="let p of PROCESOS_GROUPS[group]" [value]="p">{{ p }}</mat-option>
-            </mat-optgroup>
-          </mat-select>
-        </div>
-      </div>
-
-      <!-- Fila 3: Fechas -->
-      <div class="form-row split-2">
-        <div class="form-field">
-          <label class="form-label">Fecha inicio</label>
-          <input type="date"
-                 formControlName="ctrol_inicio"
-                 class="form-input-date">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">verified_user</mat-icon>
+              Norma auditada <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="ctrol_norma" class="form-select">
+                <option value="ISO 9001:2015">ISO 9001:2015 (Calidad)</option>
+                <option value="ISO 14001:2015">ISO 14001:2015 (Ambiental)</option>
+                <option value="ISO 45001:2018">ISO 45001:2018 (Seguridad y Salud)</option>
+                <option value="BASC">BASC (Comercio Seguro)</option>
+                <option value="WRAP">WRAP (Producción Ética)</option>
+                <option value="OEKO-TEX">OEKO-TEX Standard 100</option>
+                <option value="GOTS">GOTS (Textil Orgánico)</option>
+                <option value="GRS">GRS (Global Recycled Standard)</option>
+                <option value="OCS">OCS (Organic Content Standard)</option>
+                <option value="Otro">Otra norma / Estándar específico...</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        <div class="form-field">
-          <label class="form-label">Fecha fin</label>
-          <input type="date"
-                 formControlName="ctrol_fin"
-                 class="form-input-date">
-        </div>
-      </div>
-
-      <!-- Fila 4: Frecuencia y Estado -->
-      <div class="form-row split-2">
-        <div class="form-field">
-          <label class="form-label">Frecuencia</label>
-          <select formControlName="ctrol_frecuencia" class="form-select">
-            <option value="Anual">Anual</option>
-            <option value="Semestral">Semestral</option>
-            <option value="Trimestral">Trimestral</option>
-          </select>
+        <!-- Fila dinámica si selecciona "Otro" -->
+        <div class="form-row" *ngIf="formulario.get('ctrol_norma')?.value === 'Otro'">
+          <div class="form-field full-width">
+            <label class="form-label">
+              <mat-icon class="label-icon">edit</mat-icon>
+              Especifique la nueva norma <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="ctrol_norma_otra" placeholder="Escriba el nombre de la norma auditada..." class="form-input">
+            </div>
+          </div>
         </div>
 
-        <div class="form-field">
-          <label class="form-label">Estado</label>
-          <select formControlName="ctrol_estado" class="form-select">
-            <option value="Programada">Programada</option>
-            <option value="Realizada">Realizada</option>
-            <option value="No realizada">No realizada</option>
-          </select>
+        <!-- Fila 2: Responsable y Sedes -->
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">person</mat-icon>
+              Auditor / Responsable <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="ctrol_responsable" placeholder="Ej. Ing. Ana Torres" class="form-input">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">apartment</mat-icon>
+              Sedes participantes <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <mat-select formControlName="ctrol_sedes" multiple class="form-select-mat" placeholder="-- Seleccionar Sedes --">
+                <mat-option *ngFor="let s of sedesList" [value]="s">{{ s }}</mat-option>
+              </mat-select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila 3: Procesos / Áreas Auditadas -->
+        <div class="form-row">
+          <div class="form-field full-width">
+            <label class="form-label">
+              <mat-icon class="label-icon">account_tree</mat-icon>
+              Procesos / Áreas participantes <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <mat-select formControlName="ctrol_areas" multiple class="form-select-mat" placeholder="-- Seleccionar Procesos / Áreas --">
+                <mat-optgroup *ngFor="let group of objectKeys(PROCESOS_GROUPS)" [label]="group">
+                  <mat-option *ngFor="let p of PROCESOS_GROUPS[group]" [value]="p">{{ p }}</mat-option>
+                </mat-optgroup>
+              </mat-select>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Fila 5: Alcance -->
-      <div class="form-row">
-        <div class="form-field full-width">
-          <label class="form-label">Alcance / Objetivo</label>
-          <textarea formControlName="ctrol_alcance"
-                    placeholder="Describe el alcance y objetivo de la auditoría..."
-                    class="form-textarea"
-                    rows="3"></textarea>
+      <!-- Sección 2: Fechas y Programación -->
+      <div class="form-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">event_available</mat-icon>
+          <span class="section-title">2. Programación & Estado</span>
+        </div>
+
+        <!-- Fila 4: Fechas -->
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">calendar_today</mat-icon>
+              Fecha inicio
+            </label>
+            <div class="input-wrapper">
+              <input type="date" formControlName="ctrol_inicio" class="form-input-date">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">event</mat-icon>
+              Fecha fin
+            </label>
+            <div class="input-wrapper">
+              <input type="date" formControlName="ctrol_fin" class="form-input-date">
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila 5: Frecuencia y Estado -->
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">event_repeat</mat-icon>
+              Frecuencia
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="ctrol_frecuencia" class="form-select">
+                <option value="Anual">Anual</option>
+                <option value="Semestral">Semestral</option>
+                <option value="Trimestral">Trimestral</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">pending_actions</mat-icon>
+              Estado de la auditoría
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="ctrol_estado" class="form-select">
+                <option value="Programada">Programada</option>
+                <option value="Realizada">Realizada</option>
+                <option value="No realizada">No realizada</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila 6: Alcance -->
+        <div class="form-row">
+          <div class="form-field full-width">
+            <label class="form-label">
+              <mat-icon class="label-icon">flag</mat-icon>
+              Alcance / Objetivo de la Auditoría
+            </label>
+            <div class="input-wrapper">
+              <textarea formControlName="ctrol_alcance"
+                placeholder="Describa el alcance, criterios, procesos a auditar y objetivos esperados..."
+                class="form-textarea" rows="3"></textarea>
+            </div>
+          </div>
         </div>
       </div>
 
     </div>
 
     <!-- Acciones / Botones -->
-    <div class="button-row">
+    <footer class="dialog-footer">
       <button type="button" class="btn-cancelar" (click)="onClose()">
+        <mat-icon>close</mat-icon>
         <span>Cancelar</span>
       </button>
 
       <button type="button" class="btn-guardar" (click)="onSave()">
-        <span>Guardar</span>
+        <mat-icon>save</mat-icon>
+        <span>{{ data.Accion === 'I' ? 'Planificar Auditoría' : 'Actualizar Auditoría' }}</span>
       </button>
-    </div>
+    </footer>
   </form>
-
 </div>

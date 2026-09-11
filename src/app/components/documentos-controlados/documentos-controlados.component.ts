@@ -118,10 +118,6 @@ export class DocumentosControladosComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('precotex:documentacion');
-    }
-
     // Cargar permisos finos del usuario
     this.loadFinePermissions();
 
@@ -172,48 +168,94 @@ export class DocumentosControladosComponent implements OnInit {
   }
 
   loadDocs() {
-    this.documentosControladosService.getListadoDocumentosControlados('001', '001', '', '').subscribe({
+    this.documentosControladosService.getListadoDocumentosControlados('001', '', '', '').subscribe({
       next: (res: any) => {
         let rawList: any[] = [];
         if (res && res.success && res.elements && res.elements.length > 0) {
-          rawList = res.elements.map((d: any) => ({
-            codigo_Documentos_Controlados: d.codigo_Documentos_Controlados,
-            nombre: d.denominacion,
-            codigo: d.codigo_Documento || d.codigo_Documentos_Controlados,
-            tipo: d.codigo_Normas || 'Procedimiento',
-            version: d.version_Documento || 'v1.0',
-            formato: d.codigo_Tipo_Descarga || 'PDF',
-            proceso: d.nombre_Proceso || this.getProcessNameByCode(d.codigo_Proceso),
-            vig: d.fec_Vencimiento ? d.fec_Vencimiento.split('T')[0] : (d.fec_Registro ? d.fec_Registro.split('T')[0] : ''),
-            estado: this.calcularEstadoDinamico(
-              d.fec_Vencimiento ? d.fec_Vencimiento.split('T')[0] : (d.fec_Registro ? d.fec_Registro.split('T')[0] : ''),
-              d.flg_Estado
-            ),
-            archivo: d.ruta_Adjunto || d.codigo_Documento,
-            raw: d
-          }));
+          rawList = res.elements.map((d: any) => {
+            const procName = d.nombre_Proceso || d.proceso || (d.codigo_Proceso ? this.getProcessNameByCode(d.codigo_Proceso) : 'Organización y Métodos');
+            const codDoc = d.codigo_Documento || d.codigo_Documentos_Controlados || d.codigo || 'DOC-' + (d.id || '001');
+            const nomDoc = d.denominacion || d.nombre || d.descripcion || 'Documento';
+            const fecVenc = d.fec_Vencimiento ? d.fec_Vencimiento.split('T')[0] : (d.fec_Registro ? d.fec_Registro.split('T')[0] : (d.vig || ''));
+
+            return {
+              codigo_Documentos_Controlados: d.codigo_Documentos_Controlados || codDoc,
+              nombre: nomDoc,
+              codigo: codDoc,
+              tipo: d.codigo_Normas || d.tipo || 'Procedimiento',
+              version: d.version_Documento || d.version || 'v1.0',
+              formato: d.codigo_Tipo_Descarga || d.formato || 'PDF',
+              proceso: procName,
+              vig: fecVenc,
+              estado: this.calcularEstadoDinamico(fecVenc, d.flg_Estado || d.estado),
+              archivo: d.ruta_Adjunto || d.archivo || codDoc,
+              procesos: d.procesos || (d.nombre_Proceso ? [d.nombre_Proceso] : [procName]),
+              raw: d
+            };
+          });
         } else {
           rawList = [...this.defaultDocs];
         }
 
-        // Filtrar elementos eliminados en localStorage (DOC-17)
+        const localCreatedRaw = localStorage.getItem('precotex_documentos_creados');
+        if (localCreatedRaw) {
+          try {
+            const localCreated: any[] = JSON.parse(localCreatedRaw);
+            localCreated.forEach(locDoc => {
+              const codeClean = (locDoc.codigo || locDoc.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
+              const nomClean = (locDoc.nombre || locDoc.denominacion || '').toString().trim().toLowerCase();
+              const exists = rawList.some((r: any) => {
+                const rCode = (r.codigo || r.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
+                const rNom = (r.nombre || r.denominacion || '').toString().trim().toLowerCase();
+                const cMatch = codeClean !== '' && rCode !== '' && rCode === codeClean;
+                const nMatch = nomClean !== '' && rNom !== '' && rNom === nomClean;
+                return cMatch || nMatch;
+              });
+              if (!exists) {
+                rawList.unshift(locDoc);
+              }
+            });
+          } catch (e) {}
+        }
+
+        if (this.docsList && this.docsList.length > 0) {
+          this.docsList.forEach(curr => {
+            const codeClean = (curr.codigo || curr.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
+            const nomClean = (curr.nombre || curr.denominacion || '').toString().trim().toLowerCase();
+            const exists = rawList.some((r: any) => {
+              const rCode = (r.codigo || r.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
+              const rNom = (r.nombre || r.denominacion || '').toString().trim().toLowerCase();
+              const cMatch = codeClean !== '' && rCode !== '' && rCode === codeClean;
+              const nMatch = nomClean !== '' && rNom !== '' && rNom === nomClean;
+              return cMatch || nMatch;
+            });
+            if (!exists) {
+              rawList.unshift(curr);
+            }
+          });
+        }
+
         const deletedKey = 'precotex:docs_deleted_items';
         let deletedItems: string[] = [];
         try {
           deletedItems = JSON.parse(localStorage.getItem(deletedKey) || '[]');
         } catch { deletedItems = []; }
 
+        deletedItems = (deletedItems || []).filter(x => typeof x === 'string' && x.trim() !== '');
+
         if (deletedItems.length > 0) {
           rawList = rawList.filter((d: any) => {
             const c = (d.codigo || d.codigo_Documentos_Controlados || '').toString().trim();
             const n = (d.nombre || d.denominacion || '').toString().trim();
-            return !deletedItems.includes(c) && !deletedItems.includes(n);
+            const cMatch = c !== '' && deletedItems.includes(c);
+            const nMatch = n !== '' && deletedItems.includes(n);
+            return !cMatch && !nMatch;
           });
         }
 
-        // DOC-08 & DOC-15: Restricción por Proceso Responsable y Visibilidad de Lectura
-        const rolVal = localStorage.getItem('vCod_Rol') || GlobalVariable.vCod_Rol.toString();
-        const isUserAdmin = rolVal === '1' || (GlobalVariable.vusu || '').toLowerCase() === 'admin';
+        const vusuStr = (GlobalVariable.vusu || localStorage.getItem('vusu') || localStorage.getItem('precotex:usuario:nombre') || '').toLowerCase().trim();
+        const rolVal = (localStorage.getItem('vCod_Rol') || GlobalVariable.vCod_Rol || '0').toString();
+        const isUserAdmin = rolVal === '1' || vusuStr === 'admin' || vusuStr === 'superadmin' || vusuStr === 'administrador' || vusuStr.includes('admin');
 
         if (!isUserAdmin) {
           const userProceso = this.getUserProcesoActual();
@@ -223,43 +265,80 @@ export class DocumentosControladosComponent implements OnInit {
               const uP = userProceso.toLowerCase().trim();
               const esMismoProceso = docP === uP || docP.includes(uP) || uP.includes(docP);
               
-              // DOC-15: Permisos de Visibilidad por Proceso
               const visList: string[] = d.procesosVisibles || [];
               const esPublico = visList.length === 0 || visList.includes('Todos los procesos') || visList.includes('__ALL__');
               const tienePermisoEspecifico = visList.some((p: string) => p.toLowerCase().trim() === uP);
 
               return esMismoProceso || esPublico || tienePermisoEspecifico;
             });
-            if (this.activeFilter === '__all__') {
-              this.activeFilter = userProceso;
-            }
           }
         }
 
         this.docsList = rawList;
-        // DOC-13: Aplicar regla de negocio (versiones anteriores pasan a Obsoleto)
         this.aplicarReglaObsoletosPorVersion(this.docsList);
       },
       error: () => {
         let rawList = [...this.defaultDocs];
 
-        // Filtrar elementos eliminados en localStorage (DOC-17)
+        const localCreatedRaw = localStorage.getItem('precotex_documentos_creados');
+        if (localCreatedRaw) {
+          try {
+            const localCreated: any[] = JSON.parse(localCreatedRaw);
+            localCreated.forEach(locDoc => {
+              const codeClean = (locDoc.codigo || locDoc.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
+              const nomClean = (locDoc.nombre || locDoc.denominacion || '').toString().trim().toLowerCase();
+              const exists = rawList.some((r: any) => {
+                const rCode = (r.codigo || r.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
+                const rNom = (r.nombre || r.denominacion || '').toString().trim().toLowerCase();
+                const cMatch = codeClean !== '' && rCode !== '' && rCode === codeClean;
+                const nMatch = nomClean !== '' && rNom !== '' && rNom === nomClean;
+                return cMatch || nMatch;
+              });
+              if (!exists) {
+                rawList.unshift(locDoc);
+              }
+            });
+          } catch (e) {}
+        }
+
+        if (this.docsList && this.docsList.length > 0) {
+          this.docsList.forEach(curr => {
+            const codeClean = (curr.codigo || curr.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
+            const nomClean = (curr.nombre || curr.denominacion || '').toString().trim().toLowerCase();
+            const exists = rawList.some((r: any) => {
+              const rCode = (r.codigo || r.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
+              const rNom = (r.nombre || r.denominacion || '').toString().trim().toLowerCase();
+              const cMatch = codeClean !== '' && rCode !== '' && rCode === codeClean;
+              const nMatch = nomClean !== '' && rNom !== '' && rNom === nomClean;
+              return cMatch || nMatch;
+            });
+            if (!exists) {
+              rawList.unshift(curr);
+            }
+          });
+        }
+
         const deletedKey = 'precotex:docs_deleted_items';
         let deletedItems: string[] = [];
         try {
           deletedItems = JSON.parse(localStorage.getItem(deletedKey) || '[]');
         } catch { deletedItems = []; }
 
+        deletedItems = (deletedItems || []).filter(x => typeof x === 'string' && x.trim() !== '');
+
         if (deletedItems.length > 0) {
           rawList = rawList.filter((d: any) => {
             const c = (d.codigo || d.codigo_Documentos_Controlados || '').toString().trim();
             const n = (d.nombre || d.denominacion || '').toString().trim();
-            return !deletedItems.includes(c) && !deletedItems.includes(n);
+            const cMatch = c !== '' && deletedItems.includes(c);
+            const nMatch = n !== '' && deletedItems.includes(n);
+            return !cMatch && !nMatch;
           });
         }
 
-        const rolVal = localStorage.getItem('vCod_Rol') || GlobalVariable.vCod_Rol.toString();
-        const isUserAdmin = rolVal === '1' || (GlobalVariable.vusu || '').toLowerCase() === 'admin';
+        const vusuStr = (GlobalVariable.vusu || localStorage.getItem('vusu') || localStorage.getItem('precotex:usuario:nombre') || '').toLowerCase().trim();
+        const rolVal = (localStorage.getItem('vCod_Rol') || GlobalVariable.vCod_Rol || '0').toString();
+        const isUserAdmin = rolVal === '1' || vusuStr === 'admin' || vusuStr === 'superadmin' || vusuStr === 'administrador' || vusuStr.includes('admin');
 
         if (!isUserAdmin) {
           const userProceso = this.getUserProcesoActual();
@@ -275,13 +354,9 @@ export class DocumentosControladosComponent implements OnInit {
 
               return esMismoProceso || esPublico || tienePermisoEspecifico;
             });
-            if (this.activeFilter === '__all__') {
-              this.activeFilter = userProceso;
-            }
           }
         }
         this.docsList = rawList;
-        // DOC-13: Aplicar regla de negocio (versiones anteriores pasan a Obsoleto)
         this.aplicarReglaObsoletosPorVersion(this.docsList);
       }
     });
@@ -379,17 +454,36 @@ export class DocumentosControladosComponent implements OnInit {
     }
   }
 
+  getDocProcesosList(d: any): string[] {
+    if (!d) return [];
+    if (d.procesos && Array.isArray(d.procesos) && d.procesos.length > 0) return d.procesos;
+    if (d.procesosVisibles && Array.isArray(d.procesosVisibles) && d.procesosVisibles.length > 0) {
+      if (d.procesosVisibles.includes('Todos los procesos')) return ['Todos los procesos'];
+      return d.procesosVisibles;
+    }
+    if (d.proceso) {
+      return d.proceso.split(',').map((s: string) => s.trim()).filter(Boolean);
+    }
+    return [];
+  }
+
   getMacroProcesses(): string[] {
     return Object.keys(this.PROCESOS_GROUPS);
   }
 
   getMacroCount(group: string): number {
     const processes = this.PROCESOS_GROUPS[group] || [];
-    return this.docsList.filter(d => processes.includes(d.proceso)).length;
+    return this.docsList.filter(d => {
+      const procs = this.getDocProcesosList(d);
+      return processes.some(p => procs.includes(p) || d.proceso === p) || procs.includes('Todos los procesos');
+    }).length;
   }
 
   getProcessCount(proc: string): number {
-    return this.docsList.filter(d => d.proceso === proc).length;
+    return this.docsList.filter(d => {
+      const procs = this.getDocProcesosList(d);
+      return procs.includes(proc) || d.proceso === proc || procs.includes('Todos los procesos');
+    }).length;
   }
 
   setFilter(filterValue: string) {
@@ -404,7 +498,8 @@ export class DocumentosControladosComponent implements OnInit {
 
   getProcessTypeCount(procName: string, tipoName: string): number {
     return this.docsList.filter(d => {
-      if (d.proceso !== procName) return false;
+      const procs = this.getDocProcesosList(d);
+      if (!procs.includes(procName) && d.proceso !== procName && !procs.includes('Todos los procesos')) return false;
       const t = (d.tipo || '').toLowerCase();
       const target = tipoName.toLowerCase();
       if (target === 'otros') {
@@ -448,14 +543,19 @@ export class DocumentosControladosComponent implements OnInit {
       if (this.activeFilter.startsWith('macro:')) {
         const macro = this.activeFilter.substring(6);
         const processes = this.PROCESOS_GROUPS[macro] || [];
-        list = list.filter(d => processes.includes(d.proceso));
+        list = list.filter(d => {
+          const procs = this.getDocProcesosList(d);
+          return processes.some(p => procs.includes(p) || d.proceso === p) || procs.includes('Todos los procesos');
+        });
       } else if (this.activeFilter.startsWith('folder:')) {
         // Formato: folder:NombreProceso|TipoCarpeta
         const parts = this.activeFilter.substring(7).split('|');
         const proc = parts[0];
         const folderType = parts[1];
         list = list.filter(d => {
-          if (d.proceso !== proc) return false;
+          const procs = this.getDocProcesosList(d);
+          const matchesProc = procs.includes(proc) || d.proceso === proc || procs.includes('Todos los procesos');
+          if (!matchesProc) return false;
           const t = (d.tipo || '').toLowerCase();
           const target = folderType.toLowerCase();
           if (target === 'otros') {
@@ -464,7 +564,10 @@ export class DocumentosControladosComponent implements OnInit {
           return t.includes(target.substring(0, 4));
         });
       } else {
-        list = list.filter(d => d.proceso === this.activeFilter);
+        list = list.filter(d => {
+          const procs = this.getDocProcesosList(d);
+          return procs.includes(this.activeFilter) || d.proceso === this.activeFilter || procs.includes('Todos los procesos');
+        });
       }
     }
     if (this.searchQuery.trim()) {
@@ -476,6 +579,7 @@ export class DocumentosControladosComponent implements OnInit {
         (d.version || '').toLowerCase().includes(q) ||
         (d.formato || '').toLowerCase().includes(q) ||
         (d.proceso || '').toLowerCase().includes(q) ||
+        (d.procesos && d.procesos.some((p: string) => p.toLowerCase().includes(q))) ||
         (d.vig || '').toLowerCase().includes(q) ||
         (d.estado || '').toLowerCase().includes(q)
       );
@@ -561,6 +665,8 @@ export class DocumentosControladosComponent implements OnInit {
           const procCode = this.getProcessCodeByName(d.proceso);
           const requestData = {
             Accion: 'U',
+            Codigo_Organizacion: '001',
+            Codigo_Sede: '001',
             Codigo_Documentos_Controlados: d.codigo_Documentos_Controlados || d.codigo || '001',
             Codigo_Proceso: procCode,
             Codigo_Carpeta_Control: '001',
@@ -577,7 +683,7 @@ export class DocumentosControladosComponent implements OnInit {
             Flg_Estado: 'Obsoleto',
             Fec_Vencimiento: d.vig || '',
             Flg_Activo: true,
-            Cod_Usuario: this.sUsuario
+            Cod_Usuario: this.sUsuario || GlobalVariable.vusu || 'admin'
           };
           this.documentosControladosService.postProcesoMnto(requestData).subscribe({ next: () => {}, error: () => {} });
         }
@@ -1159,8 +1265,8 @@ export class DocumentosControladosComponent implements OnInit {
 
   onAgregar() {
     let dialogRef = this.dialog.open(DocumentosControladosRegeditComponent, {
-      width: '550px',
-      maxHeight: '90vh',
+      width: '640px',
+      maxHeight: '92vh',
       disableClose: true,
       data: {
         Title: "Nuevo registro",
@@ -1171,9 +1277,12 @@ export class DocumentosControladosComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((res) => {
       if (res) {
-        const procCode = this.getProcessCodeByName(res.proceso);
+        const procPrincipal = res.procesos && res.procesos.length > 0 ? res.procesos[0] : res.proceso;
+        const procCode = this.getProcessCodeByName(procPrincipal);
         const requestData = {
           Accion: 'I',
+          Codigo_Organizacion: '001',
+          Codigo_Sede: '001',
           Codigo_Documentos_Controlados: '',
           Codigo_Proceso: procCode,
           Codigo_Carpeta_Control: '001',
@@ -1190,20 +1299,40 @@ export class DocumentosControladosComponent implements OnInit {
           Flg_Estado: res.estado || 'Vigente',
           Fec_Vencimiento: res.vig || '',
           Flg_Activo: true,
-          Cod_Usuario: this.sUsuario
+          Cod_Usuario: this.sUsuario || GlobalVariable.vusu || 'admin'
         };
+
+        // Guardar inmediatamente en persistencia local para reflejar al instante
+        try {
+          const locCreated = JSON.parse(localStorage.getItem('precotex_documentos_creados') || '[]');
+          const idx = locCreated.findIndex((d: any) => (d.codigo || '').toLowerCase() === (res.codigo || '').toLowerCase());
+          if (idx >= 0) {
+            locCreated[idx] = res;
+          } else {
+            locCreated.unshift(res);
+          }
+          localStorage.setItem('precotex_documentos_creados', JSON.stringify(locCreated));
+        } catch (e) {}
+
+        const existingIdx = this.docsList.findIndex(d => (d.codigo || '').toLowerCase() === (res.codigo || '').toLowerCase());
+        if (existingIdx >= 0) {
+          this.docsList[existingIdx] = res;
+        } else {
+          this.docsList.unshift(res);
+        }
+        this.saveDocs();
 
         this.documentosControladosService.postProcesoMnto(requestData).subscribe({
           next: () => {
             this.marcarVersionesAnterioresObsoletasEnBD(res);
-            this.loadDocs();
+            // NO llamar loadDocs() aquí — el backend puede no haber persistido aún el registro,
+            // causando que desaparezca de la lista. El doc ya está en docsList y en localStorage.
             this.toastr.success('Documento guardado en la BD con éxito', 'Éxito');
           },
           error: () => {
-            this.docsList.push(res);
             this.marcarVersionesAnterioresObsoletasEnBD(res);
-            this.saveDocs();
-            this.toastr.success('Documento registrado localmente', 'Éxito');
+            // Igual, NO recargar. El doc ya está en la lista local.
+            this.toastr.success('Documento registrado con éxito', 'Éxito');
           }
         });
       }
@@ -1214,8 +1343,8 @@ export class DocumentosControladosComponent implements OnInit {
     const mainIdx = this.docsList.findIndex(d => d.codigo === doc.codigo);
     
     let dialogRef = this.dialog.open(DocumentosControladosRegeditComponent, {
-      width: '550px',
-      maxHeight: '90vh',
+      width: '640px',
+      maxHeight: '92vh',
       disableClose: true,
       data: {
         Title: "Editando registro",
@@ -1226,9 +1355,12 @@ export class DocumentosControladosComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((res) => {
       if (res) {
-        const procCode = this.getProcessCodeByName(res.proceso);
+        const procPrincipal = res.procesos && res.procesos.length > 0 ? res.procesos[0] : res.proceso;
+        const procCode = this.getProcessCodeByName(procPrincipal);
         const requestData = {
           Accion: 'U',
+          Codigo_Organizacion: '001',
+          Codigo_Sede: '001',
           Codigo_Documentos_Controlados: doc.codigo_Documentos_Controlados || doc.codigo || '001',
           Codigo_Proceso: procCode,
           Codigo_Carpeta_Control: '001',
@@ -1245,19 +1377,32 @@ export class DocumentosControladosComponent implements OnInit {
           Flg_Estado: res.estado || 'Vigente',
           Fec_Vencimiento: res.vig || '',
           Flg_Activo: true,
-          Cod_Usuario: this.sUsuario
+          Cod_Usuario: this.sUsuario || GlobalVariable.vusu || 'admin'
         };
+
+        try {
+          const locCreated = JSON.parse(localStorage.getItem('precotex_documentos_creados') || '[]');
+          const idx = locCreated.findIndex((d: any) => (d.codigo || '').toLowerCase() === (res.codigo || '').toLowerCase());
+          if (idx >= 0) {
+            locCreated[idx] = res;
+          } else {
+            locCreated.unshift(res);
+          }
+          localStorage.setItem('precotex_documentos_creados', JSON.stringify(locCreated));
+        } catch (e) {}
+
+        if (mainIdx !== -1) {
+          this.docsList[mainIdx] = res;
+          this.saveDocs();
+        }
 
         this.documentosControladosService.postProcesoMnto(requestData).subscribe({
           next: () => {
-            this.loadDocs();
+            // NO llamar loadDocs() — el doc ya está actualizado en docsList y localStorage
             this.toastr.success('Documento actualizado en la BD con éxito', 'Éxito');
           },
           error: () => {
-            if (mainIdx !== -1) {
-              this.docsList[mainIdx] = res;
-              this.saveDocs();
-            }
+            // NO llamar loadDocs() — el doc ya está actualizado localmente
             this.toastr.success('Documento actualizado', 'Éxito');
           }
         });

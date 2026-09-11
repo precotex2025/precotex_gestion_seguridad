@@ -25,7 +25,19 @@ export class MedicionRegeditComponent implements OnInit {
   nombreArchivoEvidencia: string = '';
   archivoEvidenciaBase64: string = '';
   
-  sedesOptions = ['Huachipa 1', 'Huachipa 2', 'Independencia', 'Santa Cecilia', 'Sede Central — Lima', 'Sede Ate', 'Todas'];
+  // Sedes requeridas por la organización Precotex
+  sedesOptions: string[] = [
+    'Santa Maria',
+    'Santa Cecilia',
+    'Santa Rosa',
+    'Huachipa 1',
+    'Huachipa 2',
+    'Huachipa 3',
+    'Independencia 1',
+    'Independencia 2',
+    'Todas'
+  ];
+
   semaforosOptions = ['En meta', 'En riesgo', 'Crítico'];
 
   procesosGroups: { [key: string]: string[] } = {};
@@ -40,6 +52,11 @@ export class MedicionRegeditComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Limpiar título de posibles caracteres "::." y ".::"
+    if (this.data && this.data.Title) {
+      this.data.Title = this.data.Title.replace(/[.:]+/g, ' ').trim();
+    }
+
     this.procesosService.getProcesosAgrupados().subscribe({
       next: (groups: any) => {
         this.procesosGroups = groups;
@@ -51,8 +68,11 @@ export class MedicionRegeditComponent implements OnInit {
       idIndicador: [null],
       codigoIndicador: [''],
       indicador: ['', Validators.required],
+      tipo: ['Eficacia'],
       sede: ['Todas', Validators.required],
       proceso: ['SSOMA', Validators.required],
+      norma: ['ISO 9001:2015'],
+      frecuencia: ['Mensual'],
       meta: ['', Validators.required],
       valor: ['', Validators.required],
       periodo: ['', Validators.required],
@@ -72,6 +92,11 @@ export class MedicionRegeditComponent implements OnInit {
 
     this.formulario.get('indicador')?.valueChanges.subscribe(val => {
       this.buscarYAutocompletar(val);
+    });
+
+    // Auto-cálculo reactivo del semáforo al escribir el valor obtenido
+    this.formulario.get('valor')?.valueChanges.subscribe(val => {
+      this.autoCalcularSemaforo(val);
     });
   }
 
@@ -167,20 +192,68 @@ export class MedicionRegeditComponent implements OnInit {
     if (found) {
       this.indicadorSeleccionado = found;
       // IND-07 & IND-11: Jalar todas las informaciones registradas del indicador
-      const sedeInvolucrada = found.sede || 'Todas';
-      if (!this.sedesOptions.includes(sedeInvolucrada)) {
-        this.sedesOptions.unshift(sedeInvolucrada);
+      let sedeToSet = 'Todas';
+      if (found.sede) {
+        const matched = this.sedesOptions.find(s => s.toLowerCase() === found.sede.trim().toLowerCase());
+        if (matched) {
+          sedeToSet = matched;
+        } else if (found.sede.trim() !== '') {
+          // Si es una sede válida no catalogada previamente, incluirla
+          if (!this.sedesOptions.includes(found.sede.trim())) {
+            this.sedesOptions.splice(this.sedesOptions.length - 1, 0, found.sede.trim());
+          }
+          sedeToSet = found.sede.trim();
+        }
       }
 
       this.formulario.patchValue({
         idIndicador: found.id || found.id_Indicador || null,
         codigoIndicador: found.codigo,
         indicador: found.nombre,
-        sede: sedeInvolucrada,
+        tipo: found.tipo || 'Eficacia',
+        sede: sedeToSet,
         proceso: found.proceso || 'SSOMA',
+        norma: found.norma || 'ISO 9001:2015',
+        frecuencia: found.frecuencia || 'Mensual',
         meta: found.meta ? (String(found.meta).includes('%') ? found.meta : found.meta + '%') : '>=85%'
       }, { emitEvent: false });
+
+      // Si ya hay un valor ingresado, calcular semáforo
+      const currentVal = this.formulario.get('valor')?.value;
+      if (currentVal !== null && currentVal !== undefined && currentVal !== '') {
+        this.autoCalcularSemaforo(currentVal);
+      }
     }
+  }
+
+  autoCalcularSemaforo(valStr: any): void {
+    if (valStr === null || valStr === undefined || valStr === '') return;
+    const numVal = parseFloat(String(valStr).replace(/[^0-9.]/g, ''));
+    if (isNaN(numVal)) return;
+
+    const metaRaw = String(this.formulario.get('meta')?.value || '');
+    const metaNum = parseFloat(metaRaw.replace(/[^0-9.]/g, '')) || 85;
+    const isMenorMejor = metaRaw.includes('<') || metaRaw.toLowerCase().includes('menor');
+
+    let res = 'Crítico';
+    if (isMenorMejor) {
+      if (numVal <= metaNum) {
+        res = 'En meta';
+      } else if (numVal <= metaNum * 1.2) {
+        res = 'En riesgo';
+      } else {
+        res = 'Crítico';
+      }
+    } else {
+      if (numVal >= metaNum) {
+        res = 'En meta';
+      } else if (numVal >= metaNum * 0.8) {
+        res = 'En riesgo';
+      } else {
+        res = 'Crítico';
+      }
+    }
+    this.formulario.get('semaforo')?.setValue(res, { emitEvent: false });
   }
 
   getProcesosKeys() {
@@ -240,10 +313,13 @@ export class MedicionRegeditComponent implements OnInit {
     }
     const val = { ...this.formulario.value };
 
-    // Asegurar que codigoIndicador y idIndicador nunca sean NULL ni vacíos
-    if (!val.codigoIndicador && this.indicadorSeleccionado) {
-      val.codigoIndicador = this.indicadorSeleccionado.codigo;
-      val.idIndicador = this.indicadorSeleccionado.id || this.indicadorSeleccionado.id_Indicador;
+    // Asegurar que codigoIndicador, idIndicador, tipo, norma y frecuencia nunca sean NULL ni vacíos
+    if (this.indicadorSeleccionado) {
+      val.codigoIndicador = this.indicadorSeleccionado.codigo || val.codigoIndicador;
+      val.idIndicador = this.indicadorSeleccionado.id || this.indicadorSeleccionado.id_Indicador || val.idIndicador;
+      val.tipo = this.indicadorSeleccionado.tipo || val.tipo || 'Eficacia';
+      val.norma = this.indicadorSeleccionado.norma || val.norma || 'ISO 9001:2015';
+      val.frecuencia = this.indicadorSeleccionado.frecuencia || val.frecuencia || 'Mensual';
     }
 
     if (!val.codigoIndicador) {
@@ -254,9 +330,9 @@ export class MedicionRegeditComponent implements OnInit {
       if (found) {
         val.codigoIndicador = found.codigo;
         val.idIndicador = found.id || found.id_Indicador;
-        val.tipo = found.tipo;
-        val.norma = found.norma;
-        val.frecuencia = found.frecuencia;
+        val.tipo = found.tipo || 'Eficacia';
+        val.norma = found.norma || 'ISO 9001:2015';
+        val.frecuencia = found.frecuencia || 'Mensual';
       } else {
         val.codigoIndicador = 'IND-' + new Date().getFullYear() + '-001';
       }

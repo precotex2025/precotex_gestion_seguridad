@@ -23,12 +23,12 @@
       </button>
 
       <!-- Ghost Buttons -->
-      <button type="button" class="btn-ghost-action" (click)="onDescargarPlantilla5W2H()" title="Descargar Plantilla Excel 5W-2H (POR-02)">
+      <button type="button" class="btn-ghost-action" (click)="onDescargarPlantilla5W2H()" title="Descargar Plantilla Oficial Excel 5W-2H (FOR-IMC-OYM-001)">
         <mat-icon style="color: #38bdf8;">table_view</mat-icon>
         <span>Plantilla 5W-2H</span>
       </button>
 
-      <button type="button" class="btn-ghost-action" (click)="onDescargarPlantillaACR()" title="Descargar Plantilla Excel ACR / Causa Raíz (PDM-14)">
+      <button type="button" class="btn-ghost-action" (click)="onDescargarPlantillaACR()" title="Descargar Plantilla Oficial Excel ACR (FOR-IMC-OYM-001)">
         <mat-icon style="color: #fb923c;">account_tree</mat-icon>
         <span>Plantilla ACR</span>
       </button>
@@ -53,8 +53,15 @@
   <!-- PANEL DRAWER: ARCHIVOS SUBIDOS -->
   <div *ngIf="mostrarArchivosSubidos" class="archivos-subidos-panel sn-animate-in">
     <div class="archivos-header">
-      <h3 class="archivos-title">Archivos subidos ({{ archivosAdjuntosList.length }})</h3>
-      <button type="button" class="btn-ghost-sm" (click)="onToggleArchivosSubidos()">Cerrar</button>
+      <div class="archivos-title-wrap">
+        <mat-icon class="archivos-header-icon">folder_open</mat-icon>
+        <h3 class="archivos-title">Archivos subidos</h3>
+        <span class="archivos-count-pill">{{ archivosAdjuntosList.length }} archivos</span>
+      </div>
+      <button type="button" class="btn-ghost-sm" (click)="onToggleArchivosSubidos()">
+        <mat-icon style="font-size: 16px; width: 16px; height: 16px;">close</mat-icon>
+        <span>Cerrar</span>
+      </button>
     </div>
     <div class="archivos-body">
       <div *ngIf="!archivosAdjuntosList.length" class="empty-archivos">
@@ -62,14 +69,14 @@
       </div>
       <div *ngFor="let item of archivosAdjuntosList" class="archivo-item">
         <div class="archivo-icon-box">
-          <span class="material-icons">description</span>
+          <mat-icon>description</mat-icon>
         </div>
         <div class="archivo-info">
           <div class="archivo-name">{{ item.archivo }}</div>
           <div class="archivo-sub">{{ item.titulo }} · {{ item.herramienta }} · {{ item.sede }}</div>
         </div>
-        <button type="button" class="btn-descargar-archivo" (click)="onDescargarArchivo(item)" title="Descargar archivo">
-          <span class="material-icons">download</span>
+        <button type="button" class="btn-descargar-archivo" (click)="onDescargarArchivo(item)" title="Descargar archivo adjunto">
+          <mat-icon>download</mat-icon>
         </button>
       </div>
     </div>

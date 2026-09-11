@@ -6,13 +6,13 @@ export const GlobalVariable = {
 
   //----------------------------------------------LOCAL-----------------------------------------------
 
-  baseUrl: "http://192.168.1.36/ws_android_dev", //LOCAL <- FRONT
+  //baseUrl: "http://192.168.1.36/ws_android_dev", //LOCAL <- FRONT
 
-  baseUrlBackEnd: "https://localhost:7093/api/", //LOCAL <- BACK (SEGURIDAD)
+  //baseUrlBackEnd: "https://localhost:7093/api/", //LOCAL <- BACK (SEGURIDAD)
 
   //--------------------------------------------PRODUCCION--------------------------------------------
 
-  //baseUrlBackEnd: "http://192.168.1.36:5252/api/", // PRODUCCION SEGURIDAD <- BACK
+  baseUrlBackEnd: "http://192.168.1.36:5252/api/", // PRODUCCION SEGURIDAD <- BACK
 
   num_planta: 0,
   cod_ordtra: '',

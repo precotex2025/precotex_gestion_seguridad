@@ -598,84 +598,173 @@
   </ng-container>
 
   <!-- ===================================================================
-       SLIDE-OVER DRAWER FOR NO CONFORMIDAD DETAILS (GLASSMORPHISM)
+       MODAL DIALOG POPUP CENTRADO PARA DETALLE DE ACCIÓN CORRECTIVA
        =================================================================== -->
-  <div class="slide-over-backdrop" *ngIf="drawerOpen" (click)="closeNcDrawer()"></div>
-
-  <div class="slide-over-drawer" [class.drawer-active]="drawerOpen">
-    <div class="drawer-header">
-      <div class="drawer-title-box">
-        <div class="nc-avatar-drawer">
-          <mat-icon>report_problem</mat-icon>
-        </div>
-        <div>
-          <span class="drawer-code-badge">{{ selectedNc?.nc }}</span>
-          <h2 class="drawer-doc-name">{{ selectedNc?.accion }}</h2>
-        </div>
-      </div>
-      <button type="button" class="drawer-close-btn" (click)="closeNcDrawer()">
-        <mat-icon>close</mat-icon>
-      </button>
-    </div>
-
-    <div class="drawer-body" *ngIf="selectedNc">
+  <div class="nc-modal-backdrop" *ngIf="drawerOpen" (click)="closeNcDrawer()">
+    
+    <div class="nc-modal-dialog" (click)="$event.stopPropagation()">
       
-      <!-- Document Metadata Cards -->
-      <div class="doc-meta-grid">
-        
-        <div class="meta-card">
-          <span class="meta-label">Proceso Asignado</span>
-          <span class="meta-value-text">{{ selectedNc.proceso }}</span>
+      <!-- Top Accent Color Bar based on Status -->
+      <div class="drawer-top-accent" [ngClass]="{
+        'accent-abierta': (selectedNc?.estado || '').toLowerCase().includes('abiert') || (selectedNc?.estado || '').toLowerCase().includes('pendient'),
+        'accent-proceso': (selectedNc?.estado || '').toLowerCase().includes('proceso') || (selectedNc?.estado || '').toLowerCase().includes('analisis'),
+        'accent-cerrada': (selectedNc?.estado || '').toLowerCase().includes('cerrad') || (selectedNc?.estado || '').toLowerCase().includes('complet')
+      }"></div>
+
+      <!-- Header -->
+      <div class="drawer-header">
+        <div class="drawer-title-box">
+          <div class="nc-avatar-drawer" [ngClass]="{
+            'avatar-amber': (selectedNc?.estado || '').toLowerCase().includes('abiert') || (selectedNc?.estado || '').toLowerCase().includes('pendient'),
+            'avatar-blue': (selectedNc?.estado || '').toLowerCase().includes('proceso') || (selectedNc?.estado || '').toLowerCase().includes('analisis'),
+            'avatar-green': (selectedNc?.estado || '').toLowerCase().includes('cerrad') || (selectedNc?.estado || '').toLowerCase().includes('complet')
+          }">
+            <mat-icon>{{ (selectedNc?.estado || '').toLowerCase().includes('cerrad') ? 'check_circle' : 'assignment_late' }}</mat-icon>
+          </div>
+          <div class="drawer-header-text">
+            <div class="drawer-code-row">
+              <span class="drawer-code-badge">{{ selectedNc?.nc }}</span>
+              <span class="drawer-type-pill">{{ selectedNc?.tipo || 'Interna' }}</span>
+            </div>
+            <h2 class="drawer-doc-name" [title]="selectedNc?.accion">{{ selectedNc?.accion }}</h2>
+          </div>
+        </div>
+        <button type="button" class="drawer-close-btn" (click)="closeNcDrawer()" title="Cerrar modal">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="drawer-body" *ngIf="selectedNc">
+
+        <!-- Status Progress Stepper -->
+        <div class="drawer-stepper-card">
+          <div class="stepper-header">
+            <span class="stepper-label">
+              <mat-icon class="stepper-icon">timeline</mat-icon>
+              Flujo de Estado
+            </span>
+            <span class="soft-badge" [ngClass]="{
+              'soft-badge-revision': (selectedNc.estado || '').toLowerCase().includes('abiert') || (selectedNc.estado || '').toLowerCase().includes('pendient'),
+              'soft-badge-blue': (selectedNc.estado || '').toLowerCase().includes('proceso') || (selectedNc.estado || '').toLowerCase().includes('analisis'),
+              'soft-badge-vigente': (selectedNc.estado || '').toLowerCase().includes('cerrad') || (selectedNc.estado || '').toLowerCase().includes('complet')
+            }">
+              <span class="glowing-dot"></span>
+              <span>{{ selectedNc.estado || 'Abierta' }}</span>
+            </span>
+          </div>
+
+          <div class="stepper-track">
+            <div class="step-node" [class.step-active]="true" [class.step-done]="(selectedNc.estado || '').toLowerCase().includes('proceso') || (selectedNc.estado || '').toLowerCase().includes('cerrad')">
+              <div class="step-circle"><mat-icon *ngIf="(selectedNc.estado || '').toLowerCase().includes('proceso') || (selectedNc.estado || '').toLowerCase().includes('cerrad')">check</mat-icon><span *ngIf="!((selectedNc.estado || '').toLowerCase().includes('proceso') || (selectedNc.estado || '').toLowerCase().includes('cerrad'))">1</span></div>
+              <span class="step-text">Abierta</span>
+            </div>
+            <div class="step-line" [class.line-active]="(selectedNc.estado || '').toLowerCase().includes('proceso') || (selectedNc.estado || '').toLowerCase().includes('cerrad')"></div>
+            <div class="step-node" [class.step-active]="(selectedNc.estado || '').toLowerCase().includes('proceso')" [class.step-done]="(selectedNc.estado || '').toLowerCase().includes('cerrad')">
+              <div class="step-circle"><mat-icon *ngIf="(selectedNc.estado || '').toLowerCase().includes('cerrad')">check</mat-icon><span *ngIf="!(selectedNc.estado || '').toLowerCase().includes('cerrad')">2</span></div>
+              <span class="step-text">En Proceso</span>
+            </div>
+            <div class="step-line" [class.line-active]="(selectedNc.estado || '').toLowerCase().includes('cerrad')"></div>
+            <div class="step-node" [class.step-active]="(selectedNc.estado || '').toLowerCase().includes('cerrad')" [class.step-done]="(selectedNc.estado || '').toLowerCase().includes('cerrad')">
+              <div class="step-circle"><mat-icon *ngIf="(selectedNc.estado || '').toLowerCase().includes('cerrad')">check</mat-icon><span *ngIf="!(selectedNc.estado || '').toLowerCase().includes('cerrad')">3</span></div>
+              <span class="step-text">Cerrada</span>
+            </div>
+          </div>
+
+          <!-- Quick State Switcher -->
+          <div class="stepper-actions-row">
+            <button type="button" class="btn-step-move btn-step-amber" *ngIf="!(selectedNc.estado || '').toLowerCase().includes('abiert')" (click)="onMoverEstadoDesdeDrawer('Abierta')">
+              <mat-icon>undo</mat-icon> Reabrir
+            </button>
+            <button type="button" class="btn-step-move btn-step-blue" *ngIf="!(selectedNc.estado || '').toLowerCase().includes('proceso')" (click)="onMoverEstadoDesdeDrawer('En proceso')">
+              <mat-icon>trending_up</mat-icon> Pasar a En Proceso
+            </button>
+            <button type="button" class="btn-step-move btn-step-green" *ngIf="!(selectedNc.estado || '').toLowerCase().includes('cerrad')" (click)="onMoverEstadoDesdeDrawer('Cerrada')">
+              <mat-icon>check_circle</mat-icon> Marcar como Cerrada
+            </button>
+          </div>
         </div>
 
-        <div class="meta-card">
-          <span class="meta-label">Tipo de NC</span>
-          <span class="meta-value-text">{{ selectedNc.tipo }}</span>
+        <!-- Document Metadata Cards Grid -->
+        <div class="doc-meta-grid">
+          
+          <div class="meta-card">
+            <div class="meta-card-header">
+              <mat-icon class="meta-card-icon text-indigo">apartment</mat-icon>
+              <span class="meta-label">Proceso Asignado</span>
+            </div>
+            <span class="meta-value-text">{{ selectedNc.proceso || 'General' }}</span>
+          </div>
+
+          <div class="meta-card">
+            <div class="meta-card-header">
+              <mat-icon class="meta-card-icon text-purple">category</mat-icon>
+              <span class="meta-label">Tipo de NC</span>
+            </div>
+            <span class="meta-value-text">{{ selectedNc.tipo || 'Interna' }}</span>
+          </div>
+
+          <div class="meta-card">
+            <div class="meta-card-header">
+              <mat-icon class="meta-card-icon text-blue">person</mat-icon>
+              <span class="meta-label">Responsable</span>
+            </div>
+            <div class="user-inline-meta">
+              <div class="avatar-circle-sm">{{ initials(selectedNc.responsable) }}</div>
+              <span class="meta-value-text">{{ selectedNc.responsable || 'Sin asignar' }}</span>
+            </div>
+          </div>
+
+          <div class="meta-card" *ngIf="selectedNc.codigoAuditoria">
+            <div class="meta-card-header">
+              <mat-icon class="meta-card-icon text-amber">verified_user</mat-icon>
+              <span class="meta-label">Auditoría Vinculada</span>
+            </div>
+            <span class="meta-value-text font-mono text-purple font-bold">{{ selectedNc.codigoAuditoria }}</span>
+          </div>
+
+          <div class="meta-card">
+            <div class="meta-card-header">
+              <mat-icon class="meta-card-icon text-teal">calendar_today</mat-icon>
+              <span class="meta-label">Fecha de Inicio</span>
+            </div>
+            <span class="meta-value-text font-mono">{{ formatFechaDMY(selectedNc.inicio) }}</span>
+          </div>
+
+          <div class="meta-card">
+            <div class="meta-card-header">
+              <mat-icon class="meta-card-icon text-yellow">event_available</mat-icon>
+              <span class="meta-label">Fecha Límite</span>
+            </div>
+            <span class="meta-value-text font-mono font-bold" [ngClass]="isDateExpired(selectedNc.limite) ? 'text-red' : 'text-yellow'">
+              {{ formatFechaDMY(selectedNc.limite) }}
+            </span>
+          </div>
+
         </div>
 
-        <div class="meta-card">
-          <span class="meta-label">Responsable</span>
-          <span class="meta-value-text">{{ selectedNc.responsable }}</span>
+        <!-- Description & Causa Raiz Box -->
+        <div class="drawer-description-box">
+          <div class="desc-box-header">
+            <mat-icon class="desc-header-icon">rule</mat-icon>
+            <h4 class="desc-title">Descripción y Análisis de Causa Raíz</h4>
+          </div>
+          <p class="desc-text">{{ selectedNc.desc || 'No se registró una descripción detallada para esta acción correctiva.' }}</p>
         </div>
 
-        <div class="meta-card">
-          <span class="meta-label">Estado de Ejecución</span>
-          <span class="soft-badge" [ngClass]="getEstadoClass(selectedNc.estado) === 'completada' ? 'soft-badge-vigente' : 'soft-badge-revision'">
-            <span class="glowing-dot"></span>
-            <span>{{ selectedNc.estado || 'Pendiente' }}</span>
-          </span>
-        </div>
+        <!-- Primary Action Buttons -->
+        <div class="drawer-footer-actions">
+          <button type="button" class="btn-drawer-action btn-drawer-edit" (click)="onEditarDesdeDrawer()">
+            <mat-icon>edit</mat-icon>
+            <span>Editar Acción</span>
+          </button>
 
-        <div class="meta-card">
-          <span class="meta-label">Fecha de Inicio</span>
-          <span class="meta-value-text font-mono">{{ selectedNc.inicio || '—' }}</span>
-        </div>
-
-        <div class="meta-card">
-          <span class="meta-label">Fecha Límite</span>
-          <span class="meta-value-text font-mono text-yellow">{{ selectedNc.limite || '—' }}</span>
+          <button type="button" class="btn-drawer-action btn-drawer-download" (click)="onDescargarAccion(selectedNc)">
+            <mat-icon>cloud_download</mat-icon>
+            <span>Descargar Ficha (PDF / Word / Img)</span>
+          </button>
         </div>
 
       </div>
-
-      <!-- Description Box -->
-      <div class="drawer-description-box">
-        <h4 class="desc-title">Descripción Detallada de la No Conformidad</h4>
-        <p class="desc-text">{{ selectedNc.desc || 'No se registró una descripción adicional para esta acción correctiva.' }}</p>
-      </div>
-
-      <!-- Audit Reference -->
-      <div class="drawer-description-box" *ngIf="selectedNc.codigoAuditoria">
-        <h4 class="desc-title">Código de Auditoría Asociada</h4>
-        <span class="font-mono text-purple font-bold">{{ selectedNc.codigoAuditoria }}</span>
-      </div>
-
-      <!-- Drawer Download Action -->
-      <button type="button" class="btn-primary-glow btn-export-green" (click)="onDescargarAccion(selectedNc)" style="width: 100%; justify-content: center; margin-top: 10px;">
-        <mat-icon>file_download</mat-icon>
-        <span>Descargar Ficha de Acción Correctiva</span>
-      </button>
-
     </div>
   </div>
 

@@ -98,9 +98,20 @@
   <div class="table-container shadow-premium">
     <table mat-table [dataSource]="dataSource" matSort class="tabla">
 
+      <!-- Código de la Norma (OGR-2026-001) -->
+      <ng-container matColumnDef="codigo_Norma">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 145px; text-align: center;">Código</th>
+        <td mat-cell *matCellDef="let row" class="col-tabular code-cell" style="text-align: center;">
+          <span class="code-pill">
+            <mat-icon class="code-pill-icon">tag</mat-icon>
+            <span class="code-pill-text">{{ getFormattedCodigo(row) }}</span>
+          </span>
+        </td>
+      </ng-container>
+
       <!-- Norma / Certificación -->
       <ng-container matColumnDef="norma">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 230px;">Norma / Certificación</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 210px;">Norma / Certificación</th>
         <td mat-cell *matCellDef="let row" class="norma-cell-title">{{ row.norma }}</td>
       </ng-container>
 

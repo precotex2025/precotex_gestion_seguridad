@@ -60,11 +60,31 @@ export class ProgramaAnualComponent implements OnInit {
     });
   }
 
-  availableYears: number[] = [2025, 2026, 2027, 2028];
+  baseYear: number = 2025;
   selectedYear: number = 2026;
+
+  get availableYears(): number[] {
+    return [this.baseYear, this.baseYear + 1, this.baseYear + 2, this.baseYear + 3];
+  }
 
   setYear(year: number): void {
     this.selectedYear = year;
+    this.calcularMensualCounts();
+  }
+
+  previousYearsBlock(): void {
+    this.baseYear -= 4;
+    if (this.selectedYear < this.baseYear || this.selectedYear > this.baseYear + 3) {
+      this.selectedYear = this.baseYear + 3;
+    }
+    this.calcularMensualCounts();
+  }
+
+  nextYearsBlock(): void {
+    this.baseYear += 4;
+    if (this.selectedYear < this.baseYear || this.selectedYear > this.baseYear + 3) {
+      this.selectedYear = this.baseYear;
+    }
     this.calcularMensualCounts();
   }
 

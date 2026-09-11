@@ -177,20 +177,45 @@ export class PortafolioMejoraRegeditComponent implements OnInit {
   }
 
   normalizarFecha(val: any): string {
-    if (!val) return '';
-    if (typeof val === 'string') {
-      val = val.trim();
-      if (val.startsWith('0001') || val.startsWith('1900')) return '';
-      if (val.includes('T')) return val.split('T')[0];
-      if (val.includes(' ')) return val.split(' ')[0];
-      if (/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
-        const [dd, mm, yyyy] = val.split('/');
-        return `${yyyy}-${mm}-${dd}`;
+    if (!val && val !== 0) return '';
+    if (val instanceof Date) {
+      if (isNaN(val.getTime())) return '';
+      // Si la hora es 00:00:00 UTC (como las fechas generadas por xlsx), usar UTC para evitar desfase de zona horaria local (-5h)
+      if (val.getUTCHours() === 0 && val.getUTCMinutes() === 0) {
+        return val.toISOString().slice(0, 10);
       }
-      if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+      const y = val.getFullYear();
+      const m = String(val.getMonth() + 1).padStart(2, '0');
+      const d = String(val.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
     }
+    // Si es número de serie de fecha de Excel (ej. 46184 = 11/06/2026)
+    const num = typeof val === 'number' ? val : (typeof val === 'string' && /^\d{5}$/.test(val.trim()) ? Number(val.trim()) : null);
+    if (num !== null && num > 30000 && num < 65000) {
+      const d = new Date(Math.round((num - 25569) * 86400 * 1000));
+      return !isNaN(d.getTime()) ? d.toISOString().slice(0, 10) : '';
+    }
+    const s = val.toString().trim();
+    if (!s || s.startsWith('0001') || s.startsWith('1900') || s.startsWith('00/00') || s.startsWith('00-00')) return '';
+    
+    // YYYY-MM-DD o YYYY/MM/DD
+    const mY = s.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+    if (mY) {
+      return `${mY[1]}-${mY[2].padStart(2, '0')}-${mY[3].padStart(2, '0')}`;
+    }
+    
+    // DD/MM/YYYY o DD-MM-YYYY (con 1 o 2 dígitos para día/mes)
+    const m = s.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+    if (m) {
+      const dd = m[1].padStart(2, '0');
+      const mm = m[2].padStart(2, '0');
+      let yyyy = m[3];
+      if (yyyy.length === 2) yyyy = '20' + yyyy;
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
     try {
-      const d = new Date(val);
+      const d = new Date(s);
       if (!isNaN(d.getTime()) && d.getFullYear() > 1970) {
         return d.toISOString().slice(0, 10);
       }
@@ -245,13 +270,17 @@ export class PortafolioMejoraRegeditComponent implements OnInit {
   autocompletarDesdeExcel(validRows: any[][], fileName: string): void {
     if (!validRows || validRows.length === 0) return;
 
+    // 1. Título / descripción breve: se jala del nombre con que se guardó el documento (sin extensión)
+    const docTitle = fileName.replace(/\.[^.]+$/, '').replace(/_+/g, ' ').trim();
+    const detectedTitulo: string = docTitle;
+
     let detectedHerramienta: string | null = null;
     let detectedTipo: string | null = null;
-    let detectedTitulo: string | null = null;
     let detectedSede: string | null = null;
     let detectedProceso: string | null = null;
-    let detectedApertura: string | null = null;
-    let detectedLimite: string | null = null;
+    let detectedApertura: string | null = null; // F. ocurrencia (amarillo en Acción Inmediata)
+    let detectedRegistro: string | null = null; // F. registro (amarillo en cabecera)
+    let detectedLimite: string | null = null;   // F. límite
     let detectedFechaFin: string | null = null;
     let detectedEstado: string | null = null;
 
@@ -278,44 +307,180 @@ export class PortafolioMejoraRegeditComponent implements OnInit {
         if (cellRaw === null || cellRaw === undefined) continue;
         const cellStr = cellRaw.toString().trim();
         const cellLower = cellStr.toLowerCase();
+        // Limpiar saltos de línea (\r, \n) y espacios múltiples para búsquedas robustas
+        const cellClean = cellLower.replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
 
-        // 1. Detectar Herramienta
+        // 1. Herramienta (Priorizar ACR si contiene análisis de causa raíz, código de acr, fecha de análisis, etc.)
         if (!detectedHerramienta) {
-          if (cellLower.includes('5w-2h') || cellLower.includes('5w 2h') || cellLower.includes('5w2h')) {
-            detectedHerramienta = '5W-2H';
-          } else if (cellLower.includes('análisis de causa raíz') || cellLower.includes('analisis de causa raiz') || cellLower.includes('arbol de causa') || cellLower.includes('acr') || cellLower.includes('5 porqués') || cellLower.includes('5 porques')) {
-            detectedHerramienta = 'ACR';
-          }
-        }
-
-        // 2. Detectar Tipo
-        if (!detectedTipo) {
-          if (cellLower.includes('tipo de registro') || cellLower.includes('tipo registro')) {
-            const nextVal = (row[c + 1] || '').toString().trim().toLowerCase();
-            if (nextVal.includes('incidencia')) detectedTipo = 'Incidencia';
-            if (nextVal.includes('iniciativa')) detectedTipo = 'Iniciativa';
-          }
-        }
-
-        // 3. Detectar Título / ¿Qué? / What / Descripción del Problema
-        if (!detectedTitulo) {
           if (
-            cellLower === 'what (¿qué?)' || cellLower === 'what' || cellLower === '¿qué?' ||
-            cellLower.startsWith('título de la iniciativa') || cellLower.startsWith('titulo de la iniciativa') ||
-            cellLower.startsWith('descripción del problema') || cellLower.startsWith('descripcion del problema') ||
-            cellLower.startsWith('título') || cellLower.startsWith('titulo') || cellLower.startsWith('problema')
+            cellClean.includes('análisis de causa raíz') ||
+            cellClean.includes('analisis de causa raiz') ||
+            cellClean.includes('código de acr') ||
+            cellClean.includes('codigo de acr') ||
+            cellClean.includes('fecha de análisis') ||
+            cellClean.includes('fecha de analisis') ||
+            cellClean.includes('arbol de causa') ||
+            cellClean.includes('árbol de causa') ||
+            cellClean.includes('5 porqués') ||
+            cellClean.includes('5 porques')
           ) {
-            const val = (row[c + 1] || (validRows[r + 1] && validRows[r + 1][c]) || '').toString().trim();
-            if (val && val.length > 3 && !val.toLowerCase().startsWith('descripción')) {
-              detectedTitulo = val;
+            detectedHerramienta = 'ACR';
+          } else if (
+            cellClean.includes('análisis de las 5w-2h') ||
+            cellClean.includes('analisis de las 5w-2h') ||
+            cellClean.includes('5w-2h') ||
+            cellClean.includes('5w 2h') ||
+            cellClean.includes('5w2h') ||
+            cellClean.includes('fecha ocurencia')
+          ) {
+            detectedHerramienta = '5W-2H';
+          }
+        }
+
+        // 2. Tipo (Incidencia si es No Conformidad, Iniciativa si es Oportunidad de Mejora)
+        if (!detectedTipo) {
+          if (cellClean.includes('no conformidad') || cellClean.includes('incidencia') || cellClean.includes('desviacion')) {
+            detectedTipo = 'Incidencia';
+          } else if (cellClean.includes('oportunidad de mejora') || cellClean.includes('iniciativa') || cellClean.includes('kaizen')) {
+            detectedTipo = 'Iniciativa';
+          } else if (cellClean.includes('tipo de registro') || cellClean.includes('tipo registro')) {
+            const nextVal = (row[c + 1] || '').toString().trim().toLowerCase();
+            if (nextVal.includes('incidencia') || nextVal.includes('no conformidad')) detectedTipo = 'Incidencia';
+            if (nextVal.includes('iniciativa') || nextVal.includes('mejora')) detectedTipo = 'Iniciativa';
+          }
+        }
+
+        // 3. F. REGISTRO: En 5W-2H ("Fecha Registro:") y en ACR ("Fecha de análisis:" = F. registro)
+        if (!detectedRegistro && (
+          /fecha\s*d?e?\s*an[aá]lisis/i.test(cellClean) ||
+          /f\.?\s*an[aá]lisis/i.test(cellClean) ||
+          /fecha\s*d?e?\s*regist/i.test(cellClean) ||
+          /f\.?\s*regist/i.test(cellClean) ||
+          cellClean.includes('fecha de análisis') ||
+          cellClean.includes('fecha de analisis') ||
+          cellClean.includes('fecha análisis') ||
+          cellClean.includes('fecha analisis') ||
+          cellClean.includes('fecha registro') ||
+          cellClean.includes('fecha registr') ||
+          cellClean.includes('f. registro') ||
+          cellClean.includes('f.registro')
+        )) {
+          // Si la misma celda contiene la fecha (ej. "Fecha de análisis: 26/06/2026")
+          const selfDate = this.normalizarFecha(cellStr);
+          if (selfDate) {
+            detectedRegistro = selfDate;
+          } else {
+            // Buscar primero a la derecha en la misma fila (en ACR: row[c+1] contiene 26/06/2026)
+            for (let offset = 1; offset <= 5; offset++) {
+              const val = row[c + offset];
+              const norm = this.normalizarFecha(val);
+              if (norm) {
+                detectedRegistro = norm;
+                break;
+              }
+            }
+            // Si no está a la derecha, buscar en las filas siguientes (r+1 o r+2)
+            if (!detectedRegistro) {
+              for (let rOff = 1; rOff <= 2; rOff++) {
+                if (validRows[r + rOff]) {
+                  for (let offset = 0; offset <= 3; offset++) {
+                    const val = validRows[r + rOff][c + offset];
+                    const norm = this.normalizarFecha(val);
+                    if (norm) {
+                      detectedRegistro = norm;
+                      break;
+                    }
+                  }
+                }
+                if (detectedRegistro) break;
+              }
             }
           }
         }
 
-        // 4. Detectar Sede
+        // 4. F. OCURRENCIA (Apertura): En ACR ("Fecha de ocurrencia:") y en 5W-2H ("Fecha Ocurencia" / "Fecha Ocurrencia")
+        if (!detectedApertura && (
+          /fecha\s*d?e?\s*ocu[r]+encia/i.test(cellClean) ||
+          /f\.?\s*ocu[r]+encia/i.test(cellClean) ||
+          cellClean.includes('fecha inicio') ||
+          cellClean.includes('when (inicio)') ||
+          cellClean.includes('when (cuándo)') ||
+          cellClean.includes('when (cuando)')
+        )) {
+          // Si la misma celda contiene la fecha
+          const selfDate = this.normalizarFecha(cellStr);
+          if (selfDate) {
+            detectedApertura = selfDate;
+          } else {
+            // 1) Buscar primero a la derecha en la misma fila (en ACR: row[c+1] contiene 19/06/2026)
+            for (let offset = 1; offset <= 5; offset++) {
+              const val = row[c + offset];
+              const norm = this.normalizarFecha(val);
+              if (norm) {
+                detectedApertura = norm;
+                break;
+              }
+            }
+            // 2) Si no está a la derecha, buscar debajo en las filas siguientes (en 5W-2H: validRows[r+1] contiene 11/06/2026)
+            if (!detectedApertura) {
+              for (let rOff = 1; rOff <= 3; rOff++) {
+                if (validRows[r + rOff]) {
+                  for (let offset = 0; offset <= 3; offset++) {
+                    const val1 = validRows[r + rOff][c + offset];
+                    const norm1 = this.normalizarFecha(val1);
+                    if (norm1) {
+                      detectedApertura = norm1;
+                      break;
+                    }
+                    if (c - offset >= 0) {
+                      const val2 = validRows[r + rOff][c - offset];
+                      const norm2 = this.normalizarFecha(val2);
+                      if (norm2) {
+                        detectedApertura = norm2;
+                        break;
+                      }
+                    }
+                  }
+                }
+                if (detectedApertura) break;
+              }
+            }
+          }
+        }
+
+        // 5. F. LÍMITE: "Fecha límite", "Fecha limite", "Fecha fin estimada", "When (límite)"
+        if (!detectedLimite && (
+          /fecha\s*d?e?\s*l[ií]mite/i.test(cellClean) ||
+          /f\.?\s*l[ií]mite/i.test(cellClean) ||
+          cellClean.includes('fecha límite') ||
+          cellClean.includes('fecha limite') ||
+          cellClean.includes('fecha fin estimada') ||
+          cellClean.includes('when (límite)') ||
+          cellClean.includes('when (limite)')
+        )) {
+          const selfDate = this.normalizarFecha(cellStr);
+          if (selfDate) {
+            detectedLimite = selfDate;
+          } else {
+            for (let offset = 1; offset <= 5; offset++) {
+              const val = row[c + offset];
+              const norm = this.normalizarFecha(val);
+              if (norm) {
+                detectedLimite = norm;
+                break;
+              }
+            }
+            if (!detectedLimite && validRows[r + 1]) {
+              const norm = this.normalizarFecha(validRows[r + 1][c]);
+              if (norm) detectedLimite = norm;
+            }
+          }
+        }
+
+        // 6. Sede
         if (!detectedSede) {
-          if (cellLower.startsWith('sede:') || cellLower.startsWith('sede') || cellLower === 'where (¿dónde?)') {
-            const candidate = (row[c + 1] || '').toString().trim();
+          if (cellClean.startsWith('sede:') || cellClean.startsWith('sede') || cellClean === 'where (¿dónde?)' || cellClean.includes('sede santa rosa')) {
+            const candidate = (row[c + 1] || cellStr).toString().trim();
             for (const s of this.sedes) {
               if (candidate.toLowerCase().includes(s.toLowerCase())) {
                 detectedSede = s;
@@ -325,7 +490,7 @@ export class PortafolioMejoraRegeditComponent implements OnInit {
           }
           if (!detectedSede) {
             for (const s of this.sedes) {
-              if (cellLower === s.toLowerCase() || cellLower.includes(s.toLowerCase())) {
+              if (cellClean === s.toLowerCase() || cellClean.includes(s.toLowerCase())) {
                 detectedSede = s;
                 break;
               }
@@ -333,12 +498,21 @@ export class PortafolioMejoraRegeditComponent implements OnInit {
           }
         }
 
-        // 5. Detectar Proceso
+        // 7. Proceso / Área
         if (!detectedProceso) {
-          if (cellLower.startsWith('proceso:') || cellLower.startsWith('proceso') || cellLower.startsWith('área:') || cellLower.startsWith('area:')) {
-            const candidate = (row[c + 1] || '').toString().trim();
+          if (
+            cellClean.startsWith('línea/área/máquina') ||
+            cellClean.startsWith('linea/area/maquina') ||
+            cellClean.startsWith('proceso:') ||
+            cellClean.startsWith('proceso') ||
+            cellClean.startsWith('área:') ||
+            cellClean.startsWith('area:') ||
+            cellClean === 'área' ||
+            cellClean === 'area'
+          ) {
+            const candidate = (row[c + 1] || (validRows[r + 1] && validRows[r + 1][c]) || '').toString().trim();
             for (const p of this.todosLosProcesos) {
-              if (candidate.toLowerCase().includes(p.toLowerCase())) {
+              if (candidate.toLowerCase().includes(p.toLowerCase()) || p.toLowerCase().includes(candidate.toLowerCase())) {
                 detectedProceso = p;
                 break;
               }
@@ -354,26 +528,14 @@ export class PortafolioMejoraRegeditComponent implements OnInit {
           }
         }
 
-        // 6. Detectar Fechas
-        if (!detectedApertura && (cellLower.includes('fecha ocurrencia') || cellLower.includes('fecha inicio') || cellLower.includes('fecha apertura') || cellLower.includes('when (inicio)'))) {
-          const val = (row[c + 1] || (validRows[r + 1] && validRows[r + 1][c]) || '').toString().trim();
-          const norm = this.normalizarFecha(val);
-          if (norm) detectedApertura = norm;
-        }
-
-        if (!detectedLimite && (cellLower.includes('fecha límite') || cellLower.includes('fecha limite') || cellLower.includes('fecha fin estimada') || cellLower.includes('when (límite)') || cellLower.includes('when (limite)'))) {
-          const val = (row[c + 1] || (validRows[r + 1] && validRows[r + 1][c]) || '').toString().trim();
-          const norm = this.normalizarFecha(val);
-          if (norm) detectedLimite = norm;
-        }
-
+        // 8. Fecha Fin Real / Cierre
         if (!detectedFechaFin && (cellLower.includes('fecha fin real') || cellLower.includes('fecha cierre') || cellLower.includes('fecha término') || cellLower.includes('fecha termino'))) {
           const val = (row[c + 1] || (validRows[r + 1] && validRows[r + 1][c]) || '').toString().trim();
           const norm = this.normalizarFecha(val);
           if (norm) detectedFechaFin = norm;
         }
 
-        // 7. Detectar Estado
+        // 9. Estado
         if (!detectedEstado) {
           if (cellLower.includes('estado')) {
             const nextVal = (row[c + 1] || (validRows[r + 1] && validRows[r + 1][c]) || '').toString().trim();
@@ -388,9 +550,13 @@ export class PortafolioMejoraRegeditComponent implements OnInit {
       }
     }
 
-    // Fallback de título desde el nombre del archivo si no vino en el Excel
-    if (!detectedTitulo) {
-      detectedTitulo = fileName.replace(/\.[^.]+$/, '').replace(/[_\-]+/g, ' ').trim();
+    // Si no se detectó fecha límite pero sí ocurrencia, calcular por defecto +14 días
+    if (detectedApertura && !detectedLimite) {
+      try {
+        const dOcc = new Date(detectedApertura + 'T12:00:00');
+        dOcc.setDate(dOcc.getDate() + 14);
+        detectedLimite = dOcc.toISOString().slice(0, 10);
+      } catch {}
     }
 
     // Si encontramos Sede, actualizar y poblar procesos de esa sede
@@ -409,11 +575,13 @@ export class PortafolioMejoraRegeditComponent implements OnInit {
       this.selectHerramienta(detectedHerramienta);
     }
 
-    // Parchear valores en el formulario
-    const patchObj: any = {};
+    // Parchear valores en el formulario (Título con el nombre guardado, F. ocurrencia, F. registro)
+    const patchObj: any = {
+      titulo: detectedTitulo
+    };
     if (detectedTipo) patchObj.tipoRegistro = detectedTipo;
-    if (detectedTitulo) patchObj.titulo = detectedTitulo;
     if (detectedApertura) patchObj.apertura = detectedApertura;
+    if (detectedRegistro) patchObj.registro = detectedRegistro;
     if (detectedLimite) patchObj.limite = detectedLimite;
     if (detectedFechaFin) patchObj.fechaFin = detectedFechaFin;
     if (detectedEstado) patchObj.estado = detectedEstado;
@@ -422,10 +590,12 @@ export class PortafolioMejoraRegeditComponent implements OnInit {
     this.actualizarDetallePrevista(detectedTitulo);
 
     const autoSummary = [
+      `Título: ${detectedTitulo}`,
+      detectedApertura ? `F. Ocurrencia: ${detectedApertura}` : null,
+      detectedRegistro ? `F. Registro: ${detectedRegistro}` : null,
       detectedHerramienta ? `Herramienta: ${detectedHerramienta}` : null,
       detectedSede ? `Sede: ${detectedSede}` : null,
-      detectedProceso ? `Proceso: ${detectedProceso}` : null,
-      detectedTitulo ? `Título autollenado` : null
+      detectedProceso ? `Proceso: ${detectedProceso}` : null
     ].filter(Boolean).join(' · ');
 
     this.toastr.success(`Campos autocompletados desde el archivo: ${autoSummary}`, 'Autocompletado Automático');
@@ -470,7 +640,7 @@ export class PortafolioMejoraRegeditComponent implements OnInit {
                 return cells;
               });
 
-              // PDM-14: Ejecutar autocompletado inteligente
+              // PDM-14: Ejecutar autocompletado inteligente (Título, F. Ocurrencia, F. Registro)
               this.autocompletarDesdeExcel(validRows, file.name);
             }
           }
@@ -487,7 +657,7 @@ export class PortafolioMejoraRegeditComponent implements OnInit {
     this.mostrarVistaPrevia = true;
     this.actualizarDetallePrevista(nameWithoutExt);
 
-    if (file) {
+    if (file && (!this.excelRows || this.excelRows.length === 0)) {
       this.leerContenidoExcelReal(file);
     }
   }
@@ -515,7 +685,10 @@ export class PortafolioMejoraRegeditComponent implements OnInit {
     const file = event.target.files && event.target.files[0];
     if (file) {
       this.cargandoArchivo = true;
-      const nameWithoutExt = file.name.replace(/\.[^.]+$/, '').replace(/[_\-]+/g, ' ');
+      const docTitle = file.name.replace(/\.[^.]+$/, '').replace(/_+/g, ' ').trim();
+
+      // Jalar inmediatamente el título del nombre con que se guardó el documento
+      this.formulario.get('titulo')?.setValue(docTitle);
 
       // Leer las celdas y filas reales del Excel y autocompletar formulario (PDM-14)
       this.leerContenidoExcelReal(file);
@@ -528,21 +701,10 @@ export class PortafolioMejoraRegeditComponent implements OnInit {
             this.archivoNombre = res.fileName;
             this.formulario.get('archivo')?.setValue(res.fileName);
 
-            const today = new Date();
-            const occ = new Date();
-            occ.setDate(occ.getDate() - 3);
-            const lim = new Date();
-            lim.setDate(lim.getDate() + 14);
-
-            if (!this.formulario.get('apertura')?.value) {
-              this.formulario.get('apertura')?.setValue(occ.toISOString().slice(0, 10));
-            }
-            if (!this.formulario.get('limite')?.value) {
-              this.formulario.get('limite')?.setValue(lim.toISOString().slice(0, 10));
-            }
-
-            // Generar la prevista visual del Excel
-            this.generarPrevistaExcel(file, nameWithoutExt);
+            // Generar la prevista visual del Excel sin re-parsear innecesariamente
+            this.archivoTamanio = (file.size / 1024).toFixed(1) + ' KB';
+            this.mostrarVistaPrevia = true;
+            this.actualizarDetallePrevista(docTitle);
           } else {
             this.toastr.error('Error al subir el archivo.', 'Error Carga');
           }

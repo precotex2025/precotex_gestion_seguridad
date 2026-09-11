@@ -175,6 +175,30 @@ export class PuestosComponent implements OnInit {
         permisos: 'Lectura + descarga + modificar',
         estado: 'Activo',
         email: 'caldana@precotexperu.com'
+      },
+      {
+        id: 'PUE-011',
+        codigo_Puesto: '011',
+        puesto: 'Analista de Auditoría Interna',
+        proceso: 'Auditoría Interna',
+        usuario: 'Mia Zegarra',
+        fecha_Registro: '09/09/2026',
+        nivel: 'Operativo',
+        permisos: 'Lectura + descarga + modificar',
+        estado: 'Activo',
+        email: 'mzegarra@precotexperu.com'
+      },
+      {
+        id: 'PUE-012',
+        codigo_Puesto: '012',
+        puesto: 'Asistente de Auditoría Interna',
+        proceso: 'Auditoría Interna',
+        usuario: 'Keith Vega',
+        fecha_Registro: '09/09/2026',
+        nivel: 'Operativo',
+        permisos: 'Lectura + descarga',
+        estado: 'Activo',
+        email: 'kvega@precotexperu.com'
       }
     ];
 
@@ -322,27 +346,200 @@ export class PuestosComponent implements OnInit {
     this.updateDynamicWidgets();
   }
 
+  // ===================================================================
+  // RESOLUCIÓN Y NORMALIZACIÓN DE USUARIOS (PUE-01 / HISTORIAL)
+  // ===================================================================
+  resolveUserData(ident: string, fallbackPuesto?: string): { nombre: string; rol: string } {
+    const clean = (ident || '').trim().toLowerCase();
+    if (!clean || clean === 'admin') {
+      return { nombre: 'Super Administrador', rol: 'Administrador General' };
+    }
+
+    const userDirectoryMap: { [key: string]: { nombre: string; rol: string } } = {
+      'mzegarra': { nombre: 'Mia Zegarra', rol: 'Analista de Auditoría Interna' },
+      'mia.zegarra': { nombre: 'Mia Zegarra', rol: 'Analista de Auditoría Interna' },
+      'mia zegarra': { nombre: 'Mia Zegarra', rol: 'Analista de Auditoría Interna' },
+      'kvega': { nombre: 'Keith Vega', rol: 'Asistente de Auditoría Interna' },
+      'keith.vega': { nombre: 'Keith Vega', rol: 'Asistente de Auditoría Interna' },
+      'keith vega': { nombre: 'Keith Vega', rol: 'Asistente de Auditoría Interna' },
+      'jpinedo': { nombre: 'Jordan Pinedo', rol: 'Analista OYM' },
+      'jordan.pinedo': { nombre: 'Jordan Pinedo', rol: 'Analista OYM' },
+      'jordan pinedo': { nombre: 'Jordan Pinedo', rol: 'Analista OYM' },
+      'caldana': { nombre: 'Cynthia Aldana', rol: 'Coordinador de SSOMA' },
+      'cynthia.aldana': { nombre: 'Cynthia Aldana', rol: 'Coordinador de SSOMA' },
+      'cynthia aldana': { nombre: 'Cynthia Aldana', rol: 'Coordinador de SSOMA' },
+      'msoria': { nombre: 'Max Soria', rol: 'Analista de Sistemas' },
+      'max.soria': { nombre: 'Max Soria', rol: 'Analista de Sistemas' },
+      'max soria': { nombre: 'Max Soria', rol: 'Analista de Sistemas' },
+      'kflores': { nombre: 'Karem Flores', rol: 'Gerente de Comercial' },
+      'karem.flores': { nombre: 'Karem Flores', rol: 'Gerente de Comercial' },
+      'karem flores': { nombre: 'Karem Flores', rol: 'Gerente de Comercial' },
+      'fhuamani': { nombre: 'Francisco Huamani', rol: 'Analista SIG' },
+      'francisco.huamani': { nombre: 'Francisco Huamani', rol: 'Analista SIG' },
+      'francisco huamani': { nombre: 'Francisco Huamani', rol: 'Analista SIG' },
+      'atoro': { nombre: 'Alfredo Toro', rol: 'Analista de Sistemas' },
+      'alfredo.toro': { nombre: 'Alfredo Toro', rol: 'Analista de Sistemas' },
+      'alfredo toro': { nombre: 'Alfredo Toro', rol: 'Analista de Sistemas' },
+      'laldana': { nombre: 'Luis Aldana', rol: 'Jefe de Seguridad y Salud Ocupacional' },
+      'luis.aldana': { nombre: 'Luis Aldana', rol: 'Jefe de Seguridad y Salud Ocupacional' },
+      'luis aldana': { nombre: 'Luis Aldana', rol: 'Jefe de Seguridad y Salud Ocupacional' },
+      'shuaranga': { nombre: 'Sayda Huaranga', rol: 'Supervisor de SST' },
+      'sayda.huaranga': { nombre: 'Sayda Huaranga', rol: 'Supervisor de SST' },
+      'sayda huaranga': { nombre: 'Sayda Huaranga', rol: 'Supervisor de SST' },
+      'erivera': { nombre: 'Elizabet Rivera', rol: 'Jefatura de Calidad' },
+      'elizabet.rivera': { nombre: 'Elizabet Rivera', rol: 'Jefatura de Calidad' },
+      'elizabet rivera': { nombre: 'Elizabet Rivera', rol: 'Jefatura de Calidad' },
+      'clingan': { nombre: 'Cesar Lingan', rol: 'Analista de Auditoría Interna' },
+      'cesar.lingan': { nombre: 'Cesar Lingan', rol: 'Analista de Auditoría Interna' },
+      'cesar lingan': { nombre: 'Cesar Lingan', rol: 'Analista de Auditoría Interna' },
+      'mguevara': { nombre: 'Mary Guevara', rol: 'Coordinadora de Desarrollo y Capacitaciones' },
+      'mary.guevara': { nombre: 'Mary Guevara', rol: 'Coordinadora de Desarrollo y Capacitaciones' },
+      'mary guevara': { nombre: 'Mary Guevara', rol: 'Coordinadora de Desarrollo y Capacitaciones' },
+      'jrojas': { nombre: 'Miguel Angel Rojas Veliz', rol: 'Jefe de Sistemas' },
+      'hflores': { nombre: 'Hans Flores', rol: 'Analista Programador' },
+      'jlelias': { nombre: 'José Luis Elias', rol: 'Auditor Líder' },
+      'icruz': { nombre: 'Ismael Cruz', rol: 'Coordinador SIG' },
+      'crivera': { nombre: 'Cesar Rivera', rol: 'Supervisor de Planta' },
+      'rgerstein': { nombre: 'Rodolfo Gerstein', rol: 'Gerente de Gestión Humana' },
+      'rmunante': { nombre: 'Ricardo Muñante', rol: 'Jefe de Planeamiento y Control' },
+      'rdiaz': { nombre: 'Ricardo Diaz', rol: 'Gerente DDP, Manufactura y Gestión Comercial' }
+    };
+
+    if (userDirectoryMap[clean]) {
+      return userDirectoryMap[clean];
+    }
+
+    if (this.puestosList && this.puestosList.length > 0) {
+      const match = this.puestosList.find(p => 
+        (p.usuario && p.usuario.toLowerCase() === clean) ||
+        (p.email && p.email.toLowerCase().startsWith(clean))
+      );
+      if (match && match.usuario && match.usuario !== '—') {
+        return { nombre: match.usuario, rol: match.puesto || fallbackPuesto || 'Usuario SIG' };
+      }
+    }
+
+    const titleCase = ident.charAt(0).toUpperCase() + ident.slice(1);
+    return { nombre: titleCase, rol: fallbackPuesto || 'Analista SIG' };
+  }
+
+  getAvatarColor(nombre: string): string {
+    const palette = ['purple', 'violet', 'blue', 'green', 'amber', 'teal', 'indigo', 'red'];
+    let hash = 0;
+    for (let i = 0; i < nombre.length; i++) {
+      hash = nombre.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const idx = Math.abs(hash) % palette.length;
+    return palette[idx];
+  }
+
   updateDynamicWidgets() {
-    const colors = ['blue', 'purple', 'green', 'amber', 'violet', 'red'];
-    const realAccesos: any[] = [];
+    const ahora = new Date();
 
-    // 1. Obtener los logs reales guardados en localStorage (excluyendo la cuenta admin)
-    const rawLogs1 = localStorage.getItem('precotex:log:accesos');
-    const rawLogs2 = localStorage.getItem('precotex:logs:accesos');
-    const rawLogsArr: any[] = [];
+    interface LogItemInternal {
+      rawDate: Date;
+      n: string;
+      rol: string;
+      acc: string;
+      c: string;
+      t: string;
+      isReal: boolean; // true si viene de logs reales, false si es fallback
+    }
 
-    [rawLogs1, rawLogs2].forEach(raw => {
+    const realLogs: LogItemInternal[] = [];
+    const fallbackLogs: LogItemInternal[] = [];
+
+    const formatLogTime = (date: Date): string => {
+      const isToday = date.getFullYear() === ahora.getFullYear() &&
+                      date.getMonth() === ahora.getMonth() &&
+                      date.getDate() === ahora.getDate();
+
+      const yesterday = new Date(ahora);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const isYesterday = date.getFullYear() === yesterday.getFullYear() &&
+                          date.getMonth() === yesterday.getMonth() &&
+                          date.getDate() === yesterday.getDate();
+
+      const hh = String(date.getHours()).padStart(2, '0');
+      const mm = String(date.getMinutes()).padStart(2, '0');
+
+      if (isToday) {
+        return `hoy ${hh}:${mm}`;
+      } else if (isYesterday) {
+        return `ayer ${hh}:${mm}`;
+      } else {
+        const dd = String(date.getDate()).padStart(2, '0');
+        const mes = String(date.getMonth() + 1).padStart(2, '0');
+        return `${dd}/${mes} ${hh}:${mm}`;
+      }
+    };
+
+    // 1. Sesión activa actual (si existe y no es admin)
+    const currentCodeUser = (GlobalVariable.vusu || localStorage.getItem('vusu') || '').trim();
+    const storedNom = (localStorage.getItem('precotex:usuario:nombre') || currentCodeUser).trim();
+    const storedPuesto = (localStorage.getItem('precotex:usuario:puesto') || '').trim();
+
+    if (currentCodeUser && currentCodeUser.toLowerCase() !== 'admin' && storedNom.toLowerCase() !== 'admin') {
+      const uInfo = this.resolveUserData(storedNom || currentCodeUser, storedPuesto || undefined);
+      realLogs.push({
+        rawDate: ahora,
+        n: uInfo.nombre,
+        rol: uInfo.rol,
+        acc: 'Inicio de sesión',
+        c: this.getAvatarColor(uInfo.nombre),
+        t: formatLogTime(ahora),
+        isReal: true
+      });
+    }
+
+    // 2. Procesar logs reales guardados en localStorage
+    const rawKeys = ['precotex:log:accesos', 'precotex:logs:accesos'];
+    const processedLogIds = new Set<string>();
+    const cleanedLogsForStorage: any[] = [];
+
+    rawKeys.forEach(k => {
+      const raw = localStorage.getItem(k);
       if (raw) {
         try {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) {
-            parsed.forEach(item => {
-              const u = (item.usuario || item.nombre || '').toLowerCase();
-              if (item && u && u !== 'admin' && !u.startsWith('admin') && item.fechaHora) {
-                // Evitar duplicados inmediatos en la lista cruda
-                if (!rawLogsArr.some(r => (r.usuario || r.nombre || '').toLowerCase() === u && r.fechaHora === item.fechaHora)) {
-                  rawLogsArr.push(item);
+          const arr = JSON.parse(raw);
+          if (Array.isArray(arr)) {
+            arr.forEach(item => {
+              const uRaw = (item.usuario || item.nombre || '').trim();
+              // Usar el id del log para evitar procesar duplicados entre las dos keys
+              const logId = item.id || (uRaw + '|' + (item.timestamp || item.fechaHora || ''));
+              if (processedLogIds.has(logId)) return;
+              processedLogIds.add(logId);
+
+              if (uRaw && uRaw.toLowerCase() !== 'admin' && !uRaw.toLowerCase().startsWith('admin')) {
+                const uInfo = this.resolveUserData(uRaw, item.puesto || item.rol);
+                
+                let itemDate = item.timestamp ? new Date(item.timestamp) : null;
+                if (!itemDate || isNaN(itemDate.getTime())) {
+                  if (item.fechaHora) {
+                    const parsedD = new Date(item.fechaHora.replace(' ', 'T'));
+                    if (!isNaN(parsedD.getTime())) itemDate = parsedD;
+                  }
                 }
+                if (!itemDate || isNaN(itemDate.getTime())) {
+                  itemDate = new Date(ahora.getTime() - 1000 * 60 * 45);
+                }
+
+                realLogs.push({
+                  rawDate: itemDate,
+                  n: uInfo.nombre,
+                  rol: uInfo.rol,
+                  acc: item.estado || 'Inicio de sesión',
+                  c: this.getAvatarColor(uInfo.nombre),
+                  t: formatLogTime(itemDate),
+                  isReal: true
+                });
+
+                cleanedLogsForStorage.push({
+                  ...item,
+                  usuario: uInfo.nombre,
+                  puesto: uInfo.rol,
+                  estado: item.estado || 'Inicio de sesión'
+                });
               }
             });
           }
@@ -350,89 +547,151 @@ export class PuestosComponent implements OnInit {
       }
     });
 
-    // 2. Registrar sesión activa sólo si el usuario NO es la cuenta de administrador general
-    const currentCodeUser = (GlobalVariable.vusu || localStorage.getItem('vusu') || '').trim();
-    const currentNomUser = (localStorage.getItem('precotex:usuario:nombre') || (currentCodeUser.toLowerCase().includes('fhuamani') ? 'Francisco Huamani' : currentCodeUser)).trim();
-    const currentPuestoUser = (localStorage.getItem('precotex:usuario:puesto') || 'Analista SIG').trim();
-
-    const ahora = new Date();
-    const nowHoraStr = 'hoy ' + ahora.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
-
-    if (currentCodeUser && currentCodeUser.toLowerCase() !== 'admin' && currentNomUser.toLowerCase() !== 'admin') {
-      realAccesos.push({
-        n: currentNomUser,
-        rol: currentPuestoUser,
-        acc: 'inicio de sesión',
-        t: nowHoraStr,
-        c: 'blue'
-      });
+    // Guardar logs saneados en localStorage
+    if (cleanedLogsForStorage.length > 0) {
+      try {
+        localStorage.setItem('precotex:log:accesos', JSON.stringify(cleanedLogsForStorage.slice(0, 100)));
+        localStorage.setItem('precotex:logs:accesos', JSON.stringify(cleanedLogsForStorage.slice(0, 100)));
+      } catch (e) {}
     }
 
-    // 3. Procesar los logs del almacenamiento local (únicos por usuario e instante)
-    rawLogsArr.forEach((logItem: any, idx: number) => {
-      const uNom = (logItem.usuario || logItem.nombre || '').trim();
-      if (uNom && uNom.toLowerCase() !== 'admin') {
-        let timeFormatted = logItem.fechaHora || nowHoraStr;
-        if (timeFormatted.includes(ahora.toISOString().substring(0, 10)) || timeFormatted.includes(ahora.toLocaleDateString('es-PE'))) {
-          const parts = timeFormatted.split(' ');
-          timeFormatted = 'hoy ' + (parts[1] ? parts[1].substring(0, 5) : '09:00');
-        }
+    // 3. Fallback complementario — SOLO se usan para rellenar si hay menos de 6 logs reales
+    const currentHour = ahora.getHours();
+    const currentMin = ahora.getMinutes();
 
-        // Estricta deduplicación: no agregar el mismo usuario en la misma fecha/hora
-        const yaExiste = realAccesos.some(a => 
-          a.n.toLowerCase() === uNom.toLowerCase() && 
-          (a.t === timeFormatted || a.t.substring(0, 8) === timeFormatted.substring(0, 8))
-        );
+    const tMax = new Date(ahora);
+    tMax.setHours(Math.max(7, currentHour - 1), Math.max(10, (currentMin + 15) % 60), 0);
 
-        if (!yaExiste) {
-          realAccesos.push({
-            n: uNom,
-            rol: logItem.puesto || logItem.rol || 'Analista SIG',
-            acc: logItem.estado || 'inicio de sesión',
-            t: timeFormatted,
-            c: colors[(idx + 1) % colors.length]
-          });
-        }
-      }
-    });
+    const tKarem = new Date(ahora);
+    tKarem.setHours(Math.max(7, currentHour - 2), Math.max(5, (currentMin + 35) % 60), 0);
 
-    // 4. Historial complementario con usuarios reales (nunca admin)
-    const fallbackMocks = [
-      { n: 'Max Soria', rol: 'Analista de Sistemas', acc: 'inicio de sesión', t: 'hoy 09:14', c: 'green' },
-      { n: 'Max Soria', rol: 'Analista de Sistemas', acc: 'inicio de sesión', t: 'ayer 08:05', c: 'purple' },
-      { n: 'Karem Flores', rol: 'Gerente de Comercial', acc: 'editó documento', t: 'hoy 08:30', c: 'amber' },
-      { n: 'Karem Flores', rol: 'Gerente de Comercial', acc: 'inicio de sesión', t: 'ayer 10:05', c: 'violet' }
+    const tLuis = new Date(ahora);
+    tLuis.setHours(8, 12, 0);
+
+    const tElizabet = new Date(ahora);
+    tElizabet.setDate(tElizabet.getDate() - 1);
+    tElizabet.setHours(17, 25, 0);
+
+    const tAlfredo = new Date(ahora);
+    tAlfredo.setDate(tAlfredo.getDate() - 1);
+    tAlfredo.setHours(14, 10, 0);
+
+    const tKeith = new Date(ahora);
+    tKeith.setDate(tKeith.getDate() - 1);
+    tKeith.setHours(8, 45, 0);
+
+    const fallbackRoster = [
+      { n: 'Max Soria', rol: 'Analista de Sistemas', date: tMax },
+      { n: 'Karem Flores', rol: 'Gerente de Comercial', date: tKarem },
+      { n: 'Luis Aldana', rol: 'Jefe de Seguridad y Salud Ocupacional', date: tLuis },
+      { n: 'Elizabet Rivera', rol: 'Jefatura de Calidad', date: tElizabet },
+      { n: 'Alfredo Toro', rol: 'Analista de Sistemas', date: tAlfredo },
+      { n: 'Keith Vega', rol: 'Asistente de Auditoría Interna', date: tKeith }
     ];
 
-    fallbackMocks.forEach(mock => {
-      if (realAccesos.length < 6 && !realAccesos.some(r => r.n === mock.n && r.t === mock.t)) {
-        realAccesos.push(mock);
+    fallbackRoster.forEach(u => {
+      fallbackLogs.push({
+        rawDate: u.date,
+        n: u.n,
+        rol: u.rol,
+        acc: 'Inicio de sesión',
+        c: this.getAvatarColor(u.n),
+        t: formatLogTime(u.date),
+        isReal: false
+      });
+    });
+
+    // 4. Deduplicación: primero logs reales (más recientes primero), luego fallback para rellenar
+    realLogs.sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime());
+    fallbackLogs.sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime());
+
+    const seenUsers = new Set<string>();
+    const finalAccesos: any[] = [];
+
+    // Primero: agregar logs REALES (siempre tienen prioridad)
+    for (const item of realLogs) {
+      const userKey = item.n.toLowerCase().trim();
+      if (!seenUsers.has(userKey)) {
+        seenUsers.add(userKey);
+        finalAccesos.push(item);
+      }
+      if (finalAccesos.length >= 6) break;
+    }
+
+    // Luego: rellenar con fallback SOLO si hacen falta para llegar a 6
+    if (finalAccesos.length < 6) {
+      for (const item of fallbackLogs) {
+        const userKey = item.n.toLowerCase().trim();
+        if (!seenUsers.has(userKey)) {
+          seenUsers.add(userKey);
+          finalAccesos.push(item);
+        }
+        if (finalAccesos.length >= 6) break;
+      }
+    }
+
+    this.accesosList = finalAccesos;
+
+    // 5. Actividad por usuario (últimos 7 días) - Basado en logs REALES
+    const sieteDiasAtras = new Date(ahora);
+    sieteDiasAtras.setDate(sieteDiasAtras.getDate() - 7);
+
+    const activityMap: { [userName: string]: number } = {};
+
+    // Contar acciones reales de los logs de acceso (últimos 7 días)
+    const allRealLogs = [...realLogs];
+    allRealLogs.forEach(log => {
+      if (log.isReal && log.rawDate >= sieteDiasAtras) {
+        activityMap[log.n] = (activityMap[log.n] || 0) + 1;
       }
     });
 
-    this.accesosList = realAccesos.slice(0, 6);
+    // Incorporar acciones dinámicas almacenadas en local
+    try {
+      const storedActRaw = localStorage.getItem('precotex:user:actividad');
+      if (storedActRaw) {
+        const storedAct = JSON.parse(storedActRaw);
+        for (const k of Object.keys(storedAct)) {
+          const resolved = this.resolveUserData(k).nombre;
+          activityMap[resolved] = (activityMap[resolved] || 0) + Number(storedAct[k] || 0);
+        }
+      }
+    } catch (e) {}
 
-    // 5. Actividad por usuario (últimos 7 días)
-    const counts = [24, 18, 15, 9, 4, 2];
-    const maxCount = counts[0];
-    const dynamicActividad: any[] = [];
+    // Si hay muy pocos datos reales, agregar base mínima para usuarios del sistema
+    const baseActivity: { [key: string]: number } = {
+      'Keith Vega': 24,
+      'Mia Zegarra': 18,
+      'Jordan Pinedo': 15,
+      'Cynthia Aldana': 9,
+      'Max Soria': 4,
+      'Francisco Huamani': 2
+    };
 
-    if (this.puestosList && this.puestosList.length > 0) {
-      this.puestosList.forEach((p, idx) => {
-        const nombreUsuario = (p.usuario && p.usuario !== '—' && p.usuario.trim() !== '') ? p.usuario.trim() : p.puesto;
-        const countVal = counts[idx % counts.length];
-        const percentVal = Math.round((countVal / maxCount) * 100);
-
-        dynamicActividad.push({
-          n: nombreUsuario,
-          count: countVal,
-          percent: percentVal,
-          c: colors[idx % colors.length]
-        });
-      });
+    // Solo usar base si no hay datos reales suficientes
+    const totalRealActions = Object.values(activityMap).reduce((sum, v) => sum + v, 0);
+    if (totalRealActions < 3) {
+      for (const [userName, count] of Object.entries(baseActivity)) {
+        if (!(userName in activityMap)) {
+          activityMap[userName] = count;
+        }
+      }
     }
 
-    this.actividadList = dynamicActividad;
+    // Convertir a lista y ordenar por mayor cantidad de acciones
+    const dynamicActividad = Object.keys(activityMap).map(userName => ({
+      n: userName,
+      count: activityMap[userName]
+    })).sort((a, b) => b.count - a.count);
+
+    const maxCount = Math.max(...dynamicActividad.map(a => a.count), 1);
+
+    this.actividadList = dynamicActividad.slice(0, 6).map(act => ({
+      n: act.n,
+      count: act.count,
+      percent: Math.min(100, Math.round((act.count / maxCount) * 100)),
+      c: this.getAvatarColor(act.n)
+    }));
   }
 
   aplicarFiltro(event: Event) {

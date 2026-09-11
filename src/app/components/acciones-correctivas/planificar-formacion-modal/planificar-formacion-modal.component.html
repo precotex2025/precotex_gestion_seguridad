@@ -1,107 +1,229 @@
-<div class="dialog-container">
+<div class="dialog-wrapper">
   
-  <div class="dialog-header">
-    <div class="dialog-icon-container">
-      <mat-icon>task_alt</mat-icon>
+  <!-- Accent Top Line -->
+  <div class="dialog-top-bar"></div>
+
+  <!-- Header -->
+  <header class="dialog-header">
+    <div class="header-left">
+      <div class="header-icon-box">
+        <mat-icon>{{ data.Accion === 'I' ? 'assignment_add' : 'edit_note' }}</mat-icon>
+      </div>
+      <div class="header-text">
+        <h2 class="header-title">{{ data.Accion === 'I' ? 'Planificar Acción Correctiva' : 'Editar Acción Correctiva' }}</h2>
+        <p class="header-subtitle">Gestión de acciones para eliminar la causa raíz y prevenir recurrencias</p>
+      </div>
     </div>
-    <div class="dialog-header-text">
-      <h2 class="dialog-title">{{ data.Title || 'Acción Correctiva / Plan de Acción' }}</h2>
-      <p class="dialog-subtitle">Planificación de acciones para eliminar la causa raíz de la No Conformidad</p>
-    </div>
-    <span class="flex-spacer"></span>
-    <button type="button" class="btn-close-header" (click)="onCancelar()" title="Cerrar">
-      <mat-icon>close</mat-icon>
-    </button>
-  </div>
 
-  <form [formGroup]="formulario" (ngSubmit)="onGuardar()">
-    
-    <mat-dialog-content class="form-content">
-      
-      <!-- Fila 1: NC vinculada & Tipo -->
-      <div class="grid-2-cols">
-        <div class="form-section-item">
-          <div class="form-label">NC Vinculada (*):</div>
-          <input type="text" formControlName="nc" class="full-width-input" placeholder="Ej. NC-INT-2025-001">
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">Tipo (*):</div>
-          <select formControlName="tipo" class="full-width-input">
-            <option *ngFor="let t of tiposOptions" [value]="t">{{ t }}</option>
-          </select>
-        </div>
+    <div class="header-right">
+      <div class="code-badge-pill" *ngIf="formulario.get('nc')?.value">
+        <mat-icon class="badge-icon">tag</mat-icon>
+        <span class="badge-text">{{ formulario.get('nc')?.value }}</span>
       </div>
-
-      <!-- Fila 2: Acción Correctiva -->
-      <div class="form-section-item">
-        <div class="form-label">Acción Correctiva (*):</div>
-        <input type="text" formControlName="accion" class="full-width-input" placeholder="Ej. Actualizar procedimiento costura v2.1">
-      </div>
-
-      <!-- Fila 3: Proceso & Responsable -->
-      <div class="grid-2-cols">
-        <div class="form-section-item">
-          <div class="form-label">Proceso (*):</div>
-          <select formControlName="proceso" class="full-width-input">
-            <optgroup *ngFor="let key of getProcesosKeys()" [label]="key">
-              <option *ngFor="let proc of procesosGroups[key]" [value]="proc">{{ proc }}</option>
-            </optgroup>
-          </select>
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">Responsable (*):</div>
-          <input type="text" formControlName="responsable" class="full-width-input" placeholder="Ej. Carlos Ríos">
-        </div>
-      </div>
-
-      <!-- Fila 4: Fecha Inicio & Fecha Límite -->
-      <div class="grid-2-cols">
-        <div class="form-section-item">
-          <div class="form-label">Fecha Inicio (*):</div>
-          <input type="date" formControlName="inicio" class="full-width-input">
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">Fecha Límite (*):</div>
-          <input type="date" formControlName="limite" class="full-width-input">
-        </div>
-      </div>
-
-      <!-- Fila 5: Estado & Auditoría Vinculada -->
-      <div class="grid-2-cols">
-        <div class="form-section-item">
-          <div class="form-label">Estado (*):</div>
-          <select formControlName="estado" class="full-width-input">
-            <option *ngFor="let est of estadosOptions" [value]="est">{{ est }}</option>
-          </select>
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">Auditoría Vinculada:</div>
-          <select formControlName="codigoAuditoria" class="full-width-input">
-            <option value="">-- Sin auditoría --</option>
-            <option *ngFor="let aud of auditoriasList" [value]="aud.codigo_Auditoria">
-              {{ aud.codigo_Auditoria }} ({{ aud.tipo }} - {{ aud.norma }})
-            </option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Fila 6: Descripción de la Acción -->
-      <div class="form-section-item">
-        <div class="form-label">Descripción de la Acción:</div>
-        <textarea formControlName="desc" rows="3" class="full-width-input textarea-desc" placeholder="Describe la acción para eliminar la causa raíz..."></textarea>
-      </div>
-
-    </mat-dialog-content>
-
-    <mat-dialog-actions class="dialog-actions-row">
-      <button type="submit" class="BtnGuardarPlan">
-        <mat-icon style="font-size: 18px; width: 18px; height: 18px;">save</mat-icon>
-        <span>Guardar Acción</span>
+      <button type="button" class="btn-close-header" (click)="onCancelar()" title="Cerrar ventana">
+        <mat-icon>close</mat-icon>
       </button>
-      <button type="button" class="BtnCancelarPlan" (click)="onCancelar()">
+    </div>
+  </header>
+
+  <!-- Form -->
+  <form [formGroup]="formulario" (ngSubmit)="onGuardar()" class="dialog-form">
+    
+    <div class="dialog-scroll-body">
+
+      <!-- Sección 1: Información Principal de la NC -->
+      <div class="form-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">info</mat-icon>
+          <span class="section-title">1. No Conformidad y Acción Propuesta</span>
+        </div>
+
+        <!-- Fila 1: NC Vinculada & Tipo -->
+        <div class="form-row split-2">
+          <div class="form-field">
+            <div class="form-label-row">
+              <label class="form-label">
+                <mat-icon class="label-icon">tag</mat-icon>
+                NC Vinculada <span class="req">*</span>
+              </label>
+              <button type="button" 
+                      class="btn-toggle-mode" 
+                      (click)="toggleModoManual()" 
+                      [title]="esModoManual ? 'Seleccionar de lista de No Conformidades registradas' : 'Digitar código manualmente'">
+                <mat-icon class="toggle-icon">{{ esModoManual ? 'format_list_bulleted' : 'edit_note' }}</mat-icon>
+                <span>{{ esModoManual ? 'Ver Lista NC' : 'Digitar manual' }}</span>
+              </button>
+            </div>
+
+            <!-- Modo Lista Desplegable (Predeterminado) -->
+            <div class="input-wrapper" *ngIf="!esModoManual">
+              <select formControlName="nc" class="form-select font-code" (change)="onNcSelected($event)">
+                <option value="" disabled>-- Seleccione No Conformidad ({{ ncOptions.length }} disp.) --</option>
+                <option *ngFor="let item of ncOptions" [value]="item.nc">
+                  {{ formatNcOption(item) }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Modo Digitación Manual -->
+            <div class="input-wrapper" *ngIf="esModoManual">
+              <input type="text" 
+                     formControlName="nc" 
+                     class="form-input font-code" 
+                     placeholder="Ej. NC-INT-2026-001"
+                     (input)="onNcManualInput()">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">category</mat-icon>
+              Tipo de NC <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="tipo" class="form-select" (change)="onTipoChange()">
+                <option *ngFor="let t of tiposOptions" [value]="t">{{ t }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila 2: Acción Correctiva -->
+        <div class="form-row">
+          <div class="form-field full-width">
+            <label class="form-label">
+              <mat-icon class="label-icon">playlist_add_check</mat-icon>
+              Acción Correctiva Programada <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="accion" class="form-input" placeholder="Ej. Actualizar procedimiento de costura v2.1 y capacitar a operarios">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 2: Asignación y Proceso -->
+      <div class="form-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">apartment</mat-icon>
+          <span class="section-title">2. Proceso Responsable y Auditoría</span>
+        </div>
+
+        <!-- Fila 1: Proceso & Responsable -->
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">domain</mat-icon>
+              Proceso Responsable <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="proceso" class="form-select">
+                <optgroup *ngFor="let key of getProcesosKeys()" [label]="key">
+                  <option *ngFor="let proc of procesosGroups[key]" [value]="proc">{{ proc }}</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">person</mat-icon>
+              Responsable Asignado <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="responsable" class="form-input" placeholder="Ej. Carlos Ríos / Supervisor de Área">
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila 2: Auditoría Vinculada -->
+        <div class="form-row">
+          <div class="form-field full-width">
+            <label class="form-label">
+              <mat-icon class="label-icon">verified</mat-icon>
+              Auditoría Vinculada
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="codigoAuditoria" class="form-select">
+                <option value="">-- Sin auditoría asociada --</option>
+                <option *ngFor="let aud of auditoriasList" [value]="aud.codigo_Auditoria">
+                  {{ aud.codigo_Auditoria }} — {{ aud.tipo }} ({{ aud.norma }})
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 3: Planificación y Estado -->
+      <div class="form-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">calendar_month</mat-icon>
+          <span class="section-title">3. Cronograma, Estado y Causa Raíz</span>
+        </div>
+
+        <!-- Fila 1: Fecha Inicio, Fecha Límite & Estado -->
+        <div class="form-row split-3">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">calendar_today</mat-icon>
+              Fecha Inicio <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="date" formControlName="inicio" class="form-input">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">event_available</mat-icon>
+              Fecha Límite <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="date" formControlName="limite" class="form-input">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">flag</mat-icon>
+              Estado <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="estado" class="form-select">
+                <option *ngFor="let est of estadosOptions" [value]="est">{{ est }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila 2: Descripción y Análisis -->
+        <div class="form-row">
+          <div class="form-field full-width">
+            <label class="form-label">
+              <mat-icon class="label-icon">description</mat-icon>
+              Detalle del Plan / Análisis de Causa Raíz
+            </label>
+            <div class="input-wrapper">
+              <textarea formControlName="desc" rows="3" class="form-textarea" placeholder="Describa los pasos detallados de la acción correctiva y cómo evitará que el problema se repita..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer Actions -->
+    <footer class="dialog-footer">
+      <button type="button" class="btn-cancelar" (click)="onCancelar()">
+        <mat-icon>close</mat-icon>
         <span>Cancelar</span>
       </button>
-    </mat-dialog-actions>
-    
+      <button type="submit" class="btn-guardar">
+        <mat-icon>{{ data.Accion === 'I' ? 'check_circle' : 'save' }}</mat-icon>
+        <span>{{ data.Accion === 'I' ? 'Guardar Acción' : 'Actualizar Acción' }}</span>
+      </button>
+    </footer>
+
   </form>
 </div>

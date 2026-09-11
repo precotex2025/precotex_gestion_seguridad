@@ -948,8 +948,38 @@
 
 .btn-visto-bueno:hover, .btn-visto-bueno.visto-bueno-done {
   background: rgba(18, 160, 106, 0.15) !important;
-  color: var(--green) !important;
-  border-color: rgba(18, 160, 106, 0.3) !important;
+  color: #16a34a !important;
+  border-color: rgba(22, 163, 74, 0.3) !important;
+}
+
+/* Multi-proceso Cell (DOC-15) */
+.multi-proc-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.proc-badge-primary {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.proc-badge-more {
+  background: #ede9fe;
+  color: #5b21b6;
+  border: 1px solid #c4b5fd;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 12px;
+  cursor: help;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.proc-badge-more:hover {
+  background: #ddd6fe;
 }
 
 .btn-historial {

@@ -429,25 +429,31 @@
 }
 
 .user-avatar {
-  min-width: 34px;
-  min-height: 34px;
-  width: 34px;
-  height: 34px;
+  min-width: 36px;
+  min-height: 36px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  font-size: 0.75rem;
+  font-size: 0.76rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #ffffff !important;
+  background: #4f46e5; /* Fallback que garantiza que el texto blanco siempre tenga fondo visible */
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(30, 37, 69, 0.1);
+  box-shadow: 0 2px 6px rgba(30, 37, 69, 0.12);
+  letter-spacing: 0.04em;
 }
 
-.avatar-blue   { background: var(--blue); }
-.avatar-green  { background: var(--green); }
-.avatar-amber  { background: var(--amber); }
-.avatar-violet { background: var(--violet); }
+.avatar-blue   { background: #2563eb !important; color: #ffffff !important; }
+.avatar-purple { background: #7c3aed !important; color: #ffffff !important; }
+.avatar-violet { background: #5b4bd6 !important; color: #ffffff !important; }
+.avatar-green  { background: #059669 !important; color: #ffffff !important; }
+.avatar-amber  { background: #d97706 !important; color: #ffffff !important; }
+.avatar-red    { background: #dc2626 !important; color: #ffffff !important; }
+.avatar-teal   { background: #0d9488 !important; color: #ffffff !important; }
+.avatar-indigo { background: #4f46e5 !important; color: #ffffff !important; }
 
 .log-details {
   flex: 1;
@@ -508,11 +514,11 @@
 }
 
 .chart-name { color: var(--txt); font-weight: 500; }
-.chart-value { color: var(--muted); }
+.chart-value { color: var(--muted); font-size: 0.74rem; }
 
 .progress-bar-wrapper {
   height: 6px;
-  background: var(--line);
+  background: #e2e8f0;
   border-radius: 3px;
   overflow: hidden;
 }
@@ -520,13 +526,17 @@
 .progress-bar-fill {
   height: 100%;
   border-radius: 3px;
+  transition: width 0.4s ease;
 }
 
-.fill-green  { background: var(--green); }
-.fill-blue   { background: var(--blue); }
-.fill-purple { background: var(--violet); }
-.fill-amber  { background: var(--amber); }
-.fill-red    { background: var(--red); }
+.fill-purple { background: #7c3aed !important; }
+.fill-violet { background: #5b4bd6 !important; }
+.fill-blue   { background: #2563eb !important; }
+.fill-green  { background: #10b981 !important; }
+.fill-amber  { background: #f59e0b !important; }
+.fill-red    { background: #ef4444 !important; }
+.fill-teal   { background: #0d9488 !important; }
+.fill-indigo { background: #4f46e5 !important; }
 
 /* Quick Activate Email Confirmation Button (PUE-05) */
 .btn-quick-activate {

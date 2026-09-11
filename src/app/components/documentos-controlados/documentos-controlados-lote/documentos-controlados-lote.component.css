@@ -43,7 +43,7 @@
   margin: 0 0 4px 0;
   font-size: 18px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--txt);
 }
 
 .dialog-subtitle {
@@ -69,7 +69,7 @@
   background: var(--panel);
   padding: 16px;
   border-radius: 12px;
-  border: 1px solid #334155;
+  border: 1px solid var(--line, #334155);
 }
 
 .form-group {
@@ -85,9 +85,9 @@
 
 .form-input {
   background-color: var(--panel-2);
-  border: 1px solid #334155;
+  border: 1px solid var(--line, #334155);
   border-radius: 8px;
-  color: #ffffff;
+  color: var(--txt);
   padding: 10px 12px;
   font-size: 13px;
   width: 100%;
@@ -309,9 +309,9 @@
 
 .form-control-sm {
   background-color: var(--panel-2);
-  border: 1px solid #334155;
+  border: 1px solid var(--line, #334155);
   border-radius: 6px;
-  color: #ffffff;
+  color: var(--txt);
   padding: 6px 10px;
   font-size: 12px;
   font-family: inherit;

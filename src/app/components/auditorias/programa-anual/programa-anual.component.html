@@ -21,13 +21,29 @@
     <div class="toolbar-actions-section">
       <div class="year-selector-container">
         <span class="year-label">Año Fiscal:</span>
-        <div class="year-btn-group">
+        <div class="year-nav-wrapper">
           <button type="button" 
-                  *ngFor="let y of availableYears" 
-                  class="btn-year-tab" 
-                  [class.active-year]="selectedYear === y" 
-                  (click)="setYear(y)">
-            {{ y }}
+                  class="btn-year-arrow" 
+                  (click)="previousYearsBlock()" 
+                  title="Años anteriores">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+
+          <div class="year-btn-group">
+            <button type="button" 
+                    *ngFor="let y of availableYears" 
+                    class="btn-year-tab" 
+                    [class.active-year]="selectedYear === y" 
+                    (click)="setYear(y)">
+              {{ y }}
+            </button>
+          </div>
+
+          <button type="button" 
+                  class="btn-year-arrow" 
+                  (click)="nextYearsBlock()" 
+                  title="Siguientes años (2029, 2030, 2031, 2032...)">
+            <mat-icon>chevron_right</mat-icon>
           </button>
         </div>
       </div>

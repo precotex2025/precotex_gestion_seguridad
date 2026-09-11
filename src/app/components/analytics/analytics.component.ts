@@ -66,7 +66,11 @@ export class AnalyticsComponent implements OnInit {
             unidad: item.unidad_Medida || '%',
             meta: item.meta !== null && item.meta !== undefined ? item.meta.toString() : '0',
             estado: item.estado || 'Activo',
-            idIndicador: item.id_Indicador
+            idIndicador: item.id_Indicador,
+            fuente: item.fuente_Datos || item.fuente || item.fuenteDatos || 'Reporte de producción',
+            fuente_datos: item.fuente_Datos || item.fuente || item.fuenteDatos || 'Reporte de producción',
+            responsable: item.responsable || 'Jefe de Proceso',
+            respmed: item.resp_Medicion || item.respmed || 'Supervisor de Planta'
           }));
           this.dataSource.data = mapped;
           this.calculateStats(mapped);
@@ -83,11 +87,21 @@ export class AnalyticsComponent implements OnInit {
 
   cargarIndicadoresDefault(): void {
     const defaultData = [
-      { codigo: 'IND-COS-001', nombre: '% Eficiencia de Costura', tipo: 'Eficiencia', sede: 'Sede Huachipa', proceso: 'Costura', norma: 'ISO 9001:2015', frecuencia: 'Mensual', meta: '85', unidad: '%', estado: 'Activo' },
-      { codigo: 'IND-SST-002', nombre: 'Índice de Frecuencia de Accidentes (IFA)', tipo: 'Eficacia', sede: 'Todas', proceso: 'SSOMA', norma: 'ISO 45001:2018', frecuencia: 'Mensual', meta: '2.5', unidad: 'Índice', estado: 'Activo' },
-      { codigo: 'IND-CAL-003', nombre: '% Auditorías de Calidad Aprobadas', tipo: 'Efectividad', sede: 'Sede Huachipa', proceso: 'Gestión de Calidad', norma: 'ISO 9001:2015', frecuencia: 'Trimestral', meta: '95', unidad: '%', estado: 'Activo' },
-      { codigo: 'IND-TIN-004', nombre: 'Rendimiento de Tintorería', tipo: 'Eficiencia', sede: 'Sede Santa Cecilia', proceso: 'Tintorería', norma: 'ISO 14001:2015', frecuencia: 'Mensual', meta: '90', unidad: '%', estado: 'Activo' }
+      { codigo: 'IND-COS-001', nombre: '% Eficiencia de Costura', tipo: 'Eficiencia', sede: 'Sede Huachipa', proceso: 'Costura', norma: 'ISO 9001:2015', frecuencia: 'Mensual', meta: '85', unidad: '%', estado: 'Activo', fuente: 'Reporte de producción', responsable: 'Jefe de Costura', respmed: 'Supervisor de Costura' },
+      { codigo: 'IND-SST-002', nombre: 'Índice de Frecuencia de Accidentes (IFA)', tipo: 'Eficacia', sede: 'Todas', proceso: 'SSOMA', norma: 'ISO 45001:2018', frecuencia: 'Mensual', meta: '2.5', unidad: 'Índice', estado: 'Activo', fuente: 'Reporte SSOMA', responsable: 'Jefe de SSOMA', respmed: 'Analista de Seguridad' },
+      { codigo: 'IND-CAL-003', nombre: '% Auditorías de Calidad Aprobadas', tipo: 'Efectividad', sede: 'Sede Huachipa', proceso: 'Gestión de Calidad', norma: 'ISO 9001:2015', frecuencia: 'Trimestral', meta: '95', unidad: '%', estado: 'Activo', fuente: 'Informe de Auditoría Interna', responsable: 'Líder de Calidad', respmed: 'Auditor Interno' },
+      { codigo: 'IND-TIN-004', nombre: 'Rendimiento de Tintorería', tipo: 'Eficiencia', sede: 'Sede Santa Cecilia', proceso: 'Tintorería', norma: 'ISO 14001:2015', frecuencia: 'Mensual', meta: '90', unidad: '%', estado: 'Activo', fuente: 'Sistema ERP', responsable: 'Jefe de Tintorería', respmed: 'Supervisor de Tintorería' }
     ];
+
+    const localInds = JSON.parse(localStorage.getItem('precotex_indicadores') || '[]');
+    if (localInds && localInds.length > 0) {
+      const allCodes = new Set(localInds.map((i: any) => i.codigo));
+      const combined = [...localInds, ...defaultData.filter(d => !allCodes.has(d.codigo))];
+      this.dataSource.data = combined;
+      this.calculateStats(combined);
+      return;
+    }
+
     this.dataSource.data = defaultData;
     this.calculateStats(defaultData);
   }
@@ -178,11 +192,12 @@ export class AnalyticsComponent implements OnInit {
     const generatedCode = `IND-${currentYear}-${String(nextNum).padStart(3, '0')}`;
 
     const dialogRef = this.dialog.open(AnalyticsRegeditComponent, {
-      width: '680px',
+      width: '740px',
+      maxWidth: '95vw',
       disableClose: true,
       panelClass: 'custom-dialog-no-padding',
       data: {
-        Title: '::. Registrar indicador .::',
+        Title: 'Registrar Indicador SIG',
         Accion: 'I',
         Datos: {
           codigo: generatedCode
@@ -194,19 +209,31 @@ export class AnalyticsComponent implements OnInit {
       if (res) {
         // Formatear valor numérico de meta
         const numericMeta = parseFloat(String(res.meta).replace(/[^0-9.]/g, '')) || 0;
+        const sedeStr = Array.isArray(res.sede) ? res.sede.join(', ') : (res.sede || 'Todas');
 
         const payload = {
           Accion: 'I',
           Codigo: res.codigo,
           Nombre: res.nombre,
           Tipo: res.tipo || 'Eficacia',
-          Sede: res.sede || 'Todas',
+          Sede: sedeStr,
           Norma: res.norma || 'ISO 9001:2015',
           Codigo_Proceso: res.proceso || '001',
           Nombre_Proceso: res.proceso || 'General',
           Unidad_Medida: res.unidad || '%',
           Meta: numericMeta,
+          Tipo_Meta: res.tipometa || 'Mayor o igual (≥)',
+          Sentido: res.sentido || '↑ Sube es bueno',
+          Linea_Base: res.base || '',
+          Formula: res.formula || '',
           Frecuencia: res.frecuencia || 'Mensual',
+          Fuente_Datos: res.fuente || '',
+          Responsable: res.responsable || '',
+          Resp_Medicion: res.respmed || '',
+          Fecha_Inicio: res.inicio ? `${res.inicio}T00:00:00` : null,
+          Fecha_Fin: res.fin ? `${res.fin}T00:00:00` : null,
+          Areas_Acceso: sedeStr,
+          Estado: res.estado || 'Activo',
           Usuario_Registro: 'SISTEMAS'
         };
 
@@ -217,13 +244,26 @@ export class AnalyticsComponent implements OnInit {
           codigo: res.codigo,
           nombre: res.nombre,
           tipo: res.tipo || 'Eficacia',
-          sede: res.sede || 'Todas',
+          sede: sedeStr,
           norma: res.norma || 'ISO 9001:2015',
           proceso: res.proceso || 'General',
           meta: numericMeta,
+          tipo_meta: res.tipometa || 'Mayor o igual (≥)',
+          sentido: res.sentido || '↑ Sube es bueno',
+          linea_base: res.base || '',
+          formula: res.formula || '',
           frecuencia: res.frecuencia || 'Mensual',
           unidad: res.unidad || '%',
-          estado: 'Activo'
+          unidad_medida: res.unidad || '%',
+          estado: res.estado || 'Activo',
+          fuente: res.fuente || '',
+          fuente_datos: res.fuente || '',
+          Fuente_Datos: res.fuente || '',
+          responsable: res.responsable || '',
+          respmed: res.respmed || '',
+          resp_medicion: res.respmed || '',
+          fecha_inicio: res.inicio || '',
+          fecha_fin: res.fin || ''
         };
         const updatedCatalog = [newLocalItem, ...localInds.filter((i: any) => i.codigo !== res.codigo)];
         localStorage.setItem('precotex_indicadores', JSON.stringify(updatedCatalog));
@@ -265,10 +305,12 @@ export class AnalyticsComponent implements OnInit {
 
   onEditar(item: any): void {
     const dialogRef = this.dialog.open(AnalyticsRegeditComponent, {
-      width: '680px',
+      width: '740px',
+      maxWidth: '95vw',
       disableClose: true,
+      panelClass: 'custom-dialog-no-padding',
       data: {
-        Title: '::. Editar indicador .::',
+        Title: 'Editar Indicador SIG',
         Accion: 'U',
         Datos: item
       }
@@ -277,17 +319,59 @@ export class AnalyticsComponent implements OnInit {
     dialogRef.afterClosed().subscribe(res => {
       if (res) {
         const numericMeta = parseFloat(String(res.meta).replace(/[^0-9.]/g, '')) || 0;
+        const sedeStr = Array.isArray(res.sede) ? res.sede.join(', ') : (res.sede || 'Todas');
 
         const payload = {
           Accion: 'U',
           Codigo: item.codigo,
           Nombre: res.nombre,
-          Codigo_Proceso: res.proceso || '001',
+          Tipo: res.tipo || 'Eficacia',
+          Sede: sedeStr,
+          Norma: res.norma || 'ISO 9001:2015',
+          Codigo_Proceso: res.proceso || item.codigo_proceso || '001',
+          Nombre_Proceso: res.proceso || item.nombre_proceso || 'General',
           Unidad_Medida: res.unidad || '%',
           Meta: numericMeta,
+          Tipo_Meta: res.tipometa || 'Mayor o igual (≥)',
+          Sentido: res.sentido || '↑ Sube es bueno',
+          Linea_Base: res.base || '',
+          Formula: res.formula || '',
           Frecuencia: res.frecuencia || 'Mensual',
+          Fuente_Datos: res.fuente || '',
+          Responsable: res.responsable || '',
+          Resp_Medicion: res.respmed || '',
+          Fecha_Inicio: res.inicio ? `${res.inicio}T00:00:00` : null,
+          Fecha_Fin: res.fin ? `${res.fin}T00:00:00` : null,
+          Areas_Acceso: sedeStr,
+          Estado: res.estado || 'Activo',
           Usuario_Registro: 'SISTEMAS'
         };
+
+        // Actualizar en catálogo local
+        const localInds = JSON.parse(localStorage.getItem('precotex_indicadores') || '[]');
+        const updatedLocal = localInds.map((i: any) => {
+          if (i.codigo === item.codigo) {
+            return {
+              ...i,
+              ...res,
+              sede: sedeStr,
+              Fuente_Datos: res.fuente,
+              fuente: res.fuente,
+              fuente_datos: res.fuente,
+              meta: numericMeta,
+              tipo_meta: res.tipometa,
+              sentido: res.sentido,
+              linea_base: res.base,
+              formula: res.formula,
+              unidad_medida: res.unidad,
+              responsable: res.responsable,
+              respmed: res.respmed,
+              resp_medicion: res.respmed
+            };
+          }
+          return i;
+        });
+        localStorage.setItem('precotex_indicadores', JSON.stringify(updatedLocal));
 
         this.indicadoresService.postIndicadorMnto(payload).subscribe({
           next: (response: any) => {

@@ -22,6 +22,7 @@
     "@angular/router": "^19.2.0",
     "@primeng/themes": "^19.1.4",
     "chart.js": "^4.5.1",
+    "exceljs": "^4.4.0",
     "mammoth": "^1.12.1",
     "ngx-spinner": "^19.0.0",
     "ngx-toastr": "^19.1.0",

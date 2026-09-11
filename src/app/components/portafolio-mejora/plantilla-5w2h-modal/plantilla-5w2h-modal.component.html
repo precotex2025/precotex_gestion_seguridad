@@ -1,0 +1,621 @@
+<div class="plantilla-modal-container">
+
+  <!-- TOP ACCENT LINE -->
+  <div class="modal-top-accent"></div>
+
+  <!-- CABECERA OFICIAL FOR-IMC-OYM-005 -->
+  <header class="modal-header">
+    <div class="header-company-info">
+      <div class="company-logo-badge">
+        <span class="logo-symbol">P</span>
+        <div class="logo-text-group">
+          <span class="company-title">PRECOTEX S.A.C.</span>
+          <span class="company-sub">SISTEMA INTEGRADO DE GESTIÓN</span>
+        </div>
+      </div>
+      <div class="header-doc-title">
+        <h2 class="doc-main-title">ANÁLISIS DE CAUSA RAÍZ</h2>
+        <span class="doc-sub-badge">METODOLOGÍA 5W-2H · ISHIKAWA · 5 POR QUÉS · PLAN CAPA</span>
+      </div>
+    </div>
+
+    <div class="header-right-meta">
+      <table class="table-doc-control">
+        <tr>
+          <td class="lbl">CÓDIGO:</td>
+          <td class="val code-font">{{ codigoFormato }}</td>
+        </tr>
+        <tr>
+          <td class="lbl">VERSIÓN:</td>
+          <td class="val">{{ versionFormato }}</td>
+        </tr>
+        <tr>
+          <td class="lbl">FECHA APROBACIÓN:</td>
+          <td class="val">{{ fechaAprobacion }}</td>
+        </tr>
+      </table>
+
+      <button type="button" class="btn-close-modal" (click)="onCerrar()" title="Cerrar ventana">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </header>
+
+  <!-- CLASIFICACIÓN Y METADATOS DEL ACR -->
+  <div class="metadata-strip">
+    <div class="meta-block">
+      <span class="meta-label">PROVENIENTE DE:</span>
+      <div class="meta-tags-row">
+        <label *ngFor="let opt of provenienteOptions" class="checkbox-tag" [class.checked]="opt.checked">
+          <input type="checkbox" [(ngModel)]="opt.checked">
+          <span>{{ opt.label }}</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="meta-row-lower">
+      <div class="meta-group-item">
+        <span class="meta-label">SISTEMA AFECTADO:</span>
+        <div class="chips-group">
+          <label *ngFor="let s of sistemasOptions" class="chip-item" [class.active]="s.checked">
+            <input type="checkbox" [(ngModel)]="s.checked">
+            <span>{{ s.label }}</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="meta-group-item">
+        <span class="meta-label">TIPO:</span>
+        <div class="chips-group">
+          <label *ngFor="let t of tipoOptions" class="chip-item radio-chip" [class.active]="t.checked">
+            <input type="checkbox" [(ngModel)]="t.checked">
+            <span>{{ t.label }}</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="meta-group-item acr-code-box">
+        <span class="meta-label">CÓDIGO DE ACR:</span>
+        <input type="text" class="input-code-acr" [(ngModel)]="codigoAcr" placeholder="Ej. ACR-2026-001">
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVEGADOR DE FASES (DEMING / KAIZEN) -->
+  <nav class="phases-nav-bar">
+    <button type="button" 
+            class="phase-tab-btn btn-fase-ir" 
+            [class.active]="faseActiva === 'ir-ver'" 
+            (click)="setFase('ir-ver')">
+      <div class="phase-icon-circle"><mat-icon>visibility</mat-icon></div>
+      <div class="phase-info">
+        <span class="phase-title">1. IR - VER</span>
+        <span class="phase-desc">Información General · 5W y 2H · Evidencias</span>
+      </div>
+      <span class="phase-badge-pill">Fase 1</span>
+    </button>
+
+    <button type="button" 
+            class="phase-tab-btn btn-fase-pensar" 
+            [class.active]="faseActiva === 'pensar'" 
+            (click)="setFase('pensar')">
+      <div class="phase-icon-circle"><mat-icon>psychology</mat-icon></div>
+      <div class="phase-info">
+        <span class="phase-title">2. PENSAR</span>
+        <span class="phase-desc">Ishikawa (7M) · Matriz RCA 5 Por Qués</span>
+      </div>
+      <span class="phase-badge-pill">Fase 2</span>
+    </button>
+
+    <button type="button" 
+            class="phase-tab-btn btn-fase-hacer" 
+            [class.active]="faseActiva === 'hacer'" 
+            (click)="setFase('hacer')">
+      <div class="phase-icon-circle"><mat-icon>task_alt</mat-icon></div>
+      <div class="phase-info">
+        <span class="phase-title">3. HACER</span>
+        <span class="phase-desc">Acciones Correctivas · Verificación Antes/Después</span>
+      </div>
+      <span class="phase-badge-pill">Fase 3</span>
+    </button>
+  </nav>
+
+  <!-- CUERPO PRINCIPAL CON SCROLL -->
+  <div class="modal-scroll-body">
+
+    <!-- ===================================================================
+         FASE 1: IR - VER (IMAGEN 2 DEL USUARIO)
+         =================================================================== -->
+    <div *ngIf="faseActiva === 'ir-ver'" class="phase-panel phase-ir-ver sn-fade-in">
+      
+      <div class="phase-layout-wrapper">
+        <!-- Barra Lateral Distintiva IR - VER -->
+        <aside class="side-stage-banner stage-ir">
+          <span class="vertical-text">IR - VER</span>
+        </aside>
+
+        <main class="phase-content-main">
+          
+          <!-- SECCIÓN 1: INFORMACIÓN GENERAL -->
+          <section class="form-block-card">
+            <div class="block-header header-blue">
+              <span class="circle-num">1</span>
+              <h3 class="block-title">INFORMACIÓN GENERAL</h3>
+            </div>
+            
+            <div class="info-grid-table">
+              <div class="grid-row">
+                <div class="grid-cell label-cell">Problema / Hallazgo :</div>
+                <div class="grid-cell value-cell">
+                  <input type="text" [(ngModel)]="infoGeneral.problema" class="input-table" placeholder="Describir el problema o hallazgo">
+                </div>
+              </div>
+
+              <div class="grid-row">
+                <div class="grid-cell label-cell">Línea / Área / Máquina :</div>
+                <div class="grid-cell value-cell">
+                  <input type="text" [(ngModel)]="infoGeneral.lineaArea" class="input-table" placeholder="Línea, máquina o área específica">
+                </div>
+              </div>
+
+              <div class="grid-row">
+                <div class="grid-cell label-cell">Fecha de ocurrencia :</div>
+                <div class="grid-cell value-cell">
+                  <input type="date" [(ngModel)]="infoGeneral.fechaOcurrencia" class="input-table date-input">
+                </div>
+              </div>
+
+              <div class="grid-row">
+                <div class="grid-cell label-cell">¿Ha ocurrido antes? / Describa lo ocurrido :</div>
+                <div class="grid-cell value-cell">
+                  <input type="text" [(ngModel)]="infoGeneral.haOcurridoAntes" class="input-table" placeholder="Indicar recurrencia y antecedentes">
+                </div>
+              </div>
+
+              <div class="grid-row">
+                <div class="grid-cell label-cell">Líder de Equipo :</div>
+                <div class="grid-cell value-cell">
+                  <input type="text" [(ngModel)]="infoGeneral.liderEquipo" class="input-table" placeholder="Nombre y puesto del líder de análisis">
+                </div>
+              </div>
+
+              <div class="grid-row">
+                <div class="grid-cell label-cell">Participantes del análisis :</div>
+                <div class="grid-cell value-cell">
+                  <input type="text" [(ngModel)]="infoGeneral.participantes" class="input-table" placeholder="Equipo multidisciplinario participante">
+                </div>
+              </div>
+
+              <div class="grid-row">
+                <div class="grid-cell label-cell">Fecha de análisis :</div>
+                <div class="grid-cell value-cell">
+                  <input type="date" [(ngModel)]="infoGeneral.fechaAnalisis" class="input-table date-input">
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- SECCIÓN 2: METODOLOGÍA 5W Y 2H -->
+          <section class="form-block-card">
+            <div class="block-header header-blue">
+              <span class="circle-num">2</span>
+              <h3 class="block-title">METODOLOGÍA 5W Y 2H</h3>
+            </div>
+
+            <div class="table-responsive-wrapper">
+              <table class="table-5w2h-official">
+                <thead>
+                  <tr>
+                    <th style="width: 140px;">Dimensión</th>
+                    <th style="width: 180px;">Pregunta Guía</th>
+                    <th>Respuesta / Descripción Detallada</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of preguntas5w2h">
+                    <td class="col-dim">
+                      <span class="tag-dim">{{ item.label }}</span>
+                    </td>
+                    <td class="col-desc-guide">{{ item.desc }}</td>
+                    <td class="col-input-val">
+                      <textarea [(ngModel)]="item.val" rows="2" class="textarea-table" placeholder="Registrar detalle..."></textarea>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- SECCIÓN 3: DIAGRAMA DE FLUJO Y EVIDENCIAS -->
+          <section class="form-block-card">
+            <div class="block-header header-blue">
+              <span class="circle-num">3</span>
+              <h3 class="block-title">Foto, dibujo descriptivo, diagrama de flujo, de información, de materiales, etc.</h3>
+            </div>
+
+            <div class="split-boxes-flow">
+              <div class="flow-box">
+                <div class="box-tag"><mat-icon>account_tree</mat-icon> DIAGRAMA DE FLUJO</div>
+                <div class="box-inner-placeholder">
+                  <mat-icon class="ph-icon">schema</mat-icon>
+                  <span class="ph-text">Pegue o inserte aquí el diagrama de flujo del proceso</span>
+                  <span class="ph-sub">Mapeo del flujo de material, operarios y puntos de control</span>
+                </div>
+              </div>
+
+              <div class="flow-box">
+                <div class="box-tag"><mat-icon>photo_camera</mat-icon> EVIDENCIAS</div>
+                <div class="box-inner-placeholder">
+                  <mat-icon class="ph-icon">add_photo_alternate</mat-icon>
+                  <span class="ph-text">Inserte aquí fotografías o evidencias del hallazgo</span>
+                  <span class="ph-sub">Fotos de la falla, pieza averiada o desviación detectada</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </main>
+      </div>
+
+    </div>
+
+    <!-- ===================================================================
+         FASE 2: PENSAR (IMAGEN 3 DEL USUARIO)
+         =================================================================== -->
+    <div *ngIf="faseActiva === 'pensar'" class="phase-panel phase-pensar sn-fade-in">
+
+      <div class="phase-layout-wrapper">
+        <!-- Barra Lateral Distintiva PENSAR -->
+        <aside class="side-stage-banner stage-pensar">
+          <span class="vertical-text">PENSAR</span>
+        </aside>
+
+        <main class="phase-content-main">
+
+          <!-- SECCIÓN 4: DIAGRAMA DE ISHIKAWA (7M) -->
+          <section class="form-block-card">
+            <div class="block-header header-green">
+              <span class="circle-num">4</span>
+              <div class="header-text-combo">
+                <h3 class="block-title">Diagrama de Causa - Efecto ( Lluvia de Ideas )</h3>
+                <span class="block-subtitle">Considerar las causas mayores · DIAGRAMA DE ISHIKAWA (7M)</span>
+              </div>
+            </div>
+
+            <!-- TABLERO VISUAL DE ISHIKAWA -->
+            <div class="ishikawa-board-container">
+              
+              <!-- RAMAS SUPERIORES (Mano de Obra, Materiales, Método, Management) -->
+              <div class="ishikawa-half ishikawa-top">
+                <div class="fish-bone-card bone-mano">
+                  <div class="bone-header">
+                    <mat-icon class="bone-icon">engineering</mat-icon>
+                    <span>MANO DE OBRA</span>
+                  </div>
+                  <div class="bone-causes-list">
+                    <div *ngFor="let c of ishikawa7M[0].causas; let i = index" class="cause-item">
+                      <span class="cause-dot"></span>
+                      <input type="text" [(ngModel)]="ishikawa7M[0].causas[i]" class="input-cause">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="fish-bone-card bone-materiales">
+                  <div class="bone-header">
+                    <mat-icon class="bone-icon">inventory_2</mat-icon>
+                    <span>MATERIALES</span>
+                  </div>
+                  <div class="bone-causes-list">
+                    <div *ngFor="let c of ishikawa7M[1].causas; let i = index" class="cause-item">
+                      <span class="cause-dot"></span>
+                      <input type="text" [(ngModel)]="ishikawa7M[1].causas[i]" class="input-cause">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="fish-bone-card bone-metodo">
+                  <div class="bone-header">
+                    <mat-icon class="bone-icon">format_list_numbered</mat-icon>
+                    <span>MÉTODO</span>
+                  </div>
+                  <div class="bone-causes-list">
+                    <div *ngFor="let c of ishikawa7M[2].causas; let i = index" class="cause-item">
+                      <span class="cause-dot"></span>
+                      <input type="text" [(ngModel)]="ishikawa7M[2].causas[i]" class="input-cause">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="fish-bone-card bone-management">
+                  <div class="bone-header">
+                    <mat-icon class="bone-icon">groups</mat-icon>
+                    <span>MANAGEMENT</span>
+                  </div>
+                  <div class="bone-causes-list">
+                    <div *ngFor="let c of ishikawa7M[3].causas; let i = index" class="cause-item">
+                      <span class="cause-dot"></span>
+                      <input type="text" [(ngModel)]="ishikawa7M[3].causas[i]" class="input-cause">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ESPINA CENTRAL CON FLECHA HACIA LA CABEZA DEL PESCADO -->
+              <div class="ishikawa-spine-row">
+                <div class="spine-line">
+                  <span class="spine-flow-text">EJE PRINCIPAL DE ANÁLISIS DE CAUSALIDAD</span>
+                </div>
+                <div class="fish-head-box">
+                  <div class="fish-head-title">PROBLEMA ENFOCADO</div>
+                  <div class="fish-head-body">
+                    <label class="head-lbl">Problema:</label>
+                    <textarea class="textarea-head-problem" [(ngModel)]="infoGeneral.problema" rows="3"></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <!-- RAMAS INFERIORES (Maquinaria, Medida, Medio Ambiente) -->
+              <div class="ishikawa-half ishikawa-bottom">
+                <div class="fish-bone-card bone-maquinaria">
+                  <div class="bone-header">
+                    <mat-icon class="bone-icon">precision_manufacturing</mat-icon>
+                    <span>MAQUINARIA</span>
+                  </div>
+                  <div class="bone-causes-list">
+                    <div *ngFor="let c of ishikawa7M[4].causas; let i = index" class="cause-item">
+                      <span class="cause-dot"></span>
+                      <input type="text" [(ngModel)]="ishikawa7M[4].causas[i]" class="input-cause">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="fish-bone-card bone-medida">
+                  <div class="bone-header">
+                    <mat-icon class="bone-icon">straighten</mat-icon>
+                    <span>MEDIDA</span>
+                  </div>
+                  <div class="bone-causes-list">
+                    <div *ngFor="let c of ishikawa7M[5].causas; let i = index" class="cause-item">
+                      <span class="cause-dot"></span>
+                      <input type="text" [(ngModel)]="ishikawa7M[5].causas[i]" class="input-cause">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="fish-bone-card bone-ambiente">
+                  <div class="bone-header">
+                    <mat-icon class="bone-icon">thermostat</mat-icon>
+                    <span>MEDIO AMBIENTE</span>
+                  </div>
+                  <div class="bone-causes-list">
+                    <div *ngFor="let c of ishikawa7M[6].causas; let i = index" class="cause-item">
+                      <span class="cause-dot"></span>
+                      <input type="text" [(ngModel)]="ishikawa7M[6].causas[i]" class="input-cause">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- SECCIÓN 5: RCA-5 POR QUÉ -->
+          <section class="form-block-card">
+            <div class="block-header header-green">
+              <span class="circle-num">5</span>
+              <div class="header-text-combo">
+                <h3 class="block-title">RCA-5 Por qué: con el esquema de los 5 porqué?</h3>
+                <span class="block-subtitle">Vincular las acciones con cada causa raíz correspondiente. Se recomienda llegar como mínimo al tercer por qué para cada posible causa para un mejor análisis</span>
+              </div>
+            </div>
+
+            <div class="table-responsive-wrapper">
+              <table class="table-5porques-official">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">#</th>
+                    <th style="width: 220px;">Posible Causa</th>
+                    <th>¿POR QUÉ? (1)</th>
+                    <th>¿POR QUÉ? (2)</th>
+                    <th>¿POR QUÉ? (3)</th>
+                    <th>¿POR QUÉ? (4)</th>
+                    <th class="th-causa-raiz">¿POR QUÉ? (5 - Causa Raíz)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of filas5PorQue">
+                    <td class="text-center font-bold">{{ row.id }}</td>
+                    <td>
+                      <textarea [(ngModel)]="row.causaPosible" rows="3" class="input-pq" placeholder="Causa identificada..."></textarea>
+                    </td>
+                    <td><textarea [(ngModel)]="row.pq1" rows="3" class="input-pq"></textarea></td>
+                    <td><textarea [(ngModel)]="row.pq2" rows="3" class="input-pq"></textarea></td>
+                    <td><textarea [(ngModel)]="row.pq3" rows="3" class="input-pq"></textarea></td>
+                    <td><textarea [(ngModel)]="row.pq4" rows="3" class="input-pq"></textarea></td>
+                    <td class="td-causa-raiz"><textarea [(ngModel)]="row.pq5" rows="3" class="input-pq pq-raiz"></textarea></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+        </main>
+      </div>
+
+    </div>
+
+    <!-- ===================================================================
+         FASE 3: HACER (IMAGEN 4 DEL USUARIO)
+         =================================================================== -->
+    <div *ngIf="faseActiva === 'hacer'" class="phase-panel phase-hacer sn-fade-in">
+
+      <div class="phase-layout-wrapper">
+        <!-- Barra Lateral Distintiva HACER -->
+        <aside class="side-stage-banner stage-hacer">
+          <span class="vertical-text">HACER</span>
+        </aside>
+
+        <main class="phase-content-main">
+
+          <!-- SECCIÓN 6: ACCIONES CORRECTIVAS -->
+          <section class="form-block-card">
+            <div class="block-header header-orange">
+              <span class="circle-num">6</span>
+              <div class="header-text-combo">
+                <h3 class="block-title">Causa Raíz Vinculada / ACCIONES CORRECTIVAS</h3>
+                <span class="block-subtitle">(que solucionen las causas raíces identificadas)</span>
+              </div>
+            </div>
+
+            <div class="table-responsive-wrapper">
+              <table class="table-acciones-official">
+                <thead>
+                  <tr>
+                    <th style="width: 220px;">Causa Raíz Vinculada</th>
+                    <th>ACCIONES CORRECTIVAS (que solucionen las causas raíces)</th>
+                    <th style="width: 190px;">Responsable (Puesto / Nombre)</th>
+                    <th style="width: 180px;">Fecha Programada (Inicio - Fin)</th>
+                    <th style="width: 130px; text-align: center;">Estatus</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let a of accionesCorrectivas">
+                    <td>
+                      <textarea [(ngModel)]="a.causaRaiz" rows="2" class="input-action-field font-medium"></textarea>
+                    </td>
+                    <td>
+                      <textarea [(ngModel)]="a.accion" rows="2" class="input-action-field"></textarea>
+                    </td>
+                    <td>
+                      <textarea [(ngModel)]="a.responsable" rows="2" class="input-action-field"></textarea>
+                    </td>
+                    <td>
+                      <div class="dates-pair-row">
+                        <input type="date" [(ngModel)]="a.inicio" class="input-date-sm" title="Fecha Inicio">
+                        <span class="date-sep">a</span>
+                        <input type="date" [(ngModel)]="a.fin" class="input-date-sm" title="Fecha Fin">
+                      </div>
+                    </td>
+                    <td class="text-center">
+                      <span class="status-badge-official" [ngClass]="{
+                        'status-pendiente': a.estatus === 'Pendiente',
+                        'status-proceso': a.estatus === 'En proceso',
+                        'status-cerrado': a.estatus === 'Cerrado'
+                      }">
+                        {{ a.estatus }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- SECCIÓN 7: VERIFICACIÓN DE LA EFECTIVIDAD -->
+          <section class="form-block-card">
+            <div class="block-header header-orange">
+              <span class="circle-num">7</span>
+              <div class="header-text-combo">
+                <h3 class="block-title">Verificación de la efectividad (Registrar indicadores)</h3>
+                <span class="block-subtitle">Medición y evidencia del resultado antes y después de la implementación</span>
+              </div>
+            </div>
+
+            <!-- COMPARATIVA ANTES VS DESPUÉS -->
+            <div class="antes-despues-grid">
+              
+              <!-- Tarjeta ANTES -->
+              <div class="efectividad-card card-antes">
+                <div class="efectividad-card-header">
+                  <mat-icon>history</mat-icon>
+                  <h4>Antes: Registrar situación o condición existente antes de la implementación</h4>
+                </div>
+                <div class="efectividad-card-body">
+                  <textarea [(ngModel)]="verificacion.antes" rows="3" class="textarea-efectividad" placeholder="Detalle la condición inicial..."></textarea>
+                  
+                  <div class="indicador-chart-box">
+                    <span class="lbl-ind-chart">NOMBRE DEL INDICADOR (SITUACIÓN INICIAL)</span>
+                    <div class="chart-sparkline-demo sparkline-red">
+                      <mat-icon>show_chart</mat-icon>
+                      <span>Variación / Tendencia inicial</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tarjeta DESPUÉS -->
+              <div class="efectividad-card card-despues">
+                <div class="efectividad-card-header">
+                  <mat-icon>check_circle</mat-icon>
+                  <h4>Después: Registrar situación observada después para evidenciar la mejora</h4>
+                </div>
+                <div class="efectividad-card-body">
+                  <textarea [(ngModel)]="verificacion.despues" rows="3" class="textarea-efectividad" placeholder="Detalle la condición alcanzada..."></textarea>
+                  
+                  <div class="indicador-chart-box">
+                    <span class="lbl-ind-chart">NOMBRE DEL INDICADOR (RESULTADO OPTIMIZADO)</span>
+                    <div class="chart-sparkline-demo sparkline-green">
+                      <mat-icon>trending_up</mat-icon>
+                      <span>Control / Estabilidad alcanzada</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- FILA INFERIOR DE VALIDACIÓN Y FIRMAS -->
+            <div class="verification-signoff-strip">
+              <div class="signoff-item">
+                <span class="signoff-label">Responsable de la verificación:</span>
+                <input type="text" [(ngModel)]="verificacion.responsable" class="signoff-input">
+              </div>
+
+              <div class="signoff-item">
+                <span class="signoff-label">Fecha:</span>
+                <input type="date" [(ngModel)]="verificacion.fecha" class="signoff-input date-input">
+              </div>
+
+              <div class="signoff-item">
+                <span class="signoff-label">Firma:</span>
+                <input type="text" [(ngModel)]="verificacion.firma" class="signoff-input font-cursive">
+              </div>
+
+              <div class="signoff-item full-col">
+                <span class="signoff-label">Comentarios:</span>
+                <input type="text" [(ngModel)]="verificacion.comentarios" class="signoff-input">
+              </div>
+            </div>
+
+          </section>
+
+        </main>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- FOOTER DIALOG ACTIONS -->
+  <footer class="modal-footer">
+    <div class="footer-left">
+      <span class="footer-note-doc">
+        <mat-icon class="note-icon">verified</mat-icon>
+        Formato Oficial Precotex S.A.C. · <strong>FOR-IMC-OYM-005</strong> Rev. 03 (30/04/2026)
+      </span>
+    </div>
+
+    <div class="footer-right-buttons">
+      <button type="button" class="btn-ghost-cancel" (click)="onCerrar()">
+        <mat-icon>close</mat-icon>
+        <span>Cerrar</span>
+      </button>
+
+      <button type="button" class="btn-download-excel" (click)="onDescargarExcel()" title="Descargar libro Excel oficial con las hojas IR-VER, PENSAR y HACER">
+        <mat-icon>file_download</mat-icon>
+        <span>Descargar Plantilla Excel Oficial (FOR-IMC-OYM-001)</span>
+      </button>
+    </div>
+  </footer>
+
+</div>

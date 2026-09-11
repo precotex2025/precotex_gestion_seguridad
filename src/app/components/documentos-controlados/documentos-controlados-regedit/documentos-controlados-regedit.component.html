@@ -47,49 +47,113 @@
       </div>
     </div>
 
-    <!-- Fila 4: Proceso (Grouped) -->
+    <!-- SECCIÓN UNIFICADA: PROCESO / ÁREA RESPONSABLE Y VISIBILIDAD (DOC-15) -->
     <div class="form-row">
-      <div class="form-group full-width">
-        <label class="form-label">Proceso / Área Responsable</label>
-        <select formControlName="proceso" class="form-input" (change)="onModoVisibilidadChange()">
-          <optgroup *ngFor="let macro of getMacroProcesses()" [label]="macro">
-            <option *ngFor="let proc of PROCESOS_GROUPS[macro]" [value]="proc">{{ proc }}</option>
-          </optgroup>
-        </select>
-      </div>
-    </div>
-
-    <!-- Fila 4.5: Visibilidad y Procesos Permitidos (DOC-15) -->
-    <div class="form-row">
-      <div class="form-group full-width" style="background: rgba(30, 41, 59, 0.5); padding: 12px; border-radius: 8px; border: 1px solid #334155;">
-        <label class="form-label" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <span style="font-weight: 700; color: #f8fafc;">🌐 Procesos con Permiso de Lectura / Visibilidad (DOC-15)</span>
-          <small style="color: #818cf8; font-weight: 600; font-size: 11px;">¿Qué procesos pueden ver este documento?</small>
-        </label>
-        
-        <div style="display: flex; gap: 14px; margin-bottom: 10px; font-size: 12px; flex-wrap: wrap;">
-          <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; color: #34d399; font-weight: 600;">
-            <input type="radio" name="modoVisibilidad" value="TODOS" [(ngModel)]="modoVisibilidad" [ngModelOptions]="{standalone: true}" (change)="onModoVisibilidadChange()">
-            🌐 Todos los procesos (Público)
-          </label>
-          <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; color: #60a5fa; font-weight: 600;">
-            <input type="radio" name="modoVisibilidad" value="SOLO_PROCESO" [(ngModel)]="modoVisibilidad" [ngModelOptions]="{standalone: true}" (change)="onModoVisibilidadChange()">
-            🔒 Solo mi proceso
-          </label>
-          <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; color: #c084fc; font-weight: 600;">
-            <input type="radio" name="modoVisibilidad" value="PERSONALIZADO" [(ngModel)]="modoVisibilidad" [ngModelOptions]="{standalone: true}" (change)="onModoVisibilidadChange()">
-            👥 Seleccionar procesos específicos
-          </label>
+      <div class="form-group full-width doc15-container">
+        <div class="doc15-header">
+          <div class="doc15-title-group">
+            <span class="doc15-label">Proceso / Área Responsable y Procesos Autorizados (DOC-15) (*)</span>
+            <span class="doc15-subtext">Seleccione qué procesos son responsables o están autorizados para ver este documento (puede seleccionar 2 o más).</span>
+          </div>
+          <span class="doc15-status-badge badge-all" *ngIf="modoVisibilidad === 'TODOS'">
+            🌐 Visible para Todos
+          </span>
+          <span class="doc15-status-badge badge-custom" *ngIf="modoVisibilidad === 'PERSONALIZADO'">
+            ✓ {{ procesosSeleccionados.length }} {{ procesosSeleccionados.length === 1 ? 'proceso' : 'procesos' }}
+          </span>
         </div>
 
-        <!-- LISTA DE CHECKBOXES PARA SELECCIÓN DE PROCESOS ESPECÍFICOS (DOC-15) -->
-        <div *ngIf="modoVisibilidad === 'PERSONALIZADO'" 
-             style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; max-height: 130px; overflow-y: auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; font-size: 11.5px;">
-          <label *ngFor="let p of listaProcesosDisponibles" style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: #cbd5e1;">
-            <input type="checkbox" [checked]="isProcesoSeleccionado(p)" (change)="toggleProcesoVisibilidad(p)">
-            <span>{{ p }}</span>
-          </label>
+        <!-- Selector de Modo de Asignación / Visibilidad -->
+        <div class="doc15-mode-pills">
+          <button type="button" 
+                  class="pill-btn" 
+                  [class.pill-active]="modoVisibilidad === 'TODOS'"
+                  (click)="setModoVisibilidad('TODOS')">
+            <span class="pill-dot" [class.dot-active]="modoVisibilidad === 'TODOS'"></span>
+            <span>🌐 Todos los procesos (Público general)</span>
+          </button>
+
+          <button type="button" 
+                  class="pill-btn" 
+                  [class.pill-active]="modoVisibilidad === 'PERSONALIZADO'"
+                  (click)="setModoVisibilidad('PERSONALIZADO')">
+            <span class="pill-dot" [class.dot-active]="modoVisibilidad === 'PERSONALIZADO'"></span>
+            <span>👥 Seleccionar procesos específicos (2 o más)</span>
+          </button>
         </div>
+
+        <!-- PANEL DE SELECCIÓN DE 2 O MÁS PROCESOS -->
+        <div class="doc15-process-panel" *ngIf="modoVisibilidad === 'PERSONALIZADO'">
+          
+          <!-- Barra de búsqueda y acciones rápidas -->
+          <div class="panel-tools-row">
+            <div class="search-input-wrapper">
+              <span class="material-icons search-ico">search</span>
+              <input type="text" 
+                     [(ngModel)]="busquedaProceso" 
+                     [ngModelOptions]="{standalone: true}"
+                     placeholder="Filtrar proceso (ej. Costura, Calidad, SSOMA)..." 
+                     class="search-proc-input">
+              <button type="button" 
+                      *ngIf="busquedaProceso" 
+                      (click)="busquedaProceso = ''" 
+                      class="btn-clear-search">
+                <span class="material-icons" style="font-size: 14px;">close</span>
+              </button>
+            </div>
+
+            <div class="quick-actions">
+              <button type="button" class="btn-quick" (click)="seleccionarTodosProcesos()">Marcar todos</button>
+              <button type="button" class="btn-quick" (click)="limpiarProcesos()">Limpiar</button>
+            </div>
+          </div>
+
+          <!-- CHIPS DE PROCESOS SELECCIONADOS ACTUALMENTE -->
+          <div class="selected-chips-bar" *ngIf="procesosSeleccionados.length > 0">
+            <span class="chips-label">Seleccionados ({{ procesosSeleccionados.length }}):</span>
+            <div class="chips-list">
+              <span *ngFor="let p of procesosSeleccionados" class="proc-chip">
+                <span>{{ p }}</span>
+                <span class="material-icons chip-remove" (click)="removeProceso(p)" title="Quitar proceso">close</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- LISTADO DE PROCESOS CON CHECKBOXES AGRUPADOS POR MACROPROCESO -->
+          <div class="process-scroll-container">
+            <ng-container *ngFor="let macro of getMacroProcesses()">
+              <div class="macro-category-box" *ngIf="getProcesosFiltradosPorMacro(macro).length > 0">
+                
+                <div class="macro-category-title">
+                  <span class="material-icons macro-ico">folder</span>
+                  <span class="macro-name">{{ macro }}</span>
+                  <button type="button" class="btn-macro-check-all" (click)="toggleMacroCompleto(macro)">
+                    {{ isMacroTodoSeleccionado(macro) ? 'Desmarcar grupo' : 'Marcar grupo' }}
+                  </button>
+                </div>
+
+                <div class="process-checkbox-grid">
+                  <label *ngFor="let proc of getProcesosFiltradosPorMacro(macro)" 
+                         class="proc-checkbox-card" 
+                         [class.proc-checked]="isProcesoSeleccionado(proc)">
+                    <input type="checkbox" 
+                           [checked]="isProcesoSeleccionado(proc)" 
+                           (change)="toggleProceso(proc)">
+                    <span class="proc-name-text">{{ proc }}</span>
+                  </label>
+                </div>
+
+              </div>
+            </ng-container>
+          </div>
+
+          <!-- Aviso si no hay procesos seleccionados -->
+          <div *ngIf="procesosSeleccionados.length === 0" class="empty-proc-warning">
+            <span class="material-icons warn-ico">warning</span>
+            <span>Debe seleccionar al menos 1 proceso responsable (puede marcar 2 o más).</span>
+          </div>
+        </div>
+
       </div>
     </div>
 

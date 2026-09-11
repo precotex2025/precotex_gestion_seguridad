@@ -1,6 +1,4 @@
 <div class="dashboard sn-animate-in">
-
-  <!-- HERO SECTION: Greeting & Global Compliance Gauge -->
   <header class="dashboard-hero">
     <div class="hero-content">
       <div class="hero-user">
@@ -8,20 +6,31 @@
           <span class="user-initial">{{ userName.charAt(0).toUpperCase() }}</span>
         </div>
         <div class="hero-text">
+          <div class="hero-badge-role">
+            <span class="pulse-dot-green"></span>
+            <span>Panel de Gestión SOMA</span>
+          </div>
           <h1 class="hero-greeting">{{ greeting }}, <span class="highlight-name">{{ userName }}</span></h1>
           <p class="hero-date"><i class="pi pi-calendar"></i> {{ currentDate | titlecase }}</p>
         </div>
       </div>
 
-      <!-- Animated SVG Compliance Radial Gauge -->
+      <!-- Animated SVG Compliance Radial Gauge con Gradiente -->
       <div class="hero-gauge-box">
         <div class="svg-gauge-container">
           <svg class="gauge-svg" viewBox="0 0 100 100">
+            <defs>
+              <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#4f46e5" />
+                <stop offset="100%" stop-color="#06b6d4" />
+              </linearGradient>
+            </defs>
             <!-- Background circle -->
-            <circle class="gauge-bg" cx="50" cy="50" r="42" />
+            <circle class="gauge-bg" cx="50" cy="50" r="40" />
             <!-- Animated progress circle -->
-            <circle class="gauge-progress" cx="50" cy="50" r="42"
-                    [style.strokeDashoffset]="264 - (264 * animatedGaugeValue) / 100" />
+            <circle class="gauge-progress" cx="50" cy="50" r="40"
+                    stroke="url(#gaugeGrad)"
+                    [style.strokeDashoffset]="251.2 - (251.2 * animatedGaugeValue) / 100" />
           </svg>
           <div class="gauge-center-text">
             <span class="gauge-percent">{{ animatedGaugeValue }}%</span>
@@ -38,24 +47,21 @@
          class="bento-kpi-card"
          [ngClass]="kpi.colorClass"
          (click)="kpi.route ? navigateTo(kpi.route) : null">
-      <div class="kpi-glow-effect"></div>
       <div class="kpi-header-row">
         <div class="kpi-icon-badge">
           <i [class]="kpi.icon"></i>
         </div>
-        <div class="kpi-sparkline-mini">
-          <svg viewBox="0 0 50 20" class="sparkline-svg">
-            <path d="M 0,15 Q 12,5 25,12 T 50,3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-          </svg>
-        </div>
+        <span class="kpi-trend-pill" [class.positive]="kpi.trendUp" [class.neutral]="!kpi.trendUp">
+          <i [class]="kpi.trendUp ? 'pi pi-arrow-up-right' : 'pi pi-check-circle'"></i>
+          {{ kpi.trend }}
+        </span>
       </div>
       <div class="kpi-main-body">
         <span class="kpi-big-number">{{ kpi.value }}</span>
         <span class="kpi-label-text">{{ kpi.title }}</span>
       </div>
-      <div class="kpi-footer-row" [class.positive]="kpi.trendUp" [class.negative]="!kpi.trendUp">
-        <i [class]="kpi.trendUp ? 'pi pi-arrow-up-right' : 'pi pi-check-circle'"></i>
-        <span>{{ kpi.trend }}</span>
+      <div class="kpi-progress-track">
+        <div class="kpi-progress-bar" [style.width.%]="kpi.value > 0 ? (kpi.value * 15 > 100 ? 100 : kpi.value * 15) : 10"></div>
       </div>
     </div>
   </section>
@@ -67,7 +73,9 @@
     <div class="bento-box chart-bento-box">
       <div class="bento-box-header">
         <div class="header-title-wrapper">
-          <i class="pi pi-chart-bar box-icon color-indigo"></i>
+          <div class="icon-circle icon-circle-indigo">
+            <i class="pi pi-chart-bar"></i>
+          </div>
           <div>
             <h3 class="bento-box-title">Cumplimiento por Categoría</h3>
             <span class="bento-box-sub">Evaluación actual registrada en base de datos</span>
@@ -85,23 +93,27 @@
     </div>
 
     <!-- Right: Glassmorphic Alerts Panel (1/3 width) -->
-    <div class="bento-box alerts-bento-box glass-panel">
+    <div class="bento-box alerts-bento-box">
       <div class="bento-box-header">
         <div class="header-title-wrapper">
-          <i class="pi pi-bell box-icon color-rose animated-bell"></i>
+          <div class="icon-circle icon-circle-rose">
+            <i class="pi pi-bell animated-bell"></i>
+          </div>
           <div>
             <h3 class="bento-box-title">Alertas del Sistema</h3>
-            <span class="bento-box-sub">Notificaciones críticas</span>
+            <span class="bento-box-sub">Notificaciones de control</span>
           </div>
         </div>
-        <span class="live-pulse-container" title="Monitoreo activo">
-          <span class="pulse-dot"></span>
+        <span class="badge-pill-soft">
+          <span class="pulse-dot"></span> {{ alertas.length }} Activas
         </span>
       </div>
       <div class="bento-box-body">
         <div class="alerts-feed-list">
-          <div *ngFor="let alerta of alertas" class="alert-glass-card" [ngClass]="'alert-sev-' + alerta.severidad">
-            <div class="alert-icon-bar"></div>
+          <div *ngFor="let alerta of alertas" class="alert-item-card" [ngClass]="'alert-sev-' + alerta.severidad">
+            <div class="alert-icon-wrap">
+              <i [class]="alerta.severidad === 'danger' ? 'pi pi-exclamation-circle' : (alerta.severidad === 'warning' ? 'pi pi-exclamation-triangle' : (alerta.severidad === 'success' ? 'pi pi-check-circle' : 'pi pi-info-circle'))"></i>
+            </div>
             <div class="alert-content-wrapper">
               <p class="alert-msg">{{ alerta.titulo }}</p>
               <div class="alert-meta-bar">
@@ -116,14 +128,16 @@
 
   </section>
 
-  <!-- BENTO GRID TIER 3: Activity Timeline Feed (2/3) + Upcoming Events & Risk Dist (1/3) -->
+  <!-- BENTO GRID TIER 3: Activity Timeline Feed (2/3) + Quick Access & Upcoming Events (1/3) -->
   <section class="bento-bottom-grid">
     
     <!-- Left Column: Activity Timeline Feed -->
     <div class="bento-box activity-bento-box">
       <div class="bento-box-header">
         <div class="header-title-wrapper">
-          <i class="pi pi-history box-icon color-violet"></i>
+          <div class="icon-circle icon-circle-violet">
+            <i class="pi pi-history"></i>
+          </div>
           <div>
             <h3 class="bento-box-title">Actividad Reciente</h3>
             <span class="bento-box-sub">Feed de eventos registrados en la plataforma</span>
@@ -135,14 +149,15 @@
         <div class="timeline-feed">
           <div *ngFor="let act of actividades" class="timeline-feed-item">
             <div class="timeline-marker">
-              <div class="timeline-avatar">
-                {{ act.usuario.charAt(0).toUpperCase() }}
+              <div class="timeline-avatar" [ngClass]="getModuleColorClass(act.modulo)">
+                <i [class]="getModuleIcon(act.modulo)"></i>
               </div>
+              <div class="timeline-line"></div>
             </div>
             <div class="timeline-content">
               <div class="timeline-header-line">
-                <span class="timeline-module-tag">{{ act.modulo }}</span>
-                <span class="timeline-time">{{ act.fecha }}</span>
+                <span class="timeline-module-tag" [ngClass]="getModuleColorClass(act.modulo)">{{ act.modulo }}</span>
+                <span class="timeline-time"><i class="pi pi-clock"></i> {{ act.fecha }}</span>
               </div>
               <p class="timeline-desc">{{ act.accion }}</p>
               <div class="timeline-footer-line">
@@ -164,7 +179,9 @@
       <div class="bento-box quick-access-box">
         <div class="bento-box-header">
           <div class="header-title-wrapper">
-            <i class="pi pi-th-large box-icon color-sky"></i>
+            <div class="icon-circle icon-circle-sky">
+              <i class="pi pi-th-large"></i>
+            </div>
             <h3 class="bento-box-title">Accesos Rápidos</h3>
           </div>
         </div>
@@ -174,7 +191,7 @@
                  class="access-tile"
                  (click)="navigateTo(acceso.route)"
                  [title]="acceso.description">
-              <div class="tile-icon-box" [style.background-color]="acceso.color + '18'" [style.color]="acceso.color">
+              <div class="tile-icon-box" [style.background-color]="acceso.color + '15'" [style.color]="acceso.color">
                 <i [class]="acceso.icon"></i>
               </div>
               <span class="tile-label">{{ acceso.label }}</span>
@@ -187,7 +204,9 @@
       <div class="bento-box events-bento-box">
         <div class="bento-box-header">
           <div class="header-title-wrapper">
-            <i class="pi pi-calendar box-icon color-amber"></i>
+            <div class="icon-circle icon-circle-amber">
+              <i class="pi pi-calendar"></i>
+            </div>
             <h3 class="bento-box-title">Próximos Eventos</h3>
           </div>
         </div>
@@ -215,10 +234,12 @@
 
   <!-- BENTO GRID TIER 4: Resguardo de Copia de Seguridad (INI-01) -->
   <section class="bento-backup-section">
-    <div class="bento-box backup-bento-box glass-panel">
+    <div class="bento-box backup-bento-box">
       <div class="bento-box-header">
         <div class="header-title-wrapper">
-          <i class="pi pi-shield box-icon color-emerald"></i>
+          <div class="icon-circle icon-circle-emerald">
+            <i class="pi pi-shield"></i>
+          </div>
           <div>
             <h3 class="bento-box-title">Copia de Seguridad y Resguardo del Sistema (INI-01)</h3>
             <span class="bento-box-sub">Protección continua de Base de Datos SQL Server + Repositorio Documental</span>
@@ -236,19 +257,19 @@
           <div class="backup-metric-card">
             <span class="metric-label"><i class="pi pi-clock"></i> Último Resguardo</span>
             <span class="metric-value">{{ backupData.ultimaEjecucion }}</span>
-            <span class="metric-sub">Protección resguardada en servidor</span>
+            <span class="metric-sub">Protección en servidor</span>
           </div>
 
           <div class="backup-metric-card">
             <span class="metric-label"><i class="pi pi-database"></i> Tamaño de Copia</span>
             <span class="metric-value text-emerald">{{ backupData.tamanoTotal || '48.5 MB' }}</span>
-            <span class="metric-sub">Integridad verificada 100%</span>
+            <span class="metric-sub">Integridad verificada</span>
           </div>
 
           <div class="backup-metric-card">
             <span class="metric-label"><i class="pi pi-sync"></i> Frecuencia Automática</span>
             <span class="metric-value text-sky">Diario (02:00 AM)</span>
-            <span class="metric-sub">Retención resguardada por 30 días</span>
+            <span class="metric-sub">Retención: 30 días</span>
           </div>
         </div>
 
@@ -257,16 +278,16 @@
           <div class="action-buttons-row">
             <button type="button" class="btn-backup-primary" (click)="onGenerarBackup()" [disabled]="isGeneratingBackup">
               <i [class]="isGeneratingBackup ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"></i>
-              <span>{{ isGeneratingBackup ? 'Resguardando...' : 'Generar Copia de Seguridad Ahora' }}</span>
+              <span>{{ isGeneratingBackup ? 'Resguardando...' : 'Generar Copia Ahora' }}</span>
             </button>
 
             <button type="button" class="btn-backup-ghost" (click)="onDescargarBackup()">
               <i class="pi pi-download"></i>
-              <span>Descargar Copia de Resguardo</span>
+              <span>Descargar Copia</span>
             </button>
           </div>
           <p class="backup-security-note">
-            <i class="pi pi-lock"></i> Las copias de seguridad se almacenan en ubicaciones físicas resguardadas y cifradas en el servidor.
+            <i class="pi pi-lock"></i> Copias de seguridad cifradas y resguardadas en servidor institucional.
           </p>
         </div>
       </div>

@@ -168,7 +168,9 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
       { nombre: 'Alfredo Toro', email: 'atoro@precotexperu.com', puesto: 'Analista de Sistemas', proceso: 'Tecnologías de la Información (Sistemas)', nivel: 'Operativo' },
       { nombre: 'Francisco Huamani', email: 'fhuamani@precotexperu.com', puesto: 'Analista SIG', proceso: 'Sistema de Gestión General', nivel: 'Operativo' },
       { nombre: 'Max Soria', email: 'msoria@precotexperu.com', puesto: 'Analista de Sistemas', proceso: 'Tecnologías de la Información (Sistemas)', nivel: 'Operativo' },
-      { nombre: 'Karem Flores', email: 'kflores@precotexperu.com', puesto: 'Gerente de Comercial', proceso: 'Comercial Exportación de Prendas', nivel: 'Gerencial' }
+      { nombre: 'Karem Flores', email: 'kflores@precotexperu.com', puesto: 'Gerente de Comercial', proceso: 'Comercial Exportación de Prendas', nivel: 'Gerencial' },
+      { nombre: 'Mia Zegarra', email: 'mzegarra@precotexperu.com', puesto: 'Analista de Auditoría Interna', proceso: 'Auditoría Interna', nivel: 'Operativo' },
+      { nombre: 'Keith Vega', email: 'kvega@precotexperu.com', puesto: 'Asistente de Auditoría Interna', proceso: 'Auditoría Interna', nivel: 'Operativo' }
     ];
 
     try {

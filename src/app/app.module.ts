@@ -108,6 +108,7 @@ import { MedicionRegeditComponent } from './components/analytics/medicion-indica
 import { MedicionObjetivosRegeditComponent } from './components/planificacion-objetivos/medicion-objetivos-regedit/medicion-objetivos-regedit.component';
 import { PortafolioMejoraComponent } from './components/portafolio-mejora/portafolio-mejora.component';
 import { PortafolioMejoraRegeditComponent } from './components/portafolio-mejora/portafolio-mejora-regedit/portafolio-mejora-regedit.component';
+import { Plantilla5w2hModalComponent } from './components/portafolio-mejora/plantilla-5w2h-modal/plantilla-5w2h-modal.component';
 import { ReqLegalComponent } from './components/req-legal/req-legal.component';
 import { ReqLegalRegeditComponent } from './components/req-legal/req-legal-regedit/req-legal-regedit.component';
 import { ReqLegalDetailComponent } from './components/req-legal/req-legal-detail/req-legal-detail.component';
@@ -175,6 +176,7 @@ import { ProveedoresRegeditComponent } from './components/proveedores/proveedore
     MedicionObjetivosRegeditComponent,
     PortafolioMejoraComponent,
     PortafolioMejoraRegeditComponent,
+    Plantilla5w2hModalComponent,
     ReqLegalComponent,
     ReqLegalRegeditComponent,
     ReqLegalDetailComponent,

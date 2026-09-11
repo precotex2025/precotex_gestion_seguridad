@@ -45,6 +45,24 @@ export class MedicionIndicadoresComponent implements OnInit {
     this.onListado();
   }
 
+  formatearMeta(meta: any, unidad?: string): string {
+    if (meta === null || meta === undefined || meta === '') return '85%';
+    const mStr = meta.toString().trim();
+    const uStr = (unidad || '%').trim();
+    if (uStr.toLowerCase().includes('porcentaje') || uStr === '%') {
+      return mStr.endsWith('%') ? mStr : `${mStr}%`;
+    }
+    if (uStr.toLowerCase().includes('número') || uStr.toLowerCase().includes('numero')) {
+      return mStr;
+    }
+    return `${mStr} ${uStr}`;
+  }
+
+  limpiarSede(sedeStr?: string): string {
+    if (!sedeStr) return 'Todas';
+    return sedeStr.replace(/â€"/g, '—').replace(/\?+/g, ' ').trim();
+  }
+
   onListado(): void {
     this.indicadoresService.getListadoIndicadorMediciones().subscribe({
       next: (res: any) => {
@@ -64,11 +82,11 @@ export class MedicionIndicadoresComponent implements OnInit {
               codigoIndicador: codInd,
               indicador: nomInd,
               tipo: item.tipo || 'Eficacia',
-              sede: item.sede || 'Todas',
+              sede: this.limpiarSede(item.sede),
               proceso: item.nombre_Proceso || item.proceso || 'SSOMA',
               norma: item.norma || 'ISO 9001:2015',
               frecuencia: item.frecuencia || 'Mensual',
-              meta: metaNum.toString() + (item.unidad_Medida || '%'),
+              meta: this.formatearMeta(metaNum, item.unidad_Medida),
               metaNumerica: metaNum,
               valor: valNum.toString() + '%',
               valorNumerico: valNum,
@@ -142,11 +160,11 @@ export class MedicionIndicadoresComponent implements OnInit {
           codigoIndicador: ind.codigo,
           indicador: ind.nombre,
           tipo: ind.tipo || 'Eficacia',
-          sede: ind.sede || 'Todas',
+          sede: this.limpiarSede(ind.sede),
           proceso: ind.nombre_Proceso || ind.proceso || 'General',
           norma: ind.norma || 'ISO 9001:2015',
           frecuencia: ind.frecuencia || 'Mensual',
-          meta: ind.meta !== null && ind.meta !== undefined ? ind.meta.toString() + (ind.unidad_Medida || '%') : '85%',
+          meta: this.formatearMeta(ind.meta, ind.unidad_Medida),
           valor: '0%',
           valorNumerico: 0,
           periodo: 'Sin medición inicial',
@@ -439,7 +457,7 @@ export class MedicionIndicadoresComponent implements OnInit {
       disableClose: true,
       panelClass: 'custom-dialog-no-padding',
       data: {
-        Title: '::. Registrar medición de indicador .::',
+        Title: 'Registrar Medición de Indicador',
         Accion: 'I',
         Datos: null
       }
@@ -558,7 +576,7 @@ export class MedicionIndicadoresComponent implements OnInit {
       disableClose: true,
       panelClass: 'custom-dialog-no-padding',
       data: {
-        Title: '::. Editar medición de indicador .::',
+        Title: 'Editar Medición de Indicador',
         Accion: 'U',
         Datos: item
       }

@@ -11,12 +11,20 @@ export class DocumentosControladosService {
 
   constructor(private http: HttpClient) {}
 
-  getListadoDocumentosControlados(sCodigo_Organizacion: string = '001', sCodigo_Sede: string = '001', sCodigo_Puesto: string = '', sCodigo_Proceso: string = '') {
-    let params = new HttpParams()
-      .append('sCodigo_Organizacion', sCodigo_Organizacion)
-      .append('sCodigo_Sede', sCodigo_Sede)
-      .append('sCodigo_Puesto', sCodigo_Puesto)
-      .append('sCodigo_Proceso', sCodigo_Proceso);
+  getListadoDocumentosControlados(sCodigo_Organizacion: string = '001', sCodigo_Sede: string = '', sCodigo_Puesto: string = '', sCodigo_Proceso: string = '') {
+    let params = new HttpParams();
+    if (sCodigo_Organizacion) {
+      params = params.append('sCodigo_Organizacion', sCodigo_Organizacion).append('sCodigoOrganizacion', sCodigo_Organizacion);
+    }
+    if (sCodigo_Sede) {
+      params = params.append('sCodigo_Sede', sCodigo_Sede).append('sCodigoSede', sCodigo_Sede);
+    }
+    if (sCodigo_Puesto) {
+      params = params.append('sCodigo_Puesto', sCodigo_Puesto).append('sCodigoPuesto', sCodigo_Puesto);
+    }
+    if (sCodigo_Proceso) {
+      params = params.append('sCodigo_Proceso', sCodigo_Proceso).append('sCodigoProceso', sCodigo_Proceso);
+    }
     return this.http.get(this.baseUrl + 'SNDocumentosControlados/getListadoDocumentosControlados', { headers: this.headers, params });
   }
 

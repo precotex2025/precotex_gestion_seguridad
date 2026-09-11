@@ -1,179 +1,395 @@
-<div class="dialog-container">
-  
-  <div class="dialog-header">
-    <div class="dialog-icon-container">
-      <mat-icon>insights</mat-icon>
+<div class="dialog-wrapper">
+  <!-- Accent Top Line -->
+  <div class="dialog-top-bar"></div>
+
+  <!-- Header -->
+  <header class="dialog-header">
+    <div class="header-left">
+      <div class="header-icon-box">
+        <mat-icon>{{ data.Accion === 'I' ? 'insights' : 'edit_note' }}</mat-icon>
+      </div>
+      <div class="header-text">
+        <h2 class="header-title">{{ data.Accion === 'I' ? 'Registrar Indicador SIG' : 'Editar Indicador SIG' }}</h2>
+        <p class="header-subtitle">Configuración y definición de indicadores de gestión y procesos</p>
+      </div>
     </div>
-    <div class="dialog-header-text">
-      <h2 class="dialog-title">{{ data.Title || 'Registro de Indicador SIG' }}</h2>
-      <p class="dialog-subtitle">Configuración y definición de indicadores de gestión y procesos</p>
-    </div>
-    <span class="flex-spacer"></span>
-    <button type="button" class="btn-close-header" (click)="onCancelar()" title="Cerrar">
-      <mat-icon>close</mat-icon>
-    </button>
-  </div>
 
-  <form [formGroup]="formulario" (ngSubmit)="onGuardar()">
-    
-    <mat-dialog-content class="form-content">
-      
-      <!-- SECCIÓN 1: IDENTIFICACIÓN -->
-      <div class="section-title">Identificación del Indicador</div>
-      
-      <div class="grid-2-cols">
-        <div class="form-section-item">
-          <div class="form-label">
-            Código del Indicador (*): 
-            <span style="font-size: 10px; color: #a78bfa; font-weight: 600; margin-left: 4px;">(Autogenerado)</span>
-          </div>
-          <input type="text" formControlName="codigo" class="full-width-input" readonly style="background: rgba(255,255,255,0.06); color: #a78bfa; font-weight: 700; cursor: not-allowed;" placeholder="Autogenerado...">
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">Nombre (*):</div>
-          <input type="text" formControlName="nombre" class="full-width-input" placeholder="Ej. % eficiencia de línea">
-        </div>
+    <div class="header-right">
+      <div class="code-badge-pill" *ngIf="formulario.get('codigo')?.value">
+        <mat-icon class="badge-icon">tag</mat-icon>
+        <span class="badge-text">{{ formulario.get('codigo')?.value }}</span>
       </div>
-
-      <div class="grid-2-cols">
-        <div class="form-section-item">
-          <div class="form-label">Tipo (*):</div>
-          <select formControlName="tipo" class="full-width-input">
-            <option *ngFor="let opt of tiposOptions" [value]="opt">{{ opt }}</option>
-          </select>
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">Norma ISO (*):</div>
-          <select formControlName="norma" class="full-width-input">
-            <option *ngFor="let opt of normasOptions" [value]="opt">{{ opt }}</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="grid-2-cols">
-        <div class="form-section-item">
-          <div class="form-label">Responsable del Indicador (*):</div>
-          <input type="text" formControlName="responsable" class="full-width-input" placeholder="Ej. Jefe Costura">
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">Responsable de Medición (*):</div>
-          <input type="text" formControlName="respmed" class="full-width-input" placeholder="Ej. Supervisor">
-        </div>
-      </div>
-
-      <div class="form-section-item">
-        <div class="form-label">Estado (*):</div>
-        <select formControlName="estado" class="full-width-input">
-          <option *ngFor="let opt of estadosOptions" [value]="opt">{{ opt }}</option>
-        </select>
-      </div>
-
-      <!-- SECCIÓN 2: SEDE Y ÁREA -->
-      <div class="section-title">Sede y Área</div>
-
-      <div class="grid-2-cols">
-        <div class="form-section-item">
-          <div class="form-label">Sedes donde aplica (*) (Múltiple):</div>
-          <mat-select formControlName="sede" multiple class="full-width-input form-select-mat" placeholder="-- Seleccionar Sedes --">
-            <mat-option *ngFor="let opt of sedesOptions" [value]="opt">{{ opt }}</mat-option>
-          </mat-select>
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">Proceso (*):</div>
-          <select formControlName="proceso" class="full-width-input">
-            <optgroup *ngFor="let key of getProcesosKeys()" [label]="key">
-              <option *ngFor="let proc of procesosGroups[key]" [value]="proc">{{ proc }}</option>
-            </optgroup>
-          </select>
-        </div>
-      </div>
-
-      <!-- SECCIÓN 3: TEMPORALIDAD -->
-      <div class="section-title">Temporalidad</div>
-
-      <div class="grid-2-cols">
-        <div class="form-section-item">
-          <div class="form-label">Fecha de Inicio (*):</div>
-          <input type="date" formControlName="inicio" class="full-width-input">
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">Fecha de Fin (*):</div>
-          <input type="date" formControlName="fin" class="full-width-input">
-        </div>
-      </div>
-
-      <div class="grid-2-cols">
-        <div class="form-section-item">
-          <div class="form-label">Frecuencia de medición (*):</div>
-          <select formControlName="frecuencia" class="full-width-input">
-            <option *ngFor="let opt of frecuenciasOptions" [value]="opt">{{ opt }}</option>
-          </select>
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">Fuente de datos (*):</div>
-          <input type="text" 
-                 formControlName="fuente" 
-                 list="fuentesDatalist" 
-                 class="full-width-input" 
-                 placeholder="Selecciona o digita la fuente de datos...">
-          <datalist id="fuentesDatalist">
-            <option *ngFor="let opt of fuentesOptions" [value]="opt">{{ opt }}</option>
-          </datalist>
-        </div>
-      </div>
-
-      <!-- SECCIÓN 4: DEFINICIÓN -->
-      <div class="section-title">Definición del Indicador</div>
-
-      <div class="form-section-item">
-        <div class="form-label">Fórmula de cálculo (*):</div>
-        <input type="text" formControlName="formula" class="full-width-input" placeholder="Ej. (Piezas conformes / total) x 100">
-      </div>
-
-      <div class="grid-2-cols">
-        <div class="form-section-item">
-          <div class="form-label">Unidad de medida (*):</div>
-          <select formControlName="unidad" class="full-width-input">
-            <option *ngFor="let opt of unidadesOptions" [value]="opt">{{ opt }}</option>
-          </select>
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">Línea base:</div>
-          <input type="text" formControlName="base" class="full-width-input" placeholder="Ej. 79%">
-        </div>
-      </div>
-
-      <div class="grid-2-cols">
-        <div class="form-section-item">
-          <div class="form-label">Meta (*):</div>
-          <input type="text" formControlName="meta" class="full-width-input" placeholder="Ej. >=85%">
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">Tipo de meta (*):</div>
-          <select formControlName="tipometa" class="full-width-input">
-            <option *ngFor="let opt of tipometasOptions" [value]="opt">{{ opt }}</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-section-item">
-        <div class="form-label">Sentido (*):</div>
-        <select formControlName="sentido" class="full-width-input">
-          <option *ngFor="let opt of sentidosOptions" [value]="opt">{{ opt }}</option>
-        </select>
-      </div>
-
-    </mat-dialog-content>
-
-    <mat-dialog-actions class="dialog-actions-row">
-      <button type="submit" class="BtnGuardarPlan">
-        <mat-icon style="font-size: 18px; width: 18px; height: 18px;">save</mat-icon>
-        <span>Guardar Indicador</span>
+      <button type="button" class="btn-close-header" (click)="onCancelar()" title="Cerrar ventana">
+        <mat-icon>close</mat-icon>
       </button>
-      <button type="button" class="BtnCancelarPlan" (click)="onCancelar()">
+    </div>
+  </header>
+
+  <!-- Form -->
+  <form [formGroup]="formulario" (ngSubmit)="onGuardar()" class="dialog-form">
+    <div class="dialog-scroll-body">
+
+      <!-- SECCIÓN 1: Identificación del Indicador -->
+      <div class="form-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">info</mat-icon>
+          <span class="section-title">1. Identificación del Indicador</span>
+        </div>
+
+        <!-- Fila 1: Código y Nombre -->
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">tag</mat-icon>
+              Código del indicador <span class="autogen-badge">(Autogenerado)</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="codigo" readonly class="form-input readonly-code-input" placeholder="Autogenerado...">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">label</mat-icon>
+              Nombre del indicador <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="nombre" class="form-input" placeholder="Ej. % Eficiencia de línea de confección">
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila 2: Tipo y Norma ISO -->
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">category</mat-icon>
+              Tipo de indicador <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="tipo" class="form-select">
+                <option *ngFor="let opt of tiposOptions" [value]="opt">{{ opt }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">verified_user</mat-icon>
+              Norma ISO / Estándar <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="norma" class="form-select">
+                <option *ngFor="let opt of normasOptions" [value]="opt">{{ opt }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila 3: Responsables -->
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">person</mat-icon>
+              Responsable del indicador <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="responsable" class="form-input" placeholder="Ej. Ing. Jefe de Área / Costura">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">engineering</mat-icon>
+              Responsable de medición <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="respmed" class="form-input" placeholder="Ej. Supervisor de Turno / Calidad">
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila 4: Estado -->
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">toggle_on</mat-icon>
+              Estado del indicador <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="estado" class="form-select">
+                <option *ngFor="let opt of estadosOptions" [value]="opt">{{ opt }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field"></div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 2: Sede y Proceso de Aplicación -->
+      <div class="form-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">apartment</mat-icon>
+          <span class="section-title">2. Sede y Proceso de Aplicación</span>
+        </div>
+
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">location_city</mat-icon>
+              Sedes donde aplica <span class="req">*</span> (Múltiple)
+            </label>
+            <div class="input-wrapper">
+              <mat-select formControlName="sede" multiple class="form-select-mat" placeholder="-- Seleccionar Sedes --">
+                <mat-option *ngFor="let opt of sedesOptions" [value]="opt">{{ opt }}</mat-option>
+              </mat-select>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">account_tree</mat-icon>
+              Proceso asociado <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="proceso" class="form-select">
+                <optgroup *ngFor="let key of getProcesosKeys()" [label]="key">
+                  <option *ngFor="let proc of procesosGroups[key]" [value]="proc">{{ proc }}</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 3: Temporalidad & Frecuencia -->
+      <div class="form-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">event_available</mat-icon>
+          <span class="section-title">3. Temporalidad & Frecuencia</span>
+        </div>
+
+        <!-- Fila Fechas -->
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">calendar_today</mat-icon>
+              Fecha de inicio <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="date" formControlName="inicio" class="form-input-date">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">event</mat-icon>
+              Fecha de fin <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="date" formControlName="fin" class="form-input-date">
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila Frecuencia y Fuente de Datos -->
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">event_repeat</mat-icon>
+              Frecuencia de medición <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="frecuencia" class="form-select">
+                <option *ngFor="let opt of frecuenciasOptions" [value]="opt">{{ opt }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <div class="form-label-row">
+              <label class="form-label">
+                <mat-icon class="label-icon">folder_open</mat-icon>
+                Fuente de datos <span class="req">*</span>
+              </label>
+              <span class="label-badge-hint" title="Seleccionable y digitable">
+                <mat-icon class="hint-icon">edit_note</mat-icon>
+                Digitable
+              </span>
+            </div>
+            
+            <!-- COMBOBOX SELECCIONABLE Y DIGITABLE (IND-05) -->
+            <div class="combobox-fuente-container">
+              <div class="combobox-input-wrapper">
+                <input type="text" 
+                       formControlName="fuente" 
+                       class="form-input combo-input" 
+                       placeholder="Seleccione o escriba una fuente..."
+                       autocomplete="off"
+                       (input)="onFuenteInput($event)"
+                       (focus)="abrirDropdownFuentes()"
+                       (click)="abrirDropdownFuentes()">
+                
+                <div class="combo-actions">
+                  <button type="button" 
+                          *ngIf="formulario.get('fuente')?.value"
+                          class="btn-combo-action btn-combo-clear" 
+                          (click)="limpiarFuente($event)" 
+                          title="Limpiar texto">
+                    <mat-icon>clear</mat-icon>
+                  </button>
+                  <button type="button" 
+                          class="btn-combo-action btn-combo-toggle" 
+                          (click)="toggleDropdownFuentes($event)" 
+                          [class.active]="mostrarDropdownFuentes"
+                          title="Ver opciones">
+                    <mat-icon>expand_more</mat-icon>
+                  </button>
+                </div>
+              </div>
+
+              <!-- MENÚ DESPLEGABLE FLOTANTE -->
+              <div class="combobox-dropdown-menu" *ngIf="mostrarDropdownFuentes">
+                <div class="dropdown-header">
+                  <span>Fuentes registradas ({{ fuentesFiltradas.length }})</span>
+                  <span class="dropdown-tip">Clic para seleccionar</span>
+                </div>
+                
+                <div class="dropdown-list-items">
+                  <div *ngFor="let opt of fuentesFiltradas" 
+                       class="dropdown-item" 
+                       [class.selected]="formulario.get('fuente')?.value === opt"
+                       (mousedown)="seleccionarFuente(opt, $event)">
+                    <mat-icon class="item-icon">check_circle_outline</mat-icon>
+                    <span class="item-text">{{ opt }}</span>
+                    <mat-icon *ngIf="formulario.get('fuente')?.value === opt" class="item-check">check</mat-icon>
+                  </div>
+
+                  <div *ngIf="fuentesFiltradas.length === 0" class="dropdown-no-results">
+                    <mat-icon style="font-size: 15px; width: 15px; height: 15px;">info</mat-icon>
+                    <span>Valor personalizado: <strong>"{{ formulario.get('fuente')?.value }}"</strong></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CHIPS RÁPIDOS DE SUGERENCIA -->
+            <div class="fuentes-chips-container">
+              <span class="chips-label">⚡ Sugerencias:</span>
+              <div class="chips-scroll">
+                <button type="button" 
+                        *ngFor="let chip of fuentesSugeridasRapidas" 
+                        class="chip-pill"
+                        [class.chip-active]="formulario.get('fuente')?.value === chip"
+                        (click)="seleccionarFuente(chip, $event)">
+                  {{ chip }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 4: Definición, Fórmula & Metas -->
+      <div class="form-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">calculate</mat-icon>
+          <span class="section-title">4. Definición, Fórmula & Meta</span>
+        </div>
+
+        <!-- Fórmula -->
+        <div class="form-row">
+          <div class="form-field full-width">
+            <label class="form-label">
+              <mat-icon class="label-icon">functions</mat-icon>
+              Fórmula de cálculo <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="formula" class="form-input" placeholder="Ej. (Unidades producidas conformes / Total producidas) * 100">
+            </div>
+          </div>
+        </div>
+
+        <!-- Unidad y Línea Base -->
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">straighten</mat-icon>
+              Unidad de medida <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="unidad" class="form-select">
+                <option *ngFor="let opt of unidadesOptions" [value]="opt">{{ opt }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">show_chart</mat-icon>
+              Línea base (Referencia previa)
+            </label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="base" class="form-input" placeholder="Ej. 79% o 14 días">
+            </div>
+          </div>
+        </div>
+
+        <!-- Meta y Tipo de Meta -->
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">flag</mat-icon>
+              Meta esperada <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="meta" class="form-input" placeholder="Ej. 85 o 95.5">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">rule</mat-icon>
+              Tipo de meta <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="tipometa" class="form-select">
+                <option *ngFor="let opt of tipometasOptions" [value]="opt">{{ opt }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sentido -->
+        <div class="form-row split-2">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">trending_up</mat-icon>
+              Sentido del indicador <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="sentido" class="form-select">
+                <option *ngFor="let opt of sentidosOptions" [value]="opt">{{ opt }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Acciones / Botones -->
+    <footer class="dialog-footer">
+      <button type="button" class="btn-cancelar" (click)="onCancelar()">
+        <mat-icon>close</mat-icon>
         <span>Cancelar</span>
       </button>
-    </mat-dialog-actions>
-    
+
+      <button type="submit" class="btn-guardar">
+        <mat-icon>save</mat-icon>
+        <span>{{ data.Accion === 'I' ? 'Guardar Indicador' : 'Actualizar Indicador' }}</span>
+      </button>
+    </footer>
   </form>
 </div>

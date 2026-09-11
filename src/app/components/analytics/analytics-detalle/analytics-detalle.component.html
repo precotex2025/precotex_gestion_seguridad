@@ -82,10 +82,10 @@
         <span class="spec-value text-desc">{{ indicador.estrategia || 'Reforzar el seguimiento periódico y la capacitación del personal del área para elevar el indicador hasta la meta.' }}</span>
       </div>
 
-      <!-- MEDIO DE VERIFICACIÓN -->
+      <!-- MEDIO DE VERIFICACIÓN / FUENTE DE DATOS -->
       <div class="spec-full-row">
-        <span class="spec-label">MEDIO DE VERIFICACIÓN</span>
-        <span class="spec-value text-desc">{{ indicador.medioVerificacion || 'Reporte mensual de producción firmado por el jefe de área.' }}</span>
+        <span class="spec-label">MEDIO DE VERIFICACIÓN / FUENTE DE DATOS</span>
+        <span class="spec-value text-desc">{{ indicador.fuente || indicador.Fuente_Datos || indicador.fuente_datos || indicador.medioVerificacion || 'Reporte de producción firmado por el jefe de área.' }}</span>
       </div>
     </div>
 

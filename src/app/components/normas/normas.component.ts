@@ -45,6 +45,7 @@ export class NormasComponent implements OnInit {
   ) { }   
   
    displayedColumns: string[] = [
+    'codigo_Norma',
     'norma',
     'categoria',
     'fechaVencimiento',
@@ -66,73 +67,42 @@ export class NormasComponent implements OnInit {
       next: (res: any) => {
         this.SpinnerService.hide();
         let data = (res && (res.data || res.elements || res.elementsList)) ? (res.data || res.elements || res.elementsList) : [];
-        if ((!data || data.length === 0) && typeof localStorage !== 'undefined') {
-          const raw = localStorage.getItem('precotex:normas:listado');
-          if (raw) data = JSON.parse(raw);
+        if (!Array.isArray(data)) {
+          data = [];
         }
 
-        // Excluir registros eliminados persistentemente en sesiones anteriores (F5)
+        this.dataSource.data = data;
+        this.calculateStats(data);
         if (typeof localStorage !== 'undefined') {
-          try {
-            const rawDeleted = localStorage.getItem('precotex:normas:deleted_items');
-            const deletedList: string[] = rawDeleted ? JSON.parse(rawDeleted) : [];
-            if (deletedList.length > 0) {
-              data = data.filter((n: any) => {
-                const code = String(n.codigo_Norma || n.Codigo_Norma || n.codigo || n.id || '').trim().toLowerCase();
-                const name = String(n.norma || n.Norma || '').trim().toLowerCase();
-                return !deletedList.includes(code) && !deletedList.includes(name);
-              });
-            }
-          } catch (e) {}
-        }
-
-        if (data && data.length > 0) {
-          this.dataSource.data = data;
-          this.calculateStats(data);
-          if (typeof localStorage !== 'undefined') {
-            localStorage.setItem('precotex:normas:listado', JSON.stringify(data));
-          }
-        } else {
-          this.cargarNormasLocal();
+          localStorage.setItem('precotex:normas:listado', JSON.stringify(data));
         }
       },
       error: (err: any) => {
         this.SpinnerService.hide();
-        this.cargarNormasLocal();
+        this.dataSource.data = [];
+        this.calculateStats([]);
       }
     });
   }
 
-  cargarNormasLocal(): void {
-    try {
-      const raw = localStorage.getItem('precotex:normas:listado');
-      if (raw) {
-        const data = JSON.parse(raw);
-        this.dataSource.data = data;
-        this.calculateStats(data);
-        return;
-      }
-    } catch (e) {}
-
-    const demoNormas = [
-      { codigo_Norma: 'NOR-001', norma: 'ISO 9001:2015', categoria: 'Calidad', fechaVencimiento: '2026-12-31', fechaAuditoria: '2026-06-15', estado: 'Vigente', descripcion: 'Sistema de Gestión de la Calidad', observaciones: 'Auditoría aprobada sin hallazgos' },
-      { codigo_Norma: 'NOR-002', norma: 'ISO 45001:2018', categoria: 'SSOMA', fechaVencimiento: '2026-10-15', fechaAuditoria: '2026-04-10', estado: 'Vigente', descripcion: 'Sistema de Gestión de Seguridad y Salud en el Trabajo', observaciones: 'Seguimiento de controles completado' },
-      { codigo_Norma: 'NOR-003', norma: 'ISO 14001:2015', categoria: 'Medio Ambiente', fechaVencimiento: '2026-09-30', fechaAuditoria: '2026-03-20', estado: 'Por vencer', descripcion: 'Sistema de Gestión Ambiental', observaciones: 'Revisión por la dirección pendiente' },
-      { codigo_Norma: 'NOR-004', norma: 'BASC V6:2022', categoria: 'Seguridad Patrimonial', fechaVencimiento: '2027-01-20', fechaAuditoria: '2026-07-05', estado: 'En revisión', descripcion: 'Sistema de Gestión en Control y Seguridad', observaciones: 'Recertificación anual programada' }
-    ];
-    this.dataSource.data = demoNormas;
-    this.calculateStats(demoNormas);
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('precotex:normas:listado', JSON.stringify(demoNormas));
+  getFormattedCodigo(row: any): string {
+    const raw = String(row?.codigo_Norma || row?.Codigo_Norma || row?.codigo || '').trim();
+    if (!raw) return 'OGR-2026-001';
+    if (raw.startsWith('OGR-') || raw.startsWith('ORG-')) return raw;
+    const num = parseInt(raw, 10);
+    if (!isNaN(num)) {
+      return `OGR-2026-${String(num).padStart(3, '0')}`;
     }
+    return raw;
   }
 
   calculateStats(normas: any[]): void {
+    const list = Array.isArray(normas) ? normas : [];
     this.stats = {
-      total: normas.length,
-      vigente: normas.filter(n => (n.estado || '').toLowerCase().includes('vigente')).length,
-      enRevision: normas.filter(n => (n.estado || '').toLowerCase().includes('revisión')).length,
-      porVencer: normas.filter(n => (n.estado || '').toLowerCase().includes('vencer')).length
+      total: list.length,
+      vigente: list.filter(n => (n.estado || '').toLowerCase().includes('vigente')).length,
+      enRevision: list.filter(n => (n.estado || '').toLowerCase().includes('revisión')).length,
+      porVencer: list.filter(n => (n.estado || '').toLowerCase().includes('vencer')).length
     };
   }
 
@@ -155,7 +125,8 @@ export class NormasComponent implements OnInit {
 
   onEditar(item: any){
     let dialogRef = this.dialog.open(NormasRegeditComponent, {
-      width: '600px',
+      width: '680px',
+      maxWidth: '95vw',
       disableClose: true,
       panelClass: 'my-class',
       data: {
@@ -272,7 +243,8 @@ export class NormasComponent implements OnInit {
 
   onAgregar(){
     let dialogRef = this.dialog.open(NormasRegeditComponent, {
-      width: '600px',
+      width: '680px',
+      maxWidth: '95vw',
       disableClose: true,
       panelClass: 'my-class',
       data: {

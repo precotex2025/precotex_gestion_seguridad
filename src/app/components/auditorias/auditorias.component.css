@@ -338,7 +338,13 @@
 .code-badge-font {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
-  color: #a78bfa;
+  color: #818cf8;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  background: rgba(99, 102, 241, 0.08);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
 }
 
 /* Understated TYPE Text */
@@ -584,4 +590,102 @@
   color: #fbbf24;
   border: 1px solid rgba(245, 158, 11, 0.3);
 }
+
+/* Premium Swal Modal Styling */
+::ng-deep .premium-swal-popup {
+  border-radius: 16px !important;
+  padding: 0 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--line, #e2e8f0) !important;
+  background: var(--panel, #ffffff) !important;
+  overflow: hidden !important;
+}
+
+::ng-deep .swal-ejecucion-popup {
+  border-radius: 16px !important;
+  padding: 0 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--line, #e2e8f0) !important;
+  background: var(--panel, #ffffff) !important;
+  overflow: hidden !important;
+  border: 1px solid var(--line, #e2e8f0) !important;
+}
+
+::ng-deep .swal-ejecucion-popup .swal2-html-container {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  text-align: left !important;
+}
+
+::ng-deep .swal-ejecucion-popup .swal2-actions {
+  margin: 0 !important;
+  padding: 14px 24px 20px 24px !important;
+  background: var(--panel, #ffffff) !important;
+  border-top: 1px solid var(--line, #e2e8f0) !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 12px !important;
+}
+
+::ng-deep .swal-btn-save {
+  border-radius: 9px !important;
+  padding: 10px 24px !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  font-family: 'Inter', -apple-system, sans-serif !important;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35) !important;
+  border: none !important;
+  color: #ffffff !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+::ng-deep .swal-btn-save:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5) !important;
+  transform: translateY(-1px);
+}
+
+::ng-deep .swal-btn-cancel {
+  border-radius: 9px !important;
+  padding: 10px 20px !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  font-family: 'Inter', -apple-system, sans-serif !important;
+  background: var(--panel-2, #f1f5f9) !important;
+  border: 1px solid var(--line, #cbd5e1) !important;
+  color: var(--muted, #64748b) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+::ng-deep .swal-btn-cancel:hover {
+  background: #e2e8f0 !important;
+  color: #334155 !important;
+}
+
+::ng-deep .premium-swal-btn {
+  border-radius: 9px !important;
+  padding: 8px 24px !important;
+  font-size: 0.86rem !important;
+  font-weight: 600 !important;
+  font-family: 'Inter', -apple-system, sans-serif !important;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+  border: none !important;
+  color: #ffffff !important;
+  margin-bottom: 16px !important;
+  transition: all 0.2s ease !important;
+}
+
+::ng-deep .premium-swal-btn:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.45) !important;
+  transform: translateY(-1px);
+}
+
+
 

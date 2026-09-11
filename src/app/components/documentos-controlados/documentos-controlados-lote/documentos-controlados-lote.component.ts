@@ -316,6 +316,8 @@ export class DocumentosControladosLoteComponent implements OnInit {
 
           const requestData = {
             Accion: 'I',
+            Codigo_Organizacion: '001',
+            Codigo_Sede: '001',
             Codigo_Documentos_Controlados: '',
             Codigo_Proceso: itemProcCode,
             Codigo_Carpeta_Control: '001',
