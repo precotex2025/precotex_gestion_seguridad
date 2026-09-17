@@ -187,12 +187,22 @@ export class ReqLegalRegeditComponent implements OnInit {
   }
 
   onGuardar(): void {
+    if (this.data?.EsMatriz) {
+      if (!this.formulario.get('requisito')?.value) {
+        this.formulario.patchValue({
+          requisito: this.formulario.get('norma')?.value || this.formulario.get('obligacion')?.value || 'Requisito Legal'
+        });
+      }
+    }
     if (this.formulario.invalid) {
       this.toastr.warning('Por favor llene los campos requeridos (Título/Requisito, Carpetas por Área y Estado).', 'Campos Requeridos');
       return;
     }
     const val = this.formulario.value;
     val.tema = val.ambito; // sincronizar tema con carpeta seleccionada
+    if (!val.requisito) {
+      val.requisito = val.norma || val.obligacion || 'Requisito Legal';
+    }
     this.dialogRef.close(val);
   }
 

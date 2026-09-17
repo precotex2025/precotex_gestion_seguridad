@@ -58,9 +58,47 @@ export class MedicionIndicadoresComponent implements OnInit {
     return `${mStr} ${uStr}`;
   }
 
+  limpiarTexto(text: any): string {
+    if (text === null || text === undefined) return '';
+    let str = String(text).trim();
+
+    str = str
+      .replace(/AuditorÃ[a\u00ad]?\s*Interna/gi, 'Auditoría Interna')
+      .replace(/Auditor[ií]a\s*Interna/gi, 'Auditoría Interna')
+      .replace(/InspecciÃ[³\u00f3]?n/gi, 'Inspección')
+      .replace(/Inspecci[oó]n/gi, 'Inspección')
+      .replace(/GestiÃ[³\u00f3]?n/gi, 'Gestión')
+      .replace(/LÃ[­\u00ad]?nea/gi, 'Línea')
+      .replace(/Ã¡/g, 'á')
+      .replace(/Ã©/g, 'é')
+      .replace(/Ã­/g, 'í')
+      .replace(/Ã\u00ad/g, 'í')
+      .replace(/Ãa/g, 'ía')
+      .replace(/Ã³/g, 'ó')
+      .replace(/Ãº/g, 'ú')
+      .replace(/Ã±/g, 'ñ')
+      .replace(/Ã/g, 'Á')
+      .replace(/Ã‰/g, 'É')
+      .replace(/Ã/g, 'Í')
+      .replace(/Ã“/g, 'Ó')
+      .replace(/Ãš/g, 'Ú')
+      .replace(/Ã‘/g, 'Ñ')
+      .replace(/â€“/g, ' - ')
+      .replace(/â€”/g, ' - ')
+      .replace(/â€"/g, ' - ')
+      .replace(/â€™/g, "'")
+      .replace(/â€œ/g, '"')
+      .replace(/â€/g, '"')
+      .replace(/Sede Central\s*[-–—?â€"“”]+\s*Lima/gi, 'Sede Central - Lima')
+      .replace(/\?[\s\-]*"\s*/g, ' - ')
+      .replace(/\?{2,}/g, ' - ');
+
+    return str.replace(/\s*-\s*/g, ' - ').replace(/\s{2,}/g, ' ').trim();
+  }
+
   limpiarSede(sedeStr?: string): string {
     if (!sedeStr) return 'Todas';
-    return sedeStr.replace(/â€"/g, '—').replace(/\?+/g, ' ').trim();
+    return this.limpiarTexto(sedeStr);
   }
 
   onListado(): void {
@@ -80,10 +118,10 @@ export class MedicionIndicadoresComponent implements OnInit {
               idMedicion: item.id_Medicion,
               idIndicador: item.id_Indicador,
               codigoIndicador: codInd,
-              indicador: nomInd,
-              tipo: item.tipo || 'Eficacia',
+              indicador: this.limpiarTexto(nomInd),
+              tipo: this.limpiarTexto(item.tipo || 'Eficacia'),
               sede: this.limpiarSede(item.sede),
-              proceso: item.nombre_Proceso || item.proceso || 'SSOMA',
+              proceso: this.limpiarTexto(item.nombre_Proceso || item.proceso || 'SSOMA'),
               norma: item.norma || 'ISO 9001:2015',
               frecuencia: item.frecuencia || 'Mensual',
               meta: this.formatearMeta(metaNum, item.unidad_Medida),
@@ -94,7 +132,7 @@ export class MedicionIndicadoresComponent implements OnInit {
               semaforo: semaforoCalculado,
               evidencia: item.evidencia || item.archivo_Evidencia || '',
               archivoBase64: item.archivo_Base64 || '',
-              obs: item.comentario || item.obs || ''
+              obs: this.limpiarTexto(item.comentario || item.obs || '')
             };
           });
         }
@@ -158,10 +196,10 @@ export class MedicionIndicadoresComponent implements OnInit {
           idMedicion: null,
           idIndicador: ind.id_Indicador || ind.id,
           codigoIndicador: ind.codigo,
-          indicador: ind.nombre,
-          tipo: ind.tipo || 'Eficacia',
+          indicador: this.limpiarTexto(ind.nombre),
+          tipo: this.limpiarTexto(ind.tipo || 'Eficacia'),
           sede: this.limpiarSede(ind.sede),
-          proceso: ind.nombre_Proceso || ind.proceso || 'General',
+          proceso: this.limpiarTexto(ind.nombre_Proceso || ind.proceso || 'General'),
           norma: ind.norma || 'ISO 9001:2015',
           frecuencia: ind.frecuencia || 'Mensual',
           meta: this.formatearMeta(ind.meta, ind.unidad_Medida),
@@ -588,9 +626,10 @@ export class MedicionIndicadoresComponent implements OnInit {
         const metaNum = parseFloat(String(res.meta).replace(/[^0-9.]/g, '')) || 85;
         const codeFinal = res.codigoIndicador || item.codigoIndicador || 'IND-2026-001';
 
+        const isNew = !item.idMedicion || item.idMedicion <= 0;
         const payload = {
-          Accion: 'U',
-          Id_Medicion: item.idMedicion || item.id,
+          Accion: isNew ? 'I' : 'U',
+          Id_Medicion: isNew ? null : item.idMedicion,
           Id_Indicador: res.idIndicador || item.idIndicador,
           Codigo_Indicador: codeFinal,
           Nombre_Indicador: res.indicador || item.indicador || '',

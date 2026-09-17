@@ -29,6 +29,21 @@ export class MedicionObjetivosRegeditComponent implements OnInit {
 
   procesosGroups: { [key: string]: string[] } = {};
 
+  get cleanTitle(): string {
+    if (this.data?.Title) {
+      return this.data.Title.replace(/[.:]+/g, ' ').trim();
+    }
+    return this.data?.Accion === 'I' ? 'Registrar Medición de Objetivo' : 'Editar Medición de Objetivo';
+  }
+
+  getSemaforoClass(sem: string): string {
+    if (!sem) return 'sem-meta';
+    const s = sem.toLowerCase();
+    if (s.includes('crítico') || s.includes('critico') || s.includes('rojo')) return 'sem-critico';
+    if (s.includes('riesgo') || s.includes('amarillo')) return 'sem-riesgo';
+    return 'sem-meta';
+  }
+
   constructor(
     private fb: FormBuilder,
     private toastr: ToastrService,

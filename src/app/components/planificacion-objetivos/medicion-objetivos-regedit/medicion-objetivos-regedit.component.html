@@ -1,196 +1,310 @@
-<div class="dialog-container">
-  
+<div class="dialog-wrapper">
+  <!-- Top Accent Bar -->
+  <div class="dialog-top-bar"></div>
+
+  <!-- Header -->
   <div class="dialog-header">
-    <div class="header-info">
-      <h2 class="dialog-title">
-        <mat-icon class="header-icon">speed</mat-icon>
-        {{ data.Accion === 'I' ? 'Registrar Medición de Objetivo' : 'Editar Medición de Objetivo' }}
-      </h2>
-      <span class="header-subtitle">Selecciona el objetivo planificado para ingresar su medición periódica (OBJ-03)</span>
+    <div class="header-left">
+      <div class="header-icon-box">
+        <mat-icon>speed</mat-icon>
+      </div>
+      <div class="header-text-group">
+        <h2 class="header-title">{{ cleanTitle }}</h2>
+        <p class="header-subtitle">Selecciona el objetivo planificado para ingresar su medición periódica (OBJ-03)</p>
+      </div>
     </div>
-    <button type="button" class="btn-close-header" (click)="onCancelar()" title="Cerrar">
-      <mat-icon>close</mat-icon>
-    </button>
+
+    <div class="header-right">
+      <!-- Badge de Código si existe -->
+      <div class="code-badge-pill" *ngIf="formulario.get('codigoObjetivo')?.value">
+        <mat-icon class="badge-icon">tag</mat-icon>
+        <span class="badge-text">{{ formulario.get('codigoObjetivo')?.value }}</span>
+      </div>
+
+      <!-- Badge de Semáforo -->
+      <div class="semaforo-badge-pill" [ngClass]="getSemaforoClass(formulario.get('semaforo')?.value)">
+        <span class="semaforo-dot"></span>
+        <span>{{ formulario.get('semaforo')?.value || 'En meta' }}</span>
+      </div>
+
+      <button type="button" class="btn-close-modal" (click)="onCancelar()" title="Cerrar ventana">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
   </div>
 
+  <!-- Formulario -->
   <form [formGroup]="formulario" (ngSubmit)="onGuardar()">
     
-    <mat-dialog-content class="form-content">
+    <div class="form-scroll-container custom-scrollbar">
       
-      <!-- OBJ-03: SECCIÓN DE BÚSQUEDA Y SELECCIÓN DE OBJETIVO REGISTRADO -->
-      <div class="search-objective-box">
-        <div class="box-header">
-          <mat-icon class="box-icon">search</mat-icon>
-          <span class="box-title">BÚSQUEDA Y SELECCIÓN DE OBJETIVO REGISTRADO (*)</span>
+      <!-- ==================== SECCIÓN 1: BÚSQUEDA Y SELECCIÓN DE OBJETIVO ==================== -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon-box icon-purple">
+            <mat-icon>search</mat-icon>
+          </div>
+          <div class="section-header-text">
+            <span class="section-title">1. Búsqueda y Selección de Objetivo Registrado</span>
+            <span class="section-desc">Selecciona un objetivo del catálogo o escribe para autocompletar</span>
+          </div>
         </div>
 
-        <div class="search-grid">
+        <div class="form-row split-2">
           <!-- Dropdown con Objetivos Registrados -->
-          <div class="form-section-item">
-            <div class="form-label">SELECCIONAR OBJETIVO DEL CATÁLOGO</div>
-            <select formControlName="objetivo" (change)="onSelectObjetivoChange($event)" class="full-width-input select-highlight">
-              <option value="" disabled selected>-- Selecciona un objetivo registrado --</option>
-              <option *ngFor="let obj of objetivos" [value]="obj.objetivo || obj.nombre">
-                [{{ obj.codigo }}] {{ obj.objetivo || obj.nombre }} ({{ obj.proceso }} - Meta: {{ obj.meta }})
-              </option>
-            </select>
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">bookmark</mat-icon>
+              Seleccionar Objetivo del Catálogo <span class="req">*</span>
+            </label>
+            <div class="input-wrapper select-wrapper">
+              <select formControlName="objetivo" (change)="onSelectObjetivoChange($event)" class="form-select font-medium select-highlight">
+                <option value="" disabled selected>-- Selecciona un objetivo registrado --</option>
+                <option *ngFor="let obj of objetivos" [value]="obj.objetivo || obj.nombre">
+                  [{{ obj.codigo }}] {{ obj.objetivo || obj.nombre }} ({{ obj.proceso }} - Meta: {{ obj.meta }})
+                </option>
+              </select>
+              <mat-icon class="select-chevron">expand_more</mat-icon>
+            </div>
           </div>
 
           <!-- Buscador por texto rápido -->
-          <div class="form-section-item">
-            <div class="form-label">O ESCRIBE PARA BUSCAR POR CÓDIGO / NOMBRE</div>
-            <input type="text" 
-                   list="objetivosDatalist" 
-                   (input)="onSearchObjetivoChange($event)" 
-                   class="full-width-input search-input" 
-                   placeholder="🔍 Ej. OBJ-2026-001, Tintorería, Accidentabilidad...">
-            <datalist id="objetivosDatalist">
-              <option *ngFor="let obj of objetivos" [value]="obj.codigo + ' - ' + (obj.objetivo || obj.nombre)">
-                {{ obj.proceso }} | Meta: {{ obj.meta }}
-              </option>
-            </datalist>
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">manage_search</mat-icon>
+              O Escribe para Buscar por Código / Nombre
+            </label>
+            <div class="input-wrapper input-with-leading-icon">
+              <mat-icon class="leading-icon">search</mat-icon>
+              <input type="text" 
+                     list="objetivosDatalist" 
+                     (input)="onSearchObjetivoChange($event)" 
+                     class="form-input pl-36" 
+                     placeholder="Ej. OBJ-2026-001, Tintorería, Accidentabilidad...">
+              <datalist id="objetivosDatalist">
+                <option *ngFor="let obj of objetivos" [value]="obj.codigo + ' - ' + (obj.objetivo || obj.nombre)">
+                  {{ obj.proceso }} | Meta: {{ obj.meta }}
+                </option>
+              </datalist>
+            </div>
           </div>
         </div>
 
         <!-- Tarjeta Informativa del Objetivo Seleccionado -->
-        <div *ngIf="objetivoSeleccionado" class="selected-badge-card">
-          <div class="badge-item">
-            <span class="badge-label">CÓDIGO</span>
-            <span class="badge-value code-pill">{{ objetivoSeleccionado.codigo }}</span>
-          </div>
-          <div class="badge-item">
-            <span class="badge-label">PROCESO</span>
-            <span class="badge-value">{{ objetivoSeleccionado.proceso }}</span>
-          </div>
-          <div class="badge-item">
-            <span class="badge-label">NORMA</span>
-            <span class="badge-value">{{ objetivoSeleccionado.norma }}</span>
-          </div>
-          <div class="badge-item">
-            <span class="badge-label">FRECUENCIA</span>
-            <span class="badge-value">{{ objetivoSeleccionado.frecuencia }}</span>
-          </div>
-          <div class="badge-item">
-            <span class="badge-label">META PLANIFICADA</span>
-            <span class="badge-value meta-pill">{{ objetivoSeleccionado.meta }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- OBJ-04: Fila de Metadatos Fijos Automáticos (No editables: PROCESO, FRECUENCIA, META) -->
-      <div class="grid-3-cols">
-        <div class="form-section-item">
-          <div class="form-label fixed-label">
-            <span>PROCESO ASOCIADO</span>
-            <span class="fixed-badge"><mat-icon class="lock-icon">lock</mat-icon> AUTOMÁTICO</span>
-          </div>
-          <input type="text" 
-                 formControlName="proceso" 
-                 class="full-width-input readonly-input" 
-                 readonly 
-                 placeholder="Se autocompleta al seleccionar el objetivo">
-        </div>
-
-        <div class="form-section-item">
-          <div class="form-label fixed-label">
-            <span>FRECUENCIA DE MEDICIÓN</span>
-            <span class="fixed-badge"><mat-icon class="lock-icon">lock</mat-icon> AUTOMÁTICA</span>
-          </div>
-          <input type="text" 
-                 formControlName="frecuencia" 
-                 class="full-width-input readonly-input" 
-                 readonly 
-                 placeholder="Se autocompleta al seleccionar el objetivo">
-        </div>
-
-        <div class="form-section-item">
-          <div class="form-label fixed-label">
-            <span>META PLANIFICADA</span>
-            <span class="fixed-badge"><mat-icon class="lock-icon">lock</mat-icon> AUTOMÁTICA</span>
-          </div>
-          <input type="text" 
-                 formControlName="meta" 
-                 class="full-width-input readonly-input meta-readonly" 
-                 readonly 
-                 placeholder="Se autocompleta al seleccionar el objetivo">
-        </div>
-      </div>
-
-      <!-- Fila: DATOS DE LA MEDICIÓN REAL -->
-      <div class="grid-3-cols">
-        <div class="form-section-item">
-          <div class="form-label">VALOR OBTENIDO / MEDICIÓN REAL (*)</div>
-          <input type="text" formControlName="valor" class="full-width-input valor-input" placeholder="Ej. 96.5% o 1.2">
-        </div>
-
-        <div class="form-section-item">
-          <div class="form-label">PERÍODO DE MEDICIÓN (*)</div>
-          <input type="text" formControlName="periodo" class="full-width-input" placeholder="Ej. 2026-Q1 / Marzo 2026">
-        </div>
-
-        <div class="form-section-item">
-          <div class="form-label">ESTADO / SEMÁFORO (*)</div>
-          <select formControlName="semaforo" class="full-width-input semaforo-select" [ngClass]="formulario.get('semaforo')?.value?.toLowerCase()?.replace(' ', '-')">
-            <option *ngFor="let opt of semaforosOptions" [value]="opt">{{ opt }}</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- OBJ-05: Fila de Carga de Archivo de Evidencia (PDF / Excel / Imagen) -->
-      <div class="form-section-item">
-        <div class="form-label">EVIDENCIA DE MEDICIÓN (SUBIR ARCHIVO PDF / EXCEL / IMAGEN):</div>
-        <div class="file-upload-wrapper">
-          <input type="file" 
-                 #fileEvidenciaInput 
-                 (change)="onFileEvidenciaSelected($event)" 
-                 accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.doc,.docx" 
-                 style="display: none;">
-          
-          <div class="file-drop-card" (click)="fileEvidenciaInput.click()">
-            <div class="file-drop-icon">
-              <mat-icon>cloud_upload</mat-icon>
+        <div *ngIf="objetivoSeleccionado" class="selected-target-summary-card">
+          <div class="summary-top-row">
+            <div class="summary-title-group">
+              <mat-icon class="summary-title-icon">check_circle</mat-icon>
+              <span class="summary-title">{{ objetivoSeleccionado.objetivo || objetivoSeleccionado.nombre }}</span>
             </div>
+            <span class="summary-code-badge">{{ objetivoSeleccionado.codigo }}</span>
+          </div>
+
+          <div class="summary-meta-grid">
+            <div class="meta-item">
+              <span class="meta-label">Proceso</span>
+              <span class="meta-value pill-blue">{{ objetivoSeleccionado.proceso }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Norma Aplicable</span>
+              <span class="meta-value pill-slate">{{ objetivoSeleccionado.norma }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Frecuencia</span>
+              <span class="meta-value pill-amber">{{ objetivoSeleccionado.frecuencia }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Meta Planificada</span>
+              <span class="meta-value pill-emerald">{{ objetivoSeleccionado.meta }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== SECCIÓN 2: PARÁMETROS Y DATOS DE MEDICIÓN ==================== -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon-box icon-blue">
+            <mat-icon>analytics</mat-icon>
+          </div>
+          <div class="section-header-text">
+            <span class="section-title">2. Datos y Evaluación de Medición Real</span>
+            <span class="section-desc">Ingresa el valor obtenido en el período y verifica el semáforo resultante</span>
+          </div>
+        </div>
+
+        <!-- Fila de Metadatos Fijos Automáticos (No editables: PROCESO, FRECUENCIA, META) -->
+        <div class="form-row split-3">
+          <div class="form-field">
+            <label class="form-label form-label-between">
+              <span>Proceso Asociado</span>
+              <span class="auto-badge"><mat-icon class="lock-icon">lock</mat-icon> Automático</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" 
+                     formControlName="proceso" 
+                     class="form-input readonly-input" 
+                     readonly 
+                     placeholder="Se autocompleta con el objetivo">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label form-label-between">
+              <span>Frecuencia de Medición</span>
+              <span class="auto-badge"><mat-icon class="lock-icon">lock</mat-icon> Automática</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" 
+                     formControlName="frecuencia" 
+                     class="form-input readonly-input" 
+                     readonly 
+                     placeholder="Se autocompleta con el objetivo">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label form-label-between">
+              <span>Meta Planificada</span>
+              <span class="auto-badge"><mat-icon class="lock-icon">lock</mat-icon> Automática</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" 
+                     formControlName="meta" 
+                     class="form-input readonly-input font-bold text-emerald" 
+                     readonly 
+                     placeholder="Se autocompleta con el objetivo">
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila: DATOS DE LA MEDICIÓN REAL -->
+        <div class="form-row split-3 mt-3">
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">trending_up</mat-icon>
+              Valor Obtenido / Real <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" 
+                     formControlName="valor" 
+                     class="form-input font-bold highlight-value-input" 
+                     placeholder="Ej. 96.5% o 1.2">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">calendar_month</mat-icon>
+              Período de Medición <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" 
+                     formControlName="periodo" 
+                     class="form-input font-medium" 
+                     placeholder="Ej. 2026-Q1 / Marzo 2026">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">traffic</mat-icon>
+              Estado / Semáforo <span class="req">*</span>
+            </label>
+            <div class="input-wrapper select-wrapper">
+              <select formControlName="semaforo" 
+                      class="form-select font-bold semaforo-select" 
+                      [ngClass]="getSemaforoClass(formulario.get('semaforo')?.value)">
+                <option *ngFor="let opt of semaforosOptions" [value]="opt">{{ opt }}</option>
+              </select>
+              <mat-icon class="select-chevron">expand_more</mat-icon>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== SECCIÓN 3: EVIDENCIA Y OBSERVACIONES ==================== -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon-box icon-emerald">
+            <mat-icon>attach_file</mat-icon>
+          </div>
+          <div class="section-header-text">
+            <span class="section-title">3. Evidencia y Observaciones de Seguimiento</span>
+            <span class="section-desc">Adjunta el respaldo documental y registra comentarios analíticos</span>
+          </div>
+        </div>
+
+        <!-- OBJ-05: Carga de Archivo de Evidencia -->
+        <div class="form-field full-width">
+          <label class="form-label">
+            <mat-icon class="label-icon">cloud_upload</mat-icon>
+            Evidencia de Medición (PDF / Excel / Imagen / Word)
+          </label>
+          <div class="file-upload-wrapper">
+            <input type="file" 
+                   #fileEvidenciaInput 
+                   (change)="onFileEvidenciaSelected($event)" 
+                   accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.doc,.docx" 
+                   style="display: none;">
             
-            <div class="file-drop-info">
-              <span class="file-drop-main-text" *ngIf="!nombreArchivoEvidencia">
-                <strong>Haz clic aquí</strong> para adjuntar evidencia de medición (PDF, Excel o Imagen)
-              </span>
-              <span class="file-drop-main-text text-selected" *ngIf="nombreArchivoEvidencia">
-                📄 {{ nombreArchivoEvidencia }}
-              </span>
-              <span class="file-drop-sub-text">
-                Formatos compatibles: PDF, Excel (.xlsx, .xls), Imágenes (.png, .jpg), Word (.docx) — Máximo 10 MB
-              </span>
-            </div>
+            <div class="file-drop-card" [class.has-file]="nombreArchivoEvidencia" (click)="fileEvidenciaInput.click()">
+              <div class="file-drop-icon">
+                <mat-icon>{{ nombreArchivoEvidencia ? 'verified' : 'cloud_upload' }}</mat-icon>
+              </div>
+              
+              <div class="file-drop-info">
+                <span class="file-drop-main-text" *ngIf="!nombreArchivoEvidencia">
+                  <strong>Haz clic aquí</strong> para adjuntar evidencia de medición
+                </span>
+                <span class="file-drop-main-text text-selected" *ngIf="nombreArchivoEvidencia">
+                  📄 {{ nombreArchivoEvidencia }}
+                </span>
+                <span class="file-drop-sub-text">
+                  Formatos compatibles: PDF, Excel (.xlsx, .xls), Imágenes (.png, .jpg), Word (.docx) — Máximo 10 MB
+                </span>
+              </div>
 
-            <button type="button" 
-                    *ngIf="nombreArchivoEvidencia" 
-                    class="btn-clear-file" 
-                    (click)="$event.stopPropagation(); onRemoveEvidencia(fileEvidenciaInput)" 
-                    title="Quitar archivo">
-              <mat-icon>close</mat-icon>
-            </button>
+              <button type="button" 
+                      *ngIf="nombreArchivoEvidencia" 
+                      class="btn-clear-file" 
+                      (click)="$event.stopPropagation(); onRemoveEvidencia(fileEvidenciaInput)" 
+                      title="Quitar archivo adjunto">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Observaciones / Comentarios -->
+        <div class="form-field full-width mt-3">
+          <label class="form-label">
+            <mat-icon class="label-icon">comment</mat-icon>
+            Observaciones / Comentario de Seguimiento
+          </label>
+          <div class="input-wrapper">
+            <textarea formControlName="obs" 
+                      rows="2" 
+                      class="form-input form-textarea" 
+                      placeholder="Comentarios del análisis del resultado, desviaciones o justificación de la medición..."></textarea>
           </div>
         </div>
       </div>
 
-      <!-- Fila: Observaciones / Comentarios -->
-      <div class="form-section-item">
-        <div class="form-label">OBSERVACIONES / COMENTARIO DE SEGUIMIENTO:</div>
-        <textarea formControlName="obs" rows="2" class="full-width-input textarea-desc" placeholder="Comentarios del análisis del resultado o justificación de la medición..."></textarea>
-      </div>
+    </div>
 
-    </mat-dialog-content>
+    <!-- Footer Actions -->
+    <div class="dialog-footer">
+      <button type="button" class="btn-secondary" (click)="onCancelar()">
+        <mat-icon>close</mat-icon>
+        <span>Cancelar</span>
+      </button>
 
-    <mat-dialog-actions class="dialog-actions-row">
-      <button type="submit" class="BtnGuardarPlan" mat-flat-button>
+      <button type="submit" class="btn-primary">
         <mat-icon>check_circle</mat-icon>
-        Guardar Medición
+        <span>Guardar Medición</span>
       </button>
-      <button type="button" class="BtnCancelarPlan" mat-flat-button (click)="onCancelar()">
-        Cancelar
-      </button>
-    </mat-dialog-actions>
+    </div>
     
   </form>
 </div>

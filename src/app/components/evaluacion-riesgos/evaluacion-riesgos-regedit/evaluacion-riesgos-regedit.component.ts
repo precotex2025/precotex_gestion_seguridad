@@ -20,7 +20,17 @@ interface DialogData {
 export class EvaluacionRiesgosRegeditComponent implements OnInit {
   formulario!: FormGroup;
 
-  readonly sedesOptions = ['Planta Ate', 'Planta Santa Anita', 'Planta Huachipa', 'Oficinas Centrales']; // RIE-09
+  readonly sedesOptions: string[] = [
+    'Santa Maria',
+    'Santa Cecilia',
+    'Santa Rosa',
+    'Huachipa 1',
+    'Huachipa 2',
+    'Huachipa 3',
+    'Independencia 1',
+    'Independencia 2',
+    'Todas'
+  ]; // RIE-09
   readonly periodosOptions = ['2026', '2025', '2024', '2023']; // RIE-09
   readonly tiposOptions = ['Seguridad', 'Calidad', 'Ambiental', 'Operativo']; // RIE-04
   readonly clausulasOptions = [
@@ -33,6 +43,19 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
     '9.1 Seguimiento, medición, análisis y evaluación del desempeño',
     '10.2 Incidentes, no conformidades y acciones correctivas'
   ]; // RIE-10
+
+  get cleanTitle(): string {
+    if (this.data?.Accion === 'I') return 'Declarar Nuevo Riesgo IPERC';
+    if (this.data?.Accion === 'V') return 'Visualizar Riesgo IPERC';
+    return 'Editar Registro de Riesgo IPERC';
+  }
+
+  getNivelBadgeClass(nivel?: string): string {
+    const val = (nivel || '').toLowerCase();
+    if (val.includes('alto')) return 'nivel-badge-alto';
+    if (val.includes('medio')) return 'nivel-badge-medio';
+    return 'nivel-badge-bajo';
+  }
   
   procesosGroups: { [key: string]: string[] } = {
     'Gerencia General (GG)': [
@@ -146,7 +169,7 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
     this.formulario = this.fb.group({
       codigo: [{ value: '', disabled: true }, Validators.required],
       periodo: [new Date().getFullYear().toString(), Validators.required], // RIE-09
-      sede: ['Planta Ate', Validators.required],                           // RIE-09
+      sede: ['Santa Maria', Validators.required],                           // RIE-09
       tipo: ['Seguridad', Validators.required],
       clausula: ['6.1.2 Identificación de peligros y evaluación de los riesgos (IPERC)', Validators.required], // RIE-10
       descbrief: ['', Validators.required],
@@ -189,7 +212,7 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
       this.formulario.patchValue({
         codigo: this.data.Datos.codigo,
         periodo: this.data.Datos.periodo || new Date().getFullYear().toString(),
-        sede: this.data.Datos.sede || 'Planta Ate',
+        sede: this.data.Datos.sede || 'Santa Maria',
         tipo: this.data.Datos.tipo,
         clausula: this.data.Datos.clausula || '6.1.2 Identificación de peligros y evaluación de los riesgos (IPERC)',
         descbrief: this.data.Datos.descbrief,

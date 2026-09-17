@@ -1,4 +1,4 @@
-using ic.backend.precotex.web.Api.Parameters;
+﻿using ic.backend.precotex.web.Api.Parameters;
 using ic.backend.precotex.web.Entity.Entities.SecureNorm;
 using ic.backend.precotex.web.Service.Services.Implementacion.SecureNorm;
 using Microsoft.AspNetCore.Http;
@@ -18,9 +18,6 @@ namespace ic.backend.precotex.web.Api.Controllers.SecureNorm
             _sNIndicadorService = sNIndicadorService;
         }
 
-        // ===================================================================
-        // 1. REGISTRO Y MANTENIMIENTO DE INDICADORES (CATÁLOGO BASE)
-        // ===================================================================
         [HttpPost]
         [Route("postIndicadorMnto")]
         public async Task<IActionResult> postIndicadorMnto([FromBody] SNIndicadorParameter parametros)
@@ -35,11 +32,11 @@ namespace ic.backend.precotex.web.Api.Controllers.SecureNorm
                 Id_Indicador = parametros.Id_Indicador ?? 0,
                 Codigo = parametros.Codigo,
                 Nombre = parametros.Nombre,
-                Tipo = parametros.Tipo ?? "Eficiencia",                     // IND-02: Tipo
-                Sede = parametros.Sede ?? "Todas",                          // IND-02: Sede
-                Norma = parametros.Norma ?? "ISO 9001:2015",                // IND-02: Norma ISO
-                Frecuencia = parametros.Frecuencia ?? "Mensual",            // IND-02: Frecuencia
-                Meta = parametros.Meta ?? 0,                                // IND-02: Meta Base
+                Tipo = parametros.Tipo ?? "Eficiencia",
+                Sede = parametros.Sede ?? "Todas",
+                Norma = parametros.Norma ?? "ISO 9001:2015",
+                Frecuencia = parametros.Frecuencia ?? "Mensual",
+                Meta = parametros.Meta ?? 0,
                 Unidad_Medida = parametros.Unidad_Medida ?? "%",
                 Tipo_Meta = parametros.Tipo_Meta,
                 Sentido = parametros.Sentido,
@@ -50,8 +47,10 @@ namespace ic.backend.precotex.web.Api.Controllers.SecureNorm
                 Responsable = parametros.Responsable,
                 Resp_Medicion = parametros.Resp_Medicion,
                 Fuente_Datos = parametros.Fuente_Datos,
-                Fec_Inicio = parametros.Fec_Inicio,
-                Fec_Fin = parametros.Fec_Fin,
+                Fec_Inicio = parametros.Fec_Inicio ?? parametros.Fecha_Inicio,
+                Fec_Fin = parametros.Fec_Fin ?? parametros.Fecha_Fin,
+                Fecha_Inicio = parametros.Fecha_Inicio ?? parametros.Fec_Inicio,
+                Fecha_Fin = parametros.Fecha_Fin ?? parametros.Fec_Fin,
                 Areas_Acceso = parametros.Areas_Acceso,
                 Estado = parametros.Estado ?? "Activo",
                 Usuario_Registro = parametros.Usuario_Registro ?? "SISTEMAS"
@@ -64,12 +63,15 @@ namespace ic.backend.precotex.web.Api.Controllers.SecureNorm
                 return Ok(result);
             }
 
-            return BadRequest(result ?? new { Success = false, Message = "Error al ejecutar el mantenimiento del indicador." });
+            if (result != null)
+            {
+                result.CodeResult = StatusCodes.Status400BadRequest;
+                return BadRequest(result);
+            }
+
+            return BadRequest(new { Success = false, Message = "Error al ejecutar el mantenimiento del indicador." });
         }
 
-        // ===================================================================
-        // 2. LISTADO DE INDICADORES DEL CATÁLOGO
-        // ===================================================================
         [HttpGet]
         [Route("getListadoIndicadores")]
         public async Task<IActionResult> getListadoIndicadores([FromQuery] string? sFiltro = "")
@@ -81,12 +83,15 @@ namespace ic.backend.precotex.web.Api.Controllers.SecureNorm
                 return Ok(result);
             }
 
-            return BadRequest(result ?? new { Success = false, Message = "Error al obtener el listado de indicadores de la Base de Datos." });
+            if (result != null)
+            {
+                result.CodeResult = StatusCodes.Status400BadRequest;
+                return BadRequest(result);
+            }
+
+            return BadRequest(new { Success = false, Message = "Error al obtener el listado de indicadores de la Base de Datos." });
         }
 
-        // ===================================================================
-        // 3. HISTORIAL DE MEDICIONES DE INDICADORES (IND-02)
-        // ===================================================================
         [HttpGet]
         [Route("getListadoIndicadorMediciones")]
         public async Task<IActionResult> getListadoIndicadorMediciones([FromQuery] int? idIndicador = null, [FromQuery] string? sFiltro = "")
@@ -98,12 +103,15 @@ namespace ic.backend.precotex.web.Api.Controllers.SecureNorm
                 return Ok(result);
             }
 
-            return BadRequest(result ?? new { Success = false, Message = "Error al obtener el historial de mediciones de la Base de Datos." });
+            if (result != null)
+            {
+                result.CodeResult = StatusCodes.Status400BadRequest;
+                return BadRequest(result);
+            }
+
+            return BadRequest(new { Success = false, Message = "Error al obtener el historial de mediciones de la Base de Datos." });
         }
 
-        // ===================================================================
-        // 4. REGISTRO Y MANTENIMIENTO DE MEDICIÓN PERIÓDICA (IND-02)
-        // ===================================================================
         [HttpPost]
         [Route("postProcesoMntoIndicadorMedicion")]
         public async Task<IActionResult> postProcesoMntoIndicadorMedicion([FromBody] SNIndicadorMedicionParameter parametros)
@@ -113,12 +121,12 @@ namespace ic.backend.precotex.web.Api.Controllers.SecureNorm
                 return BadRequest(new { Success = false, Message = "Los parámetros de medición enviados son nulos." });
             }
 
-            string codigoFinal = !string.IsNullOrEmpty(parametros.Codigo_Indicador) 
-                ? parametros.Codigo_Indicador 
+            string codigoFinal = !string.IsNullOrEmpty(parametros.Codigo_Indicador)
+                ? parametros.Codigo_Indicador
                 : (!string.IsNullOrEmpty(parametros.Indicador) ? parametros.Indicador : "IND-2026-001");
 
-            string nombreFinal = !string.IsNullOrEmpty(parametros.Nombre_Indicador) 
-                ? parametros.Nombre_Indicador 
+            string nombreFinal = !string.IsNullOrEmpty(parametros.Nombre_Indicador)
+                ? parametros.Nombre_Indicador
                 : (!string.IsNullOrEmpty(parametros.Indicador) ? parametros.Indicador : "Indicador " + codigoFinal);
 
             SN_Indicador_Medicion medicion = new SN_Indicador_Medicion
@@ -127,16 +135,11 @@ namespace ic.backend.precotex.web.Api.Controllers.SecureNorm
                 Id_Indicador = parametros.Id_Indicador ?? 0,
                 Codigo_Indicador = codigoFinal,
                 Nombre_Indicador = nombreFinal,
-                Tipo = parametros.Tipo ?? "Eficacia",                                     // IND-02: Tipo
-                Sede = parametros.Sede ?? "Todas",                                       // IND-02: Sede
-                Proceso = parametros.Proceso ?? "SSOMA",                                 // IND-02: Proceso
-                Norma = parametros.Norma ?? "ISO 9001:2015",                             // IND-02: Norma ISO
-                Frecuencia = parametros.Frecuencia ?? "Mensual",                         // IND-02: Frecuencia
-                Meta = parametros.Meta ?? 85,                                            // IND-02: Meta
-                Periodo = parametros.Periodo ?? "2026-Q1",
+                Nombre_Proceso = parametros.Nombre_Proceso ?? parametros.Proceso,
+                Meta = parametros.Meta ?? 85,
+                Periodo = parametros.Periodo ?? "",
                 Valor_Obtenido = parametros.Valor_Obtenido ?? 0,
                 Semaforo = parametros.Semaforo ?? "En meta",
-                Evidencia = parametros.Evidencia ?? parametros.Archivo_Evidencia ?? "",   // IND-08: Evidencia
                 Comentario = parametros.Comentario ?? "",
                 Usuario_Registro = parametros.Usuario_Registro ?? "SISTEMAS"
             };
@@ -148,7 +151,13 @@ namespace ic.backend.precotex.web.Api.Controllers.SecureNorm
                 return Ok(result);
             }
 
-            return BadRequest(result ?? new { Success = false, Message = "Error al registrar/actualizar la medición en la Base de Datos." });
+            if (result != null)
+            {
+                result.CodeResult = StatusCodes.Status400BadRequest;
+                return BadRequest(result);
+            }
+
+            return BadRequest(new { Success = false, Message = "Error al registrar/actualizar la medición en la Base de Datos." });
         }
     }
 }

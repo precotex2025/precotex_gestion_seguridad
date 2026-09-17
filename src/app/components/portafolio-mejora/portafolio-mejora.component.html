@@ -143,12 +143,16 @@
         <span class="panel-card-sub">5W-2H · ACR · Iniciativa</span>
       </div>
       <div class="panel-card-body">
-        <div *ngFor="let proc of procesosUnicos" class="bar-row">
-          <div class="bar-label">{{ proc }}</div>
+        <div *ngIf="procesosUnicos.length === 0" class="empty-analytics-msg">
+          <mat-icon>analytics</mat-icon>
+          <span>Sin registros de iniciativas</span>
+        </div>
+        <div *ngFor="let proc of procesosUnicos" class="bar-row" [title]="proc + ': ' + getProcesoBreakdown(proc).n5 + ' 5W-2H, ' + getProcesoBreakdown(proc).na + ' ACR, ' + getProcesoBreakdown(proc).ni + ' Iniciativas (Total: ' + getProcesoBreakdown(proc).total + ')'">
+          <div class="bar-label" [title]="proc">{{ proc }}</div>
           <div class="bar-track">
-            <div *ngIf="getProcesoBreakdown(proc).pct5 > 0" class="bar-seg seg-green" [style.width.%]="getProcesoBreakdown(proc).pct5"></div>
-            <div *ngIf="getProcesoBreakdown(proc).pctA > 0" class="bar-seg seg-orange" [style.width.%]="getProcesoBreakdown(proc).pctA"></div>
-            <div *ngIf="getProcesoBreakdown(proc).pctI > 0" class="bar-seg seg-purple" [style.width.%]="getProcesoBreakdown(proc).pctI"></div>
+            <div *ngIf="getProcesoBreakdown(proc).pct5 > 0" class="bar-seg seg-green" [style.width.%]="getProcesoBreakdown(proc).pct5" [title]="'5W-2H: ' + getProcesoBreakdown(proc).n5"></div>
+            <div *ngIf="getProcesoBreakdown(proc).pctA > 0" class="bar-seg seg-orange" [style.width.%]="getProcesoBreakdown(proc).pctA" [title]="'ACR: ' + getProcesoBreakdown(proc).na"></div>
+            <div *ngIf="getProcesoBreakdown(proc).pctI > 0" class="bar-seg seg-purple" [style.width.%]="getProcesoBreakdown(proc).pctI" [title]="'Iniciativas: ' + getProcesoBreakdown(proc).ni"></div>
           </div>
           <div class="bar-count">
             {{ getProcesoBreakdown(proc).n5 }} · {{ getProcesoBreakdown(proc).na }} · {{ getProcesoBreakdown(proc).ni }}
@@ -161,15 +165,19 @@
     <div class="panel-card">
       <div class="panel-card-head flex-between">
         <h2 class="panel-card-title">META VS REAL</h2>
-        <span class="panel-card-sub">Meta mensual (demo)</span>
+        <span class="panel-card-sub">Meta mensual: 3 por proceso</span>
       </div>
       <div class="panel-card-body">
-        <div *ngFor="let proc of procesosUnicos" class="bar-row">
-          <div class="bar-label">{{ proc }}</div>
-          <div class="bar-track">
+        <div *ngIf="procesosUnicos.length === 0" class="empty-analytics-msg">
+          <mat-icon>flag</mat-icon>
+          <span>Sin registros de iniciativas</span>
+        </div>
+        <div *ngFor="let proc of procesosUnicos" class="bar-row" [title]="proc + ': ' + getMetaInfo(proc).real + ' registradas de meta ' + getMetaInfo(proc).meta + ' (' + getMetaInfo(proc).pct + '%) | ' + getMetaInfo(proc).cerradas + ' concluidas'">
+          <div class="bar-label" [title]="proc">{{ proc }}</div>
+          <div class="bar-track" [title]="getMetaInfo(proc).pct + '% cumplido'">
             <div class="bar-seg" [style.width.%]="getMetaInfo(proc).pct" [style.background-color]="getMetaInfo(proc).color"></div>
           </div>
-          <div class="meta-count" [style.color]="getMetaInfo(proc).color">
+          <div class="meta-count" [style.color]="getMetaInfo(proc).color" [title]="getMetaInfo(proc).pct + '% alcanzado'">
             {{ getMetaInfo(proc).real }}/{{ getMetaInfo(proc).meta }}{{ getMetaInfo(proc).cumple ? ' ✓' : '' }}
           </div>
         </div>

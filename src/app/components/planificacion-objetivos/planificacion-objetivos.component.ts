@@ -29,10 +29,11 @@ export class PlanificacionObjetivosComponent implements OnInit {
 
   openMedicionModal(): void {
     const dialogRef = this.dialog.open(PlanificacionObjetivosRegeditComponent, {
-      width: '90vw',
-      maxWidth: '1200px',
+      width: '840px',
+      maxWidth: '95vw',
       disableClose: false,
-      data: { Title: '::. Medición de Objetivos .::' }
+      panelClass: 'custom-dialog-no-padding',
+      data: { Title: 'Medición de Objetivos SIG' }
     });
   }
 
@@ -267,10 +268,12 @@ export class PlanificacionObjetivosComponent implements OnInit {
 
   onAgregar(): void {
     const dialogRef = this.dialog.open(PlanificacionObjetivosRegeditComponent, {
-      width: '780px',
+      width: '840px',
+      maxWidth: '95vw',
       disableClose: true,
+      panelClass: 'custom-dialog-no-padding',
       data: {
-        Title: '::. Registrar objetivo .::',
+        Title: 'Registrar Objetivo SIG',
         Accion: 'I',
         Datos: null
       }
@@ -335,10 +338,12 @@ export class PlanificacionObjetivosComponent implements OnInit {
 
   onEditar(item: any): void {
     const dialogRef = this.dialog.open(PlanificacionObjetivosRegeditComponent, {
-      width: '780px',
+      width: '840px',
+      maxWidth: '95vw',
       disableClose: true,
+      panelClass: 'custom-dialog-no-padding',
       data: {
-        Title: '::. Editar objetivo .::',
+        Title: 'Editar Objetivo SIG',
         Accion: 'U',
         Datos: item
       }

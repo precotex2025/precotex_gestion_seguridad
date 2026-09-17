@@ -23,8 +23,18 @@ export class AnalyticsRegeditComponent implements OnInit {
   tiposOptions = ['Eficacia', 'Eficiencia', 'Efectividad'];
   normasOptions = ['ISO 9001:2015', 'ISO 45001:2018', 'ISO 14001:2015'];
   estadosOptions = ['Activo', 'Inactivo'];
-  sedesOptions = ['Sede Central — Lima', 'Sede Ate', 'Sede San Juan', 'Sede Chorrillos', 'Todas'];
   frecuenciasOptions = ['Diario', 'Semanal', 'Mensual', 'Trimestral'];
+  sedesOptions: string[] = [
+    'Santa Maria',
+    'Santa Cecilia',
+    'Santa Rosa',
+    'Huachipa 1',
+    'Huachipa 2',
+    'Huachipa 3',
+    'Independencia 1',
+    'Independencia 2',
+    'Todas'
+  ];
   
   // IND-05: Fuente de datos seleccionable y digitable
   fuentesOptions: string[] = [
@@ -71,6 +81,12 @@ export class AnalyticsRegeditComponent implements OnInit {
     this.procesosService.getProcesosAgrupados().subscribe({
       next: (groups: any) => {
         this.procesosGroups = groups;
+        if (this.data.Accion === 'U' && this.data.Datos) {
+          const rawProc = this.data.Datos.proceso || this.data.Datos.nombre_proceso || this.data.Datos.Nombre_Proceso || this.data.Datos.codigo_proceso || this.data.Datos.Codigo_Proceso;
+          if (rawProc) {
+            this.formulario.patchValue({ proceso: rawProc });
+          }
+        }
       }
     });
     this.formulario = this.fb.group({
@@ -128,9 +144,57 @@ export class AnalyticsRegeditComponent implements OnInit {
       // Helper para formatear fechas a YYYY-MM-DD
       const formatDateForInput = (val: any) => {
         if (!val) return '';
+        if (val instanceof Date && !isNaN(val.getTime())) {
+          const y = val.getFullYear();
+          const m = String(val.getMonth() + 1).padStart(2, '0');
+          const d = String(val.getDate()).padStart(2, '0');
+          return `${y}-${m}-${d}`;
+        }
         const str = String(val).trim();
-        return str.length >= 10 ? str.substring(0, 10) : str;
+        if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+          return str.substring(0, 10);
+        }
+        const dmyMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+        if (dmyMatch) {
+          const day = dmyMatch[1].padStart(2, '0');
+          const month = dmyMatch[2].padStart(2, '0');
+          const year = dmyMatch[3];
+          return `${year}-${month}-${day}`;
+        }
+        return '';
       };
+
+      // Normalizar sentido
+      let sentidoVal = d.sentido || d.Sentido || '↑ Sube es bueno';
+      if (String(sentidoVal).toLowerCase().includes('sube') || String(sentidoVal).toLowerCase().includes('creciente')) {
+        sentidoVal = '↑ Sube es bueno';
+      } else if (String(sentidoVal).toLowerCase().includes('baja') || String(sentidoVal).toLowerCase().includes('decreciente')) {
+        sentidoVal = '↓ Baja es bueno';
+      }
+
+      // Normalizar tipometa
+      let tipometaVal = d.tipometa || d.tipo_meta || d.Tipo_Meta || 'Mayor o igual (≥)';
+      if (String(tipometaVal).includes('Mayor') || String(tipometaVal).includes('>=')) {
+        tipometaVal = 'Mayor o igual (≥)';
+      } else if (String(tipometaVal).includes('Menor') || String(tipometaVal).includes('<=')) {
+        tipometaVal = 'Menor o igual (≤)';
+      } else if (String(tipometaVal).includes('Igual') || String(tipometaVal).includes('=')) {
+        tipometaVal = 'Igual (=)';
+      }
+
+      // Normalizar unidad
+      let unidadVal = d.unidad || d.unidad_medida || d.Unidad_Medida || 'Porcentaje (%)';
+      if (String(unidadVal).includes('%') || String(unidadVal).toLowerCase().includes('porcent')) {
+        unidadVal = 'Porcentaje (%)';
+      } else if (String(unidadVal).toLowerCase().includes('d') && String(unidadVal).toLowerCase().includes('as')) {
+        unidadVal = 'Días';
+      } else if (String(unidadVal).toLowerCase().includes('sol')) {
+        unidadVal = 'Soles';
+      } else if (String(unidadVal).toLowerCase().includes('kwh')) {
+        unidadVal = 'kWh';
+      } else if (String(unidadVal).toLowerCase().includes('n') && String(unidadVal).toLowerCase().includes('m')) {
+        unidadVal = 'Número';
+      }
 
       this.formulario.patchValue({
         codigo: d.codigo || d.Codigo || '',
@@ -148,11 +212,11 @@ export class AnalyticsRegeditComponent implements OnInit {
         frecuencia: d.frecuencia || d.Frecuencia || 'Mensual',
         fuente: d.fuente || d.fuente_datos || d.Fuente_Datos || 'Reporte de producción',
         formula: d.formula || d.Formula || '',
-        unidad: d.unidad || d.unidad_medida || d.Unidad_Medida || 'Porcentaje (%)',
+        unidad: unidadVal,
         base: d.base || d.linea_base || d.Linea_Base || '',
-        meta: d.meta !== undefined ? d.meta : (d.Meta !== undefined ? d.Meta : ''),
-        tipometa: d.tipometa || d.tipo_meta || d.Tipo_Meta || 'Mayor o igual (≥)',
-        sentido: d.sentido || d.Sentido || '↑ Sube es bueno'
+        meta: d.meta !== undefined && d.meta !== null ? d.meta : (d.Meta !== undefined && d.Meta !== null ? d.Meta : ''),
+        tipometa: tipometaVal,
+        sentido: sentidoVal
       });
     }
   }

@@ -6,6 +6,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatDialog } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
+import * as XLSX from 'xlsx';
 
 import { ReqLegalService } from '../../services/req-legal.service';
 import { ReqLegalRegeditComponent } from './req-legal-regedit/req-legal-regedit.component';
@@ -175,60 +176,60 @@ export class ReqLegalComponent implements OnInit {
   }
 
   cargarDatos(): void {
-    // 1. Pestaña Documentos
+    // 1. Cargar cache inicial para renderizado inmediato
     const localDocs = localStorage.getItem('precotex:legal:documentos');
     let docData: ReqLegalItem[] = [];
     if (localDocs) {
       try { docData = JSON.parse(localDocs); } catch (e) { docData = [...this.SEED_DOCUMENTOS]; }
     } else {
       docData = [...this.SEED_DOCUMENTOS];
-      localStorage.setItem('precotex:legal:documentos', JSON.stringify(docData));
     }
     this.docDataSource.data = docData;
+    this.matrizDataSource.data = docData;
     if (this.docPaginator) this.docDataSource.paginator = this.docPaginator;
     if (this.docSort) this.docDataSource.sort = this.docSort;
-
-    // 2. Pestaña Matriz Legal
-    const localMatriz = localStorage.getItem('precotex:legal:matriz');
-    let matrizData: ReqLegalItem[] = [];
-    if (localMatriz) {
-      try { matrizData = JSON.parse(localMatriz); } catch (e) { matrizData = [...this.SEED_MATRIZ]; }
-    } else {
-      matrizData = [...this.SEED_MATRIZ];
-      localStorage.setItem('precotex:legal:matriz', JSON.stringify(matrizData));
-    }
-    this.matrizDataSource.data = matrizData;
     if (this.matrizPaginator) this.matrizDataSource.paginator = this.matrizPaginator;
     if (this.matrizSort) this.matrizDataSource.sort = this.matrizSort;
 
     this.calcularStats();
     this.computarAlertas();
 
-    // Intentar Backend
+    // 2. Cargar en vivo desde el Backend y Base de Datos SQL Server
     this.reqLegalService.getListadoReqLegal().subscribe({
       next: (res: any) => {
         if (res && res.success && res.elements && res.elements.length > 0) {
-          const mapped = res.elements.map((item: any) => ({
-            id: item.id_Req || item.id,
-            requisito: item.requisito || item.normativa,
+          const mapped: ReqLegalItem[] = res.elements.map((item: any) => ({
+            id: item.id || item.id_Req || 0,
+            item: item.item || '',
+            requisito: item.requisito || item.norma || '',
+            tema: item.tema || item.ambito || 'Formación y capacitaciones',
             ambito: item.ambito || 'Seguridad y Salud en el Trabajo',
             tipo: item.tipo || 'Ley',
-            norma: item.norma || item.normativa,
+            norma: item.norma || item.requisito || '',
+            articulo: item.articulo || '',
             entidad: item.entidad || 'MINTRA',
-            obligacion: item.obligacion || '',
+            obligacion: item.obligacion || item.requisito || '',
+            evidenciadoc: item.evidenciadoc || item.evidencia || '',
             estado: item.estado || 'Cumple',
             responsable: item.responsable || '',
+            frecuencia: item.frecuencia || 'Anual',
             evaluacion: item.evaluacion ? item.evaluacion.split('T')[0] : '',
             proxeval: item.proxeval ? item.proxeval.split('T')[0] : '',
             vencimiento: item.vencimiento ? item.vencimiento.split('T')[0] : '',
+            observaciones: item.observaciones || '',
             evidencia: item.evidencia || ''
           }));
           this.docDataSource.data = mapped;
+          this.matrizDataSource.data = mapped;
+          localStorage.setItem('precotex:legal:documentos', JSON.stringify(mapped));
+          localStorage.setItem('precotex:legal:matriz', JSON.stringify(mapped));
           this.calcularStats();
           this.computarAlertas();
         }
       },
-      error: () => { }
+      error: (err: any) => {
+        console.warn('Error al listar requisitos legales desde backend:', err);
+      }
     });
   }
 
@@ -303,22 +304,44 @@ export class ReqLegalComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(res => {
       if (res) {
-        if (this.activeTab === 'documentos') {
-          const current = [...this.docDataSource.data];
-          res.id = current.length > 0 ? Math.max(...current.map(c => c.id)) + 1 : 1;
-          current.unshift(res);
-          localStorage.setItem('precotex:legal:documentos', JSON.stringify(current));
-          this.docDataSource.data = current;
-        } else {
-          const current = [...this.matrizDataSource.data];
-          res.id = current.length > 0 ? Math.max(...current.map(c => c.id)) + 1 : 101;
-          current.unshift(res);
-          localStorage.setItem('precotex:legal:matriz', JSON.stringify(current));
-          this.matrizDataSource.data = current;
-        }
-        this.calcularStats();
-        this.computarAlertas();
-        this.toastr.success('Requisito legal guardado con éxito.', 'Registro Guardado');
+        const payload = {
+          Accion: 'I',
+          Id: 0,
+          Item: res.item || '',
+          Requisito: res.requisito || res.norma || 'Requisito Legal',
+          Tema: res.tema || res.ambito || 'Formación y capacitaciones',
+          Ambito: res.ambito || 'Seguridad y Salud en el Trabajo',
+          Tipo: res.tipo || 'Ley',
+          Norma: res.norma || res.requisito || '',
+          Articulo: res.articulo || '',
+          Entidad: res.entidad || 'MINTRA',
+          Obligacion: res.obligacion || res.requisito || '',
+          Evidenciadoc: res.evidenciadoc || '',
+          Estado: res.estado || 'Cumple',
+          Responsable: res.responsable || '',
+          Frecuencia: res.frecuencia || 'Anual',
+          Evaluacion: res.evaluacion || null,
+          Proxeval: res.proxeval || null,
+          Vencimiento: res.vencimiento || null,
+          Observaciones: res.observaciones || '',
+          Evidencia: res.evidencia || '',
+          Usuario: 'SISTEMAS'
+        };
+
+        this.reqLegalService.postReqLegalMnto(payload).subscribe({
+          next: (apiRes: any) => {
+            if (apiRes && apiRes.success) {
+              this.toastr.success(apiRes.message || 'Requisito legal guardado con éxito.', 'Registro Guardado');
+              this.cargarDatos();
+            } else {
+              this.toastr.warning(apiRes?.message || 'No se pudo guardar el registro en el servidor.', 'Atención');
+            }
+          },
+          error: (err: any) => {
+            console.error('Error al guardar requisito legal:', err);
+            this.toastr.error('Ocurrió un error al guardar en la base de datos.', 'Error');
+          }
+        });
       }
     });
   }
@@ -338,18 +361,44 @@ export class ReqLegalComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(res => {
       if (res) {
-        if (this.activeTab === 'documentos') {
-          const current = this.docDataSource.data.map((c: ReqLegalItem) => c.id === item.id ? { ...c, ...res } : c);
-          localStorage.setItem('precotex:legal:documentos', JSON.stringify(current));
-          this.docDataSource.data = current;
-        } else {
-          const current = this.matrizDataSource.data.map((c: ReqLegalItem) => c.id === item.id ? { ...c, ...res } : c);
-          localStorage.setItem('precotex:legal:matriz', JSON.stringify(current));
-          this.matrizDataSource.data = current;
-        }
-        this.calcularStats();
-        this.computarAlertas();
-        this.toastr.success('Requisito legal actualizado con éxito.', 'Actualizado');
+        const payload = {
+          Accion: 'U',
+          Id: item.id,
+          Item: res.item || item.item || '',
+          Requisito: res.requisito || res.norma || item.requisito || '',
+          Tema: res.tema || res.ambito || item.tema || '',
+          Ambito: res.ambito || item.ambito || 'Seguridad y Salud en el Trabajo',
+          Tipo: res.tipo || item.tipo || 'Ley',
+          Norma: res.norma || item.norma || '',
+          Articulo: res.articulo || item.articulo || '',
+          Entidad: res.entidad || item.entidad || 'MINTRA',
+          Obligacion: res.obligacion || item.obligacion || '',
+          Evidenciadoc: res.evidenciadoc || item.evidenciadoc || '',
+          Estado: res.estado || item.estado || 'Cumple',
+          Responsable: res.responsable || item.responsable || '',
+          Frecuencia: res.frecuencia || item.frecuencia || 'Anual',
+          Evaluacion: res.evaluacion || item.evaluacion || null,
+          Proxeval: res.proxeval || item.proxeval || null,
+          Vencimiento: res.vencimiento || item.vencimiento || null,
+          Observaciones: res.observaciones || item.observaciones || '',
+          Evidencia: res.evidencia || item.evidencia || '',
+          Usuario: 'SISTEMAS'
+        };
+
+        this.reqLegalService.postReqLegalMnto(payload).subscribe({
+          next: (apiRes: any) => {
+            if (apiRes && apiRes.success) {
+              this.toastr.success(apiRes.message || 'Requisito legal actualizado con éxito.', 'Actualizado');
+              this.cargarDatos();
+            } else {
+              this.toastr.warning(apiRes?.message || 'No se pudo actualizar el registro.', 'Atención');
+            }
+          },
+          error: (err: any) => {
+            console.error('Error al actualizar requisito legal:', err);
+            this.toastr.error('Ocurrió un error al actualizar en la base de datos.', 'Error');
+          }
+        });
       }
     });
   }
@@ -385,18 +434,26 @@ export class ReqLegalComponent implements OnInit {
       cancelButtonColor: '#94a3b8'
     }).then(res => {
       if (res.isConfirmed) {
-        if (this.activeTab === 'documentos') {
-          const current = this.docDataSource.data.filter((c: ReqLegalItem) => c.id !== item.id);
-          localStorage.setItem('precotex:legal:documentos', JSON.stringify(current));
-          this.docDataSource.data = current;
-        } else {
-          const current = this.matrizDataSource.data.filter((c: ReqLegalItem) => c.id !== item.id);
-          localStorage.setItem('precotex:legal:matriz', JSON.stringify(current));
-          this.matrizDataSource.data = current;
-        }
-        this.calcularStats();
-        this.computarAlertas();
-        this.toastr.success('Requisito legal eliminado.', 'Eliminado');
+        const payload = {
+          Accion: 'D',
+          Id: item.id,
+          Usuario: 'SISTEMAS'
+        };
+
+        this.reqLegalService.postReqLegalMnto(payload).subscribe({
+          next: (apiRes: any) => {
+            if (apiRes && apiRes.success) {
+              this.toastr.success(apiRes.message || 'Requisito legal eliminado con éxito.', 'Eliminado');
+              this.cargarDatos();
+            } else {
+              this.toastr.warning(apiRes?.message || 'No se pudo eliminar el registro.', 'Atención');
+            }
+          },
+          error: (err: any) => {
+            console.error('Error al eliminar requisito legal:', err);
+            this.toastr.error('Ocurrió un error al eliminar en la base de datos.', 'Error');
+          }
+        });
       }
     });
   }
@@ -446,7 +503,7 @@ export class ReqLegalComponent implements OnInit {
   }
 
   onDescargarExcelOriginal(): void {
-    this.toastr.info('Descargando archivo Excel original de la Matriz Legal...', 'Descarga Excel');
+    this.onExportarExcel();
   }
 
   onExportarPdf(): void {
@@ -454,6 +511,36 @@ export class ReqLegalComponent implements OnInit {
   }
 
   onExportarExcel(): void {
+    const dataset = (this.activeTab === 'documentos' ? this.docDataSource.data : this.matrizDataSource.data);
+    if (!dataset || dataset.length === 0) {
+      this.toastr.warning('No hay datos disponibles para exportar.', 'Exportar Excel');
+      return;
+    }
+
+    const dataToExport = dataset.map(item => ({
+      'Item': item.item || '',
+      'Ámbito / Carpeta': item.ambito || item.tema || '',
+      'Norma / Documento': item.norma || item.requisito || '',
+      'Artículo': item.articulo || '',
+      'Entidad Emisora': item.entidad || '',
+      'Obligación / Descripción': item.obligacion || item.requisito || '',
+      'Evidencia de Cumplimiento': item.evidenciadoc || item.evidencia || '',
+      'Responsable': item.responsable || '',
+      'Frecuencia': item.frecuencia || '',
+      'Estado': item.estado || '',
+      'Fecha Evaluación': item.evaluacion || '',
+      'Próxima Evaluación': item.proxeval || '',
+      'Fecha Vencimiento': item.vencimiento || '',
+      'Observaciones': item.observaciones || ''
+    }));
+
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(dataToExport);
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    const sheetName = this.activeTab === 'documentos' ? 'Documentos Legales' : 'Matriz Legal';
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+    const fileName = `Matriz_Legal_Precotex_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
     this.toastr.success('Matriz Legal exportada a Excel con éxito.', 'Exportar Excel');
   }
 

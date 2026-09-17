@@ -1412,15 +1412,18 @@ export class PortafolioMejoraComponent implements OnInit {
 
   // GETTERS PARA DISTRIBUCIÓN Y GRÁFICO DONUT
   get count5W2H(): number {
-    return this.mejoraList.filter(m => m.herramienta === '5W-2H').length;
+    return this.mejoraList.filter(m => (m.herramienta || '').toUpperCase().includes('5W')).length;
   }
 
   get countACR(): number {
-    return this.mejoraList.filter(m => m.herramienta === 'ACR').length;
+    return this.mejoraList.filter(m => (m.herramienta || '').toUpperCase().includes('ACR')).length;
   }
 
   get countIniciativas(): number {
-    return this.mejoraList.filter(m => m.herramienta === 'Iniciativa').length;
+    return this.mejoraList.filter(m => {
+      const h = (m.herramienta || '').toLowerCase();
+      return h.includes('iniciativa') || (!h.includes('5w') && !h.includes('acr'));
+    }).length;
   }
 
   get pct5W2H(): number {
@@ -1444,46 +1447,67 @@ export class PortafolioMejoraComponent implements OnInit {
     return 25 - this.pct5W2H - this.pctACR;
   }
 
-  // ANALÍTICA: REGISTROS POR PROCESO Y META VS REAL
+  // ANALÍTICA: REGISTROS POR PROCESO Y META VS REAL (100% DINÁMICO EN BASE A REGISTROS REALES)
   get procesosUnicos(): string[] {
-    const list = this.mejoraList.map(m => m.proceso).filter(Boolean);
-    const set = Array.from(new Set(list));
-    if (set.length === 0) {
-      return ['Costura', 'Corte', 'Aseguramiento de Calidad Textil', 'SSOMA'];
+    if (!this.mejoraList || this.mejoraList.length === 0) {
+      return [];
     }
-    return set.slice(0, 7);
+    const procCounts = new Map<string, number>();
+    for (const m of this.mejoraList) {
+      const p = (m.proceso || 'General').trim();
+      if (p) {
+        procCounts.set(p, (procCounts.get(p) || 0) + 1);
+      }
+    }
+    // Ordenar de mayor a menor según cantidad de iniciativas reales registradas
+    return Array.from(procCounts.keys())
+      .sort((a, b) => (procCounts.get(b) || 0) - (procCounts.get(a) || 0))
+      .slice(0, 7);
   }
 
   get maxTotalProceso(): number {
-    const totals = this.procesosUnicos.map(p => this.mejoraList.filter(m => m.proceso === p).length);
+    if (!this.procesosUnicos || this.procesosUnicos.length === 0) return 1;
+    const totals = this.procesosUnicos.map(p => 
+      this.mejoraList.filter(m => (m.proceso || '').toLowerCase() === p.toLowerCase()).length
+    );
     return Math.max(1, ...totals);
   }
 
   getProcesoBreakdown(proc: string) {
-    const rows = this.mejoraList.filter(m => m.proceso === proc);
-    const n5 = rows.filter(m => m.herramienta === '5W-2H').length;
-    const na = rows.filter(m => m.herramienta === 'ACR').length;
-    const ni = rows.filter(m => m.herramienta === 'Iniciativa').length;
+    const rows = this.mejoraList.filter(m => (m.proceso || '').toLowerCase() === (proc || '').toLowerCase());
+    const n5 = rows.filter(m => (m.herramienta || '').toUpperCase().includes('5W')).length;
+    const na = rows.filter(m => (m.herramienta || '').toUpperCase().includes('ACR')).length;
+    const ni = rows.filter(m => {
+      const h = (m.herramienta || '').toLowerCase();
+      return h.includes('iniciativa') || (!h.includes('5w') && !h.includes('acr'));
+    }).length;
     const max = this.maxTotalProceso;
 
     return {
       n5,
       na,
       ni,
-      pct5: (n5 / max) * 100,
-      pctA: (na / max) * 100,
-      pctI: (ni / max) * 100
+      total: rows.length,
+      pct5: max > 0 ? (n5 / max) * 100 : 0,
+      pctA: max > 0 ? (na / max) * 100 : 0,
+      pctI: max > 0 ? (ni / max) * 100 : 0
     };
   }
 
   getMetaInfo(proc: string) {
-    const real = this.mejoraList.filter(m => m.proceso === proc).length;
+    const rows = this.mejoraList.filter(m => (m.proceso || '').toLowerCase() === (proc || '').toLowerCase());
+    const real = rows.length;
+    // Meta mensual definida para mejora continua (3 iniciativas por proceso)
     const meta = 3;
+    const cerradas = rows.filter(m => {
+      const e = (m.estado || '').toLowerCase();
+      return e.includes('finalizado') || e.includes('cerrado') || e.includes('completado');
+    }).length;
     const cumple = real >= meta;
-    const color = cumple ? '#3ecf8e' : (real >= 1 ? '#f0b429' : '#f0576b');
-    const pct = Math.min((real / meta) * 100, 100);
+    const color = cumple ? '#10b981' : (real > 0 ? '#3b82f6' : '#ef4444');
+    const pct = meta > 0 ? Math.min(Math.round((real / meta) * 100), 100) : 0;
 
-    return { real, meta, cumple, color, pct };
+    return { real, meta, cumple, color, pct, cerradas };
   }
 
   get archivosAdjuntosList(): any[] {

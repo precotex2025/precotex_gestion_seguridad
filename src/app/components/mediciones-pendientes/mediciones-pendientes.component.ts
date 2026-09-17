@@ -158,12 +158,12 @@ export class MedicionesPendientesComponent implements OnInit {
 
   onAgregar(): void {
     const dialogRef = this.dialog.open(MedicionObjetivosRegeditComponent, {
-      width: '1150px',
+      width: '920px',
       maxWidth: '95vw',
-      panelClass: 'custom-large-dialog',
+      panelClass: 'custom-dialog-no-padding',
       disableClose: true,
       data: {
-        Title: '::. Registrar medición de objetivo .::',
+        Title: 'Registrar Medición de Objetivo',
         Accion: 'I',
         Datos: null
       }
@@ -187,12 +187,12 @@ export class MedicionesPendientesComponent implements OnInit {
 
   onEditar(item: any): void {
     const dialogRef = this.dialog.open(MedicionObjetivosRegeditComponent, {
-      width: '1150px',
+      width: '920px',
       maxWidth: '95vw',
-      panelClass: 'custom-large-dialog',
+      panelClass: 'custom-dialog-no-padding',
       disableClose: true,
       data: {
-        Title: '::. Editar medición de objetivo .::',
+        Title: 'Editar Medición de Objetivo',
         Accion: 'U',
         Datos: item
       }

@@ -134,12 +134,12 @@ export class AuditoriasRegeditComponent implements OnInit {
     const year = new Date().getFullYear();
     const tipoCode = sTipo === 'Externa' ? 'EXT' : (sTipo === 'Cliente' ? 'CLI' : 'INT');
 
-    if (this.data.AuditoriasList && Array.isArray(this.data.AuditoriasList)) {
+    if (this.data.AuditoriasList && Array.isArray(this.data.AuditoriasList) && this.data.AuditoriasList.length > 0) {
       this.procesarCodigoConLista(this.data.AuditoriasList, tipoCode, year);
     } else {
       this.auditoriasService.getListadoAuditorias('').subscribe({
         next: (res: any) => {
-          const list = res?.elements || [];
+          const list = res?.elements || res?.data || (Array.isArray(res) ? res : []);
           this.procesarCodigoConLista(list, tipoCode, year);
         },
         error: () => {
@@ -153,16 +153,12 @@ export class AuditoriasRegeditComponent implements OnInit {
     const existingNums: number[] = [];
 
     list.forEach((item: any) => {
-      const code = String(item.codigo_Auditoria || item.Codigo_Auditoria || '').trim();
+      const code = String(item.codigo_Auditoria || item.Codigo_Auditoria || item.codigo || item.Codigo || item.auditoria || '').trim();
       const match = code.match(/AUD-(?:INT|EXT|CLI)-\d+-(\d+)/i) || code.match(/-(\d+)$/);
       if (match) {
         const num = parseInt(match[1], 10);
         if (!isNaN(num) && num > 0) {
-          // Filtrar números aleatorios previos (>= 100) si la cantidad total en BD es reducida (< 50)
-          const isLegacyRandom = list.length <= 50 && num >= 100;
-          if (!isLegacyRandom) {
-            existingNums.push(num);
-          }
+          existingNums.push(num);
         }
       }
     });
@@ -294,10 +290,10 @@ export class AuditoriasRegeditComponent implements OnInit {
       cancelButtonText: 'No'
     }).then(result => {
       if (result.isConfirmed) {
-        let sCodigo = String(this.formulario.get('ctrol_codigo')?.value || '').trim();
+        let sCodigo = String(this.formulario.getRawValue().ctrol_codigo || '').trim();
         if (this.data.Accion === 'I' && !sCodigo) {
           const year = new Date().getFullYear();
-          const tipoCode = sTipo === 'Externa' ? 'EXT' : 'INT';
+          const tipoCode = sTipo === 'Externa' ? 'EXT' : (sTipo === 'Cliente' ? 'CLI' : 'INT');
           sCodigo = `AUD-${tipoCode}-${year}-001`;
         }
 
@@ -330,8 +326,9 @@ export class AuditoriasRegeditComponent implements OnInit {
             this.toastr.success(res.message || 'Auditoría guardada en la BD con éxito.', '', { timeOut: 2500 });
             this.dialogRef.close(true);
           },
-          error: () => {
-            this.toastr.error('Error al guardar auditoría en la BD', '', { timeOut: 2500 });
+          error: (err: any) => {
+            const msg = err?.error?.message || err?.error?.Message || 'Error al guardar auditoría en la BD';
+            this.toastr.error(msg, '', { timeOut: 3000 });
           }
         });
       }

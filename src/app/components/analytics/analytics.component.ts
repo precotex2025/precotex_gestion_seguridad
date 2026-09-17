@@ -50,27 +50,81 @@ export class AnalyticsComponent implements OnInit {
     this.onListado();
   }
 
+  limpiarTexto(text: any): string {
+    if (text === null || text === undefined) return '';
+    let str = String(text).trim();
+
+    str = str
+      .replace(/AuditorÃ[a\u00ad]?\s*Interna/gi, 'Auditoría Interna')
+      .replace(/Auditor[ií]a\s*Interna/gi, 'Auditoría Interna')
+      .replace(/InspecciÃ[³\u00f3]?n/gi, 'Inspección')
+      .replace(/Inspecci[oó]n/gi, 'Inspección')
+      .replace(/GestiÃ[³\u00f3]?n/gi, 'Gestión')
+      .replace(/LÃ[­\u00ad]?nea/gi, 'Línea')
+      .replace(/Ã¡/g, 'á')
+      .replace(/Ã©/g, 'é')
+      .replace(/Ã­/g, 'í')
+      .replace(/Ã\u00ad/g, 'í')
+      .replace(/Ãa/g, 'ía')
+      .replace(/Ã³/g, 'ó')
+      .replace(/Ãº/g, 'ú')
+      .replace(/Ã±/g, 'ñ')
+      .replace(/Ã /g, 'Á')
+      .replace(/Ã‰/g, 'É')
+      .replace(/Ã /g, 'Í')
+      .replace(/Ã“/g, 'Ó')
+      .replace(/Ãš/g, 'Ú')
+      .replace(/Ã‘/g, 'Ñ')
+      .replace(/â€“/g, ' - ')
+      .replace(/â€”/g, ' - ')
+      .replace(/â€"/g, ' - ')
+      .replace(/â€™/g, "'")
+      .replace(/â€œ/g, '"')
+      .replace(/â€ /g, '"')
+      .replace(/Sede Central\s*[-–—?â€"“”]+\s*Lima/gi, 'Sede Central - Lima')
+      .replace(/\?[\s\-]*"\s*/g, ' - ')
+      .replace(/\?{2,}/g, ' - ');
+
+    return str.replace(/\s*-\s*/g, ' - ').replace(/\s{2,}/g, ' ').trim();
+  }
+
   onListado(): void {
     this.indicadoresService.getListadoIndicadores().subscribe({
       next: (res: any) => {
-        if (res && res.success && res.elements && res.elements.length > 0) {
+        if (res && res.elements) {
           const mapped = res.elements.map((item: any) => ({
+            ...item,
             codigo: item.codigo,
-            nombre: item.nombre,
-            tipo: item.tipo || 'Eficiencia',
-            sede: item.sede || 'Sede Huachipa',
-            proceso: item.nombre_Proceso || item.codigo_Proceso || 'General',
+            nombre: this.limpiarTexto(item.nombre),
+            tipo: item.tipo || 'Eficacia',
+            sede: this.limpiarTexto(item.sede || 'Todas'),
+            proceso: this.limpiarTexto(item.nombre_Proceso || item.proceso || item.codigo_Proceso || 'General'),
             codigoProceso: item.codigo_Proceso,
+            codigo_proceso: item.codigo_Proceso,
+            nombre_proceso: this.limpiarTexto(item.nombre_Proceso || item.proceso || 'General'),
             norma: item.norma || 'ISO 9001:2015',
             frecuencia: item.frecuencia || 'Mensual',
-            unidad: item.unidad_Medida || '%',
+            unidad: item.unidad_Medida || item.unidad || '%',
+            unidad_medida: item.unidad_Medida || item.unidad || '%',
             meta: item.meta !== null && item.meta !== undefined ? item.meta.toString() : '0',
             estado: item.estado || 'Activo',
             idIndicador: item.id_Indicador,
-            fuente: item.fuente_Datos || item.fuente || item.fuenteDatos || 'Reporte de producción',
-            fuente_datos: item.fuente_Datos || item.fuente || item.fuenteDatos || 'Reporte de producción',
-            responsable: item.responsable || 'Jefe de Proceso',
-            respmed: item.resp_Medicion || item.respmed || 'Supervisor de Planta'
+            fuente: this.limpiarTexto(item.fuente_Datos || item.fuente || 'Reporte de producción'),
+            fuente_datos: this.limpiarTexto(item.fuente_Datos || item.fuente || 'Reporte de producción'),
+            responsable: this.limpiarTexto(item.responsable || ''),
+            respmed: this.limpiarTexto(item.resp_Medicion || item.respmed || ''),
+            resp_medicion: this.limpiarTexto(item.resp_Medicion || item.respmed || ''),
+            formula: item.formula || '',
+            base: item.linea_Base || item.base || '',
+            linea_base: item.linea_Base || item.base || '',
+            tipometa: item.tipo_Meta || item.tipometa || 'Mayor o igual (≥)',
+            tipo_meta: item.tipo_Meta || item.tipometa || 'Mayor o igual (≥)',
+            sentido: item.sentido || '↑ Sube es bueno',
+            inicio: item.fecha_Inicio || item.fec_Inicio || item.inicio || '',
+            fecha_inicio: item.fecha_Inicio || item.fec_Inicio || item.inicio || '',
+            fin: item.fecha_Fin || item.fec_Fin || item.fin || '',
+            fecha_fin: item.fecha_Fin || item.fec_Fin || item.fin || '',
+            areasacc: this.limpiarTexto(item.areas_Acceso || item.sede || 'Todas')
           }));
           this.dataSource.data = mapped;
           this.calculateStats(mapped);

@@ -38,7 +38,7 @@ export class MedicionRegeditComponent implements OnInit {
     'Todas'
   ];
 
-  semaforosOptions = ['En meta', 'En riesgo', 'Crítico'];
+  semaforosOptions = ['En meta', 'En riesgo', 'Crítico', 'Pendiente'];
 
   procesosGroups: { [key: string]: string[] } = {};
 
@@ -56,13 +56,6 @@ export class MedicionRegeditComponent implements OnInit {
     if (this.data && this.data.Title) {
       this.data.Title = this.data.Title.replace(/[.:]+/g, ' ').trim();
     }
-
-    this.procesosService.getProcesosAgrupados().subscribe({
-      next: (groups: any) => {
-        this.procesosGroups = groups;
-      }
-    });
-    this.cargarIndicadores();
 
     this.formulario = this.fb.group({
       idIndicador: [null],
@@ -83,12 +76,19 @@ export class MedicionRegeditComponent implements OnInit {
     });
 
     if (this.data.Accion === 'U' && this.data.Datos) {
-      this.formulario.patchValue(this.data.Datos);
-      if (this.data.Datos.evidencia) {
-        this.nombreArchivoEvidencia = this.data.Datos.evidencia;
-      }
-      this.onSearchIndicadorChange({ target: { value: this.data.Datos.indicador || '' } });
+      this.aplicarDatosEdicion(this.data.Datos);
     }
+
+    this.procesosService.getProcesosAgrupados().subscribe({
+      next: (groups: any) => {
+        this.procesosGroups = groups;
+        if (this.data.Accion === 'U' && this.data.Datos) {
+          this.reparcharProceso(this.data.Datos.proceso || this.data.Datos.nombre_Proceso);
+        }
+      }
+    });
+
+    this.cargarIndicadores();
 
     this.formulario.get('indicador')?.valueChanges.subscribe(val => {
       this.buscarYAutocompletar(val);
@@ -100,6 +100,179 @@ export class MedicionRegeditComponent implements OnInit {
     });
   }
 
+  limpiarTexto(text: any): string {
+    if (text === null || text === undefined) return '';
+    let str = String(text).trim();
+
+    str = str
+      .replace(/AuditorÃ[a\u00ad]?\s*Interna/gi, 'Auditoría Interna')
+      .replace(/Auditor[ií]a\s*Interna/gi, 'Auditoría Interna')
+      .replace(/InspecciÃ[³\u00f3]?n/gi, 'Inspección')
+      .replace(/Inspecci[oó]n/gi, 'Inspección')
+      .replace(/GestiÃ[³\u00f3]?n/gi, 'Gestión')
+      .replace(/LÃ[­\u00ad]?nea/gi, 'Línea')
+      .replace(/Ã¡/g, 'á')
+      .replace(/Ã©/g, 'é')
+      .replace(/Ã­/g, 'í')
+      .replace(/Ã\u00ad/g, 'í')
+      .replace(/Ãa/g, 'ía')
+      .replace(/Ã³/g, 'ó')
+      .replace(/Ãº/g, 'ú')
+      .replace(/Ã±/g, 'ñ')
+      .replace(/Ã /g, 'Á')
+      .replace(/Ã‰/g, 'É')
+      .replace(/Ã /g, 'Í')
+      .replace(/Ã“/g, 'Ó')
+      .replace(/Ãš/g, 'Ú')
+      .replace(/Ã‘/g, 'Ñ')
+      .replace(/â€“/g, ' - ')
+      .replace(/â€”/g, ' - ')
+      .replace(/â€"/g, ' - ')
+      .replace(/â€™/g, "'")
+      .replace(/â€œ/g, '"')
+      .replace(/â€ /g, '"')
+      .replace(/Sede Central\s*[-–—?â€"“”]+\s*Lima/gi, 'Sede Central - Lima')
+      .replace(/\?[\s\-]*"\s*/g, ' - ')
+      .replace(/\?{2,}/g, ' - ');
+
+    return str.replace(/\s*-\s*/g, ' - ').replace(/\s{2,}/g, ' ').trim();
+  }
+
+  formatearMetaTexto(meta: any, unidad?: string): string {
+    if (meta === null || meta === undefined || meta === '') return '>=85%';
+    let val = String(meta).trim();
+    if (val.includes('%')) return val;
+    const u = String(unidad || '').toLowerCase().trim();
+    if (!u || u.includes('%') || u.includes('porcent')) {
+      return `${val}%`;
+    }
+    if (u.includes('n') && (u.includes('m') || u.includes('mero'))) {
+      return val;
+    }
+    return `${val} ${unidad}`;
+  }
+
+  aplicarDatosEdicion(d: any): void {
+    if (!d) return;
+
+    // 1. Resolver Sede (asegurar que exista en las opciones para que se seleccione)
+    let sedeVal = this.limpiarTexto(d.sede || d.Sede || 'Todas');
+    if (sedeVal) {
+      const match = this.sedesOptions.find(s => s.toLowerCase() === sedeVal.toLowerCase());
+      if (match) {
+        sedeVal = match;
+      } else {
+        if (!this.sedesOptions.includes(sedeVal)) {
+          this.sedesOptions.splice(this.sedesOptions.length - 1, 0, sedeVal);
+        }
+      }
+    } else {
+      sedeVal = 'Todas';
+    }
+
+    // 2. Normalizar Semáforo
+    let semaVal = d.semaforo || 'En meta';
+    const sLow = String(semaVal).toLowerCase();
+    if (sLow.includes('meta')) semaVal = 'En meta';
+    else if (sLow.includes('riesgo')) semaVal = 'En riesgo';
+    else if (sLow.includes('critico') || sLow.includes('crítico')) semaVal = 'Crítico';
+    else if (sLow.includes('pendiente')) semaVal = 'Pendiente';
+    else semaVal = 'En meta';
+
+    // 3. Proceso
+    const procVal = this.limpiarTexto(d.proceso || d.nombre_Proceso || d.nombre_proceso || d.codigo_Proceso || 'General');
+
+    // 4. Meta
+    const metaVal = this.formatearMetaTexto(d.meta, d.unidad_Medida || d.unidad);
+
+    // 5. Parchear formulario
+    this.formulario.patchValue({
+      idIndicador: d.idIndicador || d.id_Indicador || null,
+      codigoIndicador: d.codigoIndicador || d.codigo || '',
+      indicador: this.limpiarTexto(d.indicador || d.nombre || ''),
+      tipo: this.limpiarTexto(d.tipo || 'Eficacia'),
+      sede: sedeVal,
+      proceso: procVal,
+      norma: d.norma || 'ISO 9001:2015',
+      frecuencia: d.frecuencia || 'Mensual',
+      meta: metaVal,
+      valor: d.valor !== undefined && d.valor !== null ? d.valor : '0%',
+      periodo: d.periodo || 'Sin medición inicial',
+      semaforo: semaVal,
+      evidencia: d.evidencia || '',
+      archivoBase64: d.archivoBase64 || '',
+      obs: this.limpiarTexto(d.obs || d.comentario || '')
+    }, { emitEvent: false });
+
+    if (d.evidencia) {
+      this.nombreArchivoEvidencia = d.evidencia;
+    }
+
+    // 6. Vincular indicador
+    this.vincularIndicadorSeleccionado(d);
+  }
+
+  reparcharProceso(rawProc: string): void {
+    if (!rawProc) return;
+    const cleanProc = this.limpiarTexto(rawProc);
+    const allProcs = Object.values(this.procesosGroups).flat();
+    const cleanTarget = cleanProc.trim().toLowerCase();
+    const cleanNoAccents = cleanProc.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+
+    const matched = allProcs.find(p => 
+      p.trim().toLowerCase() === cleanTarget ||
+      p.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase() === cleanNoAccents ||
+      p.toLowerCase().includes(cleanTarget) ||
+      cleanTarget.includes(p.toLowerCase())
+    );
+
+    if (matched) {
+      this.formulario.patchValue({ proceso: matched }, { emitEvent: false });
+    } else {
+      if (!this.procesosGroups['Otros Procesos']) {
+        this.procesosGroups['Otros Procesos'] = [];
+      }
+      if (!this.procesosGroups['Otros Procesos'].includes(cleanProc)) {
+        this.procesosGroups['Otros Procesos'].push(cleanProc);
+      }
+      this.formulario.patchValue({ proceso: cleanProc }, { emitEvent: false });
+    }
+  }
+
+  vincularIndicadorSeleccionado(d: any): void {
+    const cod = (d.codigoIndicador || d.codigo || '').toLowerCase().trim();
+    const nom = this.limpiarTexto(d.indicador || d.nombre || '').toLowerCase().trim();
+
+    let found = this.indicadores.find(i => 
+      (cod && i.codigo && i.codigo.toLowerCase().trim() === cod) ||
+      (nom && i.nombre && i.nombre.toLowerCase().trim() === nom) ||
+      (nom && i.nombre && i.nombre.toLowerCase().includes(nom)) ||
+      (cod && i.codigo && i.codigo.toLowerCase().includes(cod))
+    );
+
+    if (!found) {
+      found = {
+        id: d.idIndicador || d.id,
+        codigo: d.codigoIndicador || d.codigo || 'IND-2026',
+        nombre: this.limpiarTexto(d.indicador || d.nombre || 'Indicador Registrado'),
+        proceso: this.limpiarTexto(d.proceso || d.nombre_Proceso || 'General'),
+        sede: this.limpiarTexto(d.sede || 'Todas'),
+        norma: d.norma || 'ISO 9001:2015',
+        frecuencia: d.frecuencia || 'Mensual',
+        meta: this.formatearMetaTexto(d.meta, d.unidad_Medida || d.unidad)
+      };
+      this.indicadores.unshift(found);
+    } else {
+      found.nombre = this.limpiarTexto(found.nombre);
+      found.proceso = this.limpiarTexto(found.proceso);
+      found.sede = this.limpiarTexto(found.sede);
+      found.meta = this.formatearMetaTexto(found.meta, found.unidad_Medida || found.unidad);
+    }
+
+    this.indicadorSeleccionado = found;
+    this.formulario.patchValue({ indicador: found.nombre }, { emitEvent: false });
+  }
+
   cargarIndicadores(): void {
     this.indicadoresService.getListadoIndicadores().subscribe({
       next: (res: any) => {
@@ -108,12 +281,12 @@ export class MedicionRegeditComponent implements OnInit {
           apiList = res.elements.map((item: any) => ({
             id: item.id_Indicador,
             codigo: item.codigo,
-            nombre: item.nombre,
-            proceso: item.nombre_Proceso || item.codigo_Proceso || 'General',
-            sede: item.sede || 'Todas',
+            nombre: this.limpiarTexto(item.nombre),
+            proceso: this.limpiarTexto(item.nombre_Proceso || item.codigo_Proceso || 'General'),
+            sede: this.limpiarTexto(item.sede || 'Todas'),
             norma: item.norma || 'ISO 9001:2015',
             frecuencia: item.frecuencia || 'Mensual',
-            meta: item.meta !== null && item.meta !== undefined ? item.meta.toString() + (item.unidad_Medida || '%') : '>=85%'
+            meta: this.formatearMetaTexto(item.meta, item.unidad_Medida)
           }));
         }
 
@@ -138,9 +311,16 @@ export class MedicionRegeditComponent implements OnInit {
         if (this.indicadores.length === 0) {
           this.cargarIndicadoresLocales();
         }
+
+        if (this.data.Accion === 'U' && this.data.Datos) {
+          this.vincularIndicadorSeleccionado(this.data.Datos);
+        }
       },
       error: () => {
         this.cargarIndicadoresLocales();
+        if (this.data.Accion === 'U' && this.data.Datos) {
+          this.vincularIndicadorSeleccionado(this.data.Datos);
+        }
       }
     });
   }

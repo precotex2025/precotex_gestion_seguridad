@@ -278,12 +278,12 @@ BEGIN
             Codigo, Nombre, Tipo, Sede, Norma, Frecuencia, Meta, Unidad_Medida,
             Tipo_Meta, Sentido, Linea_Base, Formula, Codigo_Proceso, Nombre_Proceso,
             Responsable, Resp_Medicion, Fuente_Datos, Fecha_Inicio, Fecha_Fin, Fec_Inicio, Fec_Fin,
-            Areas_Acceso, Estado, Fecha_Registro, Fec_Registro, Usuario_Registro
+            Areas_Acceso, Estado, Fecha_Registro, Fec_Registro, Usuario_Registro, Flg_Activo
         ) VALUES (
             @Codigo, @Nombre, @Tipo, @Sede, @Norma, @Frecuencia, @Meta, @Unidad_Medida,
             @Tipo_Meta, @Sentido, @Linea_Base, @Formula, @Codigo_Proceso, @Nombre_Proceso,
             @Responsable, @Resp_Medicion, @Fuente_Datos, @v_Fec_Ini, @v_Fec_Fin, @v_Fec_Ini, @v_Fec_Fin,
-            @Areas_Acceso, @Estado, GETDATE(), GETDATE(), @Usuario_Registro
+            @Areas_Acceso, @Estado, GETDATE(), GETDATE(), @Usuario_Registro, 1
         );
         SELECT SCOPE_IDENTITY() AS Id_Indicador, 'Indicador registrado con éxito' AS Mensaje;
     END
@@ -427,11 +427,11 @@ BEGIN
         INSERT INTO dbo.SN_Indicador_Medicion (
             Id_Indicador, Codigo_Indicador, Nombre_Indicador, Tipo, Sede, Proceso,
             Norma, Frecuencia, Meta, Periodo, Valor_Obtenido, Semaforo, Evidencia, Archivo_Evidencia, Comentario,
-            Fecha_Registro, Fec_Registro, Usuario_Registro
+            Fecha_Registro, Fec_Registro, Usuario_Registro, Flg_Activo
         ) VALUES (
             @Id_Indicador, @Codigo_Indicador, @Nombre_Indicador, @Tipo, @Sede, @Proceso,
             @Norma, @Frecuencia, @Meta, @Periodo, @Valor_Obtenido, @Semaforo, @Evidencia, @Evidencia, @Comentario,
-            GETDATE(), GETDATE(), @Usuario_Registro
+            GETDATE(), GETDATE(), @Usuario_Registro, 1
         );
         SELECT SCOPE_IDENTITY() AS Id_Medicion, 'Medición registrada con éxito' AS Mensaje;
     END
