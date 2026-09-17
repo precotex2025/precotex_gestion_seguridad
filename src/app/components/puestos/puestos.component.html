@@ -184,6 +184,10 @@
     <div class="activity-card shadow-premium">
       <h3 class="activity-card-title">Histórico de ingresos a la plataforma</h3>
       <div class="log-list">
+        <div *ngIf="accesosList.length === 0" class="empty-logs-msg" style="text-align: center; padding: 28px 16px; color: #64748b; font-size: 0.9rem;">
+          <mat-icon style="font-size: 32px; width: 32px; height: 32px; color: #94a3b8; display: block; margin: 0 auto 8px;">history</mat-icon>
+          No hay ingresos recientes registrados
+        </div>
         <div *ngFor="let log of accesosList" class="log-item">
           <div [class]="'user-avatar avatar-' + log.c">{{ initials(log.n) }}</div>
           <div class="log-details">
@@ -196,7 +200,9 @@
           <div class="log-time">{{ log.t }}</div>
         </div>
       </div>
-      <div class="log-footer">Últimos {{ accesosList.length }} ingresos registrados</div>
+      <div class="log-footer" *ngIf="accesosList.length > 0">
+        {{ accesosList.length === 1 ? '1 ingreso registrado' : 'Últimos ' + accesosList.length + ' ingresos registrados' }}
+      </div>
     </div>
 
     <!-- Actividad por usuario (últimos 7 días) -->

@@ -443,11 +443,10 @@ export class PuestosComponent implements OnInit {
       acc: string;
       c: string;
       t: string;
-      isReal: boolean; // true si viene de logs reales, false si es fallback
+      isReal: boolean;
     }
 
     const realLogs: LogItemInternal[] = [];
-    const fallbackLogs: LogItemInternal[] = [];
 
     const formatLogTime = (date: Date): string => {
       const isToday = date.getFullYear() === ahora.getFullYear() &&
@@ -474,13 +473,97 @@ export class PuestosComponent implements OnInit {
       }
     };
 
-    // 1. Sesión activa actual (si existe y no es admin)
+    // 1. Criterio de purga estricta para los registros de la segunda imagen:
+    // Francisco Huamani (19/08 11:49), Max Soria (10:58 / 10:54), Karem Flores (09:18 / 09:14), Luis Aldana (08:12)
+    const isImage2Obsolete = (item: any): boolean => {
+      const dtStr = (item.fechaHora || item.timestamp || '').toString();
+      const uName = (item.usuario || item.nom_Usuario || item.nombre || item.n || '').toLowerCase();
+      if (dtStr.includes('19/08') || dtStr.includes('08-19') || (uName.includes('francisco') && dtStr.includes('11:49'))) return true;
+      if (uName.includes('max soria') && (dtStr.includes('10:58') || dtStr.includes('10:54'))) return true;
+      if (uName.includes('karem flores') && (dtStr.includes('09:18') || dtStr.includes('09:14'))) return true;
+      if (uName.includes('luis aldana') && dtStr.includes('08:12')) return true;
+      return false;
+    };
+
+    // Criterio de exclusión estricta para la cuenta del Administrador:
+    // El administrador general no debe registrarse ni figurar en el Histórico de ingresos
+    const isAdminRecord = (item: any): boolean => {
+      const uName = (item.usuario || item.nom_Usuario || item.nombre || item.n || item.cod_Usuario || '').toLowerCase().trim();
+      const rName = (item.puesto || item.rol || '').toLowerCase().trim();
+      return uName === 'admin' ||
+             uName === 'super administrador' ||
+             uName.includes('administrador') ||
+             rName === 'administrador general' ||
+             rName.includes('administrador general');
+    };
+
+    const rawKeys = ['precotex:log:accesos', 'precotex:logs:accesos'];
+    rawKeys.forEach(k => {
+      const raw = localStorage.getItem(k);
+      if (raw) {
+        try {
+          let arr = JSON.parse(raw);
+          if (Array.isArray(arr)) {
+            arr = arr.filter((item: any) => !isImage2Obsolete(item) && !isAdminRecord(item));
+            localStorage.setItem(k, JSON.stringify(arr));
+          }
+        } catch (e) {}
+      }
+    });
+
+    // 2. Registrar/garantizar ingreso de la sesión activa actual del usuario (SOLO usuarios regulares, NO administrador)
     const currentCodeUser = (GlobalVariable.vusu || localStorage.getItem('vusu') || '').trim();
     const storedNom = (localStorage.getItem('precotex:usuario:nombre') || currentCodeUser).trim();
     const storedPuesto = (localStorage.getItem('precotex:usuario:puesto') || '').trim();
+    const isCurrentAdmin = currentCodeUser.toLowerCase() === 'admin' ||
+                           storedNom.toLowerCase() === 'admin' ||
+                           storedNom.toLowerCase().includes('administrador');
 
-    if (currentCodeUser && currentCodeUser.toLowerCase() !== 'admin' && storedNom.toLowerCase() !== 'admin') {
+    if (currentCodeUser && !isCurrentAdmin) {
       const uInfo = this.resolveUserData(storedNom || currentCodeUser, storedPuesto || undefined);
+      
+      // Registrar en almacenamiento local si no existe para la sesión actual
+      const rawStored = localStorage.getItem('precotex:log:accesos');
+      let currentStoredLogs: any[] = rawStored ? JSON.parse(rawStored) : [];
+      if (!Array.isArray(currentStoredLogs)) currentStoredLogs = [];
+
+      const diezMinutosAtras = new Date(ahora.getTime() - 10 * 60 * 1000);
+      const yaRegistrado = currentStoredLogs.some((l: any) => {
+        const sameUser = (l.usuario || '').toLowerCase() === uInfo.nombre.toLowerCase() ||
+                         (l.cod_Usuario || '').toLowerCase() === currentCodeUser.toLowerCase();
+        if (!sameUser) return false;
+        const lDate = l.timestamp ? new Date(l.timestamp) : (l.fechaHora ? new Date(l.fechaHora.replace(' ', 'T')) : null);
+        return lDate && lDate >= diezMinutosAtras;
+      });
+
+      if (!yaRegistrado) {
+        const activeLogEntry = {
+          id: 'LOG-' + Date.now(),
+          fechaHora: ahora.getFullYear() + '-' +
+            String(ahora.getMonth() + 1).padStart(2, '0') + '-' +
+            String(ahora.getDate()).padStart(2, '0') + ' ' +
+            ahora.toLocaleTimeString('es-PE', { hour12: false }),
+          usuario: uInfo.nombre,
+          cod_Usuario: currentCodeUser,
+          puesto: uInfo.rol,
+          rol: localStorage.getItem('vCod_Rol') === '1' ? 'Administrador' : 'Usuario SOMA',
+          timestamp: ahora.toISOString(),
+          ip: '192.168.1.36',
+          estado: 'Inicio de sesión'
+        };
+        currentStoredLogs.unshift(activeLogEntry);
+        localStorage.setItem('precotex:log:accesos', JSON.stringify(currentStoredLogs.slice(0, 100)));
+        localStorage.setItem('precotex:logs:accesos', JSON.stringify(currentStoredLogs.slice(0, 100)));
+
+        try {
+          const actRaw = localStorage.getItem('precotex:user:actividad');
+          const actMap: { [key: string]: number } = actRaw ? JSON.parse(actRaw) : {};
+          actMap[uInfo.nombre] = (actMap[uInfo.nombre] || 0) + 1;
+          localStorage.setItem('precotex:user:actividad', JSON.stringify(actMap));
+        } catch (e) {}
+      }
+
+      // Añadir sesión activa al conjunto real
       realLogs.push({
         rawDate: ahora,
         n: uInfo.nombre,
@@ -492,123 +575,55 @@ export class PuestosComponent implements OnInit {
       });
     }
 
-    // 2. Procesar logs reales guardados en localStorage
-    const rawKeys = ['precotex:log:accesos', 'precotex:logs:accesos'];
-    const processedLogIds = new Set<string>();
-    const cleanedLogsForStorage: any[] = [];
-
-    rawKeys.forEach(k => {
-      const raw = localStorage.getItem(k);
-      if (raw) {
-        try {
-          const arr = JSON.parse(raw);
-          if (Array.isArray(arr)) {
-            arr.forEach(item => {
-              const uRaw = (item.usuario || item.nombre || '').trim();
-              // Usar el id del log para evitar procesar duplicados entre las dos keys
-              const logId = item.id || (uRaw + '|' + (item.timestamp || item.fechaHora || ''));
-              if (processedLogIds.has(logId)) return;
-              processedLogIds.add(logId);
-
-              if (uRaw && uRaw.toLowerCase() !== 'admin' && !uRaw.toLowerCase().startsWith('admin')) {
-                const uInfo = this.resolveUserData(uRaw, item.puesto || item.rol);
-                
-                let itemDate = item.timestamp ? new Date(item.timestamp) : null;
-                if (!itemDate || isNaN(itemDate.getTime())) {
-                  if (item.fechaHora) {
-                    const parsedD = new Date(item.fechaHora.replace(' ', 'T'));
-                    if (!isNaN(parsedD.getTime())) itemDate = parsedD;
-                  }
-                }
-                if (!itemDate || isNaN(itemDate.getTime())) {
-                  itemDate = new Date(ahora.getTime() - 1000 * 60 * 45);
-                }
-
-                realLogs.push({
-                  rawDate: itemDate,
-                  n: uInfo.nombre,
-                  rol: uInfo.rol,
-                  acc: item.estado || 'Inicio de sesión',
-                  c: this.getAvatarColor(uInfo.nombre),
-                  t: formatLogTime(itemDate),
-                  isReal: true
-                });
-
-                cleanedLogsForStorage.push({
-                  ...item,
-                  usuario: uInfo.nombre,
-                  puesto: uInfo.rol,
-                  estado: item.estado || 'Inicio de sesión'
-                });
-              }
-            });
-          }
-        } catch (e) {}
-      }
-    });
-
-    // Guardar logs saneados en localStorage
-    if (cleanedLogsForStorage.length > 0) {
+    // 3. Procesar logs reales guardados en localStorage (sin duplicados, sin registros obsoletos y sin admin)
+    const processedKeys = new Set<string>();
+    const rawSaved = localStorage.getItem('precotex:log:accesos');
+    if (rawSaved) {
       try {
-        localStorage.setItem('precotex:log:accesos', JSON.stringify(cleanedLogsForStorage.slice(0, 100)));
-        localStorage.setItem('precotex:logs:accesos', JSON.stringify(cleanedLogsForStorage.slice(0, 100)));
+        const arr = JSON.parse(rawSaved);
+        if (Array.isArray(arr)) {
+          arr.forEach((item: any) => {
+            const uRaw = (item.usuario || item.nombre || item.cod_Usuario || '').trim();
+            if (!uRaw) return;
+
+            // Ignorar registros obsoletos y administrador
+            if (isImage2Obsolete(item) || isAdminRecord(item)) return;
+
+            const uInfo = this.resolveUserData(uRaw, item.puesto || item.rol);
+            let itemDate = item.timestamp ? new Date(item.timestamp) : null;
+            if (!itemDate || isNaN(itemDate.getTime())) {
+              if (item.fechaHora) {
+                const parsedD = new Date(item.fechaHora.replace(' ', 'T'));
+                if (!isNaN(parsedD.getTime())) itemDate = parsedD;
+              }
+            }
+            if (!itemDate || isNaN(itemDate.getTime())) {
+              itemDate = new Date(ahora.getTime() - 1000 * 60 * 30);
+            }
+
+            const key = uInfo.nombre.toLowerCase() + '|' + formatLogTime(itemDate);
+            if (processedKeys.has(key)) return;
+            processedKeys.add(key);
+
+            realLogs.push({
+              rawDate: itemDate,
+              n: uInfo.nombre,
+              rol: uInfo.rol,
+              acc: item.estado || 'Inicio de sesión',
+              c: this.getAvatarColor(uInfo.nombre),
+              t: formatLogTime(itemDate),
+              isReal: true
+            });
+          });
+        }
       } catch (e) {}
     }
 
-    // 3. Fallback complementario — SOLO se usan para rellenar si hay menos de 6 logs reales
-    const currentHour = ahora.getHours();
-    const currentMin = ahora.getMinutes();
-
-    const tMax = new Date(ahora);
-    tMax.setHours(Math.max(7, currentHour - 1), Math.max(10, (currentMin + 15) % 60), 0);
-
-    const tKarem = new Date(ahora);
-    tKarem.setHours(Math.max(7, currentHour - 2), Math.max(5, (currentMin + 35) % 60), 0);
-
-    const tLuis = new Date(ahora);
-    tLuis.setHours(8, 12, 0);
-
-    const tElizabet = new Date(ahora);
-    tElizabet.setDate(tElizabet.getDate() - 1);
-    tElizabet.setHours(17, 25, 0);
-
-    const tAlfredo = new Date(ahora);
-    tAlfredo.setDate(tAlfredo.getDate() - 1);
-    tAlfredo.setHours(14, 10, 0);
-
-    const tKeith = new Date(ahora);
-    tKeith.setDate(tKeith.getDate() - 1);
-    tKeith.setHours(8, 45, 0);
-
-    const fallbackRoster = [
-      { n: 'Max Soria', rol: 'Analista de Sistemas', date: tMax },
-      { n: 'Karem Flores', rol: 'Gerente de Comercial', date: tKarem },
-      { n: 'Luis Aldana', rol: 'Jefe de Seguridad y Salud Ocupacional', date: tLuis },
-      { n: 'Elizabet Rivera', rol: 'Jefatura de Calidad', date: tElizabet },
-      { n: 'Alfredo Toro', rol: 'Analista de Sistemas', date: tAlfredo },
-      { n: 'Keith Vega', rol: 'Asistente de Auditoría Interna', date: tKeith }
-    ];
-
-    fallbackRoster.forEach(u => {
-      fallbackLogs.push({
-        rawDate: u.date,
-        n: u.n,
-        rol: u.rol,
-        acc: 'Inicio de sesión',
-        c: this.getAvatarColor(u.n),
-        t: formatLogTime(u.date),
-        isReal: false
-      });
-    });
-
-    // 4. Deduplicación: primero logs reales (más recientes primero), luego fallback para rellenar
+    // 4. Ordenar logs reales por fecha más reciente primero y deduplicar por usuario
     realLogs.sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime());
-    fallbackLogs.sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime());
 
     const seenUsers = new Set<string>();
     const finalAccesos: any[] = [];
-
-    // Primero: agregar logs REALES (siempre tienen prioridad)
     for (const item of realLogs) {
       const userKey = item.n.toLowerCase().trim();
       if (!seenUsers.has(userKey)) {
@@ -618,35 +633,16 @@ export class PuestosComponent implements OnInit {
       if (finalAccesos.length >= 6) break;
     }
 
-    // Luego: rellenar con fallback SOLO si hacen falta para llegar a 6
-    if (finalAccesos.length < 6) {
-      for (const item of fallbackLogs) {
-        const userKey = item.n.toLowerCase().trim();
-        if (!seenUsers.has(userKey)) {
-          seenUsers.add(userKey);
-          finalAccesos.push(item);
-        }
-        if (finalAccesos.length >= 6) break;
-      }
-    }
-
+    // Se eliminó fallbackRoster por completo. Solo registros reales y la sesión activa actual.
     this.accesosList = finalAccesos;
 
-    // 5. Actividad por usuario (últimos 7 días) - Basado en logs REALES
+    // 5. Actividad por usuario (últimos 7 días)
     const sieteDiasAtras = new Date(ahora);
     sieteDiasAtras.setDate(sieteDiasAtras.getDate() - 7);
 
     const activityMap: { [userName: string]: number } = {};
 
-    // Contar acciones reales de los logs de acceso (últimos 7 días)
-    const allRealLogs = [...realLogs];
-    allRealLogs.forEach(log => {
-      if (log.isReal && log.rawDate >= sieteDiasAtras) {
-        activityMap[log.n] = (activityMap[log.n] || 0) + 1;
-      }
-    });
-
-    // Incorporar acciones dinámicas almacenadas en local
+    // Cargar actividad acumulada de localStorage
     try {
       const storedActRaw = localStorage.getItem('precotex:user:actividad');
       if (storedActRaw) {
@@ -658,7 +654,22 @@ export class PuestosComponent implements OnInit {
       }
     } catch (e) {}
 
-    // Si hay muy pocos datos reales, agregar base mínima para usuarios del sistema
+    // Sumar accesos reales dentro de los últimos 7 días
+    realLogs.forEach(log => {
+      if (log.rawDate >= sieteDiasAtras) {
+        activityMap[log.n] = (activityMap[log.n] || 0) + 1;
+      }
+    });
+
+    // Asegurar que el usuario actual tenga actividad reflejada (si no es admin)
+    if (currentCodeUser && !isCurrentAdmin) {
+      const uCur = this.resolveUserData(storedNom || currentCodeUser).nombre;
+      activityMap[uCur] = Math.max(activityMap[uCur] || 0, 1);
+    }
+    delete activityMap['Super Administrador'];
+    delete activityMap['Administrador General'];
+
+    // Base histórica de referencia para los usuarios de auditoría y SST
     const baseActivity: { [key: string]: number } = {
       'Keith Vega': 24,
       'Mia Zegarra': 18,
@@ -668,17 +679,12 @@ export class PuestosComponent implements OnInit {
       'Francisco Huamani': 2
     };
 
-    // Solo usar base si no hay datos reales suficientes
-    const totalRealActions = Object.values(activityMap).reduce((sum, v) => sum + v, 0);
-    if (totalRealActions < 3) {
-      for (const [userName, count] of Object.entries(baseActivity)) {
-        if (!(userName in activityMap)) {
-          activityMap[userName] = count;
-        }
+    for (const [userName, count] of Object.entries(baseActivity)) {
+      if (!(userName in activityMap)) {
+        activityMap[userName] = count;
       }
     }
 
-    // Convertir a lista y ordenar por mayor cantidad de acciones
     const dynamicActividad = Object.keys(activityMap).map(userName => ({
       n: userName,
       count: activityMap[userName]

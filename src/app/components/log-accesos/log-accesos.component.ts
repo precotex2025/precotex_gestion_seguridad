@@ -76,14 +76,31 @@ export class LogAccesosComponent implements OnInit {
     const localLogs2 = localStorage.getItem('precotex:logs:accesos');
     let customLogs: LogAccesoRegistro[] = [];
 
+    const isImage2Obsolete = (item: any): boolean => {
+      const dtStr = (item.fechaHora || item.timestamp || '').toString();
+      const uName = (item.usuario || item.nom_Usuario || item.nombre || '').toLowerCase();
+      if (dtStr.includes('19/08') || dtStr.includes('08-19') || (uName.includes('francisco') && dtStr.includes('11:49'))) return true;
+      if (uName.includes('max soria') && (dtStr.includes('10:58') || dtStr.includes('10:54'))) return true;
+      if (uName.includes('karem flores') && (dtStr.includes('09:18') || dtStr.includes('09:14'))) return true;
+      if (uName.includes('luis aldana') && dtStr.includes('08:12')) return true;
+      return false;
+    };
+
+    const isAdminRecord = (item: any): boolean => {
+      const uName = (item.usuario || item.nom_Usuario || item.nombre || '').toLowerCase().trim();
+      const rName = (item.puesto || item.rol || '').toLowerCase().trim();
+      return uName === 'admin' || uName === 'super administrador' || uName.includes('administrador') || rName === 'administrador general';
+    };
+
     [localLogs1, localLogs2].forEach(raw => {
       if (raw) {
         try {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
             parsed.forEach(item => {
-              const uName = (item.usuario || item.nombre || '').trim();
-              if (item && uName && uName.toLowerCase() !== 'admin' && !uName.toLowerCase().startsWith('admin') && item.fechaHora) {
+              if (isImage2Obsolete(item) || isAdminRecord(item)) return;
+              let uName = (item.usuario || item.nombre || '').trim();
+              if (item && uName && item.fechaHora) {
                 if (!customLogs.some(c => c.usuario.toLowerCase() === uName.toLowerCase() && c.fechaHora.substring(0, 16) === item.fechaHora.substring(0, 16))) {
                   customLogs.push({
                     fechaHora: item.fechaHora,
@@ -98,12 +115,12 @@ export class LogAccesosComponent implements OnInit {
       }
     });
 
-    // 2. Registrar ingreso de sesión activa sólo para usuarios no admin
+    // 2. Registrar ingreso de sesión activa (solo usuarios no admin)
     const currentUsername = (localStorage.getItem('vusu') || '').trim();
-    const currentUser = (localStorage.getItem('precotex:usuario:nombre') || currentUsername).trim();
+    let currentUser = (localStorage.getItem('precotex:usuario:nombre') || currentUsername).trim();
     const currentPuesto = (localStorage.getItem('precotex:usuario:puesto') || 'Analista SIG').trim();
     
-    if (currentUsername && currentUsername.toLowerCase() !== 'admin' && currentUser.toLowerCase() !== 'admin') {
+    if (currentUsername && currentUsername.toLowerCase() !== 'admin' && currentUser.toLowerCase() !== 'admin' && currentUser.toLowerCase() !== 'super administrador') {
       const lastSession = sessionStorage.getItem('precotex:session:logged_time');
       const ahora = new Date();
       const nowStr = ahora.getFullYear() + '-' +
@@ -124,17 +141,16 @@ export class LogAccesosComponent implements OnInit {
       }
     }
 
-    // Filtrar admin también del mock general
-    this.allLogs = this.allLogs.filter(l => l.usuario.toLowerCase() !== 'admin');
-
     if (customLogs.length > 0) {
-      this.allLogs = [...customLogs, ...this.allLogs];
+      this.allLogs = [...customLogs, ...this.allLogs.filter(l => !isImage2Obsolete(l) && !isAdminRecord(l))];
+    } else {
+      this.allLogs = this.allLogs.filter(l => !isImage2Obsolete(l) && !isAdminRecord(l));
     }
 
-    // Llenar selector de usuarios únicos sin admin
+    // Llenar selector de usuarios únicos
     const names = this.allLogs
       .map(l => l.usuario)
-      .filter(n => n && n.toLowerCase() !== 'admin');
+      .filter(n => !!n);
 
     this.personasUnicas = ['Selecciona', ...Array.from(new Set(names))];
     

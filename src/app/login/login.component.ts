@@ -87,9 +87,6 @@ export class LoginComponent implements OnInit {
             localStorage.setItem('precotex:usuario:nombre', uNom);
             localStorage.setItem('precotex:usuario:puesto', uPuesto);
 
-            if (val.recordarme) localStorage.setItem('remembered_user', username);
-            else localStorage.removeItem('remembered_user');
-
             if (username.toLowerCase() !== 'admin' && uCode.toLowerCase() !== 'admin') {
               this.registrarLogAccesoHistorial(uCode, uNom, account.cod_Rol || '0', uPuesto);
             }
@@ -204,6 +201,8 @@ export class LoginComponent implements OnInit {
 
   private resolveUserMeta(username: string, rawNom?: string, rawPuesto?: string): { nombre: string; puesto: string } {
     const userMap: { [key: string]: { nombre: string; puesto: string } } = {
+      'admin': { nombre: 'Super Administrador', puesto: 'Administrador General' },
+      'super administrador': { nombre: 'Super Administrador', puesto: 'Administrador General' },
       'mzegarra': { nombre: 'Mia Zegarra', puesto: 'Analista de Auditoría Interna' },
       'mia.zegarra': { nombre: 'Mia Zegarra', puesto: 'Analista de Auditoría Interna' },
       'kvega': { nombre: 'Keith Vega', puesto: 'Asistente de Auditoría Interna' },
@@ -252,11 +251,13 @@ export class LoginComponent implements OnInit {
     };
   }
 
-  // PUE-01: Método de registro histórico de accesos (Sin duplicados y sin admin)
+  // PUE-01: Método de registro histórico de accesos (excluyendo la cuenta de administrador general)
   private registrarLogAccesoHistorial(codUsuario: string, nomUsuario: string, codRol: string, puesto: string = 'Usuario SOMA') {
     if ((codUsuario || '').toLowerCase() === 'admin' || (nomUsuario || '').toLowerCase() === 'admin') return;
 
     const userMeta = this.resolveUserMeta(codUsuario, nomUsuario, puesto);
+    if (userMeta.nombre.toLowerCase() === 'super administrador' || userMeta.puesto.toLowerCase() === 'administrador general') return;
+
     const ahora = new Date();
     const fechaHoraStr = ahora.getFullYear() + '-' +
       String(ahora.getMonth() + 1).padStart(2, '0') + '-' +
@@ -267,6 +268,7 @@ export class LoginComponent implements OnInit {
       id: 'LOG-' + Date.now(),
       fechaHora: fechaHoraStr,
       usuario: userMeta.nombre,
+      cod_Usuario: codUsuario,
       puesto: userMeta.puesto,
       rol: codRol === '1' ? 'Administrador' : 'Usuario SOMA',
       timestamp: ahora.toISOString(),
@@ -276,9 +278,22 @@ export class LoginComponent implements OnInit {
 
     try {
       const rawLogs = localStorage.getItem('precotex:log:accesos');
-      const logsArr: any[] = rawLogs ? JSON.parse(rawLogs) : [];
+      let logsArr: any[] = rawLogs ? JSON.parse(rawLogs) : [];
+      if (!Array.isArray(logsArr)) logsArr = [];
 
-      // Saneamiento de entradas previas
+      // Saneamiento de entradas previas, purga de registros de la imagen 2 y purga de la cuenta admin
+      logsArr = logsArr.filter((item: any) => {
+        const dtStr = (item.fechaHora || item.timestamp || '').toString();
+        const uName = (item.usuario || item.nom_Usuario || item.nombre || '').toLowerCase();
+        const rName = (item.puesto || item.rol || '').toLowerCase();
+        if (dtStr.includes('19/08') || dtStr.includes('08-19') || (uName.includes('francisco') && dtStr.includes('11:49'))) return false;
+        if (uName.includes('max soria') && (dtStr.includes('10:58') || dtStr.includes('10:54'))) return false;
+        if (uName.includes('karem flores') && (dtStr.includes('09:18') || dtStr.includes('09:14'))) return false;
+        if (uName.includes('luis aldana') && dtStr.includes('08:12')) return false;
+        if (uName === 'admin' || uName === 'super administrador' || uName.includes('administrador') || rName === 'administrador general') return false;
+        return true;
+      });
+
       logsArr.forEach(l => {
         const m = this.resolveUserMeta(l.usuario || '', l.usuario, l.puesto);
         l.usuario = m.nombre;
@@ -304,6 +319,9 @@ export class LoginComponent implements OnInit {
           actMap[userMeta.nombre] = (actMap[userMeta.nombre] || 0) + 1;
           localStorage.setItem('precotex:user:actividad', JSON.stringify(actMap));
         } catch (actErr) {}
+      } else {
+        localStorage.setItem('precotex:log:accesos', JSON.stringify(logsArr.slice(0, 100)));
+        localStorage.setItem('precotex:logs:accesos', JSON.stringify(logsArr.slice(0, 100)));
       }
     } catch (e) {
       console.error('Error en almacenamiento local de accesos', e);

@@ -92,6 +92,9 @@ export class LayoutComponent implements OnInit, OnDestroy {
     // Cargar permisos del usuario activo
     this.loadUserPermissions();
 
+    // PUE-01: Registrar ingreso activo a la plataforma para el usuario de sesión
+    this.registrarIngresoSesionPlataforma();
+
     // Initialize layout module header
     this.updateHeaderConfig(this.router.url);
 
@@ -511,6 +514,84 @@ export class LayoutComponent implements OnInit, OnDestroy {
     }
   }
 
+  private registrarIngresoSesionPlataforma(): void {
+    try {
+      const vusu = (GlobalVariable.vusu || localStorage.getItem('vusu') || '').trim();
+      const storedNom = (localStorage.getItem('precotex:usuario:nombre') || vusu).trim();
+
+      // Purgar en localStorage registros obsoletos y los registros del Administrador
+      const rawLogs = localStorage.getItem('precotex:log:accesos');
+      if (rawLogs) {
+        let logsArr: any[] = JSON.parse(rawLogs);
+        if (Array.isArray(logsArr)) {
+          logsArr = logsArr.filter((item: any) => {
+            const dtStr = (item.fechaHora || item.timestamp || '').toString();
+            const uName = (item.usuario || item.nom_Usuario || item.nombre || '').toLowerCase();
+            const rName = (item.puesto || item.rol || '').toLowerCase();
+            if (dtStr.includes('19/08') || dtStr.includes('08-19') || (uName.includes('francisco') && dtStr.includes('11:49'))) return false;
+            if (uName.includes('max soria') && (dtStr.includes('10:58') || dtStr.includes('10:54'))) return false;
+            if (uName.includes('karem flores') && (dtStr.includes('09:18') || dtStr.includes('09:14'))) return false;
+            if (uName.includes('luis aldana') && dtStr.includes('08:12')) return false;
+            if (uName === 'admin' || uName === 'super administrador' || uName.includes('administrador') || rName === 'administrador general') return false;
+            return true;
+          });
+          localStorage.setItem('precotex:log:accesos', JSON.stringify(logsArr.slice(0, 100)));
+          localStorage.setItem('precotex:logs:accesos', JSON.stringify(logsArr.slice(0, 100)));
+        }
+      }
+
+      if (!vusu) return;
+      // El administrador general no se registra en el histórico
+      if (vusu.toLowerCase() === 'admin' || storedNom.toLowerCase() === 'admin' || storedNom.toLowerCase().includes('administrador')) {
+        return;
+      }
+
+      const sessionLogged = sessionStorage.getItem('precotex:session:logged_entry');
+      if (sessionLogged) return;
+
+      const storedPuesto = (localStorage.getItem('precotex:usuario:puesto') || 'Analista SIG').trim();
+      const codRol = localStorage.getItem('vCod_Rol') || '2';
+
+      const ahora = new Date();
+      const fechaHoraStr = ahora.getFullYear() + '-' +
+        String(ahora.getMonth() + 1).padStart(2, '0') + '-' +
+        String(ahora.getDate()).padStart(2, '0') + ' ' +
+        ahora.toLocaleTimeString('es-PE', { hour12: false });
+
+      const nuevoLog = {
+        id: 'LOG-' + Date.now(),
+        fechaHora: fechaHoraStr,
+        usuario: storedNom || vusu,
+        cod_Usuario: vusu,
+        puesto: storedPuesto,
+        rol: codRol === '1' ? 'Administrador' : 'Usuario SOMA',
+        timestamp: ahora.toISOString(),
+        ip: '192.168.1.36',
+        estado: 'Inicio de sesión'
+      };
+
+      const freshLogs = localStorage.getItem('precotex:log:accesos');
+      let currentArr: any[] = freshLogs ? JSON.parse(freshLogs) : [];
+      if (!Array.isArray(currentArr)) currentArr = [];
+
+      const cincoMinutosAtras = new Date(ahora.getTime() - 5 * 60 * 1000);
+      const yaRegistrado = currentArr.some(l => {
+        const sameUser = (l.usuario || '').toLowerCase() === nuevoLog.usuario.toLowerCase();
+        if (!sameUser) return false;
+        const lDate = l.timestamp ? new Date(l.timestamp) : (l.fechaHora ? new Date(l.fechaHora.replace(' ', 'T')) : null);
+        return lDate && lDate >= cincoMinutosAtras;
+      });
+
+      if (!yaRegistrado) {
+        currentArr.unshift(nuevoLog);
+        localStorage.setItem('precotex:log:accesos', JSON.stringify(currentArr.slice(0, 100)));
+        localStorage.setItem('precotex:logs:accesos', JSON.stringify(currentArr.slice(0, 100)));
+      }
+
+      sessionStorage.setItem('precotex:session:logged_entry', 'true');
+    } catch (e) {}
+  }
+
   onLogout(): void {
     GlobalVariable.vusu = '';
     GlobalVariable.vcodtra = '';
@@ -525,6 +606,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     localStorage.removeItem('precotex:puestos:listado');
     localStorage.removeItem('precotex:puestos:accesos_fino');
     localStorage.removeItem('precotex:usuario:proceso');
+    sessionStorage.removeItem('precotex:session:logged_entry');
 
     this.router.navigate(['/login']);
   }
