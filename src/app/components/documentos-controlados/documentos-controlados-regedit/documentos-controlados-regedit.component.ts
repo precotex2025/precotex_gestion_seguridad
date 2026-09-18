@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ProcesosService } from '../../../services/procesos.service';
 import { DocumentosControladosService } from '../../../services/documentos-controlados.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-documentos-controlados-regedit',
@@ -404,6 +405,33 @@ export class DocumentosControladosRegeditComponent implements OnInit {
 
   onSave() {
     if (this.formulario.invalid) {
+      return;
+    }
+
+    // Observación c: Restricción en la carga - no permitir documentos con el mismo nombre
+    const nuevoNombre = (this.formulario.get('nombre')?.value || '').trim();
+    const codigoActual = (this.formulario.get('codigo')?.value || '').trim();
+    const existingDocs = this.data?.ExistingDocs || [];
+    const originalCodigo = (this.data?.Datos?.codigo || codigoActual).trim().toLowerCase();
+    
+    const esDuplicado = existingDocs.some((d: any) => 
+      d.nombre && d.nombre.trim().toLowerCase() === nuevoNombre.toLowerCase() &&
+      (this.action === 'I' || (d.codigo && d.codigo.trim().toLowerCase() !== originalCodigo))
+    );
+
+    if (esDuplicado) {
+      this.formulario.get('nombre')?.setErrors({ duplicateName: true });
+      Swal.fire({
+        icon: 'error',
+        title: 'Documento Duplicado',
+        html: `<div style="font-size: 13px; color: #334155; text-align: left; line-height: 1.6;">
+                 Ya existe un documento registrado con el nombre:<br>
+                 <strong style="color: #dc2626; font-size: 14px;">"${nuevoNombre}"</strong><br><br>
+                 De acuerdo a la normativa del sistema, no se permite registrar o subir documentos con el mismo nombre.
+               </div>`,
+        confirmButtonColor: '#5b4bd6',
+        confirmButtonText: 'Entendido'
+      });
       return;
     }
 

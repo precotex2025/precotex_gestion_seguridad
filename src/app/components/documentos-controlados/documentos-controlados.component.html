@@ -11,7 +11,15 @@
     </button>
   </div>
 
-  <div class="doc-layout" [class.layout-stacked]="treeColapsado">
+  <!-- Disparador lateral de hover para la estructura documental cuando no está fijada (Observación g) -->
+  <div class="hover-sidebar-trigger" *ngIf="!treePinned" (mouseenter)="onTreeHover(true)">
+    <div class="hover-trigger-pill" title="Mantén el cursor aquí para ver la Estructura Documental">
+      <mat-icon style="font-size: 16px; width: 16px; height: 16px;">snippet_folder</mat-icon>
+      <span class="hover-trigger-label">Estructura Documental</span>
+    </div>
+  </div>
+
+  <div class="doc-layout" [class.layout-stacked]="treeColapsado" [class.layout-unpinned]="!treePinned">
     
     <!-- BOTÓN PARA RE-EXPANDIR SI ESTÁ COLAPSADO -->
     <div class="expand-banner-row" *ngIf="treeColapsado">
@@ -21,14 +29,46 @@
       </button>
     </div>
 
-    <!-- PANEL IZQUIERDO: ESTRUCTURA DOCUMENTAL ESTILO FILE MANAGER -->
-    <div class="tree-panel-filemanager" *ngIf="!treeColapsado">
+    <!-- PANEL IZQUIERDO: ESTRUCTURA DOCUMENTAL ESTILO FILE MANAGER (Observaciones d, f, g) -->
+    <div class="tree-panel-filemanager" 
+         *ngIf="!treeColapsado"
+         [class.tree-floating-open]="!treePinned && treeHovered"
+         [class.tree-pinned]="treePinned"
+         (mouseenter)="onTreeHover(true)"
+         (mouseleave)="onTreeHover(false)">
+      
       <div class="tree-header-row">
         <mat-icon class="tree-header-icon">snippet_folder</mat-icon>
         <span class="tree-header-title">ESTRUCTURA DOCUMENTAL</span>
         <span class="flex-spacer"></span>
+        <!-- Botón Fijar/Desanclar (Observación g) -->
+        <button type="button" 
+                class="btn-pin-tree" 
+                (click)="toggleTreePin()" 
+                [title]="treePinned ? 'Desanclar (modo flotante al pasar el mouse por la izquierda)' : 'Fijar panel al reporte'">
+          <mat-icon style="font-size: 16px; width: 16px; height: 16px;" [class.pinned-icon-active]="treePinned">
+            push_pin
+          </mat-icon>
+        </button>
+        <!-- Botón Ocultar -->
         <button type="button" class="btn-toggle-carpetas" (click)="toggleTree()" title="Ocultar Estructura Documental">
           <mat-icon style="font-size: 18px; width: 18px; height: 18px;">keyboard_double_arrow_left</mat-icon>
+        </button>
+      </div>
+
+      <!-- Buscador de procesos y áreas (Observación d) -->
+      <div class="tree-search-bar">
+        <mat-icon class="tree-search-icon">search</mat-icon>
+        <input type="text" 
+               [(ngModel)]="searchProcesoTree" 
+               placeholder="Buscar proceso o área..." 
+               class="tree-search-input">
+        <button type="button" 
+                *ngIf="searchProcesoTree" 
+                (click)="searchProcesoTree = ''" 
+                class="tree-search-clear" 
+                title="Limpiar búsqueda">
+          <mat-icon style="font-size: 14px; width: 14px; height: 14px;">close</mat-icon>
         </button>
       </div>
       
@@ -43,7 +83,8 @@
       </div>
 
       <div class="tree-groups-container">
-        <div *ngFor="let macro of getMacroProcesses()" class="macro-group-wrapper">
+        <!-- Observación d: Listado con filtrado y contraído por defecto -->
+        <div *ngFor="let macro of getFilteredMacroProcesses()" class="macro-group-wrapper">
           
           <!-- Macroprocess Accordion Node -->
           <div class="tree-node-item macro-node" 
@@ -59,9 +100,9 @@
             <span class="mini-count-pill">{{ getMacroCount(macro) }}</span>
           </div>
           
-          <!-- Subprocesses Animated Container -->
+          <!-- Subprocesses Animated Container (contraído por defecto, abre si está expandido) -->
           <div class="sub-nodes-container" [class.collapsed]="!isMacroExpanded(macro)">
-            <div *ngFor="let proc of PROCESOS_GROUPS[macro]" class="process-wrapper-folder">
+            <div *ngFor="let proc of getFilteredProcesosByMacro(macro)" class="process-wrapper-folder">
               
               <!-- Nodo de Proceso Principal -->
               <div class="tree-node-item process-node"
@@ -75,9 +116,9 @@
                 <span class="mini-count-pill">{{ getProcessCount(proc) }}</span>
               </div>
 
-              <!-- DOC-03: 6 Subcarpetas Estandarizadas por Proceso -->
+              <!-- DOC-03 / Observación f: Subcarpetas con 'Descripción del Puesto' en Capacitaciones y Desarrollo -->
               <div class="sub-folders-doc03-container" *ngIf="activeFilter === proc || activeFilter.startsWith('folder:' + proc)">
-                <div *ngFor="let fType of CARPETAS_PROCESO" 
+                <div *ngFor="let fType of getCarpetasPorProceso(proc)" 
                      class="tree-node-item folder-type-node"
                      [class.active]="activeFilter === 'folder:' + proc + '|' + fType"
                      (click)="setFilter('folder:' + proc + '|' + fType)"
@@ -167,6 +208,12 @@
           <button type="button" class="btn-ghost-action" (click)="onCargarLote()" *ngIf="canCreate">
             <mat-icon>upload_file</mat-icon>
             <span>Cargar lote</span>
+          </button>
+
+          <!-- Observación b: Papelera de Documentos Eliminados -->
+          <button type="button" class="btn-ghost-action btn-papelera" (click)="onAbrirPapelera()" title="Papelera de documentos eliminados (Recuperar)">
+            <mat-icon style="color: #ef4444;">delete_sweep</mat-icon>
+            <span>Papelera ({{ papeleraList.length }})</span>
           </button>
           
           <button type="button" class="btn-ghost-action" (click)="exportExcel()" title="Exportar Lista Maestra de Documentos a Excel (DOC-16)">
@@ -380,31 +427,129 @@
 
       </div>
 
-      <!-- Revision History List -->
+      <!-- Revision History List con descarga y visualización de versiones en backup (Observación a) -->
       <div class="version-history-box">
-        <h4 class="history-title">Historial de Versiones y Revisiones</h4>
+        <h4 class="history-title">Historial de Versiones Resguardadas en Backup</h4>
         
-        <div class="history-timeline">
-          <div class="history-item">
-            <div class="history-bullet active-bullet"></div>
+        <div class="history-timeline" *ngIf="selectedDoc.historialVersiones && selectedDoc.historialVersiones.length > 0">
+          <div class="history-item" *ngFor="let h of selectedDoc.historialVersiones; let hIdx = index">
+            <div class="history-bullet" [class.active-bullet]="hIdx === 0"></div>
             <div class="history-content">
-              <span class="history-ver">{{ selectedDoc.version }} (Versión Vigente)</span>
-              <span class="history-date">Actualizado recientemente</span>
-              <p class="history-note">Aprobado y publicado para la organización.</p>
-            </div>
-          </div>
-
-          <div class="history-item">
-            <div class="history-bullet"></div>
-            <div class="history-content">
-              <span class="history-ver">v1.0 (Versión Inicial)</span>
-              <span class="history-date">2025-01-15</span>
-              <p class="history-note">Creación y registro inicial del documento en el portal.</p>
+              <div class="history-header-line">
+                <span class="history-ver font-mono font-bold">{{ h.version }}</span>
+                <span class="history-badge" [class.history-badge-active]="hIdx === 0">
+                  {{ hIdx === 0 ? 'Versión Vigente' : (h.tipoCarga || 'Versión Anterior') }}
+                </span>
+              </div>
+              <span class="history-date">{{ h.fechaHora || h.fecha }} &bull; Subido por: <strong>{{ h.usuarioSubio || h.usuario || sUsuario }}</strong></span>
+              <p class="history-note" *ngIf="h.archivo">
+                Archivo: <code style="font-size: 11px; background: #e2e8f0; padding: 2px 4px; border-radius: 4px;">{{ h.archivo }}</code>
+              </p>
+              
+              <!-- Acciones de versión pasada: Ver y Descargar (Observación a) -->
+              <div class="history-actions-row">
+                <button type="button" 
+                        class="btn-history-preview" 
+                        (click)="onVistaPrevia({ archivo: h.archivo || selectedDoc.archivo, nombre: selectedDoc.nombre, formato: selectedDoc.formato })" 
+                        title="Visualizar esta versión">
+                  <mat-icon style="font-size: 14px; width: 14px; height: 14px;">visibility</mat-icon>
+                  <span>Visualizar</span>
+                </button>
+                <button type="button" 
+                        class="btn-history-download" 
+                        (click)="downloadFile({ archivo: h.archivo || selectedDoc.archivo, codigo: selectedDoc.codigo })" 
+                        title="Descargar copia de backup">
+                  <mat-icon style="font-size: 14px; width: 14px; height: 14px;">download</mat-icon>
+                  <span>Descargar</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL PAPELERA DE DOCUMENTOS (Observación b)
+       =================================================================== -->
+  <div class="papelera-backdrop" *ngIf="papeleraModalOpen" (click)="onCerrarPapelera()"></div>
+  
+  <div class="papelera-modal-dialog shadow-premium" *ngIf="papeleraModalOpen">
+    <div class="papelera-modal-header">
+      <div class="papelera-header-title-box">
+        <div class="papelera-avatar">
+          <mat-icon>delete_sweep</mat-icon>
+        </div>
+        <div>
+          <h3 class="papelera-title">Papelera de Documentos</h3>
+          <p class="papelera-sub">
+            Documentos eliminados recientemente. Puedes restaurar cualquier documento eliminado por error.
+          </p>
+        </div>
+      </div>
+      <button type="button" class="drawer-close-btn" (click)="onCerrarPapelera()" title="Cerrar papelera">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="papelera-modal-body">
+      <div *ngIf="papeleraList.length === 0" class="papelera-empty-state">
+        <mat-icon class="papelera-empty-icon">delete_outline</mat-icon>
+        <h4>La papelera está vacía</h4>
+        <p>No tienes documentos eliminados pendientes de recuperación.</p>
+      </div>
+
+      <div *ngIf="papeleraList.length > 0" class="papelera-table-wrapper">
+        <table class="papelera-table">
+          <thead>
+            <tr>
+              <th style="width: 140px;">Código</th>
+              <th>Nombre del Documento</th>
+              <th style="width: 150px;">Proceso</th>
+              <th style="width: 110px;">Tipo</th>
+              <th style="width: 70px; text-align: center;">Versión</th>
+              <th style="width: 140px;">Fecha Eliminación</th>
+              <th style="width: 120px; text-align: center;">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of papeleraList">
+              <td class="font-mono text-purple font-bold">{{ item.codigo }}</td>
+              <td class="font-bold text-slate">{{ item.nombre }}</td>
+              <td>{{ item.proceso }}</td>
+              <td><span class="soft-badge soft-badge-type">{{ item.tipo }}</span></td>
+              <td style="text-align: center;"><span class="version-label">{{ item.version }}</span></td>
+              <td class="text-muted" style="font-size: 11px;">{{ item.fechaEliminado || '-' }}</td>
+              <td style="text-align: center;">
+                <button type="button" class="btn-restaurar-doc" (click)="onRestaurarDocumento(item)" title="Restaurar al catálogo">
+                  <mat-icon style="font-size: 16px; width: 16px; height: 16px;">restore_from_trash</mat-icon>
+                  <span>Restaurar</span>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="papelera-modal-footer">
+      <span class="papelera-counter-badge" *ngIf="papeleraList.length > 0">
+        {{ papeleraList.length }} documento(s) en papelera
+      </span>
+      <span class="flex-spacer"></span>
+      <button type="button" 
+              class="btn-vaciar-papelera" 
+              (click)="onVaciarPapelera()" 
+              [disabled]="papeleraList.length === 0"
+              title="Eliminar todos los documentos permanentemente">
+        <mat-icon style="font-size: 16px; width: 16px; height: 16px;">delete_forever</mat-icon>
+        <span>Vaciar Papelera</span>
+      </button>
+      <button type="button" class="btn-cerrar-papelera" (click)="onCerrarPapelera()">
+        <span>Cerrar</span>
+      </button>
     </div>
   </div>
 

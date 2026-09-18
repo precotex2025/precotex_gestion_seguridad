@@ -16,11 +16,23 @@
       <!-- SELECCIÓN GLOBAL DE ÁREA POR DEFECTO -->
       <div class="form-group">
         <label class="form-label font-bold text-white">Proceso / Área Destino (Por defecto)</label>
-        <select [(ngModel)]="selectedProceso" class="form-input">
+        <select [(ngModel)]="selectedProceso" (ngModelChange)="aplicarProcesoGlobalTodos()" class="form-input">
           <option value="" disabled selected>-- Seleccionar proceso por defecto --</option>
           <optgroup *ngFor="let macro of getMacroProcesses()" [label]="macro">
             <option *ngFor="let proc of PROCESOS_GROUPS[macro]" [value]="proc">{{ proc }}</option>
           </optgroup>
+        </select>
+      </div>
+
+      <!-- OBSERVACIÓN E: TIPO DE DOCUMENTO SUPERIOR QUE AFECTA A TODOS LOS REGISTROS -->
+      <div class="form-group">
+        <label class="form-label font-bold text-white">
+          <span>Tipo de Documento (Afecta a todos)</span>
+          <span style="color: #6366f1; font-size: 11px; margin-left: 4px; font-weight: normal;">*Global</span>
+        </label>
+        <select [(ngModel)]="selectedTipoGlobal" (ngModelChange)="onTipoGlobalChange()" class="form-input">
+          <option value="">-- Seleccionar tipo para todos --</option>
+          <option *ngFor="let t of tipos" [value]="t">{{ t }}</option>
         </select>
       </div>
 
@@ -43,6 +55,9 @@
           <span class="text-white font-bold">Documentos en cola de carga ({{ filesList.length }})</span>
         </div>
         <div class="quick-actions-right" *ngIf="!isUploading">
+          <button type="button" class="btn-quick-action" (click)="aplicarTipoGlobalTodos()" *ngIf="selectedTipoGlobal" title="Asignar el tipo global seleccionado a todos los archivos">
+            <span class="material-icons">category</span> Aplicar Tipo a Todos
+          </button>
           <button type="button" class="btn-quick-action" (click)="aplicarProcesoGlobalTodos()" *ngIf="selectedProceso" title="Asignar el proceso global seleccionado a todos los archivos">
             <span class="material-icons">sync</span> Aplicar Proceso a Todos
           </button>

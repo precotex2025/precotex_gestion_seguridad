@@ -41,9 +41,10 @@ export class DocumentosControladosLoteComponent implements OnInit {
   filesList: FileUploadItem[] = [];
   isUploading: boolean = false;
   sUsuario: string = GlobalVariable.vusu || 'SISTEMAS';
+  selectedTipoGlobal: string = ''; // Observación e: Tipo global superior que afecta a todos los registros
 
   // DOC-11: Campos completos idénticos a ingresar un documento individual (REGEDIT)
-  tipos = ['Procedimiento', 'Instructivo', 'Formato', 'Manual', 'Perfil de puesto', 'Politica', 'Otros'];
+  tipos = ['Procedimiento', 'Instructivo', 'Formato', 'Manual', 'Perfil de puesto', 'Politica', 'Plan', 'Registro', 'Otros'];
   formatos = ['PDF', 'Word', 'Excel'];
   estados = ['Vigente', 'Por vencer', 'Obsoleto'];
 
@@ -191,6 +192,57 @@ export class DocumentosControladosLoteComponent implements OnInit {
     item.estado = this.calcularEstadoPorFecha(item.vig);
   }
 
+  // Observación e: Tipo global superior que afecta a todos los registros del lote
+  onTipoGlobalChange(): void {
+    if (!this.selectedTipoGlobal) return;
+    this.filesList.forEach(item => {
+      item.tipo = this.selectedTipoGlobal;
+    });
+    this.toastr.info(`Tipo "${this.selectedTipoGlobal}" aplicado a todos los registros (${this.filesList.length}).`, 'Tipo de Documento');
+  }
+
+  aplicarTipoGlobalTodos(): void {
+    this.onTipoGlobalChange();
+  }
+
+  // Observación c: Validar que no se suban documentos con el mismo nombre
+  validarNombresDuplicados(): { tieneDuplicados: boolean; mensaje: string } {
+    const catalogRaw = localStorage.getItem('precotex_documentos_controlados') || '[]';
+    let catalogNames: string[] = [];
+    try {
+      catalogNames = JSON.parse(catalogRaw).map((d: any) => (d.nombre || '').trim().toLowerCase()).filter(Boolean);
+    } catch { catalogNames = []; }
+
+    const batchMap: { [key: string]: number } = {};
+    let hasDupl = false;
+    let duplName = '';
+
+    for (const item of this.filesList) {
+      const cleanName = (item.nombre || '').trim().toLowerCase();
+      if (!cleanName) continue;
+
+      if (catalogNames.includes(cleanName)) {
+        item.isError = true;
+        item.progressMessage = 'Error: Ya existe un documento con este nombre en el sistema.';
+        hasDupl = true;
+        duplName = item.nombre;
+      } else {
+        batchMap[cleanName] = (batchMap[cleanName] || 0) + 1;
+        if (batchMap[cleanName] > 1) {
+          item.isError = true;
+          item.progressMessage = 'Error: Nombre repetido dentro de este lote.';
+          hasDupl = true;
+          duplName = item.nombre;
+        } else if (item.progressMessage && item.progressMessage.startsWith('Error:')) {
+          item.isError = false;
+          item.progressMessage = 'Listo para cargar';
+        }
+      }
+    }
+
+    return { tieneDuplicados: hasDupl, mensaje: duplName };
+  }
+
   aplicarProcesoGlobalTodos(): void {
     if (!this.selectedProceso) return;
     this.filesList.forEach(item => {
@@ -243,8 +295,8 @@ export class DocumentosControladosLoteComponent implements OnInit {
           parsedName = nameWithoutExt.trim();
         }
 
-        // DOC-12: Auto-popular Tipo de Documento desde el prefijo del código en Carga Masiva
-        const parsedTipo = this.extraerTipoDelCodigo(parsedCode);
+        // Observación e: Si hay tipo global seleccionado arriba, aplicarlo por defecto
+        const parsedTipo = this.selectedTipoGlobal || this.extraerTipoDelCodigo(parsedCode);
 
         let parsedFormato = 'PDF';
         const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
@@ -279,17 +331,31 @@ export class DocumentosControladosLoteComponent implements OnInit {
           progressMessage: 'Listo para cargar'
         });
       }
+
+      // Observación c: Validar duplicados de inmediato
+      const val = this.validarNombresDuplicados();
+      if (val.tieneDuplicados) {
+        this.toastr.warning(`Atención: El documento "${val.mensaje}" tiene un nombre duplicado. Modifique el nombre antes de subir.`, 'Validación de Nombres');
+      }
     }
   }
 
   removeFile(index: number): void {
     if (this.isUploading) return;
     this.filesList.splice(index, 1);
+    this.validarNombresDuplicados();
   }
 
   onUploadLote(): void {
     if (this.filesList.length === 0) {
       this.toastr.warning('Por favor agregue al menos un archivo para cargar.', 'Validación');
+      return;
+    }
+
+    // Observación c: Validar restricción de documentos con el mismo nombre
+    const val = this.validarNombresDuplicados();
+    if (val.tieneDuplicados) {
+      this.toastr.error(`No se puede iniciar la carga masiva: El documento "${val.mensaje}" tiene un nombre duplicado o ya existente en el catálogo. No se permite subir documentos con el mismo nombre.`, 'Restricción de Nombres');
       return;
     }
 

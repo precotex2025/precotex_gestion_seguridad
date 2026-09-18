@@ -84,9 +84,10 @@ export class ProveedoresComponent implements OnInit {
     // Intentar servicio backend si está disponible
     this.proveedoresService.getListadoProveedores().subscribe({
       next: (res: any) => {
-        if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
-          this.actualizarTabla(res.data);
-          localStorage.setItem('precotex:proveedores', JSON.stringify(res.data));
+        const list = res && (res.data || res.elements);
+        if (list && Array.isArray(list) && list.length > 0) {
+          this.actualizarTabla(list);
+          localStorage.setItem('precotex:proveedores', JSON.stringify(list));
         }
       },
       error: () => {

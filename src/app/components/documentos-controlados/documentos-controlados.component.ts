@@ -28,11 +28,33 @@ export class DocumentosControladosComponent implements OnInit {
   canApprove: boolean = true;
   isUserAdmin: boolean = false;
   // State for Accordion Sidebar, Quick View Drawer & Banner
-  collapsedMacros: { [macro: string]: boolean } = {};
+  // Observación d: Buscador de procesos y estructura contraída por defecto
+  searchProcesoTree: string = '';
+  expandedMacrosState: { [macro: string]: boolean } = {};
+  
+  // Observación g: Estructura documental flotante que aparece al mantener el cursor a la izquierda
+  treeHovered: boolean = false;
+  treePinned: boolean = false; // false = modo flotante por hover; true = fijado al layout
   treeColapsado: boolean = false;
+  
+  // Observación b: Papelera de documentos
+  papeleraList: any[] = [];
+  papeleraModalOpen: boolean = false;
+
   quickViewOpen: boolean = false;
   selectedDoc: any = null;
   mostrarBanner: boolean = true;
+
+  onTreeHover(state: boolean): void {
+    this.treeHovered = state;
+  }
+
+  toggleTreePin(): void {
+    this.treePinned = !this.treePinned;
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('precotex:docs_tree_pinned', this.treePinned ? '1' : '0');
+    }
+  }
 
   toggleTree(): void {
     this.treeColapsado = !this.treeColapsado;
@@ -44,15 +66,62 @@ export class DocumentosControladosComponent implements OnInit {
 
   toggleMacro(macro: string, event?: Event): void {
     if (event) event.stopPropagation();
-    this.collapsedMacros[macro] = !this.collapsedMacros[macro];
+    this.expandedMacrosState[macro] = !this.expandedMacrosState[macro];
   }
 
+  // Observación d: Contraída por defecto; expande si el usuario la abrió o si coincide con la búsqueda
   isMacroExpanded(macro: string): boolean {
-    return !this.collapsedMacros[macro];
+    if (this.searchProcesoTree && this.searchProcesoTree.trim()) {
+      const q = this.searchProcesoTree.toLowerCase().trim();
+      if (macro.toLowerCase().includes(q)) return true;
+      const procs = this.PROCESOS_GROUPS[macro] || [];
+      return procs.some(p => p.toLowerCase().includes(q) || this.getAbreviaturaProceso(p).toLowerCase().includes(q));
+    }
+    return !!this.expandedMacrosState[macro];
+  }
+
+  getFilteredMacroProcesses(): string[] {
+    const allMacros = Object.keys(this.PROCESOS_GROUPS);
+    if (!this.searchProcesoTree || !this.searchProcesoTree.trim()) return allMacros;
+    const q = this.searchProcesoTree.toLowerCase().trim();
+    return allMacros.filter(macro => {
+      if (macro.toLowerCase().includes(q)) return true;
+      const procs = this.PROCESOS_GROUPS[macro] || [];
+      return procs.some(p => p.toLowerCase().includes(q) || this.getAbreviaturaProceso(p).toLowerCase().includes(q));
+    });
+  }
+
+  getFilteredProcesosByMacro(macro: string): string[] {
+    const list = this.PROCESOS_GROUPS[macro] || [];
+    if (!this.searchProcesoTree || !this.searchProcesoTree.trim()) return list;
+    const q = this.searchProcesoTree.toLowerCase().trim();
+    return list.filter(p => p.toLowerCase().includes(q) || this.getAbreviaturaProceso(p).toLowerCase().includes(q));
   }
 
   openQuickView(doc: any): void {
     this.selectedDoc = doc;
+    if (doc) {
+      if (!doc.historialVersiones || doc.historialVersiones.length === 0) {
+        try {
+          const histMap = JSON.parse(localStorage.getItem('precotex:docs_version_history') || '{}');
+          const codeKey = (doc.codigo || '').toLowerCase().trim();
+          if (histMap[codeKey]) {
+            doc.historialVersiones = histMap[codeKey];
+          }
+        } catch (e) {}
+      }
+      if (!doc.historialVersiones || doc.historialVersiones.length === 0) {
+        doc.historialVersiones = [
+          {
+            version: doc.version || 'v1.0',
+            usuarioSubio: doc.usuarioSubio || `${this.sUsuario || GlobalVariable.vusu || 'admin'}`,
+            fechaHora: doc.fechaHoraSubida || (doc.vig ? doc.vig + ' 09:00:00' : '2026-01-15 10:00:00'),
+            tipoCarga: 'Versión Vigente',
+            archivo: doc.archivo || ''
+          }
+        ];
+      }
+    }
     this.quickViewOpen = true;
   }
 
@@ -145,6 +214,17 @@ export class DocumentosControladosComponent implements OnInit {
         }
       }
     });
+
+    // Observación b: Cargar papelera de documentos
+    this.cargarPapelera();
+
+    // Observación g: Restaurar estado fijado de la estructura documental si fue guardado
+    if (typeof localStorage !== 'undefined') {
+      const pinVal = localStorage.getItem('precotex:docs_tree_pinned');
+      if (pinVal !== null) {
+        this.treePinned = pinVal === '1';
+      }
+    }
 
     // Restaurar filtro guardado en LocalStorage Presets
     if (typeof localStorage !== 'undefined') {
@@ -276,6 +356,7 @@ export class DocumentosControladosComponent implements OnInit {
 
         this.docsList = rawList;
         this.aplicarReglaObsoletosPorVersion(this.docsList);
+        this.restaurarHistorialVersiones(this.docsList);
       },
       error: () => {
         let rawList = [...this.defaultDocs];
@@ -358,8 +439,23 @@ export class DocumentosControladosComponent implements OnInit {
         }
         this.docsList = rawList;
         this.aplicarReglaObsoletosPorVersion(this.docsList);
+        this.restaurarHistorialVersiones(this.docsList);
       }
     });
+  }
+
+  // Observación a: Restaurar versiones pasadas guardadas en backup para descarga o visualización
+  restaurarHistorialVersiones(list: any[]): void {
+    if (!list || list.length === 0) return;
+    try {
+      const histMap = JSON.parse(localStorage.getItem('precotex:docs_version_history') || '{}');
+      list.forEach(d => {
+        const codeKey = (d.codigo || '').toLowerCase().trim();
+        if (histMap[codeKey] && (!d.historialVersiones || d.historialVersiones.length <= 1)) {
+          d.historialVersiones = histMap[codeKey];
+        }
+      });
+    } catch (e) {}
   }
 
   saveDocs() {
@@ -496,6 +592,15 @@ export class DocumentosControladosComponent implements OnInit {
   // DOC-03: 6 Carpetas estandarizadas obligatorias por proceso
   CARPETAS_PROCESO = ['Procedimientos', 'Instructivos', 'Formatos', 'Politica', 'Manual', 'Otros'];
 
+  // Observación f: La carpeta de Otros de Capacitacion de desarrollo cambiar a Descripcion del Puesto
+  getCarpetasPorProceso(procName: string): string[] {
+    const p = (procName || '').toLowerCase().trim();
+    if (p.includes('capacitaci') || p.includes('desarrollo') || p === 'c&d') {
+      return ['Procedimientos', 'Instructivos', 'Formatos', 'Politica', 'Manual', 'Descripción del Puesto'];
+    }
+    return ['Procedimientos', 'Instructivos', 'Formatos', 'Politica', 'Manual', 'Otros'];
+  }
+
   getProcessTypeCount(procName: string, tipoName: string): number {
     return this.docsList.filter(d => {
       const procs = this.getDocProcesosList(d);
@@ -503,7 +608,10 @@ export class DocumentosControladosComponent implements OnInit {
       const t = (d.tipo || '').toLowerCase();
       const target = tipoName.toLowerCase();
       if (target === 'otros') {
-        return !['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k));
+        return !['procedimiento', 'instructivo', 'formato', 'politica', 'manual', 'perfil', 'descripci'].some(k => t.includes(k));
+      }
+      if (target.includes('descripci') || target.includes('puesto')) {
+        return t.includes('perfil') || t.includes('puesto') || t.includes('descripci') || (!['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k)));
       }
       return t.includes(target.substring(0, 4));
     }).length;
@@ -527,7 +635,7 @@ export class DocumentosControladosComponent implements OnInit {
             <div>📂 <strong>Formatos</strong> (Direccionamiento automático de código FOR-)</div>
             <div>📂 <strong>Politica</strong> (Direccionamiento automático de código POL-)</div>
             <div>📂 <strong>Manual</strong> (Direccionamiento automático de código MAN-)</div>
-            <div>📂 <strong>Otros</strong> (Direccionamiento automático de perfiles y anexos)</div>
+            <div>📂 <strong>Descripción del Puesto</strong> (Para C&D / Otros para demás procesos)</div>
           </div>
         </div>
       `,
@@ -559,7 +667,10 @@ export class DocumentosControladosComponent implements OnInit {
           const t = (d.tipo || '').toLowerCase();
           const target = folderType.toLowerCase();
           if (target === 'otros') {
-            return !['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k));
+            return !['procedimiento', 'instructivo', 'formato', 'politica', 'manual', 'perfil', 'descripci'].some(k => t.includes(k));
+          }
+          if (target.includes('descripci') || target.includes('puesto')) {
+            return t.includes('perfil') || t.includes('puesto') || t.includes('descripci') || (!['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k)));
           }
           return t.includes(target.substring(0, 4));
         });
@@ -962,6 +1073,22 @@ export class DocumentosControladosComponent implements OnInit {
   onVerHistorial(doc: any): void {
     this.registrarRevisionLectura(doc, 'Consulta de Histórico (DOC-09)');
 
+    // Observación a: Hooks globales para descargar o visualizar versiones pasadas desde el modal
+    (window as any).downloadVersionDoc = (archivo: string) => {
+      if (!archivo) {
+        this.toastr.warning('Esta versión no tiene un archivo adjunto registrado.', 'Descarga');
+        return;
+      }
+      this.downloadFile({ archivo, codigo: doc.codigo });
+    };
+    (window as any).previewVersionDoc = (archivo: string) => {
+      if (!archivo) {
+        this.toastr.warning('Esta versión no tiene un archivo adjunto registrado.', 'Vista Previa');
+        return;
+      }
+      this.onVistaPrevia({ archivo, nombre: doc.nombre, formato: doc.formato });
+    };
+
     const activeUser = localStorage.getItem('precotex:usuario:nombre') || GlobalVariable.vusu || 'admin';
     const activePuesto = localStorage.getItem('precotex:usuario:puesto') || (activeUser.toLowerCase().includes('admin') ? 'Super Administrador' : 'Responsable SIG');
 
@@ -975,19 +1102,35 @@ export class DocumentosControladosComponent implements OnInit {
           version: doc.version || 'v1',
           usuarioSubio: uploaderNombre,
           fechaHora: uploaderFecha,
-          tipoCarga: 'Versión Cargada (Inicial)'
+          tipoCarga: 'Versión Cargada (Inicial)',
+          archivo: doc.archivo || ''
         }
       ];
     }
 
-    const versionesRowsHtml = doc.historialVersiones.map((v: any, idx: number) => `
+    const versionesRowsHtml = doc.historialVersiones.map((v: any, idx: number) => {
+      const archName = v.archivo || (idx === 0 ? doc.archivo : '');
+      const actionsHtml = archName ? `
+        <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
+          <button type="button" onclick="window.previewVersionDoc('${archName}')" style="background: #6366f1; color: #ffffff; border: none; padding: 3px 7px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600;" title="Visualizar versión">
+            👁️ Ver
+          </button>
+          <button type="button" onclick="window.downloadVersionDoc('${archName}')" style="background: #2563eb; color: #ffffff; border: none; padding: 3px 7px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600;" title="Descargar versión de backup">
+            📥 Descargar
+          </button>
+        </div>
+      ` : '<span style="color: #94a3b8; font-size: 11px;">(Sin archivo)</span>';
+
+      return `
       <tr style="border-bottom: 1px solid #f1f5f9; background: ${idx === 0 ? '#ffffff' : '#f8fafc'};">
         <td style="padding: 8px 10px; font-weight: 700; color: #0f172a;">${v.version} ${idx === 0 ? '<span style="font-size: 9px; color: #2563eb; background: #eff6ff; padding: 1px 5px; border-radius: 4px;">Actual</span>' : ''}</td>
         <td style="padding: 8px 10px; font-weight: 600; color: #334155;">${v.usuarioSubio}</td>
         <td style="padding: 8px 10px; color: #475569; font-family: monospace;">${v.fechaHora}</td>
         <td style="padding: 8px 10px;"><span style="background: ${idx === 0 ? '#dcfce7' : '#f1f5f9'}; color: ${idx === 0 ? '#15803d' : '#475569'}; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 11px;">${v.tipoCarga || 'Versión Vigente'}</span></td>
+        <td style="padding: 8px 10px; text-align: center;">${actionsHtml}</td>
       </tr>
-    `).join('');
+      `;
+    }).join('');
 
     // 2. Trazabilidad de accesos y revisiones del documento sin datos simulados falsos
     const revisiones = doc.auditRevisiones || [];
@@ -1030,7 +1173,7 @@ export class DocumentosControladosComponent implements OnInit {
 
         <!-- SECCIÓN 1: HISTORIAL DE VERSIONES (CARGA REAL Y SUBSIGUIENTES) -->
         <h4 style="font-size: 13px; font-weight: 700; color: #0f172a; margin: 0 0 8px 0;">
-          📤 1. Historial de Versiones Subidas (Primera versión y subsiguientes)
+          📤 1. Historial de Versiones Resguardadas en Backup
         </h4>
         <div style="overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 16px;">
           <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
@@ -1039,7 +1182,8 @@ export class DocumentosControladosComponent implements OnInit {
                 <th style="padding: 8px 10px; text-align: left;">Versión</th>
                 <th style="padding: 8px 10px; text-align: left;">Usuario que Subió</th>
                 <th style="padding: 8px 10px; text-align: left;">Fecha y Hora</th>
-                <th style="padding: 8px 10px; text-align: left;">Estado / Carga</th>
+                <th style="padding: 8px 10px; text-align: left;">Estado / Resguardo</th>
+                <th style="padding: 8px 10px; text-align: center;">Archivo en Backup</th>
               </tr>
             </thead>
             <tbody>
@@ -1271,7 +1415,11 @@ export class DocumentosControladosComponent implements OnInit {
       data: {
         Title: "Nuevo registro",
         Accion: "I",
-        Datos: null
+        Datos: null,
+        ExistingDocs: this.docsList.map(d => ({
+          nombre: (d.nombre || '').trim(),
+          codigo: (d.codigo || '').trim()
+        }))
       }
     });
 
@@ -1302,6 +1450,17 @@ export class DocumentosControladosComponent implements OnInit {
           Cod_Usuario: this.sUsuario || GlobalVariable.vusu || 'admin'
         };
 
+        // Observación a: Registrar versión inicial en historial
+        res.historialVersiones = [
+          {
+            version: res.version || 'v1.0',
+            usuarioSubio: `${this.sUsuario || GlobalVariable.vusu || 'admin'}`,
+            fechaHora: new Date().toLocaleString(),
+            tipoCarga: 'Versión Vigente',
+            archivo: res.archivo || ''
+          }
+        ];
+
         // Guardar inmediatamente en persistencia local para reflejar al instante
         try {
           const locCreated = JSON.parse(localStorage.getItem('precotex_documentos_creados') || '[]');
@@ -1325,13 +1484,10 @@ export class DocumentosControladosComponent implements OnInit {
         this.documentosControladosService.postProcesoMnto(requestData).subscribe({
           next: () => {
             this.marcarVersionesAnterioresObsoletasEnBD(res);
-            // NO llamar loadDocs() aquí — el backend puede no haber persistido aún el registro,
-            // causando que desaparezca de la lista. El doc ya está en docsList y en localStorage.
             this.toastr.success('Documento guardado en la BD con éxito', 'Éxito');
           },
           error: () => {
             this.marcarVersionesAnterioresObsoletasEnBD(res);
-            // Igual, NO recargar. El doc ya está en la lista local.
             this.toastr.success('Documento registrado con éxito', 'Éxito');
           }
         });
@@ -1349,7 +1505,11 @@ export class DocumentosControladosComponent implements OnInit {
       data: {
         Title: "Editando registro",
         Accion: "E",
-        Datos: doc
+        Datos: doc,
+        ExistingDocs: this.docsList.map(d => ({
+          nombre: (d.nombre || '').trim(),
+          codigo: (d.codigo || '').trim()
+        }))
       }
     });
 
@@ -1380,6 +1540,38 @@ export class DocumentosControladosComponent implements OnInit {
           Cod_Usuario: this.sUsuario || GlobalVariable.vusu || 'admin'
         };
 
+        // Observación a: Resguardo y backup de la versión anterior para visualización y descarga posterior
+        if (!res.historialVersiones) {
+          res.historialVersiones = doc.historialVersiones ? [...doc.historialVersiones] : [];
+        }
+        if (doc.version && (doc.version !== res.version || doc.archivo !== res.archivo)) {
+          const backupEntry = {
+            version: doc.version,
+            usuarioSubio: doc.usuarioSubio || `${this.sUsuario || GlobalVariable.vusu || 'admin'}`,
+            fechaHora: new Date().toLocaleString(),
+            tipoCarga: 'Versión Anterior (Backup)',
+            archivo: doc.archivo || ''
+          };
+          if (!res.historialVersiones.some((h: any) => h.version === doc.version)) {
+            res.historialVersiones.unshift(backupEntry);
+          }
+        }
+        if (!res.historialVersiones.some((h: any) => h.version === res.version)) {
+          res.historialVersiones.unshift({
+            version: res.version,
+            usuarioSubio: `${this.sUsuario || GlobalVariable.vusu || 'admin'}`,
+            fechaHora: new Date().toLocaleString(),
+            tipoCarga: 'Versión Vigente',
+            archivo: res.archivo || ''
+          });
+        }
+        try {
+          const histMap = JSON.parse(localStorage.getItem('precotex:docs_version_history') || '{}');
+          const codeKey = (res.codigo || doc.codigo || '').toLowerCase().trim();
+          histMap[codeKey] = res.historialVersiones;
+          localStorage.setItem('precotex:docs_version_history', JSON.stringify(histMap));
+        } catch (e) {}
+
         try {
           const locCreated = JSON.parse(localStorage.getItem('precotex_documentos_creados') || '[]');
           const idx = locCreated.findIndex((d: any) => (d.codigo || '').toLowerCase() === (res.codigo || '').toLowerCase());
@@ -1398,11 +1590,9 @@ export class DocumentosControladosComponent implements OnInit {
 
         this.documentosControladosService.postProcesoMnto(requestData).subscribe({
           next: () => {
-            // NO llamar loadDocs() — el doc ya está actualizado en docsList y localStorage
             this.toastr.success('Documento actualizado en la BD con éxito', 'Éxito');
           },
           error: () => {
-            // NO llamar loadDocs() — el doc ya está actualizado localmente
             this.toastr.success('Documento actualizado', 'Éxito');
           }
         });
@@ -1410,12 +1600,139 @@ export class DocumentosControladosComponent implements OnInit {
     });
   }
 
+  // Observación b: Papelera de documentos para recuperar eliminados por error
+  cargarPapelera(): void {
+    try {
+      const raw = localStorage.getItem('precotex:docs_papelera');
+      this.papeleraList = raw ? JSON.parse(raw) : [];
+    } catch {
+      this.papeleraList = [];
+    }
+  }
+
+  guardarPapelera(): void {
+    try {
+      localStorage.setItem('precotex:docs_papelera', JSON.stringify(this.papeleraList));
+    } catch {}
+  }
+
+  onAbrirPapelera(): void {
+    this.cargarPapelera();
+    this.papeleraModalOpen = true;
+  }
+
+  onCerrarPapelera(): void {
+    this.papeleraModalOpen = false;
+  }
+
+  onRestaurarDocumento(doc: any): void {
+    Swal.fire({
+      title: '¿Restaurar documento?',
+      html: `<div style="font-size: 13px; color: #475569; line-height: 1.5;">
+               ¿Desea restaurar <strong>${doc.nombre}</strong> (${doc.codigo}) al catálogo activo?
+             </div>`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#16a34a',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Sí, restaurar',
+      cancelButtonText: 'Cancelar'
+    }).then((res) => {
+      if (res.isConfirmed) {
+        const targetCode = (doc.codigo || '').trim();
+        const targetName = (doc.nombre || '').trim();
+
+        // 1. Quitar de papelera
+        this.papeleraList = this.papeleraList.filter(d => (d.codigo || '').trim().toLowerCase() !== targetCode.toLowerCase());
+        this.guardarPapelera();
+
+        // 2. Quitar de deleted items en localStorage
+        const deletedKey = 'precotex:docs_deleted_items';
+        try {
+          let deletedItems: string[] = JSON.parse(localStorage.getItem(deletedKey) || '[]');
+          deletedItems = deletedItems.filter(x => x !== targetCode && x !== targetName);
+          localStorage.setItem(deletedKey, JSON.stringify(deletedItems));
+        } catch {}
+
+        // 3. Restaurar a docsList
+        const restoredDoc = { ...doc, flg_Activo: true, flg_Estado: 'Vigente', estado: 'Vigente' };
+        delete restoredDoc.fechaEliminado;
+        delete restoredDoc.usuarioElimino;
+
+        const exists = this.docsList.some(d => (d.codigo || '').toLowerCase() === targetCode.toLowerCase());
+        if (!exists) {
+          this.docsList.unshift(restoredDoc);
+        }
+        this.saveDocs();
+
+        try {
+          const locCreated = JSON.parse(localStorage.getItem('precotex_documentos_creados') || '[]');
+          locCreated.unshift(restoredDoc);
+          localStorage.setItem('precotex_documentos_creados', JSON.stringify(locCreated));
+        } catch {}
+
+        // 4. Reactivar en backend
+        const procCode = this.getProcessCodeByName(doc.proceso);
+        this.documentosControladosService.postProcesoMnto({
+          Accion: 'U',
+          Codigo_Organizacion: '001',
+          Codigo_Sede: '001',
+          Codigo_Documentos_Controlados: doc.codigo_Documentos_Controlados || doc.codigo || '001',
+          Codigo_Proceso: procCode,
+          Codigo_Carpeta_Control: '001',
+          Codigo_Normas: doc.tipo || 'Procedimiento',
+          Codigo_Tiempo_Conservacion: '3 Anios',
+          Codigo_Tipo_Descarga: doc.formato || 'PDF',
+          Denominacion: doc.nombre || '',
+          Codigo_Documento: doc.codigo || '',
+          Version_Documento: doc.version || 'v1.0',
+          Ruta_Adjunto: doc.archivo || '',
+          Descripcion: doc.nombre || '',
+          bRegistroAsociado: true,
+          bRequiereRevision: false,
+          Flg_Estado: 'Vigente',
+          Fec_Vencimiento: doc.vig || '',
+          Flg_Activo: true,
+          Cod_Usuario: this.sUsuario || GlobalVariable.vusu || 'admin'
+        }).subscribe({
+          next: () => {},
+          error: () => {}
+        });
+
+        this.toastr.success(`Documento "${doc.nombre}" restaurado correctamente al catálogo.`, 'Restaurado');
+      }
+    });
+  }
+
+  onVaciarPapelera(): void {
+    if (!this.papeleraList || this.papeleraList.length === 0) return;
+    Swal.fire({
+      title: '¿Vaciar papelera de documentos?',
+      text: 'Esta acción eliminará permanentemente todos los documentos de la papelera.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Sí, vaciar permanentemente',
+      cancelButtonText: 'Cancelar'
+    }).then((res) => {
+      if (res.isConfirmed) {
+        this.papeleraList = [];
+        this.guardarPapelera();
+        this.toastr.success('Papelera de documentos vaciada por completo.', 'Éxito');
+      }
+    });
+  }
+
   onEliminar(doc: any) {
     Swal.fire({
-      title: '¿Desea eliminar el documento?, Confirme',
+      title: '¿Desea enviar el documento a la papelera?, Confirme',
       html: `<div style="font-size: 13px; color: #475569; line-height: 1.6;">
                Documento: <strong>${doc.nombre}</strong><br>
-               Código: <strong>${doc.codigo}</strong>
+               Código: <strong>${doc.codigo}</strong><br>
+               <span style="color: #64748b; font-size: 12px; margin-top: 6px; display: inline-block;">
+                 💡 Podrás restaurarlo en cualquier momento desde el botón <strong>Papelera</strong> de la barra superior.
+               </span>
              </div>`,
       icon: 'warning',
       showCancelButton: true,
@@ -1449,7 +1766,17 @@ export class DocumentosControladosComponent implements OnInit {
         const targetCode = (doc.codigo || doc.codigo_Documentos_Controlados || '').toString().trim();
         const targetName = (doc.nombre || '').toString().trim();
 
-        // 1. Guardar en lista de eliminados en localStorage
+        // 1. Guardar en Papelera de Documentos (Observación b)
+        const papeleraItem = {
+          ...doc,
+          fechaEliminado: new Date().toLocaleString(),
+          usuarioElimino: this.sUsuario || GlobalVariable.vusu || 'admin'
+        };
+        this.papeleraList = this.papeleraList.filter(p => (p.codigo || '').toLowerCase() !== targetCode.toLowerCase());
+        this.papeleraList.unshift(papeleraItem);
+        this.guardarPapelera();
+
+        // 2. Guardar en lista de eliminados en localStorage
         const deletedKey = 'precotex:docs_deleted_items';
         let deletedItems: string[] = [];
         try {
@@ -1460,7 +1787,7 @@ export class DocumentosControladosComponent implements OnInit {
         if (targetName && !deletedItems.includes(targetName)) deletedItems.push(targetName);
         localStorage.setItem(deletedKey, JSON.stringify(deletedItems));
 
-        // 2. Filtrar localmente en docsList de inmediato
+        // 3. Filtrar localmente en docsList de inmediato
         this.docsList = this.docsList.filter(d => {
           const c = (d.codigo || d.codigo_Documentos_Controlados || '').toString().trim();
           const n = (d.nombre || '').toString().trim();
@@ -1468,13 +1795,13 @@ export class DocumentosControladosComponent implements OnInit {
         });
         this.saveDocs();
 
-        // 3. Ejecutar llamada al Backend
+        // 4. Ejecutar llamada al Backend
         this.documentosControladosService.postProcesoMnto(requestData).subscribe({
-          next: (res: any) => {
-            this.toastr.success('Documento eliminado correctamente.', 'Éxito', { timeOut: 2500 });
+          next: () => {
+            this.toastr.success('Documento movido a la papelera. Puedes recuperarlo si fue un error.', 'Papelera', { timeOut: 3500 });
           },
-          error: (err: any) => {
-            this.toastr.success('Registro eliminado correctamente.', 'Éxito', { timeOut: 2500 });
+          error: () => {
+            this.toastr.success('Documento movido a la papelera.', 'Papelera', { timeOut: 3000 });
           }
         });
       }

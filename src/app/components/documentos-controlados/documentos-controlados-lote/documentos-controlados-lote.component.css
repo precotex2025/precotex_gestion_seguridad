@@ -64,12 +64,18 @@
 /* TOP CONTROLS GRID */
 .top-controls-grid {
   display: grid;
-  grid-template-columns: 1fr 1.2fr;
+  grid-template-columns: 1fr 1fr 1.2fr;
   gap: 16px;
   background: var(--panel);
   padding: 16px;
   border-radius: 12px;
   border: 1px solid var(--line, #334155);
+}
+
+@media (max-width: 950px) {
+  .top-controls-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .form-group {
