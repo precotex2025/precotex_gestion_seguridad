@@ -807,12 +807,9 @@ export class PuestosComponent implements OnInit {
           };
 
           this.http.post(`${GlobalVariable.baseUrlBackEnd}TxLogin/postEnviarCredencialesCorreo`, emailPayload).subscribe({
-            next: () => {
-              this.toastr.success(`Correo con credenciales despachado exitosamente a ${result.ctrol_email} (con copia a fhuamani@precotexperu.com).`, '📧 Correo Enviado');
-            },
+            next: () => {},
             error: (err) => {
               console.warn('Error al conectar con servicio SMTP de correo:', err);
-              this.toastr.info(`Puesto y usuario '${userCode}' registrados en BD.`, 'Puesto Guardado');
             }
           });
         }
@@ -827,7 +824,7 @@ export class PuestosComponent implements OnInit {
             localStorage.setItem('precotex_puestos_usuarios', JSON.stringify(localList));
 
             this.onListado();
-            this.toastr.success(`Puesto y usuario de acceso '${userCode}' creados con éxito. Credenciales enviadas por correo.`, 'PUE-02: Notificación Exitosa', { timeOut: 3500 });
+            this.toastr.success(`Puesto y usuario de acceso '${userCode}' creados con éxito.`, 'Puesto Registrado', { timeOut: 3000 });
           },
           error: () => {
             const localList = JSON.parse(localStorage.getItem('precotex_puestos_usuarios') || '[]');
@@ -835,7 +832,7 @@ export class PuestosComponent implements OnInit {
             localStorage.setItem('precotex_puestos_usuarios', JSON.stringify(localList));
 
             this.onListado();
-            this.toastr.success(`Puesto y usuario de acceso '${userCode}' creados con éxito. Credenciales enviadas por correo.`, 'PUE-02: Notificación Exitosa', { timeOut: 3500 });
+            this.toastr.success(`Puesto y usuario de acceso '${userCode}' creados con éxito.`, 'Puesto Registrado', { timeOut: 3000 });
           }
         });
       }

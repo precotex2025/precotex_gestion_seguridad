@@ -281,101 +281,199 @@ export class DashboardComponent implements OnInit {
   }
 
   private loadRealDbData(): void {
-    // 1. Normas
+    // 1. Normas Vigentes
     this.normasService.getListadoNormas('1').subscribe({
       next: (res: any) => {
-        if (res && res.elements) {
-          this.dbCounts.normas = res.elements.length;
-          this.updateKpiValue('Normas Vigentes', this.dbCounts.normas);
-        }
+        const raw = res?.elements || res?.data || res?.elementsList || [];
+        const count = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
+        this.dbCounts.normas = count;
+        this.updateKpiValue(
+          'Normas Vigentes',
+          count,
+          count > 0 ? `${count} vigentes` : '0 vigentes',
+          count > 0
+        );
+        this.updateCumplimientoChart();
+      },
+      error: () => {
+        this.dbCounts.normas = 0;
+        this.updateKpiValue('Normas Vigentes', 0, '0 vigentes', false);
+        this.updateCumplimientoChart();
       }
     });
 
     // 2. Documentos Controlados (INI-02)
-    this.documentosService.getListadoDocumentosControlados('001', '001', '', '').subscribe({
+    this.documentosService.getListadoDocumentosControlados('001', '', '', '').subscribe({
       next: (res: any) => {
-        if (res && res.elements) {
-          this.dbCounts.documentos = res.elements.length;
-          this.updateKpiValue('Docs. Controlados', this.dbCounts.documentos);
+        const raw = res?.elements || res?.data || res?.elementsList || [];
+        let list = Array.isArray(raw) ? [...raw] : [];
 
-          res.elements.forEach((doc: any) => {
+        // 1. Descontar documentos eliminados / enviados a papelera
+        const deletedKey = 'precotex:docs_deleted_items';
+        try {
+          const deletedItems: string[] = JSON.parse(localStorage.getItem(deletedKey) || '[]');
+          if (deletedItems && deletedItems.length > 0) {
+            list = list.filter((d: any) => {
+              const c = (d.codigo || d.codigo_Documento || d.codigo_Documentos_Controlados || '').toString().trim();
+              const n = (d.nombre || d.denominacion || d.descripcion || '').toString().trim();
+              const cMatch = c !== '' && deletedItems.includes(c);
+              const nMatch = n !== '' && deletedItems.includes(n);
+              return !cMatch && !nMatch;
+            });
+          }
+        } catch {}
+
+        // 2. Sincronizar con el catálogo activo guardado en local si existe
+        try {
+          const cached = localStorage.getItem('precotex:documentacion');
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              list = parsed;
+            }
+          }
+        } catch {}
+
+        const count = list.length;
+        this.dbCounts.documentos = count;
+        this.updateKpiValue(
+          'Docs. Controlados',
+          count,
+          count > 0 ? `${count} en catálogo` : '0 documentos',
+          count > 0
+        );
+
+        if (Array.isArray(list)) {
+          list.forEach((doc: any) => {
             const fechaLim = doc.fec_Vencimiento || doc.vig || '';
             this.evaluarAlertasVencimiento(doc.nombre || doc.denominacion, fechaLim, 'Documento');
           });
         }
+        this.updateCumplimientoChart();
+      },
+      error: () => {
+        let count = 0;
+        try {
+          const cached = localStorage.getItem('precotex:documentacion');
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed)) count = parsed.length;
+          }
+        } catch {}
+        this.dbCounts.documentos = count;
+        this.updateKpiValue('Docs. Controlados', count, count > 0 ? `${count} en catálogo` : '0 documentos', count > 0);
+        this.updateCumplimientoChart();
       }
     });
 
     // 3. Puestos
     this.puestosService.getListadoPuesto('001', '001', '').subscribe({
       next: (res: any) => {
-        if (res && res.elements) {
-          this.dbCounts.puestos = res.elements.length;
-        }
+        const raw = res?.elements || res?.data || res?.elementsList || [];
+        this.dbCounts.puestos = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
+      },
+      error: () => {
+        this.dbCounts.puestos = 0;
       }
     });
 
     // 4. Objetivos
     this.objetivosService.getListadoObjetivos('').subscribe({
       next: (res: any) => {
-        if (res && res.elements) {
-          this.dbCounts.objetivos = res.elements.length;
-        }
+        const raw = res?.elements || res?.data || res?.elementsList || [];
+        this.dbCounts.objetivos = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
+        this.updateCumplimientoChart();
+      },
+      error: () => {
+        this.dbCounts.objetivos = 0;
+        this.updateCumplimientoChart();
       }
     });
 
     // 5. Riesgos
     this.riesgosService.getListadoRiesgos('').subscribe({
       next: (res: any) => {
-        if (res && res.elements) {
-          this.dbCounts.riesgos = res.elements.length;
-          this.updateKpiValue('Riesgos Activos', this.dbCounts.riesgos);
-          this.updateChartRiesgos(res.elements);
+        const raw = res?.elements || res?.data || res?.elementsList || [];
+        const count = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
+        this.dbCounts.riesgos = count;
+        this.updateKpiValue(
+          'Riesgos Activos',
+          count,
+          count > 0 ? `${count} activos` : '0 riesgos activos',
+          count === 0
+        );
+        if (Array.isArray(raw) && raw.length > 0) {
+          this.updateChartRiesgos(raw);
         }
+        this.updateCumplimientoChart();
+      },
+      error: () => {
+        this.dbCounts.riesgos = 0;
+        this.updateKpiValue('Riesgos Activos', 0, '0 riesgos activos', true);
+        this.updateCumplimientoChart();
       }
     });
 
     // 6. Portafolio de Mejora
     this.mejoraService.getListadoMejoras('').subscribe({
       next: (res: any) => {
-        if (res && res.elements) {
-          this.dbCounts.mejoras = res.elements.length;
-          this.updateCumplimientoChart();
-        }
+        const raw = res?.elements || res?.data || res?.elementsList || [];
+        this.dbCounts.mejoras = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
+        this.updateCumplimientoChart();
+      },
+      error: () => {
+        this.dbCounts.mejoras = 0;
+        this.updateCumplimientoChart();
       }
     });
 
     // 7. Requisitos Legales (INI-02)
     this.reqLegalService.getListadoReqLegal('').subscribe({
       next: (res: any) => {
-        if (res && res.elements) {
-          this.dbCounts.legales = res.elements.length;
+        const raw = res?.elements || res?.data || res?.elementsList || [];
+        this.dbCounts.legales = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
 
-          res.elements.forEach((req: any) => {
+        if (Array.isArray(raw)) {
+          raw.forEach((req: any) => {
             const fechaLim = req.vencimiento || req.proxeval || '';
             this.evaluarAlertasVencimiento(req.requisito || req.norma, fechaLim, 'Gestión Legal');
           });
-          this.updateCumplimientoChart();
         }
+        this.updateCumplimientoChart();
+      },
+      error: () => {
+        this.dbCounts.legales = 0;
+        this.updateCumplimientoChart();
       }
     });
 
     // 8. No Conformidades
     this.noConformidadService.getListadoNoConformidades('').subscribe({
       next: (res: any) => {
-        if (res && res.elements) {
-          this.dbCounts.noConformidades = res.elements.length;
-          this.updateKpiValue('No Conformidades', this.dbCounts.noConformidades);
-        }
+        const raw = res?.elements || res?.data || res?.elementsList || [];
+        const count = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
+        this.dbCounts.noConformidades = count;
+        this.updateKpiValue(
+          'No Conformidades',
+          count,
+          count > 0 ? `${count} en seguimiento` : '0 pendientes',
+          count === 0
+        );
+      },
+      error: () => {
+        this.dbCounts.noConformidades = 0;
+        this.updateKpiValue('No Conformidades', 0, '0 pendientes', true);
       }
     });
 
     // 9. Auditorías
     this.auditoriasService.getListadoAuditorias('').subscribe({
       next: (res: any) => {
-        if (res && res.elements) {
-          this.dbCounts.auditorias = res.elements.length;
-        }
+        const raw = res?.elements || res?.data || res?.elementsList || [];
+        this.dbCounts.auditorias = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
+      },
+      error: () => {
+        this.dbCounts.auditorias = 0;
       }
     });
   }
@@ -410,10 +508,16 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  private updateKpiValue(title: string, value: number): void {
+  private updateKpiValue(title: string, value: number, trend?: string, trendUp?: boolean): void {
     const kpi = this.kpiCards.find(k => k.title === title);
     if (kpi) {
       kpi.value = value;
+      if (trend !== undefined) {
+        kpi.trend = trend;
+      }
+      if (trendUp !== undefined) {
+        kpi.trendUp = trendUp;
+      }
     }
   }
 
@@ -461,36 +565,36 @@ export class DashboardComponent implements OnInit {
     this.kpiCards = [
       {
         title: 'Normas Vigentes',
-        value: 6,
+        value: 0,
         icon: 'pi pi-book',
-        trend: '+2 agregadas este mes',
-        trendUp: true,
+        trend: '0 vigentes',
+        trendUp: false,
         colorClass: 'kpi-indigo',
         route: '/principal/normas'
       },
       {
         title: 'Docs. Controlados',
-        value: 3,
+        value: 0,
         icon: 'pi pi-file-check',
-        trend: '+3 en revisión activa',
+        trend: 'Cargando...',
         trendUp: true,
         colorClass: 'kpi-violet',
         route: '/principal/documentosControlados'
       },
       {
         title: 'Riesgos Activos',
-        value: 1,
+        value: 0,
         icon: 'pi pi-exclamation-triangle',
-        trend: '100% controles asignados',
-        trendUp: false,
+        trend: '0 activos',
+        trendUp: true,
         colorClass: 'kpi-rose',
         route: '/principal/evaluacionRiesgos'
       },
       {
         title: 'No Conformidades',
-        value: 2,
+        value: 0,
         icon: 'pi pi-clock',
-        trend: '1 en resolución final',
+        trend: '0 pendientes',
         trendUp: true,
         colorClass: 'kpi-amber',
         route: '/principal/accionesCorrectivas'
@@ -499,7 +603,7 @@ export class DashboardComponent implements OnInit {
   }
 
   private updateCumplimientoChart(): void {
-    const normasPct = this.dbCounts.normas > 0 ? Math.min(100, Math.max(60, 85 + this.dbCounts.normas)) : 95;
+    const normasPct = this.dbCounts.normas > 0 ? Math.min(100, Math.max(60, 85 + this.dbCounts.normas)) : 0;
     const docsPct = this.dbCounts.documentos > 0 ? Math.min(100, Math.max(50, 75 + Math.min(this.dbCounts.documentos, 15))) : 90;
     const objPct = this.dbCounts.objetivos > 0 ? Math.min(100, Math.max(40, 70 + Math.min(this.dbCounts.objetivos * 2, 20))) : 85;
     const rsgPct = this.dbCounts.riesgos > 0 ? Math.min(100, Math.max(40, 65 + Math.min(this.dbCounts.riesgos * 2, 25))) : 78;

@@ -485,13 +485,8 @@ export class UsuariosPersonasRegeditComponent implements OnInit {
     };
 
     this.http.post(`${GlobalVariable.baseUrlBackEnd}TxLogin/postEnviarCredencialesCorreo`, payload).subscribe({
-      next: () => {
-        this.toastr.info(`📧 Credenciales automáticas enviadas con éxito a ${email}`, 'PUE-02: Correo Enviado');
-      },
-      error: () => {
-        // En entorno local o sin SMTP configurado, simular éxito
-        this.toastr.info(`📧 Credenciales automáticas generadas y notificados a ${email}`, 'PUE-02: Notificación Enviada');
-      }
+      next: () => {},
+      error: () => {}
     });
   }
 

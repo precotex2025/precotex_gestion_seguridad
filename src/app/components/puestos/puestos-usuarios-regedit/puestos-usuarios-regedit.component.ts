@@ -139,7 +139,7 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
       ctrol_nivel: ['Operativo', Validators.required],
       ctrol_permisos: ['Lectura + descarga + modificar', Validators.required],
       ctrol_estado: [this.data.Accion === 'I' ? 'Pendiente de activación' : 'Activo', Validators.required],
-      ctrol_enviar_credenciales: [true]
+      ctrol_enviar_credenciales: [false]
     });
 
     if (this.data.Accion === 'U' && this.data.Datos) {
@@ -231,10 +231,6 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
     }
 
     const val = this.formulario.value;
-    if (val.ctrol_enviar_credenciales && val.ctrol_email) {
-      this.toastr.success(`Credenciales de usuario y contraseña notificadas exitosamente a ${val.ctrol_email}.`, 'PUE-02: Envío Automático de Credenciales', { timeOut: 3500 });
-    }
-
     this.dialogRef.close(val);
   }
 

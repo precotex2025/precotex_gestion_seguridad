@@ -357,6 +357,7 @@ export class DocumentosControladosComponent implements OnInit {
         this.docsList = rawList;
         this.aplicarReglaObsoletosPorVersion(this.docsList);
         this.restaurarHistorialVersiones(this.docsList);
+        this.saveDocs();
       },
       error: () => {
         let rawList = [...this.defaultDocs];
@@ -440,6 +441,7 @@ export class DocumentosControladosComponent implements OnInit {
         this.docsList = rawList;
         this.aplicarReglaObsoletosPorVersion(this.docsList);
         this.restaurarHistorialVersiones(this.docsList);
+        this.saveDocs();
       }
     });
   }

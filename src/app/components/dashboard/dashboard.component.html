@@ -61,7 +61,7 @@
         <span class="kpi-label-text">{{ kpi.title }}</span>
       </div>
       <div class="kpi-progress-track">
-        <div class="kpi-progress-bar" [style.width.%]="kpi.value > 0 ? (kpi.value * 15 > 100 ? 100 : kpi.value * 15) : 10"></div>
+        <div class="kpi-progress-bar" [style.width.%]="kpi.value > 0 ? (kpi.value * 15 > 100 ? 100 : kpi.value * 15) : 0"></div>
       </div>
     </div>
   </section>
