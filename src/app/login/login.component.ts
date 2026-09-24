@@ -18,16 +18,16 @@ export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   hide = true;
   login_activo: boolean = true;
-  ocultarPassword = true;  
+  ocultarPassword = true;
   isSubmitting = false;
 
   constructor(
-    private formBuilder: FormBuilder, 
+    private formBuilder: FormBuilder,
     private router: Router,
     private http: HttpClient,
     private toastr: ToastrService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   onImgError(event: any) {
     if (event && event.target) {
@@ -58,17 +58,17 @@ export class LoginComponent implements OnInit {
         const puestos: any[] = rawPuestos ? JSON.parse(rawPuestos) : [];
 
         // Buscar coincidencia por usuario, email o puesto
-        const account = cuentas.find((c: any) => 
+        const account = cuentas.find((c: any) =>
           (c.cod_Usuario || '').toLowerCase().trim() === username.toLowerCase() ||
           (c.email || '').toLowerCase().trim() === username.toLowerCase() ||
           (c.nom_Usuario || '').toLowerCase().trim() === username.toLowerCase()
-        ) || puestos.find((p: any) => 
+        ) || puestos.find((p: any) =>
           (p.usuario || '').toLowerCase().trim() === username.toLowerCase() ||
           (p.email || '').toLowerCase().trim() === username.toLowerCase()
         );
 
         if (account) {
-          const validPass = (account.password || account.ctrol_password || 'Precotex2026!').trim();
+          const validPass = (account.password || account.ctrol_password || '').trim();
           if (validPass === password || password === '123456' || password === 'admin') {
             const uCode = (account.cod_Usuario || account.usuario || username).trim();
             const uMeta = this.resolveUserMeta(username, account.nom_Usuario || account.usuario, account.puesto);
@@ -107,7 +107,7 @@ export class LoginComponent implements OnInit {
             return true;
           }
         }
-      } catch (e) {}
+      } catch (e) { }
       return false;
     };
 
@@ -116,7 +116,7 @@ export class LoginComponent implements OnInit {
         this.isSubmitting = false;
         if (res && res.success && res.elements && res.elements.length > 0) {
           const userObj = res.elements[0];
-          
+
           // Verificar contraseña
           const dbPassword = (userObj.password || '').trim();
           if (dbPassword === password) {
@@ -131,11 +131,11 @@ export class LoginComponent implements OnInit {
             localStorage.setItem('vcodtra', GlobalVariable.vcodtra);
             localStorage.setItem('vtiptra', GlobalVariable.vtiptra);
             localStorage.setItem('vCod_Rol', GlobalVariable.vCod_Rol.toString());
-            
+
             const userMeta = this.resolveUserMeta(username, userObj.nom_Usuario || userObj.nombres, userObj.puesto || userObj.denominacion);
             const userNombre = userMeta.nombre;
             const userPuesto = userMeta.puesto;
-            
+
             localStorage.setItem('precotex:usuario:nombre', userNombre);
             localStorage.setItem('precotex:usuario:puesto', userPuesto);
 
@@ -302,8 +302,8 @@ export class LoginComponent implements OnInit {
       });
 
       // Evitar duplicación si ya existe un inicio de sesión reciente para el mismo usuario
-      const yaExisteReciente = logsArr.some(l => 
-        (l.usuario || '').toLowerCase() === nuevoLog.usuario.toLowerCase() && 
+      const yaExisteReciente = logsArr.some(l =>
+        (l.usuario || '').toLowerCase() === nuevoLog.usuario.toLowerCase() &&
         (l.fechaHora || '').substring(0, 16) === fechaHoraStr.substring(0, 16)
       );
 
@@ -318,7 +318,7 @@ export class LoginComponent implements OnInit {
           const actMap: { [key: string]: number } = actRaw ? JSON.parse(actRaw) : {};
           actMap[userMeta.nombre] = (actMap[userMeta.nombre] || 0) + 1;
           localStorage.setItem('precotex:user:actividad', JSON.stringify(actMap));
-        } catch (actErr) {}
+        } catch (actErr) { }
       } else {
         localStorage.setItem('precotex:log:accesos', JSON.stringify(logsArr.slice(0, 100)));
         localStorage.setItem('precotex:logs:accesos', JSON.stringify(logsArr.slice(0, 100)));
@@ -337,8 +337,8 @@ export class LoginComponent implements OnInit {
       Flg_Activo: true
     };
     this.http.post(`${GlobalVariable.baseUrlBackEnd}TxLogin/postRegistrarLogAcceso`, logBackend).subscribe({
-      next: () => {},
-      error: () => {}
+      next: () => { },
+      error: () => { }
     });
   }
 
@@ -348,7 +348,7 @@ export class LoginComponent implements OnInit {
       user: ['', Validators.required],
       pass: ['', Validators.required],
       recordarme: [false]
-    });    
+    });
 
     if (typeof window !== 'undefined') {
       const rememberedUser = localStorage.getItem('remembered_user');

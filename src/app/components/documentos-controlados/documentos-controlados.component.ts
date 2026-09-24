@@ -34,7 +34,7 @@ export class DocumentosControladosComponent implements OnInit {
   
   // Observación g: Estructura documental flotante que aparece al mantener el cursor a la izquierda
   treeHovered: boolean = false;
-  treePinned: boolean = false; // false = modo flotante por hover; true = fijado al layout
+  treePinned: boolean = true; // false = modo flotante por hover; true = fijado al layout
   treeColapsado: boolean = false;
   
   // Observación b: Papelera de documentos
@@ -50,10 +50,12 @@ export class DocumentosControladosComponent implements OnInit {
   }
 
   toggleTreePin(): void {
-    this.treePinned = !this.treePinned;
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('precotex:docs_tree_pinned', this.treePinned ? '1' : '0');
-    }
+    this.treePinned = true;
+    this.treeColapsado = !this.treeColapsado;
+  }
+
+  toggleTreeVisible(): void {
+    this.treeColapsado = !this.treeColapsado;
   }
 
   toggleTree(): void {
@@ -218,12 +220,10 @@ export class DocumentosControladosComponent implements OnInit {
     // Observación b: Cargar papelera de documentos
     this.cargarPapelera();
 
-    // Observación g: Restaurar estado fijado de la estructura documental si fue guardado
+    // Estructura documental siempre anclada al layout
+    this.treePinned = true;
     if (typeof localStorage !== 'undefined') {
-      const pinVal = localStorage.getItem('precotex:docs_tree_pinned');
-      if (pinVal !== null) {
-        this.treePinned = pinVal === '1';
-      }
+      localStorage.removeItem('precotex:docs_tree_pinned');
     }
 
     // Restaurar filtro guardado en LocalStorage Presets

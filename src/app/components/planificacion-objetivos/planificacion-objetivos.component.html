@@ -167,15 +167,17 @@
 
       <!-- Meta Visible Directa + Avance % (OBJ-01) -->
       <ng-container matColumnDef="meta">
-        <th mat-header-cell *matHeaderCellDef style="width: 140px;">Meta & Avance</th>
+        <th mat-header-cell *matHeaderCellDef style="min-width: 150px; width: 160px;">Meta & Avance</th>
         <td mat-cell *matCellDef="let row">
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <div style="display: flex; justify-content: space-between; font-size: 11px;">
-              <span style="color: #a5b4fc; font-weight: 700;">Meta: {{ row.meta }}</span>
-              <span style="color: #4ade80; font-weight: bold;">{{ row.porcentajeAvance }}%</span>
+          <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; white-space: nowrap;">
+              <span style="color: #6366f1; font-weight: 700;">Meta: {{ row.meta }}</span>
+              <span style="color: #10b981; font-weight: 800;">Avance: {{ row.porcentajeAvance }}%</span>
             </div>
-            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden;">
-              <div [style.width.%]="row.porcentajeAvance" style="height: 100%; background: linear-gradient(90deg, #10b981, #38bdf8); border-radius: 3px;"></div>
+            <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.06); border-radius: 4px; overflow: hidden;">
+              <div [style.width.%]="row.porcentajeAvance > 100 ? 100 : row.porcentajeAvance" 
+                   style="height: 100%; background: linear-gradient(90deg, #10b981, #38bdf8); border-radius: 4px; transition: width 0.3s ease;">
+              </div>
             </div>
           </div>
         </td>

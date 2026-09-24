@@ -47,7 +47,7 @@ export class PuestosComponent implements OnInit {
     private toastr: ToastrService,
     private puestosService: PuestosService,
     private http: HttpClient
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.onListado();
@@ -210,7 +210,7 @@ export class PuestosComponent implements OnInit {
         if (!cuentas.some((c: any) => (c.cod_Usuario || '').toLowerCase() === userCode.toLowerCase() || (c.nom_Usuario || '').toLowerCase() === k.usuario.toLowerCase())) {
           cuentas.push({
             cod_Usuario: userCode,
-            password: 'Precotex2026!',
+            password: '',
             nom_Usuario: k.usuario,
             puesto: k.puesto,
             email: k.email,
@@ -222,7 +222,7 @@ export class PuestosComponent implements OnInit {
         }
       });
       localStorage.setItem('precotex_cuentas_usuarios', JSON.stringify(cuentas));
-    } catch (e) {}
+    } catch (e) { }
 
     this.puestosService.getListadoPuesto('001', '', '').subscribe({
       next: (res: any) => {
@@ -247,8 +247,8 @@ export class PuestosComponent implements OnInit {
         dbList.forEach((item: any) => {
           if (!item.usuario || item.usuario === '—' || item.usuario.trim() === '') {
             const pName = (item.puesto || '').toLowerCase();
-            const matchedKeyUser = keyUserDirectory.find(k => 
-              pName.includes(k.puesto.toLowerCase()) || 
+            const matchedKeyUser = keyUserDirectory.find(k =>
+              pName.includes(k.puesto.toLowerCase()) ||
               k.puesto.toLowerCase().includes(pName) ||
               (pName.includes('seguridad') && k.puesto.toLowerCase().includes('seguridad')) ||
               (pName.includes('sst') && k.puesto.toLowerCase().includes('sst')) ||
@@ -271,7 +271,7 @@ export class PuestosComponent implements OnInit {
 
         // Combinar con los puestos y Key Users maestros
         keyUserDirectory.forEach(ku => {
-          const exists = dbList.some(db => 
+          const exists = dbList.some(db =>
             (db.puesto || '').toLowerCase() === ku.puesto.toLowerCase() ||
             (db.usuario || '').toLowerCase() === ku.usuario.toLowerCase()
           );
@@ -332,7 +332,7 @@ export class PuestosComponent implements OnInit {
     let filtered = [...this.puestosList];
     if (this.searchText.trim()) {
       const query = this.searchText.toLowerCase();
-      filtered = filtered.filter(p => 
+      filtered = filtered.filter(p =>
         (p.puesto || '').toLowerCase().includes(query) ||
         (p.proceso || '').toLowerCase().includes(query) ||
         (p.usuario || '').toLowerCase().includes(query) ||
@@ -410,7 +410,7 @@ export class PuestosComponent implements OnInit {
     }
 
     if (this.puestosList && this.puestosList.length > 0) {
-      const match = this.puestosList.find(p => 
+      const match = this.puestosList.find(p =>
         (p.usuario && p.usuario.toLowerCase() === clean) ||
         (p.email && p.email.toLowerCase().startsWith(clean))
       );
@@ -450,14 +450,14 @@ export class PuestosComponent implements OnInit {
 
     const formatLogTime = (date: Date): string => {
       const isToday = date.getFullYear() === ahora.getFullYear() &&
-                      date.getMonth() === ahora.getMonth() &&
-                      date.getDate() === ahora.getDate();
+        date.getMonth() === ahora.getMonth() &&
+        date.getDate() === ahora.getDate();
 
       const yesterday = new Date(ahora);
       yesterday.setDate(yesterday.getDate() - 1);
       const isYesterday = date.getFullYear() === yesterday.getFullYear() &&
-                          date.getMonth() === yesterday.getMonth() &&
-                          date.getDate() === yesterday.getDate();
+        date.getMonth() === yesterday.getMonth() &&
+        date.getDate() === yesterday.getDate();
 
       const hh = String(date.getHours()).padStart(2, '0');
       const mm = String(date.getMinutes()).padStart(2, '0');
@@ -491,10 +491,10 @@ export class PuestosComponent implements OnInit {
       const uName = (item.usuario || item.nom_Usuario || item.nombre || item.n || item.cod_Usuario || '').toLowerCase().trim();
       const rName = (item.puesto || item.rol || '').toLowerCase().trim();
       return uName === 'admin' ||
-             uName === 'super administrador' ||
-             uName.includes('administrador') ||
-             rName === 'administrador general' ||
-             rName.includes('administrador general');
+        uName === 'super administrador' ||
+        uName.includes('administrador') ||
+        rName === 'administrador general' ||
+        rName.includes('administrador general');
     };
 
     const rawKeys = ['precotex:log:accesos', 'precotex:logs:accesos'];
@@ -507,7 +507,7 @@ export class PuestosComponent implements OnInit {
             arr = arr.filter((item: any) => !isImage2Obsolete(item) && !isAdminRecord(item));
             localStorage.setItem(k, JSON.stringify(arr));
           }
-        } catch (e) {}
+        } catch (e) { }
       }
     });
 
@@ -516,12 +516,12 @@ export class PuestosComponent implements OnInit {
     const storedNom = (localStorage.getItem('precotex:usuario:nombre') || currentCodeUser).trim();
     const storedPuesto = (localStorage.getItem('precotex:usuario:puesto') || '').trim();
     const isCurrentAdmin = currentCodeUser.toLowerCase() === 'admin' ||
-                           storedNom.toLowerCase() === 'admin' ||
-                           storedNom.toLowerCase().includes('administrador');
+      storedNom.toLowerCase() === 'admin' ||
+      storedNom.toLowerCase().includes('administrador');
 
     if (currentCodeUser && !isCurrentAdmin) {
       const uInfo = this.resolveUserData(storedNom || currentCodeUser, storedPuesto || undefined);
-      
+
       // Registrar en almacenamiento local si no existe para la sesión actual
       const rawStored = localStorage.getItem('precotex:log:accesos');
       let currentStoredLogs: any[] = rawStored ? JSON.parse(rawStored) : [];
@@ -530,7 +530,7 @@ export class PuestosComponent implements OnInit {
       const diezMinutosAtras = new Date(ahora.getTime() - 10 * 60 * 1000);
       const yaRegistrado = currentStoredLogs.some((l: any) => {
         const sameUser = (l.usuario || '').toLowerCase() === uInfo.nombre.toLowerCase() ||
-                         (l.cod_Usuario || '').toLowerCase() === currentCodeUser.toLowerCase();
+          (l.cod_Usuario || '').toLowerCase() === currentCodeUser.toLowerCase();
         if (!sameUser) return false;
         const lDate = l.timestamp ? new Date(l.timestamp) : (l.fechaHora ? new Date(l.fechaHora.replace(' ', 'T')) : null);
         return lDate && lDate >= diezMinutosAtras;
@@ -560,7 +560,7 @@ export class PuestosComponent implements OnInit {
           const actMap: { [key: string]: number } = actRaw ? JSON.parse(actRaw) : {};
           actMap[uInfo.nombre] = (actMap[uInfo.nombre] || 0) + 1;
           localStorage.setItem('precotex:user:actividad', JSON.stringify(actMap));
-        } catch (e) {}
+        } catch (e) { }
       }
 
       // Añadir sesión activa al conjunto real
@@ -616,7 +616,7 @@ export class PuestosComponent implements OnInit {
             });
           });
         }
-      } catch (e) {}
+      } catch (e) { }
     }
 
     // 4. Ordenar logs reales por fecha más reciente primero y deduplicar por usuario
@@ -652,7 +652,7 @@ export class PuestosComponent implements OnInit {
           activityMap[resolved] = (activityMap[resolved] || 0) + Number(storedAct[k] || 0);
         }
       }
-    } catch (e) {}
+    } catch (e) { }
 
     // Sumar accesos reales dentro de los últimos 7 días
     realLogs.forEach(log => {
@@ -708,9 +708,9 @@ export class PuestosComponent implements OnInit {
 
   onAgregar() {
     const dialogRef = this.dialog.open(PuestosUsuariosRegeditComponent, {
-      width: '1150px',
+      width: '1060px',
       maxWidth: '95vw',
-      panelClass: 'custom-large-dialog',
+      panelClass: 'custom-dialog-container',
       disableClose: true,
       data: {
         Title: 'Nuevo registro',
@@ -722,34 +722,43 @@ export class PuestosComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         const todayStr = new Date().toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const rawUser = (result.ctrol_usuario || '').trim();
+        const rawEmail = (result.ctrol_email || '').trim();
+        const puestoName = (result.ctrol_puesto || '').trim();
+        const procesoName = (result.ctrol_proceso || '').trim();
+        const userPass = (result.ctrol_password || '').trim();
+        const emailPrefix = rawEmail ? rawEmail.split('@')[0].trim().toLowerCase() : '';
+        const userCode = (rawUser || emailPrefix || (puestoName ? puestoName.toLowerCase().replace(/\s+/g, '.').replace(/ñ/g, 'n') : 'usuario')).toLowerCase();
+        const userDisplayName = puestoName || rawUser;
+
         const requestData = {
           Accion: 'I',
           Codigo_Puesto: '',
           Codigo_Organizacion: '001',
           Codigo_Sede: '001',
-          Denominacion: (result.ctrol_puesto || '').trim(),
+          Denominacion: puestoName,
           Codigo_Nivel_Riesgo: result.ctrol_nivel || 'Operativo',
           Validacion_Periodica: true,
-          Puesto_Descripcion: result.ctrol_proceso || '',
-          Puesto_Funciones: (result.ctrol_usuario || '').trim(),
+          Puesto_Descripcion: procesoName,
+          Puesto_Funciones: (rawUser || userCode).trim(),
           Puesto_Requisitos: result.ctrol_permisos || '',
-          Puesto_Caracteristicas: result.ctrol_estado || 'Activo',
+          Puesto_Caracteristicas: rawEmail ? `${result.ctrol_estado || 'Activo'}|${rawEmail}` : (result.ctrol_estado || 'Activo'),
           Caracteristicas_Visible: true,
           Flg_Activo: '1',
           Cod_Usuario: this.sUsuario,
-          Email: (result.ctrol_email || '').trim(),
-          Password: (result.ctrol_password || 'Precotex2026!').trim(),
+          Email: rawEmail,
+          Password: userPass,
           Fecha_Registro: todayStr,
           Enviar_Correo: result.ctrol_enviar_credenciales ? 1 : 0
         };
 
         const newItem = {
           id: 'p-' + Date.now(),
-          puesto: (result.ctrol_puesto || '').trim(),
-          proceso: result.ctrol_proceso,
-          usuario: (result.ctrol_usuario || '').trim(),
-          email: (result.ctrol_email || '').trim(),
-          password: (result.ctrol_password || 'Precotex2026!').trim(),
+          puesto: puestoName,
+          proceso: procesoName,
+          usuario: userDisplayName,
+          email: rawEmail,
+          password: userPass,
           fecha_Registro: todayStr,
           nivel: result.ctrol_nivel,
           permisos: result.ctrol_permisos,
@@ -757,14 +766,13 @@ export class PuestosComponent implements OnInit {
         };
 
         // Guardar cuenta de acceso localmente para autenticación instantánea
-        const userCode = (result.ctrol_usuario || '').trim() || (result.ctrol_email || '').split('@')[0] || 'usuario';
         const userAcc = {
           cod_Usuario: userCode,
-          password: result.ctrol_password || 'Precotex2026!',
-          nom_Usuario: (result.ctrol_usuario || result.ctrol_puesto).trim(),
-          email: (result.ctrol_email || '').trim(),
-          puesto: (result.ctrol_puesto || '').trim(),
-          cod_Rol: result.ctrol_nivel === 'Gerencial' ? '1' : '0'
+          password: userPass,
+          nom_Usuario: userDisplayName,
+          email: rawEmail,
+          puesto: puestoName,
+          cod_Rol: result.ctrol_nivel === 'Gerencial' ? '1' : '2'
         };
         const accList = JSON.parse(localStorage.getItem('precotex_cuentas_usuarios') || '[]');
         const existIdx = accList.findIndex((a: any) => (a.cod_Usuario || '').toLowerCase() === userCode.toLowerCase());
@@ -779,37 +787,42 @@ export class PuestosComponent implements OnInit {
         const userDbPayload = {
           Accion: 'I',
           Cod_Usuario: userCode,
-          Password: result.ctrol_password || 'Precotex2026!',
-          Nom_Usuario: (result.ctrol_usuario || result.ctrol_puesto).trim(),
+          Password: userPass,
+          Nom_Usuario: userDisplayName,
           Cod_Rol: result.ctrol_nivel === 'Gerencial' ? 1 : 2,
           Des_Rol: result.ctrol_nivel === 'Gerencial' ? 'ADMINISTRADOR' : 'Usuario SOMA',
           Cod_Empresa: '01',
           Empresa: 'Precotex S.A.C.',
-          Tip_Trabajador: (result.ctrol_proceso || 'SOMA').substring(0, 10).toUpperCase(),
+          Tip_Trabajador: (procesoName || 'SOMA').substring(0, 10).toUpperCase(),
           Cod_Trabajador: 'T' + String(Math.floor(100 + Math.random() * 900)),
-          Flg_Activo: result.ctrol_estado === 'Activo' ? 1 : 0
+          Email: rawEmail,
+          Denominacion: puestoName,
+          Flg_Activo: result.ctrol_estado === 'Activo' ? 1 : 1
         };
 
         this.http.post(`${GlobalVariable.baseUrlBackEnd}TxLogin/postRegistrarUsuario`, userDbPayload).subscribe({
-          next: () => {},
-          error: () => {}
+          next: () => { },
+          error: () => { }
         });
 
-        // Enviar correo de credenciales automáticamente al servidor SMTP Backend
-        if (result.ctrol_enviar_credenciales && result.ctrol_email) {
+        // Enviar correo de credenciales automáticamente al servidor SMTP Backend (PUE-02)
+        if (result.ctrol_enviar_credenciales && rawEmail) {
           const emailPayload = {
-            Destinatario: result.ctrol_email,
-            Nombre: (result.ctrol_usuario || result.ctrol_puesto).trim(),
+            Destinatario: rawEmail,
+            Nombre: userDisplayName,
             Usuario: userCode,
-            Puesto: result.ctrol_puesto,
-            ClaveTemporal: result.ctrol_password || 'Precotex2026!',
+            Puesto: puestoName,
+            ClaveTemporal: userPass,
             Asunto: '🔐 Credenciales de Acceso - Sistema de Gestión de Seguridad Precotex'
           };
 
           this.http.post(`${GlobalVariable.baseUrlBackEnd}TxLogin/postEnviarCredencialesCorreo`, emailPayload).subscribe({
-            next: () => {},
+            next: () => {
+              this.toastr.success(`Credenciales enviadas automáticamente a: ${rawEmail}`, '📧 Correo Enviado (PUE-02)', { timeOut: 4500 });
+            },
             error: (err) => {
               console.warn('Error al conectar con servicio SMTP de correo:', err);
+              this.toastr.warning(`Puesto guardado, pero no se pudo enviar el correo a ${rawEmail}.`, 'Aviso de Correo');
             }
           });
         }
@@ -841,9 +854,9 @@ export class PuestosComponent implements OnInit {
 
   onEditar(item: any) {
     const dialogRef = this.dialog.open(PuestosUsuariosRegeditComponent, {
-      width: '1150px',
+      width: '1060px',
       maxWidth: '95vw',
-      panelClass: 'custom-large-dialog',
+      panelClass: 'custom-dialog-container',
       disableClose: true,
       data: {
         Title: 'Editar registro',
@@ -854,34 +867,59 @@ export class PuestosComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        const rawEmail = (result.ctrol_email || '').trim();
+        const puestoName = (result.ctrol_puesto || '').trim();
+        const rawUser = (result.ctrol_usuario || '').trim();
+        const emailPrefix = rawEmail ? rawEmail.split('@')[0].trim().toLowerCase() : '';
+        const userCode = (rawUser || emailPrefix || (puestoName ? puestoName.toLowerCase().replace(/\s+/g, '.').replace(/ñ/g, 'n') : 'usuario')).toLowerCase();
+        const userDisplayName = puestoName || rawUser;
+        const userPass = (result.ctrol_password || '').trim();
+
         const requestData = {
           Accion: 'U',
           Codigo_Puesto: item.codigo_Puesto || item.id,
           Codigo_Organizacion: '001',
           Codigo_Sede: '001',
-          Denominacion: (result.ctrol_puesto || '').trim(),
+          Denominacion: puestoName,
           Codigo_Nivel_Riesgo: result.ctrol_nivel || 'Operativo',
           Validacion_Periodica: true,
           Puesto_Descripcion: result.ctrol_proceso || '',
-          Puesto_Funciones: (result.ctrol_usuario || '').trim(),
+          Puesto_Funciones: rawUser || userCode,
           Puesto_Requisitos: result.ctrol_permisos || '',
-          Puesto_Caracteristicas: result.ctrol_estado || 'Activo',
+          Puesto_Caracteristicas: rawEmail ? `${result.ctrol_estado || 'Activo'}|${rawEmail}` : (result.ctrol_estado || 'Activo'),
           Caracteristicas_Visible: true,
           Flg_Activo: '1',
           Cod_Usuario: this.sUsuario,
-          Email: (result.ctrol_email || '').trim(),
-          Password: (result.ctrol_password || 'Precotex2026!').trim()
+          Email: rawEmail,
+          Password: userPass
         };
+
+        if (result.ctrol_enviar_credenciales && rawEmail) {
+          const emailPayload = {
+            Destinatario: rawEmail,
+            Nombre: userDisplayName,
+            Usuario: userCode,
+            Puesto: puestoName,
+            ClaveTemporal: userPass,
+            Asunto: '🔐 Credenciales de Acceso - Sistema de Gestión de Seguridad Precotex'
+          };
+          this.http.post(`${GlobalVariable.baseUrlBackEnd}TxLogin/postEnviarCredencialesCorreo`, emailPayload).subscribe({
+            next: () => {
+              this.toastr.success(`Credenciales enviadas a: ${rawEmail}`, '📧 Correo Enviado (PUE-02)', { timeOut: 4500 });
+            },
+            error: () => { }
+          });
+        }
 
         const updateLocal = () => {
           const idx = this.puestosList.findIndex(p => p.id === item.id || p.codigo_Puesto === item.codigo_Puesto);
           if (idx !== -1) {
             this.puestosList[idx] = {
               ...this.puestosList[idx],
-              puesto: (result.ctrol_puesto || '').trim(),
+              puesto: puestoName,
               proceso: result.ctrol_proceso,
-              usuario: (result.ctrol_usuario || '').trim(),
-              email: (result.ctrol_email || '').trim(),
+              usuario: rawUser,
+              email: rawEmail,
               nivel: result.ctrol_nivel,
               permisos: result.ctrol_permisos,
               estado: result.ctrol_estado
@@ -925,9 +963,9 @@ export class PuestosComponent implements OnInit {
 
         // 2. Remover de puestos locales
         const localList = JSON.parse(localStorage.getItem('precotex_puestos_usuarios') || '[]');
-        const filteredLocal = localList.filter((p: any) => 
-          p.id !== item.id && 
-          p.codigo_Puesto !== item.codigo_Puesto && 
+        const filteredLocal = localList.filter((p: any) =>
+          p.id !== item.id &&
+          p.codigo_Puesto !== item.codigo_Puesto &&
           (p.puesto || '').toLowerCase() !== pName
         );
         localStorage.setItem('precotex_puestos_usuarios', JSON.stringify(filteredLocal));
@@ -935,7 +973,7 @@ export class PuestosComponent implements OnInit {
         // 3. Remover de cuentas de acceso locales
         const rawCuentas = localStorage.getItem('precotex_cuentas_usuarios');
         if (rawCuentas) {
-          const cuentas = JSON.parse(rawCuentas).filter((c: any) => 
+          const cuentas = JSON.parse(rawCuentas).filter((c: any) =>
             (c.puesto || '').toLowerCase() !== pName &&
             (c.nom_Usuario || '').toLowerCase() !== uName &&
             (c.cod_Usuario || '').toLowerCase() !== uName
@@ -963,14 +1001,14 @@ export class PuestosComponent implements OnInit {
         };
 
         this.puestosService.postProcesoMntoPuesto(requestData).subscribe({
-          next: () => {},
-          error: () => {}
+          next: () => { },
+          error: () => { }
         });
 
         // 5. Actualizar la tabla en vivo
-        this.puestosList = this.puestosList.filter(p => 
-          p.id !== item.id && 
-          p.codigo_Puesto !== item.codigo_Puesto && 
+        this.puestosList = this.puestosList.filter(p =>
+          p.id !== item.id &&
+          p.codigo_Puesto !== item.codigo_Puesto &&
           (p.puesto || '').toLowerCase() !== pName
         );
         this.calculateStats();
@@ -1192,7 +1230,7 @@ export class PuestosComponent implements OnInit {
         const y = parsed.getFullYear();
         return `${d}/${m}/${y}`;
       }
-    } catch (e) {}
+    } catch (e) { }
 
     return str;
   }
@@ -1238,7 +1276,7 @@ export class PuestosComponent implements OnInit {
 
         // 2. Actualizar cuenta de acceso en localStorage
         const cuentas = JSON.parse(localStorage.getItem('precotex_cuentas_usuarios') || '[]');
-        const cIdx = cuentas.findIndex((c: any) => 
+        const cIdx = cuentas.findIndex((c: any) =>
           (c.nom_Usuario || '').toLowerCase() === (item.usuario || '').toLowerCase() ||
           (c.puesto || '').toLowerCase() === (item.puesto || '').toLowerCase()
         );
@@ -1267,8 +1305,8 @@ export class PuestosComponent implements OnInit {
         };
 
         this.puestosService.postProcesoMntoPuesto(requestData).subscribe({
-          next: () => {},
-          error: () => {}
+          next: () => { },
+          error: () => { }
         });
 
         this.calculateStats();

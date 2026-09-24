@@ -11,15 +11,13 @@
     </button>
   </div>
 
-  <!-- Disparador lateral de hover para la estructura documental cuando no está fijada (Observación g) -->
-  <div class="hover-sidebar-trigger" *ngIf="!treePinned" (mouseenter)="onTreeHover(true)">
-    <div class="hover-trigger-pill" title="Mantén el cursor aquí para ver la Estructura Documental">
-      <mat-icon style="font-size: 16px; width: 16px; height: 16px;">snippet_folder</mat-icon>
-      <span class="hover-trigger-label">Estructura Documental</span>
-    </div>
-  </div>
+  <!-- Disparador lateral compacto para Estructura Documental cuando no está fijada o está cerrada -->
 
-  <div class="doc-layout" [class.layout-stacked]="treeColapsado" [class.layout-unpinned]="!treePinned">
+
+  <!-- Backdrop translúcido cuando el panel flota sin fijar -->
+
+
+  <div class="doc-layout" [class.layout-stacked]="treeColapsado">
     
     <!-- BOTÓN PARA RE-EXPANDIR SI ESTÁ COLAPSADO -->
     <div class="expand-banner-row" *ngIf="treeColapsado">
@@ -30,33 +28,22 @@
     </div>
 
     <!-- PANEL IZQUIERDO: ESTRUCTURA DOCUMENTAL ESTILO FILE MANAGER (Observaciones d, f, g) -->
-    <div class="tree-panel-filemanager" 
-         *ngIf="!treeColapsado"
-         [class.tree-floating-open]="!treePinned && treeHovered"
-         [class.tree-pinned]="treePinned"
-         (mouseenter)="onTreeHover(true)"
-         (mouseleave)="onTreeHover(false)">
+    <div class="tree-panel-filemanager" *ngIf="!treeColapsado">
       
       <div class="tree-header-row">
-        <mat-icon class="tree-header-icon">snippet_folder</mat-icon>
-        <span class="tree-header-title">ESTRUCTURA DOCUMENTAL</span>
+        <div class="tree-header-icon-badge">
+          <mat-icon>snippet_folder</mat-icon>
+        </div>
+        <div class="tree-header-text-group">
+          <span class="tree-header-title">Estructura Documental</span>
+        </div>
         <span class="flex-spacer"></span>
-        <!-- Botón Fijar/Desanclar (Observación g) -->
-        <button type="button" 
-                class="btn-pin-tree" 
-                (click)="toggleTreePin()" 
-                [title]="treePinned ? 'Desanclar (modo flotante al pasar el mouse por la izquierda)' : 'Fijar panel al reporte'">
-          <mat-icon style="font-size: 16px; width: 16px; height: 16px;" [class.pinned-icon-active]="treePinned">
-            push_pin
-          </mat-icon>
-        </button>
         <!-- Botón Ocultar -->
         <button type="button" class="btn-toggle-carpetas" (click)="toggleTree()" title="Ocultar Estructura Documental">
           <mat-icon style="font-size: 18px; width: 18px; height: 18px;">keyboard_double_arrow_left</mat-icon>
         </button>
       </div>
 
-      <!-- Buscador de procesos y áreas (Observación d) -->
       <div class="tree-search-bar">
         <mat-icon class="tree-search-icon">search</mat-icon>
         <input type="text" 
@@ -79,7 +66,7 @@
           <mat-icon class="folder-icon root-icon">folder_shared</mat-icon>
           <span class="node-name">Todos los procesos</span>
         </div>
-        <span class="mini-count-pill">{{ docsList.length }}</span>
+        <span class="mini-count-pill" [class.has-docs]="docsList.length > 0">{{ docsList.length }}</span>
       </div>
 
       <div class="tree-groups-container">
@@ -97,7 +84,7 @@
               <mat-icon class="folder-icon macro-folder">folder</mat-icon>
               <span class="node-name">{{ macro }}</span>
             </div>
-            <span class="mini-count-pill">{{ getMacroCount(macro) }}</span>
+            <span class="mini-count-pill" [class.has-docs]="getMacroCount(macro) > 0">{{ getMacroCount(macro) }}</span>
           </div>
           
           <!-- Subprocesses Animated Container (contraído por defecto, abre si está expandido) -->
@@ -113,7 +100,7 @@
                   <span class="node-abbr">[{{ getAbreviaturaProceso(proc) }}]</span>
                   <span class="node-name" [title]="proc">{{ proc }}</span>
                 </div>
-                <span class="mini-count-pill">{{ getProcessCount(proc) }}</span>
+                <span class="mini-count-pill" [class.has-docs]="getProcessCount(proc) > 0">{{ getProcessCount(proc) }}</span>
               </div>
 
               <!-- DOC-03 / Observación f: Subcarpetas con 'Descripción del Puesto' en Capacitaciones y Desarrollo -->
@@ -193,6 +180,13 @@
         </div>
         
         <div class="toolbar-actions-section">
+          <!-- Botón Estructura Documental para toggle rápido -->
+          <button type="button" class="btn-ghost-action btn-tree-toggle" (click)="toggleTreeVisible()" 
+                  [class.active-toggle-btn]="!treeColapsado"
+                  title="Ver u ocultar la Estructura Documental">
+            <mat-icon style="color: #6366f1;">snippet_folder</mat-icon>
+            <span>Estructura</span>
+          </button>
           <!-- Primary Solid Glow Button -->
           <button type="button" class="btn-primary-glow" (click)="onAgregar()" *ngIf="canCreate">
             <mat-icon>add</mat-icon>

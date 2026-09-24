@@ -1,106 +1,191 @@
-<div class="dialog-container">
-  
-  <div class="dialog-header">
-    <h2 class="dialog-title">{{ data.Accion === 'I' ? 'Nuevo registro' : 'Editar registro' }}</h2>
-    <button type="button" class="btn-close-header" (click)="onCancelar()" title="Cerrar">
-      <mat-icon>close</mat-icon>
-    </button>
-  </div>
+<div class="dialog-wrapper">
+  <!-- Accent Top Line -->
+  <div class="dialog-top-bar"></div>
 
-  <form [formGroup]="formulario" (ngSubmit)="onGuardar()">
-    
-    <mat-dialog-content class="form-content">
-      
-      <!-- Fila 1: 4 Columnas (Puesto/Cargo, Proceso, Usuario Asignado, Nivel) -->
-      <div class="grid-4-cols">
-        <div class="form-section-item">
-          <div class="form-label">Puesto / Cargo <span class="required">*</span></div>
-          <input type="text" formControlName="ctrol_puesto" class="full-width-input" placeholder="Ej. Supervisor de Calidad">
+  <!-- Header -->
+  <header class="dialog-header">
+    <div class="header-left">
+      <div class="header-icon-box">
+        <mat-icon>{{ data.Accion === 'I' ? 'badge' : 'edit_note' }}</mat-icon>
+      </div>
+      <div class="header-text">
+        <h2 class="header-title">{{ data.Accion === 'I' ? 'Nuevo Puesto y Usuario' : 'Editar Puesto y Usuario' }}</h2>
+        <p class="header-subtitle">Configure el proceso correspondiente, colaborador asignado, usuario de acceso y
+          credenciales</p>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <button type="button" class="btn-close-header" (click)="onCancelar()" title="Cerrar ventana">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </header>
+
+  <!-- Form -->
+  <form [formGroup]="formulario" class="dialog-form" (ngSubmit)="onGuardar()">
+    <div class="dialog-scroll-body">
+
+      <!-- Sección 1: Información del Colaborador y Puesto -->
+      <div class="form-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">badge</mat-icon>
+          <span class="section-title">1. Información del Colaborador y Puesto</span>
         </div>
-        <div class="form-section-item">
-          <div class="form-label">Proceso <span class="required">*</span></div>
-          <select formControlName="ctrol_proceso" class="full-width-input">
-            <option value="" disabled selected>Seleccione un proceso...</option>
-            <optgroup *ngFor="let group of getProcesosKeys()" [label]="group">
-              <option *ngFor="let proc of procesosGroups[group]" [value]="proc">{{ proc }}</option>
-            </optgroup>
-          </select>
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">
-            Usuario Asignado (Key User)
-            <span style="font-size: 10px; color: #a5b4fc; text-transform: none; font-weight: normal; margin-left: 4px;">(Seleccione o escriba)</span>
+
+        <div class="form-row split-4">
+          <!-- Col 1: Proceso -->
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">account_tree</mat-icon>
+              Proceso <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="ctrol_proceso" class="form-select">
+                <option value="" disabled selected>Seleccione un proceso...</option>
+                <optgroup *ngFor="let group of getProcesosKeys()" [label]="group">
+                  <option *ngFor="let proc of procesosGroups[group]" [value]="proc">{{ proc }}</option>
+                </optgroup>
+              </select>
+            </div>
           </div>
-          <input type="text" 
-                 list="keyUsersDataList" 
-                 formControlName="ctrol_usuario" 
-                 (change)="onSeleccionarKeyUser($event)"
-                 (input)="onSeleccionarKeyUser($event)"
-                 class="full-width-input" 
-                 placeholder="Seleccione Key User creado...">
-          <datalist id="keyUsersDataList">
-            <option *ngFor="let u of keyUsersList" [value]="u.nombre">
-              {{ u.nombre }} — {{ u.puesto }} ({{ u.email }})
-            </option>
-          </datalist>
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">Nivel <span class="required">*</span></div>
-          <select formControlName="ctrol_nivel" class="full-width-input">
-            <option value="Gerencial">Gerencial</option>
-            <option value="Jefatura">Jefatura</option>
-            <option value="Operativo">Operativo</option>
-          </select>
+
+          <!-- Col 2: Usuario (Nombre y Apellido) -->
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">person</mat-icon>
+              Usuario <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="ctrol_puesto" class="form-input"
+                placeholder="Nombre y Apellido del personal" autocomplete="off">
+            </div>
+          </div>
+
+          <!-- Col 3: Usuario de Acceso -->
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">fingerprint</mat-icon>
+              Usuario de Acceso
+            </label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="ctrol_usuario" class="form-input"
+                placeholder="Usuario de acceso al sistema" autocomplete="off">
+            </div>
+          </div>
+
+          <!-- Col 4: Nivel Jerárquico -->
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">stairs</mat-icon>
+              Nivel Jerárquico <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="ctrol_nivel" class="form-select">
+                <option value="Operativo">Operativo</option>
+                <option value="Jefatura">Jefatura</option>
+                <option value="Gerencial">Gerencial</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Fila 2: 4 Columnas (Permisos, Estado, Correo Electrónico, Contraseña de Acceso) -->
-      <div class="grid-4-cols">
-        <div class="form-section-item">
-          <div class="form-label">Permisos <span class="required">*</span></div>
-          <select formControlName="ctrol_permisos" class="full-width-input">
-            <option value="Lectura">Lectura</option>
-            <option value="Lectura + descarga">Lectura + descarga</option>
-            <option value="Lectura + descarga + modificar">Lectura + descarga + modificar</option>
-          </select>
+      <!-- Sección 2: Credenciales & Permisos de Acceso -->
+      <div class="form-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">security</mat-icon>
+          <span class="section-title">2. Credenciales & Permisos de Acceso</span>
         </div>
-        <div class="form-section-item">
-          <div class="form-label">Estado <span class="required">*</span></div>
-          <select formControlName="ctrol_estado" class="full-width-input">
-            <option value="Pendiente de activación">Pendiente de activación</option>
-            <option value="Activo">Activo</option>
-            <option value="Inactivo">Inactivo</option>
-            <option value="Suspendido">Suspendido</option>
-          </select>
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">Correo Electrónico (Email) <span class="required">*</span></div>
-          <input type="email" formControlName="ctrol_email" class="full-width-input" placeholder="usuario@precotexperu.com">
-        </div>
-        <div class="form-section-item">
-          <div class="form-label">Contraseña de Acceso <span class="required">*</span></div>
-          <input type="text" formControlName="ctrol_password" class="full-width-input" placeholder="Ej: Precotex2026!">
+
+        <div class="form-row split-4">
+          <!-- Col 1: Permisos -->
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">admin_panel_settings</mat-icon>
+              Permisos <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="ctrol_permisos" class="form-select">
+                <option value="Lectura">Lectura</option>
+                <option value="Lectura + descarga">Lectura + descarga</option>
+                <option value="Lectura + descarga + modificar">Lectura + descarga + modificar</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Col 2: Estado -->
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">toggle_on</mat-icon>
+              Estado <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <select formControlName="ctrol_estado" class="form-select">
+                <option value="Pendiente de activación">Pendiente de activación</option>
+                <option value="Activo">Activo</option>
+                <option value="Inactivo">Inactivo</option>
+                <option value="Suspendido">Suspendido</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Col 3: Correo Electrónico -->
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">mail_outline</mat-icon>
+              Correo Electrónico (Email) <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="email" formControlName="ctrol_email" class="form-input"
+                placeholder="usuario@precotexperu.com" autocomplete="off">
+            </div>
+          </div>
+
+          <!-- Col 4: Contraseña de Acceso -->
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">lock_outline</mat-icon>
+              Contraseña de Acceso <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="ctrol_password" class="form-input" placeholder="Ingrese la contraseña"
+                autocomplete="off">
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Fila 3: Opción de Envío Automático de Credenciales -->
-      <div style="margin-top: 12px; padding: 10px 14px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
-        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #0f172a; cursor: pointer;">
-          <input type="checkbox" formControlName="ctrol_enviar_credenciales" style="width: 17px; height: 17px; accent-color: #2563eb;">
-          <span>📧 Enviar usuario y contraseña de acceso por correo automáticamente al guardar</span>
+      <!-- Card: Envío Automático de Credenciales (PUE-02) -->
+      <div class="credentials-card">
+        <label class="credentials-label">
+          <input type="checkbox" formControlName="ctrol_enviar_credenciales" class="custom-checkbox">
+          <div class="credentials-text-box">
+            <div class="credentials-header-line">
+              <span class="credentials-title">Enviar credenciales de acceso por correo automáticamente al guardar</span>
+              <span class="badge-auto-envio">Recomendado (PUE-02)</span>
+            </div>
+            <p class="credentials-desc">
+              Al guardar, el servidor enviará un correo formal al colaborador con su usuario asignado, cargo y
+              contraseña temporal para el primer acceso.
+            </p>
+          </div>
         </label>
       </div>
 
-    </mat-dialog-content>
+    </div>
 
-    <mat-dialog-actions class="dialog-actions-row">
-      <button type="button" class="BtnCancelarPlan" mat-flat-button (click)="onCancelar()">
-        Cancelar
+    <!-- Footer Actions -->
+    <footer class="dialog-footer">
+      <button type="button" class="btn-cancelar" (click)="onCancelar()">
+        <mat-icon>close</mat-icon>
+        <span>Cancelar</span>
       </button>
-      <button type="submit" class="BtnGuardarPlan" mat-flat-button>
-        Guardar
+
+      <button type="submit" class="btn-guardar">
+        <mat-icon>save</mat-icon>
+        <span>Guardar</span>
       </button>
-    </mat-dialog-actions>
-    
+    </footer>
   </form>
 </div>

@@ -59,7 +59,7 @@ export class PortafolioMejoraComponent implements OnInit {
       if (!isNaN(d.getTime()) && d.getFullYear() > 1970) {
         return d.toISOString().slice(0, 10);
       }
-    } catch {}
+    } catch { }
     return '';
   }
 
@@ -79,7 +79,7 @@ export class PortafolioMejoraComponent implements OnInit {
     this.cachedFechaFinMap[key.toString().trim()] = fecha;
     try {
       localStorage.setItem('PRECOTEX_MEJORA_FECHAS_FIN', JSON.stringify(this.cachedFechaFinMap));
-    } catch {}
+    } catch { }
   }
 
   onListado(): void {
@@ -165,7 +165,7 @@ export class PortafolioMejoraComponent implements OnInit {
     private procesosService: ProcesosService,
     private mejoraService: MejoraService,
     private sedesService: SedesService
-  ) {}
+  ) { }
 
   procesoNameToCodeMap: { [key: string]: string } = {};
 
@@ -185,7 +185,7 @@ export class PortafolioMejoraComponent implements OnInit {
       if (stored) {
         this.cachedFechaFinMap = JSON.parse(stored);
       }
-    } catch {}
+    } catch { }
 
     this.onListado();
 
@@ -256,7 +256,7 @@ export class PortafolioMejoraComponent implements OnInit {
   getAbreviaturaProceso(proceso: string): string {
     if (!proceso) return 'OYM';
     const name = proceso.trim().toLowerCase();
-    
+
     const map: { [key: string]: string } = {
       'organización y métodos': 'OYM',
       'organizacion y metodos': 'OYM',
@@ -652,13 +652,13 @@ export class PortafolioMejoraComponent implements OnInit {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'Plantilla_Oficial_5W2H_FOR-IMC-OYM-001.xlsx';
+      a.download = 'Plantilla_Oficial_5W2H.xlsx';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
 
-      this.toastr.success('Plantilla oficial 5W-2H (FOR-IMC-OYM-001) descargada exitosamente en Excel con logo corporativo.', 'Descarga Exitosa');
+      this.toastr.success('Plantilla oficial 5W-2H descargada exitosamente en Excel con logo corporativo.', 'Descarga Exitosa');
     } catch (error) {
       console.error('Error al generar plantilla Excel 5W-2H:', error);
       this.toastr.error('No se pudo generar el archivo Excel de la plantilla.', 'Error Descarga');
@@ -1115,13 +1115,13 @@ export class PortafolioMejoraComponent implements OnInit {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'Plantilla_Oficial_ACR_FOR-IMC-OYM-001.xlsx';
+      a.download = 'Plantilla_Oficial_ACR.xlsx';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
 
-      this.toastr.success('Plantilla oficial ACR (FOR-IMC-OYM-001) descargada exitosamente en Excel con todas sus imágenes oficiales.', 'Descarga Exitosa');
+      this.toastr.success('Plantilla oficial ACR descargada exitosamente en Excel con todas sus imágenes oficiales.', 'Descarga Exitosa');
     } catch (error) {
       console.error('Error al generar plantilla Excel ACR:', error);
       this.toastr.error('No se pudo generar el archivo Excel de la plantilla ACR.', 'Error Descarga');
@@ -1467,7 +1467,7 @@ export class PortafolioMejoraComponent implements OnInit {
 
   get maxTotalProceso(): number {
     if (!this.procesosUnicos || this.procesosUnicos.length === 0) return 1;
-    const totals = this.procesosUnicos.map(p => 
+    const totals = this.procesosUnicos.map(p =>
       this.mejoraList.filter(m => (m.proceso || '').toLowerCase() === p.toLowerCase()).length
     );
     return Math.max(1, ...totals);
@@ -1692,7 +1692,7 @@ export class PortafolioMejoraComponent implements OnInit {
     dialogRef.afterClosed().subscribe(res => {
       if (res) {
         const fFin = this.normalizarFecha(res.fechaFin);
-        
+
         // Guardar en caché y localStorage por código, ID y título
         if (item.codigo) this.guardarFechaFinEnCache(item.codigo, fFin);
         if (item.id) this.guardarFechaFinEnCache(item.id, fFin);
@@ -1866,7 +1866,7 @@ export class PortafolioMejoraComponent implements OnInit {
 
     const head = '<th>Código</th><th>Título</th><th>Proceso</th><th>Sede</th><th>Herramienta</th><th>Estado</th>';
     const body = rows.map(d => `<tr><td>${d.codigo || ''}</td><td>${d.titulo || ''}</td><td>${d.proceso || ''}</td><td>${d.sede || ''}</td><td>${d.herramienta || ''}</td><td>${d.estado || ''}</td></tr>`).join('');
-    
+
     const w = window.open('', '_blank');
     if (!w) {
       this.toastr.error('Por favor permite las ventanas emergentes.', 'Error Exportar');

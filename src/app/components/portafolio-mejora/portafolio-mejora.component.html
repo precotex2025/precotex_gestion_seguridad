@@ -4,17 +4,14 @@
   <div class="integrated-toolbar margin-bottom-16">
     <div class="inline-search-box">
       <mat-icon class="search-icon">search</mat-icon>
-      <input type="text" 
-             [(ngModel)]="searchText"
-             (input)="buscar($event)" 
-             (keyup)="buscar($event)" 
-             placeholder="Buscar palabra clave (código, título, proceso, sede, estado...)" 
-             class="inline-search-input">
-      <button *ngIf="searchText" type="button" class="btn-clear-search" (click)="limpiarBusqueda()" title="Limpiar búsqueda">
+      <input type="text" [(ngModel)]="searchText" (input)="buscar($event)" (keyup)="buscar($event)"
+        placeholder="Buscar palabra clave (código, título, proceso, sede, estado...)" class="inline-search-input">
+      <button *ngIf="searchText" type="button" class="btn-clear-search" (click)="limpiarBusqueda()"
+        title="Limpiar búsqueda">
         <mat-icon style="font-size: 16px; width: 16px; height: 16px;">close</mat-icon>
       </button>
     </div>
-    
+
     <div class="toolbar-actions-section">
       <!-- Primary Solid Glow Button -->
       <button type="button" class="btn-primary-glow" (click)="onAgregar()">
@@ -23,17 +20,20 @@
       </button>
 
       <!-- Ghost Buttons -->
-      <button type="button" class="btn-ghost-action" (click)="onDescargarPlantilla5W2H()" title="Descargar Plantilla Oficial Excel 5W-2H (FOR-IMC-OYM-001)">
+      <button type="button" class="btn-ghost-action" (click)="onDescargarPlantilla5W2H()"
+        title="Descargar Plantilla Oficial Excel 5W-2H">
         <mat-icon style="color: #38bdf8;">table_view</mat-icon>
         <span>Plantilla 5W-2H</span>
       </button>
 
-      <button type="button" class="btn-ghost-action" (click)="onDescargarPlantillaACR()" title="Descargar Plantilla Oficial Excel ACR (FOR-IMC-OYM-001)">
+      <button type="button" class="btn-ghost-action" (click)="onDescargarPlantillaACR()"
+        title="Descargar Plantilla Oficial Excel ACR">
         <mat-icon style="color: #fb923c;">account_tree</mat-icon>
         <span>Plantilla ACR</span>
       </button>
 
-      <button type="button" class="btn-ghost-action" (click)="onExportarExcelConsolidado()" title="Exportar Consolidado a Excel (POR-04)">
+      <button type="button" class="btn-ghost-action" (click)="onExportarExcelConsolidado()"
+        title="Exportar Consolidado a Excel">
         <mat-icon class="icon-excel-btn">grid_on</mat-icon>
         <span>Excel</span>
       </button>
@@ -75,7 +75,8 @@
           <div class="archivo-name">{{ item.archivo }}</div>
           <div class="archivo-sub">{{ item.titulo }} · {{ item.herramienta }} · {{ item.sede }}</div>
         </div>
-        <button type="button" class="btn-descargar-archivo" (click)="onDescargarArchivo(item)" title="Descargar archivo adjunto">
+        <button type="button" class="btn-descargar-archivo" (click)="onDescargarArchivo(item)"
+          title="Descargar archivo adjunto">
           <mat-icon>download</mat-icon>
         </button>
       </div>
@@ -88,22 +89,24 @@
       <h2 class="panel-card-title">DISTRIBUCIÓN DEL PORTAFOLIO</h2>
     </div>
     <div class="distribution-container">
-      
+
       <!-- GRÁFICO DONUT SVG -->
       <div class="donut-box">
         <svg width="140" height="140" viewBox="0 0 42 42" class="donut-svg">
-          <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#e2e7f1" stroke-width="5"/>
+          <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#e2e7f1" stroke-width="5" />
           <!-- Segmento 1: 5W-2H (Verde) -->
-          <circle *ngIf="pct5W2H > 0" cx="21" cy="21" r="15.9155" fill="none" stroke="#12a06a" stroke-width="5" 
-                  [attr.stroke-dasharray]="pct5W2H + ' ' + (100 - pct5W2H)" stroke-dashoffset="25"/>
+          <circle *ngIf="pct5W2H > 0" cx="21" cy="21" r="15.9155" fill="none" stroke="#12a06a" stroke-width="5"
+            [attr.stroke-dasharray]="pct5W2H + ' ' + (100 - pct5W2H)" stroke-dashoffset="25" />
           <!-- Segmento 2: ACR (Naranja) -->
-          <circle *ngIf="pctACR > 0" cx="21" cy="21" r="15.9155" fill="none" stroke="#b8790a" stroke-width="5" 
-                  [attr.stroke-dasharray]="pctACR + ' ' + (100 - pctACR)" [attr.stroke-dashoffset]="offsetACR"/>
+          <circle *ngIf="pctACR > 0" cx="21" cy="21" r="15.9155" fill="none" stroke="#b8790a" stroke-width="5"
+            [attr.stroke-dasharray]="pctACR + ' ' + (100 - pctACR)" [attr.stroke-dashoffset]="offsetACR" />
           <!-- Segmento 3: Iniciativa (Púrpura) -->
-          <circle *ngIf="pctIniciativas > 0" cx="21" cy="21" r="15.9155" fill="none" stroke="#5b4bd6" stroke-width="5" 
-                  [attr.stroke-dasharray]="pctIniciativas + ' ' + (100 - pctIniciativas)" [attr.stroke-dashoffset]="offsetIniciativas"/>
+          <circle *ngIf="pctIniciativas > 0" cx="21" cy="21" r="15.9155" fill="none" stroke="#5b4bd6" stroke-width="5"
+            [attr.stroke-dasharray]="pctIniciativas + ' ' + (100 - pctIniciativas)"
+            [attr.stroke-dashoffset]="offsetIniciativas" />
           <!-- Texto Central -->
-          <text x="21" y="20.5" text-anchor="middle" font-size="8" font-weight="800" fill="#1e2545">{{ stats.total }}</text>
+          <text x="21" y="20.5" text-anchor="middle" font-size="8" font-weight="800" fill="#1e2545">{{ stats.total
+            }}</text>
           <text x="21" y="26" text-anchor="middle" font-size="2.6" fill="#5a6178">total</text>
         </svg>
       </div>
@@ -135,7 +138,7 @@
 
   <!-- SECCIÓN 2: ANALÍTICA (REGISTROS POR PROCESO Y META VS REAL) -->
   <div class="analytics-grid margin-bottom-16">
-    
+
     <!-- PANEL IZQUIERDO: REGISTROS POR PROCESO -->
     <div class="panel-card">
       <div class="panel-card-head flex-between">
@@ -147,12 +150,17 @@
           <mat-icon>analytics</mat-icon>
           <span>Sin registros de iniciativas</span>
         </div>
-        <div *ngFor="let proc of procesosUnicos" class="bar-row" [title]="proc + ': ' + getProcesoBreakdown(proc).n5 + ' 5W-2H, ' + getProcesoBreakdown(proc).na + ' ACR, ' + getProcesoBreakdown(proc).ni + ' Iniciativas (Total: ' + getProcesoBreakdown(proc).total + ')'">
+        <div *ngFor="let proc of procesosUnicos" class="bar-row"
+          [title]="proc + ': ' + getProcesoBreakdown(proc).n5 + ' 5W-2H, ' + getProcesoBreakdown(proc).na + ' ACR, ' + getProcesoBreakdown(proc).ni + ' Iniciativas (Total: ' + getProcesoBreakdown(proc).total + ')'">
           <div class="bar-label" [title]="proc">{{ proc }}</div>
           <div class="bar-track">
-            <div *ngIf="getProcesoBreakdown(proc).pct5 > 0" class="bar-seg seg-green" [style.width.%]="getProcesoBreakdown(proc).pct5" [title]="'5W-2H: ' + getProcesoBreakdown(proc).n5"></div>
-            <div *ngIf="getProcesoBreakdown(proc).pctA > 0" class="bar-seg seg-orange" [style.width.%]="getProcesoBreakdown(proc).pctA" [title]="'ACR: ' + getProcesoBreakdown(proc).na"></div>
-            <div *ngIf="getProcesoBreakdown(proc).pctI > 0" class="bar-seg seg-purple" [style.width.%]="getProcesoBreakdown(proc).pctI" [title]="'Iniciativas: ' + getProcesoBreakdown(proc).ni"></div>
+            <div *ngIf="getProcesoBreakdown(proc).pct5 > 0" class="bar-seg seg-green"
+              [style.width.%]="getProcesoBreakdown(proc).pct5" [title]="'5W-2H: ' + getProcesoBreakdown(proc).n5"></div>
+            <div *ngIf="getProcesoBreakdown(proc).pctA > 0" class="bar-seg seg-orange"
+              [style.width.%]="getProcesoBreakdown(proc).pctA" [title]="'ACR: ' + getProcesoBreakdown(proc).na"></div>
+            <div *ngIf="getProcesoBreakdown(proc).pctI > 0" class="bar-seg seg-purple"
+              [style.width.%]="getProcesoBreakdown(proc).pctI" [title]="'Iniciativas: ' + getProcesoBreakdown(proc).ni">
+            </div>
           </div>
           <div class="bar-count">
             {{ getProcesoBreakdown(proc).n5 }} · {{ getProcesoBreakdown(proc).na }} · {{ getProcesoBreakdown(proc).ni }}
@@ -172,12 +180,15 @@
           <mat-icon>flag</mat-icon>
           <span>Sin registros de iniciativas</span>
         </div>
-        <div *ngFor="let proc of procesosUnicos" class="bar-row" [title]="proc + ': ' + getMetaInfo(proc).real + ' registradas de meta ' + getMetaInfo(proc).meta + ' (' + getMetaInfo(proc).pct + '%) | ' + getMetaInfo(proc).cerradas + ' concluidas'">
+        <div *ngFor="let proc of procesosUnicos" class="bar-row"
+          [title]="proc + ': ' + getMetaInfo(proc).real + ' registradas de meta ' + getMetaInfo(proc).meta + ' (' + getMetaInfo(proc).pct + '%) | ' + getMetaInfo(proc).cerradas + ' concluidas'">
           <div class="bar-label" [title]="proc">{{ proc }}</div>
           <div class="bar-track" [title]="getMetaInfo(proc).pct + '% cumplido'">
-            <div class="bar-seg" [style.width.%]="getMetaInfo(proc).pct" [style.background-color]="getMetaInfo(proc).color"></div>
+            <div class="bar-seg" [style.width.%]="getMetaInfo(proc).pct"
+              [style.background-color]="getMetaInfo(proc).color"></div>
           </div>
-          <div class="meta-count" [style.color]="getMetaInfo(proc).color" [title]="getMetaInfo(proc).pct + '% alcanzado'">
+          <div class="meta-count" [style.color]="getMetaInfo(proc).color"
+            [title]="getMetaInfo(proc).pct + '% alcanzado'">
             {{ getMetaInfo(proc).real }}/{{ getMetaInfo(proc).meta }}{{ getMetaInfo(proc).cumple ? ' ✓' : '' }}
           </div>
         </div>
@@ -188,10 +199,11 @@
 
   <!-- DISPOSICIÓN PRINCIPAL: ÁRBOL + TABLA -->
   <div class="doc-layout" [class.layout-stacked]="treeColapsado">
-    
+
     <!-- BOTÓN PARA RE-EXPANDIR SI ESTÁ COLAPSADO -->
     <div class="expand-banner-row" *ngIf="treeColapsado">
-      <button type="button" class="btn-expand-carpetas shadow-premium" (click)="toggleTree()" title="Mostrar Estructura Documental">
+      <button type="button" class="btn-expand-carpetas shadow-premium" (click)="toggleTree()"
+        title="Mostrar Estructura Documental">
         <mat-icon>chevron_right</mat-icon>
         <span>Estructura Documental</span>
       </button>
@@ -207,11 +219,9 @@
           <mat-icon style="font-size: 18px; width: 18px; height: 18px;">keyboard_double_arrow_left</mat-icon>
         </button>
       </div>
-      
+
       <!-- Root Node (Todos los procesos) -->
-      <div class="tree-node-item root-node" 
-           [class.active]="selectedProceso === 'Todos'" 
-           (click)="setFilter('Todos')">
+      <div class="tree-node-item root-node" [class.active]="selectedProceso === 'Todos'" (click)="setFilter('Todos')">
         <div class="node-left">
           <mat-icon class="folder-icon root-icon">folder_shared</mat-icon>
           <span class="node-name">Todos los procesos</span>
@@ -222,11 +232,10 @@
       <!-- Macroprocesses & Subprocesses Accordion List -->
       <div class="tree-groups-container">
         <div *ngFor="let macro of getMacroProcesses()" class="macro-group-wrapper">
-          
+
           <!-- Macroprocess Accordion Node -->
-          <div class="tree-node-item macro-node" 
-               [class.active]="selectedProceso === 'macro:' + macro"
-               (click)="setFilter('macro:' + macro)">
+          <div class="tree-node-item macro-node" [class.active]="selectedProceso === 'macro:' + macro"
+            (click)="setFilter('macro:' + macro)">
             <div class="node-left">
               <button type="button" class="accordion-arrow-btn" (click)="toggleMacro(macro, $event)">
                 <mat-icon class="arrow-icon" [class.rotated]="!isMacroExpanded(macro)">keyboard_arrow_down</mat-icon>
@@ -236,13 +245,11 @@
             </div>
             <span class="mini-count-pill">{{ getMacroCount(macro) }}</span>
           </div>
-          
+
           <!-- Subprocesses Animated Container -->
           <div class="sub-nodes-container" [class.collapsed]="!isMacroExpanded(macro)">
-            <div *ngFor="let proc of procesosGroups[macro]" 
-                 class="tree-node-item process-node"
-                 [class.active]="selectedProceso === proc"
-                 (click)="setFilter(proc)">
+            <div *ngFor="let proc of procesosGroups[macro]" class="tree-node-item process-node"
+              [class.active]="selectedProceso === proc" (click)="setFilter(proc)">
               <div class="node-left">
                 <mat-icon class="folder-icon process-folder">folder_open</mat-icon>
                 <span class="node-abbr">[{{ getAbreviaturaProceso(proc) }}]</span>
@@ -258,7 +265,7 @@
 
     <!-- PANEL DERECHO: LISTADO Y ACCIONES (POR-01 A POR-05) -->
     <div class="table-panel">
-      
+
       <!-- DETALLE DEL PORTAFOLIO Y FILTROS (PDM-12) -->
       <div class="seccion-header-pdm margin-bottom-14">
         <h2 class="seccion-titulo-pdm">DETALLE DEL PORTAFOLIO</h2>
@@ -294,12 +301,13 @@
             </select>
           </div>
 
-          <button *ngIf="filterSede !== 'TODAS' || filterHerramienta !== 'TODAS' || filterEstado !== 'TODOS' || searchText" 
-                  type="button" 
-                  class="btn-reset-filters" 
-                  (click)="filterSede='TODAS'; filterHerramienta='TODAS'; filterEstado='TODOS'; limpiarBusqueda();" 
-                  title="Restablecer todos los filtros y búsqueda">
-            <mat-icon style="font-size: 15px; width: 15px; height: 15px; vertical-align: middle;">filter_alt_off</mat-icon>
+          <button
+            *ngIf="filterSede !== 'TODAS' || filterHerramienta !== 'TODAS' || filterEstado !== 'TODOS' || searchText"
+            type="button" class="btn-reset-filters"
+            (click)="filterSede='TODAS'; filterHerramienta='TODAS'; filterEstado='TODOS'; limpiarBusqueda();"
+            title="Restablecer todos los filtros y búsqueda">
+            <mat-icon
+              style="font-size: 15px; width: 15px; height: 15px; vertical-align: middle;">filter_alt_off</mat-icon>
             <span>Limpiar filtros</span>
           </button>
         </div>
@@ -323,7 +331,8 @@
           <ng-container matColumnDef="herramienta">
             <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 110px;">Herramienta</th>
             <td mat-cell *matCellDef="let row" class="desc-cell">
-              <span class="badge-procesos" style="background: rgba(56,189,248,0.12); color: #38bdf8; border-color: rgba(56,189,248,0.3);">
+              <span class="badge-procesos"
+                style="background: rgba(56,189,248,0.12); color: #38bdf8; border-color: rgba(56,189,248,0.3);">
                 {{ row.herramienta || '5W-2H' }}
               </span>
             </td>
@@ -344,7 +353,8 @@
           <!-- Fecha Registro (PDM-06) -->
           <ng-container matColumnDef="registro">
             <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 105px;">Fecha Registro</th>
-            <td mat-cell *matCellDef="let row" class="desc-cell">{{ (row.registro || row.fecha_Registro || row.fechaRegistro) | date:'dd/MM/yyyy' }}</td>
+            <td mat-cell *matCellDef="let row" class="desc-cell">{{ (row.registro || row.fecha_Registro ||
+              row.fechaRegistro) | date:'dd/MM/yyyy' }}</td>
           </ng-container>
 
           <!-- Fecha Apertura / Ocurrencia (PDM-06) -->
@@ -376,8 +386,7 @@
           <ng-container matColumnDef="estado">
             <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 160px;">Estado</th>
             <td mat-cell *matCellDef="let row">
-              <span class="badge-estado-pdm" 
-                    [ngStyle]="{
+              <span class="badge-estado-pdm" [ngStyle]="{
                       'background': (row.estado === 'Finalizado' || row.estado === 'Cerrado') ? 'rgba(16,185,129,0.15)' :
                                     (row.estado === 'Acciones en ejecución' || row.estado === 'Desarrollo- Acciones en ejecución' ? 'rgba(99,102,241,0.15)' :
                                     (row.estado === 'Análisis completado' || row.estado === 'Desarrollo- Análisis' ? 'rgba(245,158,11,0.15)' : 'rgba(56,189,248,0.15)')),
@@ -388,7 +397,7 @@
                                 (row.estado === 'Acciones en ejecución' || row.estado === 'Desarrollo- Acciones en ejecución' ? '1px solid rgba(99,102,241,0.3)' :
                                 (row.estado === 'Análisis completado' || row.estado === 'Desarrollo- Análisis' ? '1px solid rgba(245,158,11,0.3)' : '1px solid rgba(56,189,248,0.3)'))
                     }"
-                    style="padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; display: inline-block; text-align: center;">
+                style="padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; display: inline-block; text-align: center;">
                 {{ row.estado || 'Iniciado' }}
               </span>
             </td>
@@ -400,19 +409,23 @@
             <td mat-cell *matCellDef="let e" class="acciones-cell">
               <div class="actions-wrapper hover-fade" style="display: flex; gap: 6px; justify-content: center;">
                 <!-- EDITAR -->
-                <button type="button" class="action-btn btn-edit" (click)="onEditar(e)" title="Editar registro" style="color: #818cf8; background: rgba(99,102,241,0.15);">
+                <button type="button" class="action-btn btn-edit" (click)="onEditar(e)" title="Editar registro"
+                  style="color: #818cf8; background: rgba(99,102,241,0.15);">
                   <mat-icon style="font-size: 18px; width: 18px; height: 18px;">edit</mat-icon>
                 </button>
                 <!-- VER (PDM-08) -->
-                <button type="button" class="action-btn" (click)="onVer(e)" title="Ver detalle" style="color: #38bdf8; background: rgba(56,189,248,0.15);">
+                <button type="button" class="action-btn" (click)="onVer(e)" title="Ver detalle"
+                  style="color: #38bdf8; background: rgba(56,189,248,0.15);">
                   <mat-icon style="font-size: 18px; width: 18px; height: 18px;">visibility</mat-icon>
                 </button>
                 <!-- DESCARGAR (PDM-08) -->
-                <button type="button" class="action-btn" (click)="onDescargarArchivo(e)" title="Descargar archivo adjunto" style="color: #34d399; background: rgba(16,185,129,0.15);">
+                <button type="button" class="action-btn" (click)="onDescargarArchivo(e)"
+                  title="Descargar archivo adjunto" style="color: #34d399; background: rgba(16,185,129,0.15);">
                   <mat-icon style="font-size: 18px; width: 18px; height: 18px;">file_download</mat-icon>
                 </button>
                 <!-- ELIMINAR -->
-                <button type="button" class="action-btn btn-delete" (click)="onEliminar(e)" title="Eliminar registro" style="color: #f87171; background: rgba(239,68,68,0.15);">
+                <button type="button" class="action-btn btn-delete" (click)="onEliminar(e)" title="Eliminar registro"
+                  style="color: #f87171; background: rgba(239,68,68,0.15);">
                   <mat-icon style="font-size: 18px; width: 18px; height: 18px;">delete</mat-icon>
                 </button>
               </div>

@@ -114,7 +114,7 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     public dialogRef: MatDialogRef<PuestosUsuariosRegeditComponent>,
     private procesosService: ProcesosService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.cargarKeyUsers();
@@ -135,20 +135,28 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
       ctrol_proceso: ['', Validators.required],
       ctrol_usuario: [''],
       ctrol_email: ['', [Validators.required, Validators.email]],
-      ctrol_password: ['Precotex2026!', Validators.required],
+      ctrol_password: ['', Validators.required],
       ctrol_nivel: ['Operativo', Validators.required],
       ctrol_permisos: ['Lectura + descarga + modificar', Validators.required],
       ctrol_estado: [this.data.Accion === 'I' ? 'Pendiente de activación' : 'Activo', Validators.required],
-      ctrol_enviar_credenciales: [false]
+      ctrol_enviar_credenciales: [true] // PUE-02: Envío automático marcado por defecto
     });
 
     if (this.data.Accion === 'U' && this.data.Datos) {
+      const email = this.data.Datos.email || '';
+      const loginAcceso = (this.data.Datos.usuario && !this.data.Datos.usuario.includes(' ')) 
+        ? this.data.Datos.usuario 
+        : (email ? email.split('@')[0] : (this.data.Datos.usuario || ''));
+      const nombrePersonal = (this.data.Datos.usuario && this.data.Datos.usuario !== '—') 
+        ? this.data.Datos.usuario 
+        : (this.data.Datos.puesto || '');
+
       this.formulario.patchValue({
-        ctrol_puesto: this.data.Datos.puesto,
+        ctrol_puesto: nombrePersonal,
         ctrol_proceso: this.data.Datos.proceso,
-        ctrol_usuario: this.data.Datos.usuario || '',
-        ctrol_email: this.data.Datos.email || (this.data.Datos.usuario ? (this.data.Datos.usuario.toLowerCase().replace(/\s+/g, '.') + '@precotexperu.com') : ''),
-        ctrol_password: this.data.Datos.password || 'Precotex2026!',
+        ctrol_usuario: loginAcceso,
+        ctrol_email: email || (loginAcceso ? (loginAcceso.toLowerCase().replace(/\s+/g, '.') + '@precotexperu.com') : ''),
+        ctrol_password: this.data.Datos.password || '',
         ctrol_nivel: this.data.Datos.nivel || 'Operativo',
         ctrol_permisos: this.data.Datos.permisos || 'Lectura + descarga + modificar',
         ctrol_estado: this.data.Datos.estado || 'Activo',
@@ -190,7 +198,7 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
           }
         });
       }
-    } catch (e) {}
+    } catch (e) { }
 
     this.keyUsersList = defaultList;
   }
@@ -220,11 +228,26 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
     }
   }
 
+  mostrarPassword = false;
+
+  toggleMostrarPassword(): void {
+    this.mostrarPassword = !this.mostrarPassword;
+  }
+
+  sugerirClave(): void {
+    this.formulario.patchValue({ ctrol_password: 'Precotex2026!' });
+    this.toastr.info('Contraseña sugerida "Precotex2026!" aplicada.', 'Clave Generada', { timeOut: 2000 });
+  }
+
   getProcesosKeys() {
     return Object.keys(this.procesosGroups) as Array<keyof typeof this.procesosGroups>;
   }
 
   onGuardar() {
+    if (!this.formulario.get('ctrol_password')?.value) {
+      this.formulario.patchValue({ ctrol_password: 'Precotex2026!' });
+    }
+
     if (this.formulario.invalid) {
       this.toastr.warning('Por favor ingrese todos los campos obligatorios y un correo electrónico válido.', 'PUE-02: Formulario Incompleto', { timeOut: 3000 });
       return;
