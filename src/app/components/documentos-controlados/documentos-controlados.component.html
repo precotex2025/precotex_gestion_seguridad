@@ -1,4 +1,28 @@
-<div class="contenedor sn-animate-in">
+<div class="contenedor sn-animate-in"
+     (dragover)="onDragOver($event)"
+     (dragenter)="onDragEnter($event)"
+     (dragleave)="onDragLeave($event)"
+     (drop)="onDropFile($event)">
+
+  <!-- OVERLAY GLOBAL DE DRAG & DROP SOBRE LA PLATAFORMA -->
+  <div class="drag-drop-global-overlay" *ngIf="isDraggingOver">
+    <div class="drop-pulse-card shadow-premium">
+      <div class="drop-icon-wrapper">
+        <mat-icon class="drop-floating-icon">cloud_upload</mat-icon>
+      </div>
+      <h3 class="drop-overlay-title">Suelta tu archivo aquí</h3>
+      <p class="drop-overlay-desc">Se cargará directamente en el módulo de Documentación</p>
+      <div class="drop-target-folder" *ngIf="getActiveProcessName()">
+        <mat-icon style="font-size: 16px; width: 16px; height: 16px;">folder</mat-icon>
+        <span>Carpeta de destino: <strong>{{ getActiveProcessName() }}</strong></span>
+      </div>
+      <div class="drop-compat-chips">
+        <span class="chip-format">PDF</span>
+        <span class="chip-format">Word (.docx)</span>
+        <span class="chip-format">Excel (.xlsx)</span>
+      </div>
+    </div>
+  </div>
 
   <!-- BANNER NOTIFICACIÓN DISCRETO COLAPSABLE -->
   <div class="banner-aviso-collapsible" *ngIf="mostrarBanner">
@@ -127,6 +151,21 @@
 
     <!-- PANEL DERECHO: DETALLES Y LISTA -->
     <div class="details-panel">
+
+      <!-- BADGE / BANNER INDICADOR DE CARPETA SELECCIONADA -->
+      <div class="active-folder-header-bar" *ngIf="activeFilter !== '__all__'">
+        <div class="active-folder-info">
+          <span class="active-folder-badge">
+            <mat-icon style="font-size: 15px; width: 15px; height: 15px; margin-right: 4px;">folder_open</mat-icon>
+            Carpeta activa:
+          </span>
+          <span class="active-folder-title">{{ getActiveFolderTitle() }}</span>
+        </div>
+        <button type="button" class="btn-reset-folder" (click)="setFilter('__all__')" title="Volver a todos los procesos">
+          <mat-icon style="font-size: 14px; width: 14px; height: 14px;">close</mat-icon>
+          <span>Mostrar todos</span>
+        </button>
+      </div>
       
       <!-- CUADROS DE ESTADÍSTICAS COMPACTOS CON TOP GLOW -->
       <div class="stats-grid-compact">
@@ -212,12 +251,12 @@
           
           <button type="button" class="btn-ghost-action" (click)="exportExcel()" title="Exportar Lista Maestra de Documentos a Excel (DOC-16)">
             <mat-icon class="icon-excel-btn">grid_on</mat-icon>
-            <span>Exportar lista maestra de documentos (Excel)</span>
+            <span>Excel (DOC-16)</span>
           </button>
           
           <button type="button" class="btn-ghost-action" (click)="exportPDF()" title="Exportar Lista Maestra de Documentos a PDF (DOC-16)">
             <mat-icon class="icon-pdf-btn">picture_as_pdf</mat-icon>
-            <span>Exportar lista maestra de documentos (PDF)</span>
+            <span>PDF (DOC-16)</span>
           </button>
 
           <!-- DOC-07: Reporte de Visto Bueno Semestral - Solo Admin -->

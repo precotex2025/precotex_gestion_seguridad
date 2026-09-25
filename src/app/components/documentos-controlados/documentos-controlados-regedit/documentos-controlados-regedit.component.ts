@@ -53,11 +53,12 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       }
     });
 
-    const initialVig = row?.vig || '';
+    const initialVig = row?.vig || this.obtenerVigencia3Anios();
     const initialEstado = this.calcularEstadoPorFecha(initialVig, row?.estado || 'Vigente');
     const initialTipo = row?.tipo || this.extraerTipoDelCodigo(row?.codigo) || 'Procedimiento';
     const initialVersion = row?.version || this.extraerVersionDelCodigo(row?.codigo) || 'v1';
-    const initialProceso = row?.proceso || this.extraerProcesoDelCodigo(row?.codigo) || 'Organización y Métodos';
+    const activeProcDestino = (this.data?.ActiveProcess || '').trim();
+    const initialProceso = row?.proceso || activeProcDestino || this.extraerProcesoDelCodigo(row?.codigo) || 'Organización y Métodos';
 
     if (row) {
       if (row.modoVisibilidad) {
@@ -76,9 +77,14 @@ export class DocumentosControladosRegeditComponent implements OnInit {
         this.procesosSeleccionados = row.proceso.split(',').map((s: string) => s.trim()).filter(Boolean);
       }
     } else {
-      this.modoVisibilidad = 'TODOS';
-      const autoProc = this.extraerProcesoDelCodigo(initialProceso) || initialProceso;
-      this.procesosSeleccionados = [autoProc || 'Organización y Métodos'];
+      if (activeProcDestino && activeProcDestino !== 'Todos los procesos') {
+        this.modoVisibilidad = 'PERSONALIZADO';
+        this.procesosSeleccionados = [activeProcDestino];
+      } else {
+        this.modoVisibilidad = 'TODOS';
+        const autoProc = this.extraerProcesoDelCodigo(initialProceso) || initialProceso;
+        this.procesosSeleccionados = [autoProc || 'Organización y Métodos'];
+      }
     }
 
     this.formulario = this.formBuilder.group({
@@ -131,6 +137,11 @@ export class DocumentosControladosRegeditComponent implements OnInit {
 
     if (row?.archivo) {
       this.fileName = row.archivo;
+    }
+
+    // Si se pasó un archivo inicial (por ejemplo, mediante Drag & Drop desde la pantalla principal)
+    if (this.data?.InitialFile) {
+      this.procesarArchivo(this.data.InitialFile);
     }
   }
 
@@ -256,60 +267,106 @@ export class DocumentosControladosRegeditComponent implements OnInit {
     return Object.keys(this.PROCESOS_GROUPS);
   }
 
-  onFileChange(event: any) {
-    const file = event.target.files[0];
+  isDragOver: boolean = false;
+
+  onDragOverFile(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = true;
+  }
+
+  onDragLeaveFile(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+  }
+
+  onDropFile(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+      this.procesarArchivo(event.dataTransfer.files[0]);
+    }
+  }
+
+  onFileChange(event: any): void {
+    const file = event.target?.files?.[0];
     if (file) {
-      this.selectedFile = file;
-      this.fileName = file.name;
-      
-      // Parse file name (e.g. "PER-IMC-ACT-012 Perfil de Puesto.pdf")
-      const nameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-      const firstSpaceIdx = nameWithoutExt.indexOf(' ');
-      
-      let parsedCode = '';
-      let parsedName = '';
-      
-      if (firstSpaceIdx !== -1) {
-        parsedCode = nameWithoutExt.substring(0, firstSpaceIdx).trim();
-        parsedName = nameWithoutExt.substring(firstSpaceIdx + 1).trim();
-      } else {
-        parsedCode = nameWithoutExt.trim();
+      this.procesarArchivo(file);
+    }
+  }
+
+  removeSelectedFile(): void {
+    this.selectedFile = null;
+    this.fileName = 'Ningún archivo cargado';
+    this.formulario.patchValue({ archivo: '' });
+  }
+
+  procesarArchivo(file: File): void {
+    if (!file) return;
+    this.selectedFile = file;
+    this.fileName = file.name;
+    
+    // Parse file name (e.g. "PER-IMC-ACT-012 Perfil de Puesto.pdf")
+    const nameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+    const firstSpaceIdx = nameWithoutExt.indexOf(' ');
+    
+    let parsedCode = '';
+    let parsedName = '';
+    
+    if (firstSpaceIdx !== -1) {
+      parsedCode = nameWithoutExt.substring(0, firstSpaceIdx).trim();
+      parsedName = nameWithoutExt.substring(firstSpaceIdx + 1).trim();
+    } else {
+      parsedCode = nameWithoutExt.trim();
+      parsedName = nameWithoutExt.trim();
+    }
+
+    // DOC-12: Auto-popular Tipo de Documento desde prefijo del código
+    const parsedTipo = this.extraerTipoDelCodigo(parsedCode);
+
+    // Auto-populate Formato basado en extensión de archivo
+    let parsedFormato = 'PDF';
+    const dotIdx = file.name.lastIndexOf('.');
+    if (dotIdx !== -1) {
+      const ext = file.name.substring(dotIdx).toLowerCase();
+      if (ext === '.pdf') {
+        parsedFormato = 'PDF';
+      } else if (ext === '.doc' || ext === '.docx') {
+        parsedFormato = 'Word';
+      } else if (ext === '.xls' || ext === '.xlsx') {
+        parsedFormato = 'Excel';
       }
+    }
 
-      // DOC-12: Auto-popular Tipo de Documento desde prefijo del código
-      const parsedTipo = this.extraerTipoDelCodigo(parsedCode);
+    const parsedVersion = this.extraerVersionDelCodigo(parsedCode);
+    const parsedProceso = this.extraerProcesoDelCodigo(parsedCode);
 
-      // Auto-populate Formato basado en extensión de archivo
-      let parsedFormato = '';
-      const dotIdx = file.name.lastIndexOf('.');
-      if (dotIdx !== -1) {
-        const ext = file.name.substring(dotIdx).toLowerCase();
-        if (ext === '.pdf') {
-          parsedFormato = 'PDF';
-        } else if (ext === '.doc' || ext === '.docx') {
-          parsedFormato = 'Word';
-        } else if (ext === '.xls' || ext === '.xlsx') {
-          parsedFormato = 'Excel';
+    // Build patching data
+    const patchData: any = {
+      archivo: file.name
+    };
+    
+    if (parsedCode) patchData.codigo = parsedCode;
+    if (parsedName) patchData.nombre = parsedName;
+    if (parsedTipo) patchData.tipo = parsedTipo;
+    if (parsedFormato) patchData.formato = parsedFormato;
+    if (parsedVersion) patchData.version = parsedVersion;
+    
+    if (parsedProceso) {
+      patchData.proceso = parsedProceso;
+      if (this.modoVisibilidad === 'PERSONALIZADO') {
+        if (!this.procesosSeleccionados.includes(parsedProceso)) {
+          this.procesosSeleccionados = [parsedProceso];
         }
       }
-
-      const parsedVersion = this.extraerVersionDelCodigo(parsedCode);
-      const parsedProceso = this.extraerProcesoDelCodigo(parsedCode);
-
-      // Build patching data
-      const patchData: any = {
-        archivo: file.name
-      };
-      
-      if (parsedCode) patchData.codigo = parsedCode;
-      if (parsedName) patchData.nombre = parsedName;
-      if (parsedTipo) patchData.tipo = parsedTipo;
-      if (parsedFormato) patchData.formato = parsedFormato;
-      if (parsedVersion) patchData.version = parsedVersion;
-      if (parsedProceso) patchData.proceso = parsedProceso;
-
-      this.formulario.patchValue(patchData);
+    } else if (this.data?.ActiveProcess && this.data.ActiveProcess !== 'Todos los procesos') {
+      patchData.proceso = this.data.ActiveProcess;
+      this.procesosSeleccionados = [this.data.ActiveProcess];
     }
+
+    this.formulario.patchValue(patchData);
   }
 
   // DOC-15: Visibilidad y Permisos de lectura por Proceso (permite seleccionar 2 o más)

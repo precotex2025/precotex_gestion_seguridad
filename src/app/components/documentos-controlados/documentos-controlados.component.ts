@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
@@ -6,6 +6,7 @@ import { DocumentosControladosRegeditComponent } from './documentos-controlados-
 import { DocumentosControladosLoteComponent } from './documentos-controlados-lote/documentos-controlados-lote.component';
 import { ProcesosService } from '../../services/procesos.service';
 import { DocumentosControladosService } from '../../services/documentos-controlados.service';
+import { HeaderTitleService } from '../../services/header-title.service';
 import { GlobalVariable } from '../../VarGlobals';
 
 @Component({
@@ -14,7 +15,7 @@ import { GlobalVariable } from '../../VarGlobals';
   templateUrl: './documentos-controlados.component.html',
   styleUrl: './documentos-controlados.component.css'
 })
-export class DocumentosControladosComponent implements OnInit {
+export class DocumentosControladosComponent implements OnInit, OnDestroy {
   docsList: any[] = [];
   activeFilter: string = '__all__';
   searchQuery: string = '';
@@ -43,7 +44,11 @@ export class DocumentosControladosComponent implements OnInit {
 
   quickViewOpen: boolean = false;
   selectedDoc: any = null;
-  mostrarBanner: boolean = true;
+
+  // Drag & Drop global sobre la plataforma
+  isDraggingOver: boolean = false;
+  private dragCounter: number = 0;
+  mostrarBanner: boolean = false;
 
   onTreeHover(state: boolean): void {
     this.treeHovered = state;
@@ -150,7 +155,8 @@ export class DocumentosControladosComponent implements OnInit {
     private dialog: MatDialog,
     private toastr: ToastrService,
     private procesosService: ProcesosService,
-    private documentosControladosService: DocumentosControladosService
+    private documentosControladosService: DocumentosControladosService,
+    private headerTitleService: HeaderTitleService
   ) {}
 
   procesosMap: { [name: string]: string } = {};
@@ -232,6 +238,14 @@ export class DocumentosControladosComponent implements OnInit {
       if (savedFilter) {
         this.activeFilter = savedFilter;
       }
+    }
+
+    this.updateHeaderTitle();
+  }
+
+  ngOnDestroy(): void {
+    if (this.headerTitleService) {
+      this.headerTitleService.resetTitle();
     }
   }
 
@@ -589,6 +603,55 @@ export class DocumentosControladosComponent implements OnInit {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('precotex:pref:docs_activeFilter', filterValue);
     }
+    this.updateHeaderTitle();
+  }
+
+  updateHeaderTitle(): void {
+    if (!this.headerTitleService) return;
+
+    if (!this.activeFilter || this.activeFilter === '__all__') {
+      this.headerTitleService.setTitle({
+        title: 'Documentación',
+        breadcrumb: 'Documentación · Control Documental'
+      });
+      return;
+    }
+
+    if (this.activeFilter.startsWith('macro:')) {
+      const macro = this.activeFilter.substring(6);
+      this.headerTitleService.setTitle({
+        title: macro,
+        breadcrumb: `Documentación · ${macro}`
+      });
+      return;
+    }
+
+    if (this.activeFilter.startsWith('folder:')) {
+      const parts = this.activeFilter.substring(7).split('|');
+      const proc = parts[0];
+      const folderType = parts[1] || '';
+      this.headerTitleService.setTitle({
+        title: folderType ? `${proc} — ${folderType}` : proc,
+        breadcrumb: folderType ? `Documentación · ${proc} · ${folderType}` : `Documentación · ${proc}`
+      });
+      return;
+    }
+
+    // Proceso directo (ej: 'Auditoría Interna')
+    this.headerTitleService.setTitle({
+      title: this.activeFilter,
+      breadcrumb: `Documentación · ${this.activeFilter}`
+    });
+  }
+
+  getActiveFolderTitle(): string {
+    if (!this.activeFilter || this.activeFilter === '__all__') return 'Todos los procesos';
+    if (this.activeFilter.startsWith('macro:')) return this.activeFilter.substring(6);
+    if (this.activeFilter.startsWith('folder:')) {
+      const parts = this.activeFilter.substring(7).split('|');
+      return parts[1] ? `${parts[0]} — ${parts[1]}` : parts[0];
+    }
+    return this.activeFilter;
   }
 
   // DOC-03: 6 Carpetas estandarizadas obligatorias por proceso
@@ -1409,7 +1472,57 @@ export class DocumentosControladosComponent implements OnInit {
       });
   }
 
-  onAgregar() {
+  getActiveProcessName(): string {
+    if (this.activeFilter && this.activeFilter !== '__all__' && !this.activeFilter.startsWith('macro:')) {
+      if (this.activeFilter.startsWith('folder:')) {
+        return this.activeFilter.substring(7).split('|')[0];
+      }
+      return this.activeFilter;
+    }
+    return this.getUserProcesoActual();
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingOver = true;
+  }
+
+  onDragEnter(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.dragCounter++;
+    this.isDraggingOver = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.dragCounter--;
+    if (this.dragCounter <= 0) {
+      this.isDraggingOver = false;
+      this.dragCounter = 0;
+    }
+  }
+
+  onDropFile(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingOver = false;
+    this.dragCounter = 0;
+
+    const files = event.dataTransfer?.files;
+    if (!files || files.length === 0) return;
+
+    if (files.length === 1) {
+      this.onAgregar(files[0]);
+    } else {
+      this.onCargarLote(Array.from(files));
+    }
+  }
+
+  onAgregar(initialFile?: File) {
+    const activeProc = this.getActiveProcessName();
     let dialogRef = this.dialog.open(DocumentosControladosRegeditComponent, {
       width: '640px',
       maxHeight: '92vh',
@@ -1418,6 +1531,8 @@ export class DocumentosControladosComponent implements OnInit {
         Title: "Nuevo registro",
         Accion: "I",
         Datos: null,
+        ActiveProcess: activeProc,
+        InitialFile: initialFile,
         ExistingDocs: this.docsList.map(d => ({
           nombre: (d.nombre || '').trim(),
           codigo: (d.codigo || '').trim()
@@ -1810,12 +1925,17 @@ export class DocumentosControladosComponent implements OnInit {
     });
   }
 
-  onCargarLote() {
+  onCargarLote(initialFiles?: File[]) {
+    const activeProc = this.getActiveProcessName();
     let dialogRef = this.dialog.open(DocumentosControladosLoteComponent, {
       width: '92vw',
       maxWidth: '1150px',
       maxHeight: '92vh',
-      disableClose: true
+      disableClose: true,
+      data: {
+        ActiveProcess: activeProc,
+        InitialFiles: initialFiles
+      }
     });
 
     dialogRef.afterClosed().subscribe((res) => {

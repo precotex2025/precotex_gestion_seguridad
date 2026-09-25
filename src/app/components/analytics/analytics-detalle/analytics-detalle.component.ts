@@ -172,11 +172,13 @@ export class AnalyticsDetalleComponent implements OnInit {
   }
 
   getSedesList(): string[] {
-    const rawSede = this.indicador.sede || 'Huachipa 1, Huachipa 2';
-    if (rawSede.toLowerCase().includes('todas')) {
+    const rawSede = (this.indicador?.sede || '').trim();
+    if (!rawSede || rawSede.toLowerCase() === 'todas') {
       return ['Huachipa 1', 'Huachipa 2', 'Sede Ate', 'Santa Cecilia'];
     }
-    return rawSede.split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0);
+    const list = rawSede.split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0);
+    const specific = list.filter((s: string) => s.toLowerCase() !== 'todas');
+    return specific.length > 0 ? specific : ['Huachipa 1', 'Huachipa 2', 'Sede Ate', 'Santa Cecilia'];
   }
 
   getSemaforoColor(semaforo: string): string {

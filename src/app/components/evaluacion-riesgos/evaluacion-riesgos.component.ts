@@ -53,7 +53,7 @@ export class EvaluacionRiesgosComponent implements OnInit {
   pctCumplimiento = 0; // RIE-02: % Cumplimiento del plan
 
   expandedRow: string | null = null;
-  mostrarBanner: boolean = true;
+  mostrarBanner: boolean = false;
 
   constructor(
     private fb: FormBuilder,

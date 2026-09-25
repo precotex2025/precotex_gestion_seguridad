@@ -8,7 +8,7 @@
 }
 
 .margin-bottom-16 {
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 /* TOP HEADER Y BOTONES DE ACCIÓN */
@@ -240,8 +240,8 @@
   background: var(--panel);
   border: 1px solid var(--line);
   border-top: 3px solid #7c6cf0;
-  border-radius: 14px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 10px 14px;
 }
 
 /* Soft Badges */
@@ -341,7 +341,8 @@
   align-items: center;
   justify-content: space-around;
   flex-wrap: wrap;
-  gap: 24px;
+  gap: 12px;
+  padding: 4px 0;
 }
 
 .donut-box {
@@ -352,14 +353,14 @@
 
 .stat-tool-block {
   text-align: center;
-  min-width: 100px;
+  min-width: 90px;
 }
 
 .tool-dot {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 3px;
-  margin: 0 auto 6px;
+  margin: 0 auto 4px;
 }
 
 .dot-green { background-color: var(--green); }
@@ -367,7 +368,7 @@
 .dot-purple { background-color: var(--violet); }
 
 .tool-val {
-  font-size: 34px;
+  font-size: 24px;
   font-weight: 800;
   line-height: 1;
 }

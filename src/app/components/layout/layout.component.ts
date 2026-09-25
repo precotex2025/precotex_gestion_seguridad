@@ -6,6 +6,8 @@ import { filter } from 'rxjs/operators';
 import { PuestosService } from '../../services/puestos.service';
 import { PermisosService } from '../../services/permisos.service';
 import { ToastrService } from 'ngx-toastr';
+import { HeaderTitleService, HeaderTitleInfo } from '../../services/header-title.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-layout',
@@ -69,11 +71,14 @@ export class LayoutComponent implements OnInit, OnDestroy {
     }
   }
 
+  private titleSubscription?: Subscription;
+
   constructor(
     public router: Router,
     private puestosService: PuestosService,
     private permisosService: PermisosService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private headerTitleService: HeaderTitleService
   ) { }
 
   ngOnInit(): void {
@@ -94,6 +99,21 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
     // PUE-01: Registrar ingreso activo a la plataforma para el usuario de sesión
     this.registrarIngresoSesionPlataforma();
+
+    // Suscripción dinámica para actualizar el encabezado de pantalla (ej. carpetas de Documentación)
+    this.titleSubscription = this.headerTitleService.title$.subscribe((info: HeaderTitleInfo | null) => {
+      if (this.currentModule === 'Documentación' && this.activeModule) {
+        if (info && info.title) {
+          this.activeModule.title = info.title;
+          if (info.breadcrumb) {
+            this.activeModule.breadcrumb = info.breadcrumb;
+          }
+        } else {
+          this.activeModule.title = 'Documentación';
+          this.activeModule.breadcrumb = 'Documentación · Control Documental';
+        }
+      }
+    });
 
     // Initialize layout module header
     this.updateHeaderConfig(this.router.url);
@@ -118,6 +138,9 @@ export class LayoutComponent implements OnInit, OnDestroy {
     }
     if (typeof window !== 'undefined' && this.resizeListener) {
       window.removeEventListener('resize', this.resizeListener);
+    }
+    if (this.titleSubscription) {
+      this.titleSubscription.unsubscribe();
     }
   }
 
@@ -189,9 +212,37 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
     } else if (url.includes('/principal/documentosControlados') || url.includes('/principal/documentosNoControlados') || url.includes('/principal/registrosPendientes')) {
       this.currentModule = 'Documentación';
+      
+      let title = 'Documentación';
+      let breadcrumb = 'Documentación · Control Documental';
+
+      const currentHeader = this.headerTitleService.getCurrentTitle();
+      if (currentHeader && currentHeader.title) {
+        title = currentHeader.title;
+        breadcrumb = currentHeader.breadcrumb || breadcrumb;
+      } else if (typeof localStorage !== 'undefined') {
+        const savedFilter = localStorage.getItem('precotex:pref:docs_activeFilter');
+        if (savedFilter && savedFilter !== '__all__') {
+          if (savedFilter.startsWith('macro:')) {
+            const macro = savedFilter.substring(6);
+            title = macro;
+            breadcrumb = `Documentación · ${macro}`;
+          } else if (savedFilter.startsWith('folder:')) {
+            const parts = savedFilter.substring(7).split('|');
+            const proc = parts[0];
+            const fType = parts[1] || '';
+            title = fType ? `${proc} — ${fType}` : proc;
+            breadcrumb = fType ? `Documentación · ${proc} · ${fType}` : `Documentación · ${proc}`;
+          } else {
+            title = savedFilter;
+            breadcrumb = `Documentación · ${savedFilter}`;
+          }
+        }
+      }
+
       this.activeModule = {
-        title: 'Documentación',
-        breadcrumb: 'Documentación · Control Documental',
+        title: title,
+        breadcrumb: breadcrumb,
         tabs: []
       };
       this.activeSublink = url;
@@ -210,18 +261,28 @@ export class LayoutComponent implements OnInit, OnDestroy {
       this.activeSublink = url;
     } else if (url.includes('/principal/analytics')) {
       this.currentModule = 'Indicadores';
+      const isMedicion = url.includes('/principal/analytics/medicion');
       this.activeModule = {
         title: 'Indicadores',
-        breadcrumb: 'Indicadores · Gestión',
-        tabs: []
+        breadcrumb: 'Indicadores · Catálogo y Mediciones',
+        activeTab: isMedicion ? 'medicion' : 'alta',
+        tabs: [
+          { id: 'alta', label: 'Alta de Indicadores', route: '/principal/analytics' },
+          { id: 'medicion', label: 'Medición de Indicadores (Dashboard)', route: '/principal/analytics/medicion' }
+        ]
       };
       this.activeSublink = url;
     } else if (url.includes('/principal/planificacionObjetivos') || url.includes('/principal/medicionesPendientes')) {
       this.currentModule = 'Objetivos';
+      const isMediciones = url.includes('/principal/medicionesPendientes');
       this.activeModule = {
         title: 'Objetivos',
-        breadcrumb: 'Objetivos · Gestión',
-        tabs: []
+        breadcrumb: 'Objetivos · Planificación y Medición',
+        activeTab: isMediciones ? 'mediciones' : 'planificacion',
+        tabs: [
+          { id: 'planificacion', label: 'Planificación de Objetivos', route: '/principal/planificacionObjetivos' },
+          { id: 'mediciones', label: 'Medición de Objetivos', route: '/principal/medicionesPendientes' }
+        ]
       };
       this.activeSublink = url;
     } else if (url.includes('/principal/evaluacionRiesgos')) {

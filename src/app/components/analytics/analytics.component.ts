@@ -21,7 +21,7 @@ export class AnalyticsComponent implements OnInit {
     inactivos: 0
   };
 
-  mostrarBanner: boolean = true;
+  mostrarBanner: boolean = false;
 
   cerrarBanner(): void {
     this.mostrarBanner = false;
@@ -263,7 +263,13 @@ export class AnalyticsComponent implements OnInit {
       if (res) {
         // Formatear valor numérico de meta
         const numericMeta = parseFloat(String(res.meta).replace(/[^0-9.]/g, '')) || 0;
-        const sedeStr = Array.isArray(res.sede) ? res.sede.join(', ') : (res.sede || 'Todas');
+        let sedeStr = 'Todas';
+        if (Array.isArray(res.sede)) {
+          const specific = res.sede.filter((s: string) => s && s.trim().toLowerCase() !== 'todas');
+          sedeStr = specific.length > 0 ? specific.join(', ') : 'Todas';
+        } else if (typeof res.sede === 'string' && res.sede.trim() !== '') {
+          sedeStr = res.sede.trim();
+        }
 
         const payload = {
           Accion: 'I',
@@ -373,10 +379,17 @@ export class AnalyticsComponent implements OnInit {
     dialogRef.afterClosed().subscribe(res => {
       if (res) {
         const numericMeta = parseFloat(String(res.meta).replace(/[^0-9.]/g, '')) || 0;
-        const sedeStr = Array.isArray(res.sede) ? res.sede.join(', ') : (res.sede || 'Todas');
+        let sedeStr = 'Todas';
+        if (Array.isArray(res.sede)) {
+          const specific = res.sede.filter((s: string) => s && s.trim().toLowerCase() !== 'todas');
+          sedeStr = specific.length > 0 ? specific.join(', ') : 'Todas';
+        } else if (typeof res.sede === 'string' && res.sede.trim() !== '') {
+          sedeStr = res.sede.trim();
+        }
 
         const payload = {
           Accion: 'U',
+          Id_Indicador: item.idIndicador || item.id_Indicador || item.Id_Indicador || item.id || 0,
           Codigo: item.codigo,
           Nombre: res.nombre,
           Tipo: res.tipo || 'Eficacia',
@@ -457,6 +470,7 @@ export class AnalyticsComponent implements OnInit {
       if (result.isConfirmed) {
         const payload = {
           Accion: 'D',
+          Id_Indicador: item.idIndicador || item.id_Indicador || item.Id_Indicador || item.id || 0,
           Codigo: item.codigo,
           Usuario_Registro: 'SISTEMAS'
         };

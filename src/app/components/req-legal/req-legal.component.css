@@ -5,16 +5,16 @@
 .legal-container {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 10px;
 }
 
 /* --- Header Banner --- */
 .legal-header-banner {
   background: #ffffff;
   border: 1px solid var(--line);
-  border-top: 4px solid var(--amber);
-  border-radius: 16px;
-  padding: 20px 24px;
+  border-top: 3px solid var(--amber);
+  border-radius: 12px;
+  padding: 10px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -23,13 +23,13 @@
 .header-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .header-icon-box {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
   background: rgba(184, 121, 10, 0.12);
   color: var(--amber);
   display: flex;
@@ -38,21 +38,21 @@
 }
 
 .header-icon-box mat-icon {
-  font-size: 26px !important;
-  width: 26px !important;
-  height: 26px !important;
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
 }
 
 .header-title {
-  font-size: 1.35rem;
-  font-weight: 800;
+  font-size: 1.05rem;
+  font-weight: 700;
   color: var(--txt);
-  margin: 0 0 2px 0;
-  letter-spacing: -0.02em;
+  margin: 0 0 1px 0;
+  letter-spacing: -0.01em;
 }
 
 .header-subtitle {
-  font-size: 0.84rem;
+  font-size: 0.76rem;
   color: var(--muted);
   margin: 0;
 }

@@ -701,19 +701,19 @@ export class PortafolioMejoraComponent implements OnInit {
       const ws = wb.addWorksheet('Plantilla ACR', { views: [{ showGridLines: true }] });
       // 13 Columnas en total: A (lateral) + 12 columnas de contenido (B a M)
       ws.columns = [
-        { width: 4.5 }, // A: Banda lateral vertical (IR-VER / PENSAR / HACER)
-        { width: 5.0 }, // B: Badge / Subcol 1 (Mitad izquierda)
-        { width: 12.0 },// C: Subcol 2
-        { width: 11.0 },// D: Subcol 3
-        { width: 11.0 },// E: Subcol 4
-        { width: 11.0 },// F: Subcol 5
-        { width: 11.0 },// G: Subcol 6 (Final mitad izquierda, total B..G = 61)
-        { width: 5.0 }, // H: Badge / Subcol 7 (Inicio mitad derecha)
-        { width: 14.0 },// I: Subcol 8
-        { width: 10.5 },// J: Subcol 9
-        { width: 10.5 },// K: Subcol 10
-        { width: 10.5 },// L: Subcol 11
-        { width: 10.5 } // M: Subcol 12 (Final mitad derecha, total H..M = 61)
+        { width: 4.5 },  // A: Banda lateral vertical (IR-VER / PENSAR / HACER)
+        { width: 8.0 },  // B: Badge / Labels (Proveniente de, Sistema Afectado, etc.)
+        { width: 13.0 }, // C: Subcol 2
+        { width: 11.5 }, // D: Subcol 3
+        { width: 11.5 }, // E: Subcol 4
+        { width: 11.5 }, // F: Subcol 5
+        { width: 11.5 }, // G: Subcol 6
+        { width: 8.0 },  // H: Badge / Labels (Metodología 5W, etc.)
+        { width: 13.0 }, // I: Subcol 8
+        { width: 11.0 }, // J: Subcol 9
+        { width: 11.0 }, // K: Subcol 10
+        { width: 11.0 }, // L: Subcol 11
+        { width: 11.0 }  // M: Subcol 12
       ];
 
       // Inicializar celdas con bordes finos y fondo blanco
@@ -750,14 +750,14 @@ export class PortafolioMejoraComponent implements OnInit {
         } catch (err) {
           ws.getCell('B1').value = 'PRECOTEX';
           ws.getCell('B1').font = { name: 'Calibri', size: 12, bold: true };
-          ws.getCell('B1').alignment = { horizontal: 'center', vertical: 'middle' };
+          ws.getCell('B1').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
         }
       }
 
       ws.mergeCells('E1:I3');
       ws.getCell('E1').value = 'ANÁLISIS DE CAUSA RAÍZ';
       ws.getCell('E1').font = { name: 'Calibri', size: 14, bold: true };
-      ws.getCell('E1').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('E1').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
       ws.getCell('J1').value = 'CÓDIGO :'; ws.getCell('J1').font = { name: 'Calibri', bold: true, size: 8.5 };
       ws.mergeCells('K1:M1'); ws.getCell('K1').value = 'Código: FOR-IMC-OYM-001'; ws.getCell('K1').font = { name: 'Calibri', bold: true, size: 8.5 };
@@ -767,14 +767,14 @@ export class PortafolioMejoraComponent implements OnInit {
       ws.mergeCells('K3:M3'); ws.getCell('K3').value = '00/00/2026'; ws.getCell('K3').font = { name: 'Calibri', bold: true, size: 8.5 };
 
       ['J1', 'K1', 'J2', 'K2', 'J3', 'K3'].forEach(pos => {
-        ws.getCell(pos).alignment = { horizontal: 'center', vertical: 'middle' };
+        ws.getCell(pos).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
       });
 
       // 2. PROVENIENTE DE (Filas 4 a 7)
       ws.mergeCells('B4:B7');
       ws.getCell('B4').value = 'Proveniente de:';
       ws.getCell('B4').font = { name: 'Calibri', size: 9.5, bold: true };
-      ws.getCell('B4').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('B4').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
       ws.mergeCells('C4:E4'); ws.getCell('C4').value = '☐  AUDITORIA';
       ws.mergeCells('C5:E5'); ws.getCell('C5').value = '☐  INSPECCIÓN';
@@ -793,7 +793,7 @@ export class PortafolioMejoraComponent implements OnInit {
       ws.mergeCells('B8:B9');
       ws.getCell('B8').value = 'Sistema Afectado';
       ws.getCell('B8').font = { name: 'Calibri', size: 9.5, bold: true };
-      ws.getCell('B8').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('B8').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
       ws.mergeCells('C8:D8'); ws.getCell('C8').value = '☐  CALIDAD';
       ws.mergeCells('C9:D9'); ws.getCell('C9').value = '☐  INOCUIDAD';
@@ -808,7 +808,7 @@ export class PortafolioMejoraComponent implements OnInit {
       ws.mergeCells('J8:K9');
       ws.getCell('J8').value = 'Código de ACR:';
       ws.getCell('J8').font = { bold: true, size: 9.5 };
-      ws.getCell('J8').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('J8').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
       ws.mergeCells('L8:M9'); // Caja en blanco para código
 
       // 4. FASE 1: IR - VER (Filas 10 a 26 - Imagen 1)
@@ -822,7 +822,7 @@ export class PortafolioMejoraComponent implements OnInit {
       ws.getCell('B10').value = '①';
       ws.getCell('B10').fill = blueFill;
       ws.getCell('B10').font = { name: 'Calibri', size: 12, bold: true };
-      ws.getCell('B10').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('B10').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
       ws.mergeCells('B11:B16');
       ws.getCell('B11').value = 'INFORMACIÓN GENERAL';
@@ -852,7 +852,7 @@ export class PortafolioMejoraComponent implements OnInit {
       ws.getCell('H10').value = '②';
       ws.getCell('H10').fill = blueFill;
       ws.getCell('H10').font = { name: 'Calibri', size: 12, bold: true };
-      ws.getCell('H10').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('H10').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
       ws.mergeCells('H11:H16');
       ws.getCell('H11').value = 'METODOLOGÍA 5W Y 2H';
@@ -865,7 +865,7 @@ export class PortafolioMejoraComponent implements OnInit {
         const rowIdx = 10 + i;
         ws.getCell('I' + rowIdx).value = w2hLabels[i];
         ws.getCell('I' + rowIdx).font = { name: 'Calibri', size: 9, bold: true };
-        ws.getCell('I' + rowIdx).alignment = { horizontal: 'center', vertical: 'middle' };
+        ws.getCell('I' + rowIdx).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
         ws.mergeCells('J' + rowIdx + ':M' + rowIdx); // Espacio en blanco con borde fino
       }
 
@@ -873,24 +873,24 @@ export class PortafolioMejoraComponent implements OnInit {
       ws.getCell('B17').value = '③';
       ws.getCell('B17').fill = blueFill;
       ws.getCell('B17').font = { name: 'Calibri', size: 12, bold: true };
-      ws.getCell('B17').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('B17').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
       ws.mergeCells('C17:M17');
       ws.getCell('C17').value = 'Foto, dibujo descriptivo, diagrama de flujo, de información , de materiales, etc.';
       ws.getCell('C17').fill = softBlueFill;
       ws.getCell('C17').font = { name: 'Calibri', size: 9.5, bold: true };
-      ws.getCell('C17').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('C17').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
       ws.mergeCells('B18:G18');
       ws.getCell('B18').value = 'DIAGRAMA DE FLUJO';
       ws.getCell('B18').font = { name: 'Calibri', size: 11, bold: true };
-      ws.getCell('B18').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('B18').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
       ws.mergeCells('B19:G26'); // Lienzo delimitado para diagrama
 
       ws.mergeCells('H18:M18');
       ws.getCell('H18').value = 'EVIDENCIAS';
       ws.getCell('H18').font = { name: 'Calibri', size: 11, bold: true };
-      ws.getCell('H18').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('H18').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
       ws.mergeCells('H19:M26'); // Lienzo delimitado para evidencias
 
       // 5. FASE 2: PENSAR (Filas 27 a 50 - Imagen 2)
@@ -904,18 +904,18 @@ export class PortafolioMejoraComponent implements OnInit {
       ws.getCell('B27').value = '④';
       ws.getCell('B27').fill = greenFill;
       ws.getCell('B27').font = { name: 'Calibri', size: 12, bold: true };
-      ws.getCell('B27').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('B27').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
       ws.mergeCells('C27:M27');
       ws.getCell('C27').value = 'DIAGRAMA DE CAUSA Y EFECTO (ISHIKAWA)';
       ws.getCell('C27').fill = softGreenFill;
       ws.getCell('C27').font = { name: 'Calibri', size: 10.5, bold: true };
-      ws.getCell('C27').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('C27').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
       ws.mergeCells('B28:M28');
       ws.getCell('B28').value = 'DIAGRAMA DE ISHIKAWA';
       ws.getCell('B28').font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF375623' } };
-      ws.getCell('B28').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('B28').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
       // Incrustación de Pez.png dentro de Ishikawa (Filas 29 a 40)
       ws.mergeCells('B29:M40');
@@ -938,18 +938,18 @@ export class PortafolioMejoraComponent implements OnInit {
       ws.getCell('B41').value = '⑤';
       ws.getCell('B41').fill = greenFill;
       ws.getCell('B41').font = { name: 'Calibri', size: 12, bold: true };
-      ws.getCell('B41').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('B41').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
       ws.mergeCells('C41:M41');
       ws.getCell('C41').value = 'ANÁLISIS DE CAUSA RAÍZ (Árbol de Causas - 5 Porqués)';
       ws.getCell('C41').fill = softGreenFill;
       ws.getCell('C41').font = { name: 'Calibri', size: 10, bold: true };
-      ws.getCell('C41').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('C41').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
       ws.mergeCells('B42:M42');
       ws.getCell('B42').value = 'Se sugiere aplicar los 5 Porqués para profundizar en las causas primarias encontradas hasta llegar a la causa raíz.';
       ws.getCell('B42').font = { name: 'Calibri', size: 9, italic: true };
-      ws.getCell('B42').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('B42').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
       // Encabezados tabla 5 Por qués (Fila 43)
       ws.mergeCells('B43:C43'); ws.getCell('B43').value = 'Posible Causa';
@@ -963,7 +963,7 @@ export class PortafolioMejoraComponent implements OnInit {
         const cell = ws.getRow(43).getCell(c);
         cell.fill = greenFill;
         cell.font = { name: 'Calibri', size: 9.5, bold: true };
-        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
       }
 
       // Filas 44 a 50: 7 filas de análisis en blanco con bordes finos
@@ -999,7 +999,7 @@ export class PortafolioMejoraComponent implements OnInit {
         const cell = ws.getRow(51).getCell(c);
         cell.fill = peachFill;
         cell.font = { name: 'Calibri', size: 9.5, bold: true };
-        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
       }
 
       ws.mergeCells('F52:G52'); ws.getCell('F52').value = 'Puesto / Nombre y Apellido';
@@ -1009,7 +1009,7 @@ export class PortafolioMejoraComponent implements OnInit {
         const cell = ws.getCell(pos);
         cell.fill = softPeachFill;
         cell.font = { name: 'Calibri', size: 8.5, bold: true };
-        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
       });
 
       // Filas 53 a 56: Acciones correctivas con badges de Estatus
@@ -1018,21 +1018,21 @@ export class PortafolioMejoraComponent implements OnInit {
       ws.getCell('J53').value = 'Pendiente';
       ws.getCell('J53').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8D7DA' } };
       ws.getCell('J53').font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: 'FF842029' } };
-      ws.getCell('J53').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('J53').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
       // Fila 54: Cerrado (Verde suave)
       ws.mergeCells('C54:E54'); ws.mergeCells('F54:G54'); ws.mergeCells('J54:M54');
       ws.getCell('J54').value = 'Cerrado';
       ws.getCell('J54').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD1E7DD' } };
       ws.getCell('J54').font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: 'FF0F5132' } };
-      ws.getCell('J54').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('J54').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
       // Fila 55: En proceso (Amarillo suave)
       ws.mergeCells('C55:E55'); ws.mergeCells('F55:G55'); ws.mergeCells('J55:M55');
       ws.getCell('J55').value = 'En proceso';
       ws.getCell('J55').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF3CD' } };
       ws.getCell('J55').font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: 'FF664D03' } };
-      ws.getCell('J55').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('J55').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
       // Fila 56: Cuarta fila en blanco
       ws.mergeCells('C56:E56'); ws.mergeCells('F56:G56'); ws.mergeCells('J56:M56');
@@ -1041,26 +1041,26 @@ export class PortafolioMejoraComponent implements OnInit {
       ws.getCell('B57').value = '⑦';
       ws.getCell('B57').fill = peachFill;
       ws.getCell('B57').font = { name: 'Calibri', size: 12, bold: true };
-      ws.getCell('B57').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('B57').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
       ws.mergeCells('C57:M57');
       ws.getCell('C57').value = 'Verificación de la efectividad (Registrar indicadores)';
       ws.getCell('C57').fill = softPeachFill;
       ws.getCell('C57').font = { name: 'Calibri', size: 10, bold: true };
-      ws.getCell('C57').alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getCell('C57').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
       // Subencabezados Comparativos Antes / Después
       ws.mergeCells('B58:G58');
       ws.getCell('B58').value = 'Antes: Registrar la situación o condición existente antes de la implementación de la acción correctiva.';
       ws.getCell('B58').fill = softPeachFill;
       ws.getCell('B58').font = { name: 'Calibri', size: 8.5, bold: true };
-      ws.getCell('B58').alignment = { horizontal: 'left', vertical: 'middle' };
+      ws.getCell('B58').alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
 
       ws.mergeCells('H58:M58');
       ws.getCell('H58').value = 'Después: Registrar la situación o condición observada después de la implementación de la acción correctiva para evidenciar la mejora o solución del problema.';
       ws.getCell('H58').fill = softPeachFill;
       ws.getCell('H58').font = { name: 'Calibri', size: 8.5, bold: true };
-      ws.getCell('H58').alignment = { horizontal: 'left', vertical: 'middle' };
+      ws.getCell('H58').alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
 
       // Incrustación de Imagen2.png (Antes) e Imagen3.png (Después)
       ws.mergeCells('B59:G68');

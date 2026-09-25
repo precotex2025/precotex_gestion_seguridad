@@ -21,7 +21,7 @@ export class PuestosComponent implements OnInit {
   sUsuario: string = GlobalVariable.vusu;
 
   stats = { total: 0, activo: 0, sinConfig: 0 };
-  mostrarBanner: boolean = true;
+  mostrarBanner: boolean = false;
 
   cerrarBanner(): void {
     this.mostrarBanner = false;

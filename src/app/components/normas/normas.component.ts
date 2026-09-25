@@ -31,7 +31,7 @@ export class NormasComponent implements OnInit {
     porVencer: 0
   };
 
-  mostrarBanner: boolean = true;
+  mostrarBanner: boolean = false;
 
   cerrarBanner(): void {
     this.mostrarBanner = false;

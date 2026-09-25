@@ -37,7 +37,7 @@ export class AuditoriasComponent implements OnInit {
   ejecucionList: any[] = [];
   ejecucionFilter: string = '';
 
-  mostrarBanner: boolean = true;
+  mostrarBanner: boolean = false;
 
   cerrarBanner(): void {
     this.mostrarBanner = false;

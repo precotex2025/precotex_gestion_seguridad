@@ -172,16 +172,62 @@
       </div>
     </div>
 
-    <!-- Fila 6: Archivo (File Picker input) -->
+    <!-- Fila 6: Archivo con Zona Drag & Drop Interactiva -->
     <div class="form-row">
       <div class="form-group full-width">
         <label class="form-label">Archivo del Documento (*)</label>
-        <div class="file-upload-box">
-          <label class="btn-file-select">
-            <span class="material-icons">attach_file</span> Seleccionar archivo...
-            <input type="file" (change)="onFileChange($event)" style="display: none;">
-          </label>
-          <span class="file-name-label">{{ fileName }}</span>
+        
+        <!-- DROPZONE DRAG & DROP -->
+        <div class="dropzone-box" 
+             [class.drag-over]="isDragOver"
+             [class.has-file]="selectedFile || (fileName && fileName !== 'Ningún archivo cargado')"
+             (dragover)="onDragOverFile($event)" 
+             (dragleave)="onDragLeaveFile($event)" 
+             (drop)="onDropFile($event)">
+          
+          <input type="file" #fileInput (change)="onFileChange($event)" style="display: none;" accept=".pdf,.doc,.docx,.xls,.xlsx">
+
+          <!-- Estado 1: Sin archivo o listo para arrastrar -->
+          <div class="dropzone-idle" *ngIf="!selectedFile && (!fileName || fileName === 'Ningún archivo cargado')" (click)="fileInput.click()">
+            <div class="dropzone-icon-circle">
+              <span class="material-icons drop-icon">cloud_upload</span>
+            </div>
+            <div class="dropzone-texts">
+              <strong class="dropzone-main-text">Arrastra y suelta tu archivo aquí</strong>
+              <span class="dropzone-sub-text">o <span class="dropzone-browse-link">haz clic para examinar tu equipo</span></span>
+              <span class="dropzone-formats-badge">Formatos soportados: PDF, Word (.docx), Excel (.xlsx)</span>
+            </div>
+          </div>
+
+          <!-- Estado 2: Archivo seleccionado / cargado -->
+          <div class="dropzone-file-card" *ngIf="selectedFile || (fileName && fileName !== 'Ningún archivo cargado')">
+            <div class="file-card-left">
+              <div class="file-icon-box" [ngClass]="{
+                'is-pdf': fileName.endsWith('.pdf'),
+                'is-word': fileName.endsWith('.doc') || fileName.endsWith('.docx'),
+                'is-excel': fileName.endsWith('.xls') || fileName.endsWith('.xlsx')
+              }">
+                <span class="material-icons">
+                  {{ fileName.endsWith('.xls') || fileName.endsWith('.xlsx') ? 'grid_on' : (fileName.endsWith('.doc') || fileName.endsWith('.docx') ? 'description' : 'picture_as_pdf') }}
+                </span>
+              </div>
+              <div class="file-info-group">
+                <span class="file-card-name" [title]="fileName">{{ fileName }}</span>
+                <span class="file-card-status">
+                  <span class="material-icons check-ico">check_circle</span> Archivo listo para vincular
+                </span>
+              </div>
+            </div>
+            <div class="file-card-actions">
+              <button type="button" class="btn-change-file" (click)="fileInput.click()" title="Cambiar archivo">
+                <span class="material-icons">refresh</span> Cambiar
+              </button>
+              <button type="button" class="btn-remove-file" (click)="removeSelectedFile()" title="Quitar archivo">
+                <span class="material-icons">close</span>
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

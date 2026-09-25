@@ -164,7 +164,7 @@ export class AccionesCorrectivasComponent implements OnInit {
 
   // View mode, banner & Drawer states
   vistaActual: 'kanban' | 'tabla' = 'kanban';
-  mostrarBanner: boolean = true;
+  mostrarBanner: boolean = false;
   drawerOpen: boolean = false;
   selectedNc: any = null;
 

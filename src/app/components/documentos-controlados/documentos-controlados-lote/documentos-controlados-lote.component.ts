@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
+import { Component, Inject, OnInit, Optional } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { ProcesosService } from '../../../services/procesos.service';
 import { DocumentosControladosService } from '../../../services/documentos-controlados.service';
@@ -40,6 +40,7 @@ export class DocumentosControladosLoteComponent implements OnInit {
   
   filesList: FileUploadItem[] = [];
   isUploading: boolean = false;
+  isDragOver: boolean = false;
   sUsuario: string = GlobalVariable.vusu || 'SISTEMAS';
   selectedTipoGlobal: string = ''; // Observación e: Tipo global superior que afecta a todos los registros
 
@@ -50,6 +51,7 @@ export class DocumentosControladosLoteComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<DocumentosControladosLoteComponent>,
+    @Optional() @Inject(MAT_DIALOG_DATA) public data: any,
     private toastr: ToastrService,
     private procesosService: ProcesosService,
     private documentosControladosService: DocumentosControladosService
@@ -79,6 +81,13 @@ export class DocumentosControladosLoteComponent implements OnInit {
         }
       }
     });
+
+    if (this.data?.ActiveProcess && this.data.ActiveProcess !== 'Todos los procesos') {
+      this.selectedProceso = this.data.ActiveProcess;
+    }
+    if (this.data?.InitialFiles && this.data.InitialFiles.length > 0) {
+      this.procesarArchivosList(this.data.InitialFiles);
+    }
   }
 
   getMacroProcesses(): string[] {
@@ -264,42 +273,73 @@ export class DocumentosControladosLoteComponent implements OnInit {
     this.toastr.info('Vigencia a 3 años aplicada a todos los elementos del lote.', 'Carga Masiva');
   }
 
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.procesarArchivosList(Array.from(files));
+    }
+  }
+
   onFilesSelected(event: any): void {
     const files = event.target.files;
     if (files && files.length > 0) {
-      // DOC-01 & DOC-12: Vigencia por defecto a 3 AÑOS
-      const defaultVig3Anios = (() => {
-        const d = new Date();
-        d.setFullYear(d.getFullYear() + 3);
-        return d.toISOString().substring(0, 10);
-      })();
+      this.procesarArchivosList(Array.from(files));
+    }
+  }
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        
-        if (this.filesList.some(item => item.file.name === file.name)) {
-          continue;
-        }
+  procesarArchivosList(files: File[]): void {
+    if (!files || files.length === 0) return;
 
-        const nameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-        const firstSpaceIdx = nameWithoutExt.indexOf(' ');
-        
-        let parsedCode = '';
-        let parsedName = '';
-        
-        if (firstSpaceIdx !== -1) {
-          parsedCode = nameWithoutExt.substring(0, firstSpaceIdx).trim();
-          parsedName = nameWithoutExt.substring(firstSpaceIdx + 1).trim();
-        } else {
-          parsedCode = nameWithoutExt.trim();
-          parsedName = nameWithoutExt.trim();
-        }
+    // DOC-01 & DOC-12: Vigencia por defecto a 3 AÑOS
+    const defaultVig3Anios = (() => {
+      const d = new Date();
+      d.setFullYear(d.getFullYear() + 3);
+      return d.toISOString().substring(0, 10);
+    })();
 
-        // Observación e: Si hay tipo global seleccionado arriba, aplicarlo por defecto
-        const parsedTipo = this.selectedTipoGlobal || this.extraerTipoDelCodigo(parsedCode);
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      if (this.filesList.some(item => item.file.name === file.name)) {
+        continue;
+      }
 
-        let parsedFormato = 'PDF';
-        const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      const nameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+      const firstSpaceIdx = nameWithoutExt.indexOf(' ');
+      
+      let parsedCode = '';
+      let parsedName = '';
+      
+      if (firstSpaceIdx !== -1) {
+        parsedCode = nameWithoutExt.substring(0, firstSpaceIdx).trim();
+        parsedName = nameWithoutExt.substring(firstSpaceIdx + 1).trim();
+      } else {
+        parsedCode = nameWithoutExt.trim();
+        parsedName = nameWithoutExt.trim();
+      }
+
+      // Observación e: Si hay tipo global seleccionado arriba, aplicarlo por defecto
+      const parsedTipo = this.selectedTipoGlobal || this.extraerTipoDelCodigo(parsedCode);
+
+      let parsedFormato = 'PDF';
+      const dotIdx = file.name.lastIndexOf('.');
+      if (dotIdx !== -1) {
+        const ext = file.name.substring(dotIdx).toLowerCase();
         if (ext === '.pdf') {
           parsedFormato = 'PDF';
         } else if (ext === '.doc' || ext === '.docx') {
@@ -307,36 +347,36 @@ export class DocumentosControladosLoteComponent implements OnInit {
         } else if (ext === '.xls' || ext === '.xlsx') {
           parsedFormato = 'Excel';
         }
-
-        const parsedVer = this.extraerVersionDelCodigo(parsedCode);
-        const parsedProc = this.extraerProcesoDelCodigo(parsedCode) || this.selectedProceso || 'Organización y Métodos';
-        
-        // DOC-12: Auto-popular Fecha de Vigencia (3 Años) y Estado en Carga Masiva
-        const parsedVig = defaultVig3Anios;
-        const parsedEstado = this.calcularEstadoPorFecha(parsedVig);
-
-        this.filesList.push({
-          file: file,
-          nombre: parsedName,
-          codigo: parsedCode || ('LOTE-' + Math.floor(1000 + Math.random() * 9000)),
-          tipo: parsedTipo,
-          version: parsedVer,
-          formato: parsedFormato,
-          proceso: parsedProc,
-          vig: parsedVig,
-          estado: parsedEstado,
-          visibilidad: 'Todos los procesos', // DOC-15: Visibilidad pública por defecto
-          isUploaded: false,
-          isError: false,
-          progressMessage: 'Listo para cargar'
-        });
       }
 
-      // Observación c: Validar duplicados de inmediato
-      const val = this.validarNombresDuplicados();
-      if (val.tieneDuplicados) {
-        this.toastr.warning(`Atención: El documento "${val.mensaje}" tiene un nombre duplicado. Modifique el nombre antes de subir.`, 'Validación de Nombres');
-      }
+      const parsedVer = this.extraerVersionDelCodigo(parsedCode);
+      const parsedProc = this.extraerProcesoDelCodigo(parsedCode) || this.selectedProceso || 'Organización y Métodos';
+      
+      // DOC-12: Auto-popular Fecha de Vigencia (3 Años) y Estado en Carga Masiva
+      const parsedVig = defaultVig3Anios;
+      const parsedEstado = this.calcularEstadoPorFecha(parsedVig);
+
+      this.filesList.push({
+        file: file,
+        nombre: parsedName,
+        codigo: parsedCode || ('LOTE-' + Math.floor(1000 + Math.random() * 9000)),
+        tipo: parsedTipo,
+        version: parsedVer,
+        formato: parsedFormato,
+        proceso: parsedProc,
+        vig: parsedVig,
+        estado: parsedEstado,
+        visibilidad: 'Todos los procesos', // DOC-15: Visibilidad pública por defecto
+        isUploaded: false,
+        isError: false,
+        progressMessage: 'Listo para cargar'
+      });
+    }
+
+    // Observación c: Validar duplicados de inmediato
+    const val = this.validarNombresDuplicados();
+    if (val.tieneDuplicados) {
+      this.toastr.warning(`Atención: El documento "${val.mensaje}" tiene un nombre duplicado. Modifique el nombre antes de subir.`, 'Validación de Nombres');
     }
   }
 

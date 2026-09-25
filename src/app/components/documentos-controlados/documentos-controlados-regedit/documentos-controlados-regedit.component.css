@@ -485,46 +485,232 @@ select.form-input option {
 /* ========================================================================= */
 /* CARGA DE ARCHIVO Y ACCIONES DEL MODAL                                      */
 /* ========================================================================= */
-.file-upload-box {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: #f8fafc;
-  border: 1px dashed #cbd5e1;
-  border-radius: 8px;
-  padding: 12px;
+/* ========================================================================= */
+/* DROPZONE DRAG & DROP MODERNA                                              */
+/* ========================================================================= */
+.dropzone-box {
   width: 100%;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
 }
 
-.btn-file-select {
-  display: inline-flex;
+.dropzone-box:hover {
+  border-color: #818cf8;
+  background: #f5f3ff;
+}
+
+.dropzone-box.drag-over {
+  border-color: #6366f1;
+  background: #eef2ff;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18);
+  transform: scale(1.01);
+}
+
+.dropzone-box.drag-over .drop-icon {
+  transform: translateY(-4px) scale(1.15);
+  color: #4f46e5;
+}
+
+.dropzone-idle {
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  background: #4f46e5;
-  border: none;
-  color: #ffffff;
-  padding: 7px 14px;
-  border-radius: 6px;
-  font-size: 0.78rem;
-  font-weight: 600;
+  justify-content: center;
   cursor: pointer;
-  user-select: none;
+  text-align: center;
+  gap: 10px;
+}
+
+.dropzone-icon-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #e0e7ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease;
 }
 
-.btn-file-select:hover {
-  background: #4338ca;
+.drop-icon {
+  font-size: 26px;
+  color: #6366f1;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
-.btn-file-select span {
-  font-size: 17px;
+.dropzone-texts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
 }
 
-.file-name-label {
-  font-size: 0.78rem;
+.dropzone-main-text {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.dropzone-sub-text {
+  font-size: 0.76rem;
+  color: #64748b;
+}
+
+.dropzone-browse-link {
+  color: #4f46e5;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.dropzone-formats-badge {
+  margin-top: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
   color: #475569;
-  font-weight: 500;
+  background: #ede9fe;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid #ddd6fe;
+}
+
+/* Tarjeta de Archivo Cargado */
+.dropzone-file-card {
+  padding: 14px 18px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border-left: 4px solid #10b981;
+}
+
+.file-card-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.file-icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.file-icon-box.is-pdf {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.file-icon-box.is-word {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.file-icon-box.is-excel {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.file-icon-box span {
+  font-size: 22px;
+}
+
+.file-info-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.file-card-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-card-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: #16a34a;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.check-ico {
+  font-size: 13px;
+  color: #16a34a;
+}
+
+.file-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-change-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-change-file:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.btn-change-file span {
+  font-size: 14px;
+}
+
+.btn-remove-file {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-remove-file:hover {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.btn-remove-file span {
+  font-size: 16px;
 }
 
 .dialog-actions {

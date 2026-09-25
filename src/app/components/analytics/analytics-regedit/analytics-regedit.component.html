@@ -62,14 +62,36 @@
         <!-- Fila 2: Tipo y Norma ISO -->
         <div class="form-row split-2">
           <div class="form-field">
-            <label class="form-label">
-              <mat-icon class="label-icon">category</mat-icon>
-              Tipo de indicador <span class="req">*</span>
-            </label>
+            <div class="field-header-row">
+              <label class="form-label" style="margin-bottom: 0;">
+                <mat-icon class="label-icon">category</mat-icon>
+                Tipo de indicador <span class="req">*</span>
+              </label>
+              <button type="button" class="btn-help-tipo" (click)="toggleAyudaTipo($event)" title="Ver guía rápida: Diferencia entre Eficacia, Eficiencia y Efectividad">
+                <mat-icon>help_outline</mat-icon>
+                <span>¿Cuál elegir?</span>
+              </button>
+            </div>
             <div class="input-wrapper">
               <select formControlName="tipo" class="form-select">
                 <option *ngFor="let opt of tiposOptions" [value]="opt">{{ opt }}</option>
               </select>
+            </div>
+
+            <!-- Guía Rápida Conceptual -->
+            <div *ngIf="mostrarAyudaTipo" class="guia-tipo-box">
+              <div class="guia-item">
+                <span class="guia-badge badge-eficacia">Eficacia</span>
+                <span class="guia-desc"><strong>¿Se logró la meta?</strong> Mide cumplimiento de metas u objetivos sin evaluar recursos (ej. <em>% Pedidos a tiempo, % Auditorías aprobadas</em>).</span>
+              </div>
+              <div class="guia-item">
+                <span class="guia-badge badge-eficiencia">Eficiencia</span>
+                <span class="guia-desc"><strong>¿Se optimizaron recursos?</strong> Relación entre resultado obtenido y recursos/tiempo/costo empleados (ej. <em>% Eficiencia costura, % Merma tela</em>).</span>
+              </div>
+              <div class="guia-item">
+                <span class="guia-badge badge-efectividad">Efectividad</span>
+                <span class="guia-desc"><strong>¿Qué impacto global se obtuvo?</strong> Evalúa logro de objetivos optimizando recursos (ej. <em>OEE de máquinas, RFT Right First Time</em>).</span>
+              </div>
             </div>
           </div>
 
@@ -140,7 +162,7 @@
               Sedes donde aplica <span class="req">*</span> (Múltiple)
             </label>
             <div class="input-wrapper">
-              <mat-select formControlName="sede" multiple class="form-select-mat" placeholder="-- Seleccionar Sedes --">
+              <mat-select formControlName="sede" multiple class="form-select-mat" placeholder="-- Seleccionar Sedes --" (selectionChange)="onSedeSelectionChange($event)">
                 <mat-option *ngFor="let opt of sedesOptions" [value]="opt">{{ opt }}</mat-option>
               </mat-select>
             </div>
@@ -182,12 +204,22 @@
           </div>
 
           <div class="form-field">
-            <label class="form-label">
-              <mat-icon class="label-icon">event</mat-icon>
-              Fecha de fin <span class="req">*</span>
-            </label>
-            <div class="input-wrapper">
-              <input type="date" formControlName="fin" class="form-input-date">
+            <div class="field-header-row">
+              <label class="form-label" style="margin-bottom: 0;">
+                <mat-icon class="label-icon">event</mat-icon>
+                Fecha de fin <span class="opc-badge">(Opcional)</span>
+              </label>
+              <label class="checkbox-constante-container" title="Marque si el indicador se mide continuamente de forma indefinida">
+                <input type="checkbox" formControlName="esConstante" (change)="onToggleConstante($event)">
+                <span class="checkbox-text">Continuo / Permanente</span>
+              </label>
+            </div>
+            <div class="input-wrapper" [class.is-constante]="formulario.get('esConstante')?.value">
+              <input type="date" formControlName="fin" class="form-input-date" [class.input-disabled-custom]="formulario.get('esConstante')?.value">
+              <div *ngIf="formulario.get('esConstante')?.value" class="constante-overlay-badge">
+                <mat-icon class="constante-icon">all_inclusive</mat-icon>
+                <span>Medición continua (Sin fecha de fin)</span>
+              </div>
             </div>
           </div>
         </div>

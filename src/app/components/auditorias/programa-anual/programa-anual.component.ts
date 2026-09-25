@@ -11,7 +11,7 @@ export class ProgramaAnualComponent implements OnInit {
   auditorias: any[] = [];
   meses: string[] = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
   counts: number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  mostrarBanner: boolean = true;
+  mostrarBanner: boolean = false;
 
   cerrarBanner(): void {
     this.mostrarBanner = false;

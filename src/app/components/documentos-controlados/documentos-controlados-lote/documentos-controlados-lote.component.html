@@ -36,14 +36,22 @@
         </select>
       </div>
 
-      <!-- ZONA DE CARGA DE ARCHIVOS -->
+      <!-- ZONA DE CARGA DE ARCHIVOS CON DRAG & DROP -->
       <div class="form-group">
         <label class="form-label font-bold text-white">Archivos del Lote (*)</label>
-        <label class="file-uploader-box-inline">
-          <span class="material-icons">folder_open</span>
-          <strong>Seleccionar múltiples archivos...</strong>
-          <input type="file" multiple (change)="onFilesSelected($event)" style="display: none;">
-        </label>
+        <div class="file-uploader-dropzone-lote" 
+             [class.drag-over]="isDragOver"
+             (dragover)="onDragOver($event)" 
+             (dragleave)="onDragLeave($event)" 
+             (drop)="onDrop($event)"
+             (click)="fileInputLote.click()">
+          <span class="material-icons drop-icon-lote">cloud_upload</span>
+          <div class="drop-texts-lote">
+            <strong>Arrastra y suelta múltiples archivos aquí</strong>
+            <span>o haz clic para examinar desde tu equipo</span>
+          </div>
+          <input type="file" #fileInputLote multiple (change)="onFilesSelected($event)" style="display: none;" accept=".pdf,.doc,.docx,.xls,.xlsx">
+        </div>
       </div>
     </div>
 

@@ -357,7 +357,7 @@ export class MedicionIndicadoresComponent implements OnInit {
     return Math.round((count / total) * 100);
   }
 
-  mostrarBanner: boolean = true;
+  mostrarBanner: boolean = false;
   drawerOpen: boolean = false;
   selectedMedicion: any = null;
 

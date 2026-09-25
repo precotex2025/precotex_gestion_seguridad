@@ -12,19 +12,6 @@
     </button>
   </div>
 
-  <!-- NAVEGACIÓN SUPERIOR: SEGMENTED CONTROL TABS -->
-  <div class="indicadores-nav-bar">
-    <div class="indicadores-segment-tabs">
-      <a class="indicadores-tab-btn active" routerLink="/principal/analytics">
-        <mat-icon>tune</mat-icon>
-        <span>Alta de Indicadores</span>
-      </a>
-      <a class="indicadores-tab-btn" routerLink="/principal/analytics/medicion">
-        <mat-icon>show_chart</mat-icon>
-        <span>Medición de Indicadores (Dashboard)</span>
-      </a>
-    </div>
-  </div>
 
   <!-- ESTADÍSTICAS CARDS COMPACTAS CON TOP GLOW -->
   <div class="stats-grid-compact">
@@ -107,7 +94,7 @@
       <!-- Sede -->
       <ng-container matColumnDef="sede">
         <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 130px;">Sede</th>
-        <td mat-cell *matCellDef="let row" class="cat-cell">{{ row.sede || 'Sede Huachipa' }}</td>
+        <td mat-cell *matCellDef="let row" class="cat-cell">{{ row.sede || 'Todas' }}</td>
       </ng-container>
 
       <!-- Norma ISO -->

@@ -146,6 +146,7 @@
 .dialog-scroll-body::-webkit-scrollbar {
   width: 6px;
 }
+
 .dialog-scroll-body::-webkit-scrollbar-thumb {
   background: rgba(100, 116, 139, 0.25);
   border-radius: 4px;
@@ -197,7 +198,7 @@
   width: 100%;
 }
 
-.form-row.split-2 > .form-field {
+.form-row.split-2>.form-field {
   flex: 1;
   min-width: 0;
 }
@@ -463,6 +464,7 @@
     opacity: 0;
     transform: translateY(-6px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -689,4 +691,180 @@
   transform: translateY(0);
 }
 
+/* ---- Continuous Date Field Styling ---- */
+.field-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
 
+.opc-badge {
+  font-size: 0.68rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.checkbox-constante-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.checkbox-constante-container:hover {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+.checkbox-constante-container input[type="checkbox"] {
+  cursor: pointer;
+  accent-color: #6366f1;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+}
+
+.checkbox-text {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.input-wrapper.is-constante {
+  background: #f8fafc;
+  border-radius: 9px;
+}
+
+.input-disabled-custom {
+  opacity: 0.25;
+  pointer-events: none;
+  background: #f8fafc !important;
+}
+
+.constante-overlay-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+  background: rgba(248, 250, 252, 0.95);
+  border: 1px dashed #cbd5e1;
+  border-radius: 9px;
+  color: #4f46e5;
+  font-size: 0.8rem;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.constante-icon {
+  font-size: 17px;
+  width: 17px;
+  height: 17px;
+  color: #6366f1;
+}
+
+/* ---- Guía Conceptual Tipo de Indicador ---- */
+.btn-help-tipo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 6px;
+  color: #6366f1;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-help-tipo mat-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+}
+
+.btn-help-tipo:hover {
+  background: rgba(99, 102, 241, 0.16);
+  border-color: #6366f1;
+}
+
+.guia-tipo-box {
+  margin-top: 6px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-left: 3px solid #6366f1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  animation: fadeInDown 0.2s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.guia-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.guia-badge {
+  flex-shrink: 0;
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badge-eficacia {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-eficiencia {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.badge-efectividad {
+  background: #f3e8ff;
+  color: #7e22ce;
+}
+
+.guia-desc {
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: #334155;
+}
+
+.guia-desc strong {
+  color: #0f172a;
+}

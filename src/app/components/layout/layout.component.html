@@ -185,21 +185,26 @@
 
     <!-- PAGINAS -->
     <div class="contenido">
-      <!-- DYNAMIC MODULE HEADER -->
+      <!-- DYNAMIC MODULE HEADER (COMPACT ENTERPRISE ROW) -->
       <div class="module-header" *ngIf="activeModule">
-        <h1 class="module-title">{{ activeModule.title }}</h1>
-        <div class="module-breadcrumb">{{ activeModule.breadcrumb }}</div>
+        <div class="module-header-row">
+          <div class="module-header-info">
+            <h1 class="module-title">{{ activeModule.title }}</h1>
+            <span class="module-breadcrumb-sep" *ngIf="activeModule.breadcrumb">·</span>
+            <span class="module-breadcrumb" *ngIf="activeModule.breadcrumb">{{ activeModule.breadcrumb }}</span>
+          </div>
 
-        <div class="module-tabs">
-          <a *ngFor="let tab of activeModule.tabs" [routerLink]="tab.route" class="module-tab-link"
-            [class.active-tab]="activeModule.activeTab ? activeModule.activeTab === tab.id : currentUrl.startsWith(tab.route)">
-            {{ tab.label }}
-          </a>
+          <div class="module-tabs" *ngIf="activeModule.tabs && activeModule.tabs.length > 0">
+            <a *ngFor="let tab of activeModule.tabs" [routerLink]="tab.route" class="module-tab-link"
+              [class.active-tab]="activeModule.activeTab ? activeModule.activeTab === tab.id : (tab.route === currentUrl || currentUrl.startsWith(tab.route + '/'))">
+              {{ tab.label }}
+            </a>
+          </div>
         </div>
       </div>
 
       <!-- SECONDARY NAVIGATION BAR -->
-      <div class="secondary-nav" *ngIf="activeModule && activeModule.secondaryNav">
+      <div class="secondary-nav" *ngIf="activeModule && activeModule.secondaryNav && activeModule.secondaryNav.length > 0">
         <a *ngFor="let sub of activeModule.secondaryNav" [routerLink]="sub.route" class="secondary-nav-link"
           [class.active-sublink]="activeSublink === sub.route">
           {{ sub.label }}

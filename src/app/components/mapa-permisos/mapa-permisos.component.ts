@@ -170,7 +170,7 @@ export class MapaPermisosComponent implements OnInit {
   drawerUser: any = null;
   hoveredRow: string = '';
   hoveredCol: string = '';
-  mostrarBanner: boolean = true;
+  mostrarBanner: boolean = false;
 
   cerrarBanner(): void {
     this.mostrarBanner = false;
