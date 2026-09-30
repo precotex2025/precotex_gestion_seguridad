@@ -15,15 +15,17 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
-        // Suprimir alertas intrusivas para endpoints auxiliares que manejan su propio fallback local
+        // Suprimir alertas intrusivas para errores 400 o endpoints auxiliares que manejan su propio flujo/fallback
         if (
+          error.status === 400 ||
+          request.url.includes('getValidarPrimerIngreso') ||
           request.url.includes('postRegistrarUsuario') ||
           request.url.includes('getLogAccesos') ||
           request.url.includes('getTrabajadoresSpring') ||
           request.url.includes('getListadoNivelJerarquico') ||
           request.url.includes('getListadoUsuarios')
         ) {
-          console.warn('Endpoint auxiliar con fallback local no disponible:', request.url, error.status);
+          console.warn('Alerta HTTP 400 / endpoint auxiliar suprimida:', request.url, error.status);
           return throwError(() => error);
         }
 
@@ -51,7 +53,7 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
           this.authService.logout();
         } else if (error.status >= 500) {
           this.toastr.error('El servidor respondió con una incidencia interna. Reintente en breve.', 'Error del Servidor');
-        } else {
+        } else if (error.status !== 400) {
           const apiMsg = error.error?.error || error.error?.Message || error.error?.message || error.error?.MessageTransac || error.error?.messageTransac || error.message || errorMessage;
           this.toastr.error(apiMsg, `Error ${error.status}`);
         }
