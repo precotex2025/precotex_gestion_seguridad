@@ -48,6 +48,7 @@ interface AlertaSeguridad {
   tiempo: string;
   nivel: string;
   severidad: 'info' | 'success' | 'warning' | 'danger';
+  route?: string;
 }
 
 interface ProximoEvento {
@@ -350,19 +351,25 @@ export class DashboardComponent implements OnInit {
           });
         }
         this.updateCumplimientoChart();
+        this.generarAlertasDocumentosSinRevision6Meses(list);
       },
       error: () => {
         let count = 0;
+        let list: any[] = [];
         try {
           const cached = localStorage.getItem('precotex:documentacion');
           if (cached) {
             const parsed = JSON.parse(cached);
-            if (Array.isArray(parsed)) count = parsed.length;
+            if (Array.isArray(parsed)) {
+              count = parsed.length;
+              list = parsed;
+            }
           }
         } catch {}
         this.dbCounts.documentos = count;
         this.updateKpiValue('Docs. Controlados', count, count > 0 ? `${count} en catálogo` : '0 documentos', count > 0);
         this.updateCumplimientoChart();
+        this.generarAlertasDocumentosSinRevision6Meses(list);
       }
     });
 
@@ -505,6 +512,126 @@ export class DashboardComponent implements OnInit {
         nivel: 'Preventiva (30d)',
         severidad: 'warning'
       });
+    }
+  }
+
+  // Identificación del proceso/área del usuario actual para filtrado por Jefatura
+  getUserProcesoActual(): string {
+    let proc = (localStorage.getItem('precotex:usuario:proceso') || '').trim();
+    if (proc && proc.toLowerCase() !== 'general') return proc;
+
+    const puesto = (localStorage.getItem('precotex:usuario:puesto') || '').trim();
+    if (puesto) {
+      const pLower = puesto.toLowerCase();
+      if (pLower.includes('costura')) return 'Costura';
+      if (pLower.includes('estampado') || pLower.includes('tintorería') || pLower.includes('tintoreria')) return 'Tintorería';
+      if (pLower.includes('ssoma')) return 'SSOMA';
+      if (pLower.includes('calidad')) return 'Calidad';
+      if (pLower.includes('sistemas')) return 'Sistemas';
+      if (pLower.includes('auditor')) return 'Auditoría Interna';
+      if (pLower.includes('patrimonial')) return 'Control Patrimonial';
+      if (pLower.includes('tejeduría') || pLower.includes('tejeduria')) return 'Tejeduría';
+      if (pLower.includes('hilandería') || pLower.includes('hilanderia')) return 'Hilandería';
+      if (pLower.includes('métodos') || pLower.includes('metodos') || pLower.includes('organización')) return 'Organización y Métodos';
+    }
+
+    const puestosRaw = localStorage.getItem('precotex_puestos_usuarios') || localStorage.getItem('precotex:puestos:listado');
+    if (puestosRaw) {
+      try {
+        const userNom = (localStorage.getItem('precotex:usuario:nombre') || GlobalVariable.vusu || '').trim().toLowerCase();
+        const pList = JSON.parse(puestosRaw);
+        const matchP = pList.find((p: any) =>
+          (p.usuario || '').toLowerCase().includes(userNom) ||
+          (p.puesto || '').toLowerCase() === puesto.toLowerCase()
+        );
+        if (matchP && matchP.proceso) return matchP.proceso;
+      } catch (e) { }
+    }
+
+    return '';
+  }
+
+  isUserAdmin(): boolean {
+    const vusuStr = (GlobalVariable.vusu || localStorage.getItem('vusu') || localStorage.getItem('precotex:usuario:nombre') || '').toLowerCase().trim();
+    const rolVal = (localStorage.getItem('vCod_Rol') || GlobalVariable.vCod_Rol || '0').toString();
+    return rolVal === '1' || vusuStr === 'admin' || vusuStr === 'superadmin' || vusuStr === 'administrador' || vusuStr.includes('admin');
+  }
+
+  // Generar alertas en Alertas del Sistema para documentos sin Visto Bueno / revisión > 6 meses (180 días)
+  // Filtrado por el área/proceso del Jefe de cada área
+  private generarAlertasDocumentosSinRevision6Meses(list: any[]): void {
+    if (!list || list.length === 0) return;
+
+    const userProceso = this.getUserProcesoActual();
+    const isAdmin = this.isUserAdmin();
+    const hoy = new Date();
+    const LIMITE_DIAS_6_MESES = 180;
+
+    // Obtener vistos buenos guardados localmente
+    let vbLogs: any[] = [];
+    try {
+      vbLogs = JSON.parse(localStorage.getItem('precotex_vistos_buenos') || '[]');
+    } catch { vbLogs = []; }
+
+    // Filtrar por área/proceso si no es admin o si el jefe tiene área específica asignada
+    let docsFiltrados = list;
+    if (!isAdmin && userProceso && userProceso.toLowerCase() !== 'general') {
+      const uP = userProceso.toLowerCase().trim();
+      docsFiltrados = list.filter((d: any) => {
+        const docP = (d.proceso || '').toLowerCase().trim();
+        const esMismoProceso = docP === uP || docP.includes(uP) || uP.includes(docP);
+        const visList: string[] = d.procesosVisibles || [];
+        const tienePermiso = visList.some((p: string) => p.toLowerCase().trim() === uP);
+        return esMismoProceso || tienePermiso;
+      });
+    }
+
+    const alertasDocs: AlertaSeguridad[] = [];
+
+    docsFiltrados.forEach((doc: any) => {
+      const codigoDoc = doc.codigo || doc.codigo_Documento || doc.codigo_Documentos_Controlados || 'DOC';
+      const nombreDoc = doc.nombre || doc.denominacion || doc.descripcion || 'Documento Controlado';
+      const procDoc = doc.proceso || userProceso || 'Área General';
+
+      let vbInfo = doc.vistoBuenoInfo;
+      if (!vbInfo && vbLogs.length > 0) {
+        const matchLog = vbLogs.find((r: any) => r.codigo === codigoDoc || r.nombre === nombreDoc);
+        if (matchLog) {
+          vbInfo = { usuario: matchLog.usuario, puesto: matchLog.puesto, fecha: matchLog.fecha };
+        }
+      }
+
+      if (!vbInfo || !vbInfo.fecha) {
+        alertasDocs.push({
+          titulo: `⚠️ [${procDoc}] ${codigoDoc} sin visto bueno semestral (6 meses)`,
+          tiempo: 'Sin revisión',
+          nivel: 'Pendiente 6M',
+          severidad: 'danger',
+          route: '/principal/documentosControlados'
+        });
+      } else {
+        const fechaVB = new Date(vbInfo.fecha);
+        if (!isNaN(fechaVB.getTime())) {
+          const diffDias = Math.floor((hoy.getTime() - fechaVB.getTime()) / (1000 * 3600 * 24));
+          if (diffDias >= LIMITE_DIAS_6_MESES) {
+            alertasDocs.push({
+              titulo: `🔴 [${procDoc}] ${codigoDoc} revisión vencida (${diffDias} días)`,
+              tiempo: `Hace ${diffDias} días`,
+              nivel: 'Vencido 6M',
+              severidad: 'danger',
+              route: '/principal/documentosControlados'
+            });
+          }
+        }
+      }
+    });
+
+    // Remover alertas de documentos anteriores para evitar duplicados al recargar
+    this.alertas = this.alertas.filter(a => !a.nivel.includes('6M'));
+
+    // Colocar las alertas de documentos sin visto bueno del área al inicio del feed de alertas
+    if (alertasDocs.length > 0) {
+      this.alertas.unshift(...alertasDocs);
     }
   }
 

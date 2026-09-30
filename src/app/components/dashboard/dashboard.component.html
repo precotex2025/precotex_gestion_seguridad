@@ -110,7 +110,12 @@
       </div>
       <div class="bento-box-body">
         <div class="alerts-feed-list">
-          <div *ngFor="let alerta of alertas" class="alert-item-card" [ngClass]="'alert-sev-' + alerta.severidad">
+          <div *ngFor="let alerta of alertas"
+               class="alert-item-card"
+               [ngClass]="'alert-sev-' + alerta.severidad"
+               (click)="alerta.route ? navigateTo(alerta.route) : null"
+               [style.cursor]="alerta.route ? 'pointer' : 'default'"
+               [title]="alerta.route ? 'Clic para ir a ' + alerta.route : ''">
             <div class="alert-icon-wrap">
               <i [class]="alerta.severidad === 'danger' ? 'pi pi-exclamation-circle' : (alerta.severidad === 'warning' ? 'pi pi-exclamation-triangle' : (alerta.severidad === 'success' ? 'pi pi-check-circle' : 'pi pi-info-circle'))"></i>
             </div>

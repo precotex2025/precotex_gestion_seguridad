@@ -15,6 +15,18 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
+        // Suprimir alertas intrusivas para endpoints auxiliares que manejan su propio fallback local
+        if (
+          request.url.includes('postRegistrarUsuario') ||
+          request.url.includes('getLogAccesos') ||
+          request.url.includes('getTrabajadoresSpring') ||
+          request.url.includes('getListadoNivelJerarquico') ||
+          request.url.includes('getListadoUsuarios')
+        ) {
+          console.warn('Endpoint auxiliar con fallback local no disponible:', request.url, error.status);
+          return throwError(() => error);
+        }
+
         let errorMessage = 'Ocurrió un error inesperado al procesar la solicitud.';
 
         if (error.status === 0) {
@@ -40,7 +52,7 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
         } else if (error.status >= 500) {
           this.toastr.error('El servidor respondió con una incidencia interna. Reintente en breve.', 'Error del Servidor');
         } else {
-          const apiMsg = error.error?.Message || error.error?.message || error.error?.MessageTransac || error.error?.messageTransac || error.message || errorMessage;
+          const apiMsg = error.error?.error || error.error?.Message || error.error?.message || error.error?.MessageTransac || error.error?.messageTransac || error.message || errorMessage;
           this.toastr.error(apiMsg, `Error ${error.status}`);
         }
 

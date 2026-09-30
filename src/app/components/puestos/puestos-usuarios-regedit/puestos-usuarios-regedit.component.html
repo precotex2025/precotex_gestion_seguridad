@@ -34,7 +34,77 @@
         </div>
 
         <div class="form-row split-4">
-          <!-- Col 1: Proceso -->
+          <!-- Col 1: Colaborador / Usuario Asignado (Nombre y Apellido) - Filtrado por tecleo desde UP_MuestraDatosTrabajador (Spring ERP) -->
+          <div class="form-field search-combobox-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">person_search</mat-icon>
+              Colaborador Asignado <span class="req">*</span>
+              <span class="count-tag" *ngIf="trabajadoresList.length > 0">({{ trabajadoresList.length }})</span>
+            </label>
+            <div class="input-wrapper search-wrapper">
+              <input type="text" formControlName="ctrol_colaborador" (input)="onInputTrabajador($event)"
+                (focus)="onFocusTrabajador()" (blur)="onBlurTrabajador()" (keydown)="onKeydownTrabajador($event)"
+                class="form-input search-input-field"
+                [placeholder]="cargandoTrabajadores ? '⏳ Cargando de Spring ERP...' : 'Teclee nombre, cargo o ficha...'"
+                autocomplete="off">
+
+              <!-- Botón desplegable / toggle -->
+              <button type="button" class="btn-search-action" (mousedown)="$event.preventDefault()"
+                (click)="toggleDropdownTrabajadores()"
+                [title]="mostrarDropdownTrabajadores ? 'Cerrar lista' : 'Ver todos'">
+                <mat-icon>{{ mostrarDropdownTrabajadores ? 'expand_less' : 'expand_more' }}</mat-icon>
+              </button>
+
+              <!-- Panel flotante de autocompletado y filtrado -->
+              <div *ngIf="mostrarDropdownTrabajadores" class="search-dropdown-menu">
+                <div *ngIf="cargandoTrabajadores" class="dropdown-status-row">
+                  <mat-icon class="spinning-icon">sync</mat-icon>
+                  <span>Consultando UP_MuestraDatosTrabajador...</span>
+                </div>
+
+                <div *ngIf="!cargandoTrabajadores && trabajadoresFiltrados.length === 0"
+                  class="dropdown-status-row empty">
+                  <mat-icon>search_off</mat-icon>
+                  <span>No se encontraron trabajadores con "{{ formulario.get('ctrol_colaborador')?.value }}".</span>
+                </div>
+
+                <div *ngIf="!cargandoTrabajadores && trabajadoresFiltrados.length > 0" class="dropdown-header-count">
+                  <span>Mostrando {{ trabajadoresFiltrados.length }} coincidencias (teclee para afinar)</span>
+                </div>
+
+                <div class="dropdown-items-scroll">
+                  <div *ngFor="let trab of trabajadoresFiltrados; let idx = index" class="dropdown-worker-item"
+                    [class.active]="idx === indiceSeleccionadoTrabajador" (mousedown)="seleccionarTrabajadorItem(trab)">
+                    <div class="worker-avatar">{{ getInitials(trab.nombre) }}</div>
+                    <div class="worker-details">
+                      <div class="worker-name-line">
+                        <span class="worker-fullname">{{ trab.nombre }}</span>
+                        <span class="worker-ficha-badge">Tipo: {{ trab.tipo }} | Ficha: {{ trab.codigo }}</span>
+                      </div>
+                      <div class="worker-subline">
+                        <span class="worker-cargo-tag">{{ trab.cargo || 'Trabajador' }}</span>
+                        <span *ngIf="trab.correo" class="worker-email-tag">{{ trab.correo }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Col 2: Puesto / Cargo (Ej: Supervisor de Almacén) -->
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">work_outline</mat-icon>
+              Puesto / Cargo <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="ctrol_puesto" class="form-input"
+                placeholder="Ej: Supervisor de Almacén" autocomplete="off">
+            </div>
+          </div>
+
+          <!-- Col 3: Proceso -->
           <div class="form-field">
             <label class="form-label">
               <mat-icon class="label-icon">account_tree</mat-icon>
@@ -50,31 +120,7 @@
             </div>
           </div>
 
-          <!-- Col 2: Usuario (Nombre y Apellido) -->
-          <div class="form-field">
-            <label class="form-label">
-              <mat-icon class="label-icon">person</mat-icon>
-              Usuario <span class="req">*</span>
-            </label>
-            <div class="input-wrapper">
-              <input type="text" formControlName="ctrol_puesto" class="form-input"
-                placeholder="Nombre y Apellido del personal" autocomplete="off">
-            </div>
-          </div>
-
-          <!-- Col 3: Usuario de Acceso -->
-          <div class="form-field">
-            <label class="form-label">
-              <mat-icon class="label-icon">fingerprint</mat-icon>
-              Usuario de Acceso
-            </label>
-            <div class="input-wrapper">
-              <input type="text" formControlName="ctrol_usuario" class="form-input"
-                placeholder="Usuario de acceso al sistema" autocomplete="off">
-            </div>
-          </div>
-
-          <!-- Col 4: Nivel Jerárquico -->
+          <!-- Col 4: Nivel Jerárquico - Conexión a SP SN_Nivel_Jerarquico_Listado -->
           <div class="form-field">
             <label class="form-label">
               <mat-icon class="label-icon">stairs</mat-icon>
@@ -82,9 +128,9 @@
             </label>
             <div class="input-wrapper">
               <select formControlName="ctrol_nivel" class="form-select">
-                <option value="Operativo">Operativo</option>
-                <option value="Jefatura">Jefatura</option>
-                <option value="Gerencial">Gerencial</option>
+                <option *ngFor="let niv of lstNivelJerarquico" [value]="niv.descripcion">
+                  {{ niv.descripcion }}
+                </option>
               </select>
             </div>
           </div>
@@ -98,7 +144,63 @@
           <span class="section-title">2. Credenciales & Permisos de Acceso</span>
         </div>
 
-        <div class="form-row split-4">
+        <!-- Fila 1: Credenciales de Acceso (Usuario, Correo, Clave) -->
+        <div class="form-row split-3">
+          <!-- Col 1: Usuario de Acceso con restricción de duplicados -->
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">fingerprint</mat-icon>
+              Usuario de Acceso <span class="req">*</span>
+              <span *ngIf="usuarioDuplicado" class="duplicate-badge">¡DUPLICADO!</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="ctrol_usuario" class="form-input"
+                [class.input-duplicate-error]="usuarioDuplicado" placeholder="Ej: almacenhuachipa" autocomplete="off">
+            </div>
+
+            <!-- Mensaje y sugerencia cuando se detecta duplicado -->
+            <div *ngIf="usuarioDuplicado" class="duplicate-alert-box">
+              <div class="dup-info-row">
+                <mat-icon class="dup-warning-icon">warning</mat-icon>
+                <span class="dup-text">En uso por: <b>{{ usuarioDuplicadoNombreColaborador }}</b></span>
+              </div>
+              <div *ngIf="sugerenciaUsuarioUnico" class="dup-action-row">
+                <span class="dup-sugg-label">Sugerencia única: <code>{{ sugerenciaUsuarioUnico }}</code></span>
+                <button type="button" class="btn-apply-dup" (click)="aplicarSugerenciaUsuario()">
+                  <mat-icon>done</mat-icon>
+                  <span>Aplicar</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Col 2: Correo Electrónico -->
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">mail_outline</mat-icon>
+              Correo Electrónico (Email) <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="email" formControlName="ctrol_email" class="form-input"
+                placeholder="usuario@precotexperu.com" autocomplete="off">
+            </div>
+          </div>
+
+          <!-- Col 3: Contraseña de Acceso -->
+          <div class="form-field">
+            <label class="form-label">
+              <mat-icon class="label-icon">lock_outline</mat-icon>
+              Contraseña de Acceso <span class="req">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="ctrol_password" class="form-input" placeholder="Ingrese la contraseña"
+                autocomplete="off">
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila 2: Permisos y Estado -->
+        <div class="form-row split-2" style="margin-top: 10px;">
           <!-- Col 1: Permisos -->
           <div class="form-field">
             <label class="form-label">
@@ -119,39 +221,20 @@
             <label class="form-label">
               <mat-icon class="label-icon">toggle_on</mat-icon>
               Estado <span class="req">*</span>
+              <span *ngIf="data.Accion === 'I'" class="badge-pending-auto">Pendiente automático</span>
             </label>
             <div class="input-wrapper">
-              <select formControlName="ctrol_estado" class="form-select">
+              <select formControlName="ctrol_estado" class="form-select" [attr.disabled]="data.Accion === 'I' ? true : null">
                 <option value="Pendiente de activación">Pendiente de activación</option>
                 <option value="Activo">Activo</option>
                 <option value="Inactivo">Inactivo</option>
                 <option value="Suspendido">Suspendido</option>
               </select>
             </div>
-          </div>
-
-          <!-- Col 3: Correo Electrónico -->
-          <div class="form-field">
-            <label class="form-label">
-              <mat-icon class="label-icon">mail_outline</mat-icon>
-              Correo Electrónico (Email) <span class="req">*</span>
-            </label>
-            <div class="input-wrapper">
-              <input type="email" formControlName="ctrol_email" class="form-input"
-                placeholder="usuario@precotexperu.com" autocomplete="off">
-            </div>
-          </div>
-
-          <!-- Col 4: Contraseña de Acceso -->
-          <div class="form-field">
-            <label class="form-label">
-              <mat-icon class="label-icon">lock_outline</mat-icon>
-              Contraseña de Acceso <span class="req">*</span>
-            </label>
-            <div class="input-wrapper">
-              <input type="text" formControlName="ctrol_password" class="form-input" placeholder="Ingrese la contraseña"
-                autocomplete="off">
-            </div>
+            <span *ngIf="data.Accion === 'I'" class="estado-helper-text">
+              <mat-icon style="font-size: 13px; width: 13px; height: 13px; vertical-align: middle;">lock_clock</mat-icon>
+              Inicia en <strong>Pendiente de activación</strong> y pasa a <strong>Activo</strong> al cambiar contraseña en su 1er login.
+            </span>
           </div>
         </div>
       </div>
@@ -162,8 +245,8 @@
           <input type="checkbox" formControlName="ctrol_enviar_credenciales" class="custom-checkbox">
           <div class="credentials-text-box">
             <div class="credentials-header-line">
-              <span class="credentials-title">Enviar credenciales de acceso por correo automáticamente al guardar</span>
-              <span class="badge-auto-envio">Recomendado (PUE-02)</span>
+              <span class="credentials-title">Enviar credenciales de acceso por correo</span>
+              <span class="badge-auto-envio">Recomendado</span>
             </div>
             <p class="credentials-desc">
               Al guardar, el servidor enviará un correo formal al colaborador con su usuario asignado, cargo y

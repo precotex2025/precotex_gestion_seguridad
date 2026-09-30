@@ -484,7 +484,7 @@ export class UsuariosPersonasRegeditComponent implements OnInit {
       Asunto: '🔐 Credenciales de Acceso al Sistema de Gestión de Seguridad Precotex SOMA'
     };
 
-    this.http.post(`${GlobalVariable.baseUrlBackEnd}TxLogin/postEnviarCredencialesCorreo`, payload).subscribe({
+    this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postEnviarCredencialesCorreo`, payload).subscribe({
       next: () => {},
       error: () => {}
     });

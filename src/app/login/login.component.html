@@ -142,4 +142,116 @@
     <div class="dots-pattern"></div>
   </div>
 
+  <!-- ===================================================================
+       MODAL DE PRIMER INGRESO - CAMBIO OBLIGATORIO DE CONTRASEÑA
+       =================================================================== -->
+  <div class="primer-ingreso-backdrop sn-animate-fade" *ngIf="mostrarModalPrimerIngreso">
+    <div class="primer-ingreso-modal sn-animate-scale">
+      
+      <!-- Top Accent Bar -->
+      <div class="modal-top-accent"></div>
+
+      <!-- Modal Header -->
+      <div class="modal-header-box">
+        <div class="modal-icon-shield">
+          <mat-icon>lock_reset</mat-icon>
+        </div>
+        <div class="modal-title-group">
+          <span class="modal-pill-tag">Primer inicio de sesión</span>
+          <h3 class="modal-main-title">Cambio Obligatorio de Contraseña</h3>
+          <p class="modal-subtitle">
+            Por política de seguridad corporativa, configure una nueva contraseña para activar su cuenta en el sistema.
+          </p>
+        </div>
+      </div>
+
+      <!-- Info del Usuario / Colaborador Asignado -->
+      <div class="user-info-banner">
+        <div class="user-avatar-mini">
+          <mat-icon>person</mat-icon>
+        </div>
+        <div class="user-meta-details">
+          <span class="user-meta-name">{{ primerIngresoUser?.nombre || 'Colaborador' }}</span>
+          <span class="user-meta-cargo">{{ primerIngresoUser?.puesto || 'Puesto SIG' }} • <code>&#64;{{ primerIngresoUser?.cod_Usuario }}</code></span>
+        </div>
+        <span class="badge-pending-tag">
+          <span class="pulsing-dot"></span>
+          Pendiente de activación
+        </span>
+      </div>
+
+      <!-- Formulario de Cambio de Contraseña -->
+      <form (ngSubmit)="onConfirmarCambioPasswordPrimerIngreso()" class="modal-form-body">
+        
+        <!-- Campo: Nueva Contraseña -->
+        <div class="form-group-modal">
+          <label class="modal-label">Nueva Contraseña <span class="req">*</span></label>
+          <div class="modal-input-wrapper">
+            <mat-icon class="modal-input-icon">vpn_key</mat-icon>
+            <input [type]="ocultarNuevaPass ? 'password' : 'text'" 
+                   [(ngModel)]="nuevaPassword" 
+                   name="nuevaPassword"
+                   placeholder="Mínimo 6 caracteres" 
+                   class="modal-input" 
+                   autocomplete="new-password">
+            <button type="button" class="btn-toggle-eye" (click)="ocultarNuevaPass = !ocultarNuevaPass" title="Ver contraseña">
+              <mat-icon>{{ ocultarNuevaPass ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </div>
+          <span *ngIf="nuevaPassword && nuevaPassword.length < 6" class="error-hint">
+            La contraseña debe tener al menos 6 caracteres.
+          </span>
+        </div>
+
+        <!-- Campo: Confirmar Nueva Contraseña -->
+        <div class="form-group-modal">
+          <label class="modal-label">Confirmar Nueva Contraseña <span class="req">*</span></label>
+          <div class="modal-input-wrapper">
+            <mat-icon class="modal-input-icon">lock</mat-icon>
+            <input [type]="ocultarConfirmarPass ? 'password' : 'text'" 
+                   [(ngModel)]="confirmarPassword" 
+                   name="confirmarPassword"
+                   placeholder="Repita la nueva contraseña" 
+                   class="modal-input" 
+                   autocomplete="new-password">
+            <button type="button" class="btn-toggle-eye" (click)="ocultarConfirmarPass = !ocultarConfirmarPass" title="Ver contraseña">
+              <mat-icon>{{ ocultarConfirmarPass ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </div>
+          <span *ngIf="confirmarPassword && nuevaPassword !== confirmarPassword" class="error-hint">
+            Las contraseñas no coinciden.
+          </span>
+        </div>
+
+        <!-- Requisitos Checklist -->
+        <div class="password-rules-box">
+          <div class="rule-item" [class.rule-valid]="nuevaPassword && nuevaPassword.length >= 6">
+            <mat-icon class="rule-icon">{{ (nuevaPassword && nuevaPassword.length >= 6) ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+            <span>Mínimo 6 caracteres</span>
+          </div>
+          <div class="rule-item" [class.rule-valid]="nuevaPassword && confirmarPassword && nuevaPassword === confirmarPassword">
+            <mat-icon class="rule-icon">{{ (nuevaPassword && confirmarPassword && nuevaPassword === confirmarPassword) ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+            <span>Las contraseñas coinciden</span>
+          </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="modal-actions-footer">
+          <button type="button" class="btn-cancel-modal" (click)="onCancelarPrimerIngreso()">
+            <mat-icon>close</mat-icon>
+            <span>Cancelar</span>
+          </button>
+          <button type="submit" 
+                  class="btn-submit-activate" 
+                  [disabled]="isUpdatingPassword || !nuevaPassword || nuevaPassword.length < 6 || nuevaPassword !== confirmarPassword">
+            <mat-icon *ngIf="!isUpdatingPassword">verified_user</mat-icon>
+            <span>{{ isUpdatingPassword ? 'Activando cuenta...' : 'Cambiar y Activar Cuenta' }}</span>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
 </div>

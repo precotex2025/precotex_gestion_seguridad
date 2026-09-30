@@ -1,8 +1,5 @@
-<div class="contenedor sn-animate-in"
-     (dragover)="onDragOver($event)"
-     (dragenter)="onDragEnter($event)"
-     (dragleave)="onDragLeave($event)"
-     (drop)="onDropFile($event)">
+<div class="contenedor sn-animate-in" (dragover)="onDragOver($event)" (dragenter)="onDragEnter($event)"
+  (dragleave)="onDragLeave($event)" (drop)="onDropFile($event)">
 
   <!-- OVERLAY GLOBAL DE DRAG & DROP SOBRE LA PLATAFORMA -->
   <div class="drag-drop-global-overlay" *ngIf="isDraggingOver">
@@ -28,7 +25,8 @@
   <div class="banner-aviso-collapsible" *ngIf="mostrarBanner">
     <div class="banner-info-left">
       <mat-icon class="banner-info-icon">folder_special</mat-icon>
-      <span>Biblioteca de documentos controlados. Explora el árbol documental por macroproceso o haz clic en cualquier documento para abrir la <strong>Vista Previa Rápida (Quick View)</strong>.</span>
+      <span>Biblioteca de documentos controlados. Explora el árbol documental por macroproceso o haz clic en cualquier
+        documento para abrir la <strong>Vista Previa Rápida (Quick View)</strong>.</span>
     </div>
     <button type="button" class="btn-close-banner" (click)="cerrarBanner()" title="Cerrar aviso">
       <mat-icon>close</mat-icon>
@@ -42,10 +40,11 @@
 
 
   <div class="doc-layout" [class.layout-stacked]="treeColapsado">
-    
+
     <!-- BOTÓN PARA RE-EXPANDIR SI ESTÁ COLAPSADO -->
     <div class="expand-banner-row" *ngIf="treeColapsado">
-      <button type="button" class="btn-expand-carpetas shadow-premium" (click)="toggleTree()" title="Mostrar Estructura Documental">
+      <button type="button" class="btn-expand-carpetas shadow-premium" (click)="toggleTree()"
+        title="Mostrar Estructura Documental">
         <mat-icon>chevron_right</mat-icon>
         <span>Estructura Documental</span>
       </button>
@@ -53,7 +52,7 @@
 
     <!-- PANEL IZQUIERDO: ESTRUCTURA DOCUMENTAL ESTILO FILE MANAGER (Observaciones d, f, g) -->
     <div class="tree-panel-filemanager" *ngIf="!treeColapsado">
-      
+
       <div class="tree-header-row">
         <div class="tree-header-icon-badge">
           <mat-icon>snippet_folder</mat-icon>
@@ -70,22 +69,15 @@
 
       <div class="tree-search-bar">
         <mat-icon class="tree-search-icon">search</mat-icon>
-        <input type="text" 
-               [(ngModel)]="searchProcesoTree" 
-               placeholder="Buscar proceso o área..." 
-               class="tree-search-input">
-        <button type="button" 
-                *ngIf="searchProcesoTree" 
-                (click)="searchProcesoTree = ''" 
-                class="tree-search-clear" 
-                title="Limpiar búsqueda">
+        <input type="text" [(ngModel)]="searchProcesoTree" placeholder="Buscar proceso o área..."
+          class="tree-search-input">
+        <button type="button" *ngIf="searchProcesoTree" (click)="searchProcesoTree = ''" class="tree-search-clear"
+          title="Limpiar búsqueda">
           <mat-icon style="font-size: 14px; width: 14px; height: 14px;">close</mat-icon>
         </button>
       </div>
-      
-      <div class="tree-node-item root-node" 
-           [class.active]="activeFilter === '__all__'" 
-           (click)="setFilter('__all__')">
+
+      <div class="tree-node-item root-node" [class.active]="activeFilter === '__all__'" (click)="setFilter('__all__')">
         <div class="node-left">
           <mat-icon class="folder-icon root-icon">folder_shared</mat-icon>
           <span class="node-name">Todos los procesos</span>
@@ -96,11 +88,10 @@
       <div class="tree-groups-container">
         <!-- Observación d: Listado con filtrado y contraído por defecto -->
         <div *ngFor="let macro of getFilteredMacroProcesses()" class="macro-group-wrapper">
-          
+
           <!-- Macroprocess Accordion Node -->
-          <div class="tree-node-item macro-node" 
-               [class.active]="activeFilter === 'macro:' + macro"
-               (click)="setFilter('macro:' + macro)">
+          <div class="tree-node-item macro-node" [class.active]="activeFilter === 'macro:' + macro"
+            (click)="setFilter('macro:' + macro)">
             <div class="node-left">
               <button type="button" class="accordion-arrow-btn" (click)="toggleMacro(macro, $event)">
                 <mat-icon class="arrow-icon" [class.rotated]="!isMacroExpanded(macro)">keyboard_arrow_down</mat-icon>
@@ -110,35 +101,36 @@
             </div>
             <span class="mini-count-pill" [class.has-docs]="getMacroCount(macro) > 0">{{ getMacroCount(macro) }}</span>
           </div>
-          
+
           <!-- Subprocesses Animated Container (contraído por defecto, abre si está expandido) -->
           <div class="sub-nodes-container" [class.collapsed]="!isMacroExpanded(macro)">
             <div *ngFor="let proc of getFilteredProcesosByMacro(macro)" class="process-wrapper-folder">
-              
+
               <!-- Nodo de Proceso Principal -->
-              <div class="tree-node-item process-node"
-                   [class.active]="activeFilter === proc"
-                   (click)="setFilter(proc)">
+              <div class="tree-node-item process-node" [class.active]="activeFilter === proc" (click)="setFilter(proc)">
                 <div class="node-left">
                   <mat-icon class="folder-icon process-folder">folder_open</mat-icon>
                   <span class="node-abbr">[{{ getAbreviaturaProceso(proc) }}]</span>
                   <span class="node-name" [title]="proc">{{ proc }}</span>
                 </div>
-                <span class="mini-count-pill" [class.has-docs]="getProcessCount(proc) > 0">{{ getProcessCount(proc) }}</span>
+                <span class="mini-count-pill" [class.has-docs]="getProcessCount(proc) > 0">{{ getProcessCount(proc)
+                  }}</span>
               </div>
 
               <!-- DOC-03 / Observación f: Subcarpetas con 'Descripción del Puesto' en Capacitaciones y Desarrollo -->
-              <div class="sub-folders-doc03-container" *ngIf="activeFilter === proc || activeFilter.startsWith('folder:' + proc)">
-                <div *ngFor="let fType of getCarpetasPorProceso(proc)" 
-                     class="tree-node-item folder-type-node"
-                     [class.active]="activeFilter === 'folder:' + proc + '|' + fType"
-                     (click)="setFilter('folder:' + proc + '|' + fType)"
-                     style="padding-left: 36px; font-size: 11px; height: 26px;">
+              <div class="sub-folders-doc03-container"
+                *ngIf="activeFilter === proc || activeFilter.startsWith('folder:' + proc)">
+                <div *ngFor="let fType of getCarpetasPorProceso(proc)" class="tree-node-item folder-type-node"
+                  [class.active]="activeFilter === 'folder:' + proc + '|' + fType"
+                  (click)="setFilter('folder:' + proc + '|' + fType)"
+                  style="padding-left: 36px; font-size: 11px; height: 26px;">
                   <div class="node-left">
-                    <mat-icon style="font-size: 14px; width: 14px; height: 14px; color: #6366f1; margin-right: 4px;">folder_special</mat-icon>
+                    <mat-icon
+                      style="font-size: 14px; width: 14px; height: 14px; color: #6366f1; margin-right: 4px;">folder_special</mat-icon>
                     <span class="node-name" style="color: #475569; font-weight: 500;">{{ fType }}</span>
                   </div>
-                  <span class="mini-count-pill" style="font-size: 9px; padding: 1px 5px;">{{ getProcessTypeCount(proc, fType) }}</span>
+                  <span class="mini-count-pill" style="font-size: 9px; padding: 1px 5px;">{{ getProcessTypeCount(proc,
+                    fType) }}</span>
                 </div>
               </div>
 
@@ -161,15 +153,16 @@
           </span>
           <span class="active-folder-title">{{ getActiveFolderTitle() }}</span>
         </div>
-        <button type="button" class="btn-reset-folder" (click)="setFilter('__all__')" title="Volver a todos los procesos">
+        <button type="button" class="btn-reset-folder" (click)="setFilter('__all__')"
+          title="Volver a todos los procesos">
           <mat-icon style="font-size: 14px; width: 14px; height: 14px;">close</mat-icon>
           <span>Mostrar todos</span>
         </button>
       </div>
-      
+
       <!-- CUADROS DE ESTADÍSTICAS COMPACTOS CON TOP GLOW -->
       <div class="stats-grid-compact">
-        
+
         <div class="stat-card-compact glow-border-total">
           <div class="stat-watermark"><mat-icon>description</mat-icon></div>
           <div class="stat-card-content">
@@ -212,17 +205,14 @@
       <div class="integrated-toolbar">
         <div class="inline-search-box">
           <mat-icon class="search-icon">search</mat-icon>
-          <input type="text" 
-                 [(ngModel)]="searchQuery" 
-                 placeholder="Buscar por código, nombre, tipo..." 
-                 class="inline-search-input">
+          <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar por código, nombre, tipo..."
+            class="inline-search-input">
         </div>
-        
+
         <div class="toolbar-actions-section">
           <!-- Botón Estructura Documental para toggle rápido -->
-          <button type="button" class="btn-ghost-action btn-tree-toggle" (click)="toggleTreeVisible()" 
-                  [class.active-toggle-btn]="!treeColapsado"
-                  title="Ver u ocultar la Estructura Documental">
+          <button type="button" class="btn-ghost-action btn-tree-toggle" (click)="toggleTreeVisible()"
+            [class.active-toggle-btn]="!treeColapsado" title="Ver u ocultar la Estructura Documental">
             <mat-icon style="color: #6366f1;">snippet_folder</mat-icon>
             <span>Estructura</span>
           </button>
@@ -233,9 +223,10 @@
           </button>
 
           <!-- Ghost Buttons -->
-          <button type="button" class="btn-ghost-action" (click)="onEditarCarpetasAdmin()" *ngIf="isUserAdmin" title="Gestión de Nombres de Carpetas por Proceso (Solo Administradores)">
+          <button type="button" class="btn-ghost-action" (click)="onEditarCarpetasAdmin()" *ngIf="isUserAdmin"
+            title="Gestión de Nombres de Carpetas por Proceso">
             <mat-icon style="color: #6366f1;">create_new_folder</mat-icon>
-            <span>Carpetas DOC-03</span>
+            <span>Carpetas</span>
           </button>
 
           <button type="button" class="btn-ghost-action" (click)="onCargarLote()" *ngIf="canCreate">
@@ -244,25 +235,29 @@
           </button>
 
           <!-- Observación b: Papelera de Documentos Eliminados -->
-          <button type="button" class="btn-ghost-action btn-papelera" (click)="onAbrirPapelera()" title="Papelera de documentos eliminados (Recuperar)">
+          <button type="button" class="btn-ghost-action btn-papelera" (click)="onAbrirPapelera()"
+            title="Papelera de documentos eliminados (Recuperar)">
             <mat-icon style="color: #ef4444;">delete_sweep</mat-icon>
             <span>Papelera ({{ papeleraList.length }})</span>
           </button>
-          
-          <button type="button" class="btn-ghost-action" (click)="exportExcel()" title="Exportar Lista Maestra de Documentos a Excel (DOC-16)">
+
+          <button type="button" class="btn-ghost-action" (click)="exportExcel()"
+            title="Exportar Lista Maestra de Documentos a Excel">
             <mat-icon class="icon-excel-btn">grid_on</mat-icon>
-            <span>Excel (DOC-16)</span>
+            <span>Excel</span>
           </button>
-          
-          <button type="button" class="btn-ghost-action" (click)="exportPDF()" title="Exportar Lista Maestra de Documentos a PDF (DOC-16)">
+
+          <button type="button" class="btn-ghost-action" (click)="exportPDF()"
+            title="Exportar Lista Maestra de Documentos a PDF">
             <mat-icon class="icon-pdf-btn">picture_as_pdf</mat-icon>
-            <span>PDF (DOC-16)</span>
+            <span>PDF</span>
           </button>
 
           <!-- DOC-07: Reporte de Visto Bueno Semestral - Solo Admin -->
-          <button type="button" class="btn-ghost-action" (click)="onReporteVistoBueno()" *ngIf="isUserAdmin" title="Reporte de Lectura Semestral por Jefaturas (DOC-07) - Solo Administradores">
+          <button type="button" class="btn-ghost-action" (click)="onReporteVistoBueno()" *ngIf="isUserAdmin"
+            title="Reporte de Lectura Semestral por Jefaturas">
             <mat-icon style="color: #16a34a;">fact_check</mat-icon>
-            <span>Reporte DOC-07</span>
+            <span>Reporte</span>
           </button>
         </div>
       </div>
@@ -287,10 +282,12 @@
           </thead>
           <tbody>
             <tr *ngFor="let doc of filteredDocs; let i = index" class="fila">
-              <td class="code-cell font-mono text-purple" style="min-width: 155px; width: 155px; white-space: nowrap;">{{ doc.codigo }}</td>
-              
+              <td class="code-cell font-mono text-purple" style="min-width: 155px; width: 155px; white-space: nowrap;">
+                {{ doc.codigo }}</td>
+
               <!-- Quick View Clickable Name -->
-              <td class="name-cell-quickview" (click)="openQuickView(doc)" title="Ver vista previa rápida" style="min-width: 250px;">
+              <td class="name-cell-quickview" (click)="openQuickView(doc)" title="Ver vista previa rápida"
+                style="min-width: 250px;">
                 <span class="doc-title-text">{{ doc.nombre }}</span>
               </td>
 
@@ -304,7 +301,7 @@
               <td style="min-width: 80px; width: 80px; text-align: center;">
                 <span class="version-label">{{ doc.version }}</span>
               </td>
-              
+
               <!-- Official Color Iconography for File Formats -->
               <td style="min-width: 100px; width: 100px; text-align: center;">
                 <div class="format-icon-badge" [title]="'Formato ' + doc.formato">
@@ -318,7 +315,8 @@
               <td class="process-cell" style="min-width: 180px;">
                 <ng-container *ngIf="getDocProcesosList(doc).length <= 1">
                   <span>{{ doc.proceso }}</span>
-                  <span style="color: #64748b; font-size: 11px;" *ngIf="getAbreviaturaProceso(doc.proceso) !== 'GEN'"> ({{ getAbreviaturaProceso(doc.proceso) }})</span>
+                  <span style="color: #64748b; font-size: 11px;" *ngIf="getAbreviaturaProceso(doc.proceso) !== 'GEN'">
+                    ({{ getAbreviaturaProceso(doc.proceso) }})</span>
                 </ng-container>
                 <ng-container *ngIf="getDocProcesosList(doc).length > 1">
                   <div class="multi-proc-cell" [title]="'Procesos autorizados: ' + getDocProcesosList(doc).join(', ')">
@@ -327,12 +325,13 @@
                   </div>
                 </ng-container>
               </td>
-              <td style="min-width: 110px; width: 110px; text-align: center;" class="date-cell">{{ doc.vig || '-' }}</td>
-              
+              <td style="min-width: 110px; width: 110px; text-align: center;" class="date-cell">{{ doc.vig || '-' }}
+              </td>
+
               <!-- Soft Badge for Status -->
               <td style="min-width: 120px; width: 120px; text-align: center;">
-                <span class="soft-badge" 
-                      [ngClass]="doc.estado === 'Vigente' ? 'soft-badge-vigente' : (doc.estado === 'Por vencer' ? 'soft-badge-revision' : 'soft-badge-porvencer')">
+                <span class="soft-badge"
+                  [ngClass]="doc.estado === 'Vigente' ? 'soft-badge-vigente' : (doc.estado === 'Por vencer' ? 'soft-badge-revision' : 'soft-badge-porvencer')">
                   <span class="glowing-dot"></span>
                   <span>{{ doc.estado }}</span>
                 </span>
@@ -341,10 +340,13 @@
               <!-- Visor & Visto Bueno (DOC-07, DOC-10) -->
               <td style="min-width: 110px; width: 110px; text-align: center;">
                 <div class="actions-wrapper">
-                  <button type="button" class="action-btn btn-view" (click)="onVistaPrevia(doc)" title="Visor Interno de Documento (DOC-10)">
+                  <button type="button" class="action-btn btn-view" (click)="onVistaPrevia(doc)"
+                    title="Visor Interno de Documento (DOC-10)">
                     <mat-icon>visibility</mat-icon>
                   </button>
-                  <button type="button" class="action-btn btn-visto-bueno" (click)="onDarVistoBueno(doc)" [title]="doc.vistoBuenoInfo ? 'Visto Bueno dado por ' + doc.vistoBuenoInfo.usuario : 'Dar Visto Bueno de Lectura Semestral (DOC-07)'" [class.visto-bueno-done]="doc.vistoBuenoInfo">
+                  <button type="button" class="action-btn btn-visto-bueno" (click)="onDarVistoBueno(doc)"
+                    [title]="doc.vistoBuenoInfo ? 'Visto Bueno dado por ' + doc.vistoBuenoInfo.usuario : 'Dar Visto Bueno de Lectura Semestral (DOC-07)'"
+                    [class.visto-bueno-done]="doc.vistoBuenoInfo">
                     <mat-icon>check_circle</mat-icon>
                   </button>
                 </div>
@@ -352,7 +354,8 @@
 
               <!-- Highlighted Download Button (DOC-05) -->
               <td style="min-width: 70px; width: 70px; text-align: center;">
-                <button type="button" class="btn-download-highlight" (click)="onDescargar(doc)" title="Descargar archivo limpio (DOC-05)" *ngIf="canDownload">
+                <button type="button" class="btn-download-highlight" (click)="onDescargar(doc)"
+                  title="Descargar archivo limpio (DOC-05)" *ngIf="canDownload">
                   <mat-icon>download</mat-icon>
                 </button>
               </td>
@@ -360,13 +363,16 @@
               <!-- Hover Fade-In Actions (DOC-09, Edit, Delete) -->
               <td style="min-width: 140px; width: 140px; text-align: center;" class="acciones-cell">
                 <div class="actions-wrapper hover-fade">
-                  <button class="action-btn btn-historial" (click)="onVerHistorial(doc)" title="Ver Historial de Versiones (DOC-09)">
+                  <button class="action-btn btn-historial" (click)="onVerHistorial(doc)"
+                    title="Ver Historial de Versiones (DOC-09)">
                     <mat-icon>history</mat-icon>
                   </button>
-                  <button class="action-btn btn-edit" (click)="onEditar(doc, i)" title="Editar registro" *ngIf="canEdit">
+                  <button class="action-btn btn-edit" (click)="onEditar(doc, i)" title="Editar registro"
+                    *ngIf="canEdit">
                     <mat-icon>edit</mat-icon>
                   </button>
-                  <button class="action-btn btn-delete" (click)="onEliminar(doc)" title="Eliminar registro" *ngIf="canDelete">
+                  <button class="action-btn btn-delete" (click)="onEliminar(doc)" title="Eliminar registro"
+                    *ngIf="canDelete">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </div>
@@ -415,16 +421,17 @@
     </div>
 
     <div class="drawer-body" *ngIf="selectedDoc">
-      
+
       <!-- Primary Big Download Button inside Drawer -->
       <button type="button" class="drawer-download-primary" (click)="downloadFile(selectedDoc)">
         <mat-icon>download</mat-icon>
-        <span>Descargar {{ selectedDoc.archivo || (selectedDoc.codigo + '.' + selectedDoc.formato.toLowerCase()) }}</span>
+        <span>Descargar {{ selectedDoc.archivo || (selectedDoc.codigo + '.' + selectedDoc.formato.toLowerCase())
+          }}</span>
       </button>
 
       <!-- Document Metadata Cards -->
       <div class="doc-meta-grid">
-        
+
         <div class="meta-card">
           <span class="meta-label">Proceso / Áreas Autorizadas (DOC-15)</span>
           <span class="meta-value-text">{{ selectedDoc.proceso }}</span>
@@ -442,7 +449,8 @@
 
         <div class="meta-card">
           <span class="meta-label">Estado del Registro</span>
-          <span class="soft-badge" [ngClass]="selectedDoc.estado === 'Vigente' ? 'soft-badge-vigente' : 'soft-badge-revision'">
+          <span class="soft-badge"
+            [ngClass]="selectedDoc.estado === 'Vigente' ? 'soft-badge-vigente' : 'soft-badge-revision'">
             <span class="glowing-dot"></span>
             <span>{{ selectedDoc.estado }}</span>
           </span>
@@ -463,8 +471,9 @@
       <!-- Revision History List con descarga y visualización de versiones en backup (Observación a) -->
       <div class="version-history-box">
         <h4 class="history-title">Historial de Versiones Resguardadas en Backup</h4>
-        
-        <div class="history-timeline" *ngIf="selectedDoc.historialVersiones && selectedDoc.historialVersiones.length > 0">
+
+        <div class="history-timeline"
+          *ngIf="selectedDoc.historialVersiones && selectedDoc.historialVersiones.length > 0">
           <div class="history-item" *ngFor="let h of selectedDoc.historialVersiones; let hIdx = index">
             <div class="history-bullet" [class.active-bullet]="hIdx === 0"></div>
             <div class="history-content">
@@ -474,24 +483,24 @@
                   {{ hIdx === 0 ? 'Versión Vigente' : (h.tipoCarga || 'Versión Anterior') }}
                 </span>
               </div>
-              <span class="history-date">{{ h.fechaHora || h.fecha }} &bull; Subido por: <strong>{{ h.usuarioSubio || h.usuario || sUsuario }}</strong></span>
+              <span class="history-date">{{ h.fechaHora || h.fecha }} &bull; Subido por: <strong>{{ h.usuarioSubio ||
+                  h.usuario || sUsuario }}</strong></span>
               <p class="history-note" *ngIf="h.archivo">
-                Archivo: <code style="font-size: 11px; background: #e2e8f0; padding: 2px 4px; border-radius: 4px;">{{ h.archivo }}</code>
+                Archivo: <code
+                  style="font-size: 11px; background: #e2e8f0; padding: 2px 4px; border-radius: 4px;">{{ h.archivo }}</code>
               </p>
-              
+
               <!-- Acciones de versión pasada: Ver y Descargar (Observación a) -->
               <div class="history-actions-row">
-                <button type="button" 
-                        class="btn-history-preview" 
-                        (click)="onVistaPrevia({ archivo: h.archivo || selectedDoc.archivo, nombre: selectedDoc.nombre, formato: selectedDoc.formato })" 
-                        title="Visualizar esta versión">
+                <button type="button" class="btn-history-preview"
+                  (click)="onVistaPrevia({ archivo: h.archivo || selectedDoc.archivo, nombre: selectedDoc.nombre, formato: selectedDoc.formato })"
+                  title="Visualizar esta versión">
                   <mat-icon style="font-size: 14px; width: 14px; height: 14px;">visibility</mat-icon>
                   <span>Visualizar</span>
                 </button>
-                <button type="button" 
-                        class="btn-history-download" 
-                        (click)="downloadFile({ archivo: h.archivo || selectedDoc.archivo, codigo: selectedDoc.codigo })" 
-                        title="Descargar copia de backup">
+                <button type="button" class="btn-history-download"
+                  (click)="downloadFile({ archivo: h.archivo || selectedDoc.archivo, codigo: selectedDoc.codigo })"
+                  title="Descargar copia de backup">
                   <mat-icon style="font-size: 14px; width: 14px; height: 14px;">download</mat-icon>
                   <span>Descargar</span>
                 </button>
@@ -508,7 +517,7 @@
        MODAL PAPELERA DE DOCUMENTOS (Observación b)
        =================================================================== -->
   <div class="papelera-backdrop" *ngIf="papeleraModalOpen" (click)="onCerrarPapelera()"></div>
-  
+
   <div class="papelera-modal-dialog shadow-premium" *ngIf="papeleraModalOpen">
     <div class="papelera-modal-header">
       <div class="papelera-header-title-box">
@@ -556,7 +565,8 @@
               <td style="text-align: center;"><span class="version-label">{{ item.version }}</span></td>
               <td class="text-muted" style="font-size: 11px;">{{ item.fechaEliminado || '-' }}</td>
               <td style="text-align: center;">
-                <button type="button" class="btn-restaurar-doc" (click)="onRestaurarDocumento(item)" title="Restaurar al catálogo">
+                <button type="button" class="btn-restaurar-doc" (click)="onRestaurarDocumento(item)"
+                  title="Restaurar al catálogo">
                   <mat-icon style="font-size: 16px; width: 16px; height: 16px;">restore_from_trash</mat-icon>
                   <span>Restaurar</span>
                 </button>
@@ -572,11 +582,8 @@
         {{ papeleraList.length }} documento(s) en papelera
       </span>
       <span class="flex-spacer"></span>
-      <button type="button" 
-              class="btn-vaciar-papelera" 
-              (click)="onVaciarPapelera()" 
-              [disabled]="papeleraList.length === 0"
-              title="Eliminar todos los documentos permanentemente">
+      <button type="button" class="btn-vaciar-papelera" (click)="onVaciarPapelera()"
+        [disabled]="papeleraList.length === 0" title="Eliminar todos los documentos permanentemente">
         <mat-icon style="font-size: 16px; width: 16px; height: 16px;">delete_forever</mat-icon>
         <span>Vaciar Papelera</span>
       </button>

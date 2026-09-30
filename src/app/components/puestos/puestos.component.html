@@ -103,7 +103,13 @@
             <div class="avatar-circle-gradient">
               {{ initials(row.usuario) }}
             </div>
-            <span class="user-full-name">{{ row.usuario }}</span>
+            <div style="display: flex; flex-direction: column;">
+              <span class="user-full-name">{{ row.usuario }}</span>
+              <span *ngIf="row.userCode || (row.email && !row.usuario.toLowerCase().includes(row.email.split('@')[0]))" 
+                    style="font-size: 11px; color: #64748b; font-weight: 500; margin-top: 1px;">
+                {{ '@' + (row.userCode || (row.email ? row.email.split('@')[0] : '')) }}
+              </span>
+            </div>
           </div>
           <ng-template #noUser>
             <span class="no-user-text">— Sin asignar —</span>
@@ -145,7 +151,7 @@
               <span class="glowing-dot"></span>
               <span class="badge-text">{{ row.estado || 'Activo' }}</span>
             </span>
-            <button *ngIf="row.estado === 'Pendiente de activación'" 
+            <button *ngIf="row.estado === 'Pendiente de activación' || (row.estado && row.estado.includes('Pendiente'))" 
                     type="button" 
                     class="btn-quick-activate" 
                     (click)="onConfirmarActivacion(row)" 

@@ -150,6 +150,14 @@ export class OrganizacionRegeditComponent implements OnInit {
     this.procesosList = list;
     this.procesosAgrupados = {};
 
+    const currentSedeCode = (this.data && this.data.Datos && (this.data.Datos.codigo_Sede || this.data.Datos.Codigo_Sede || ''))
+      ? (this.data.Datos.codigo_Sede || this.data.Datos.Codigo_Sede || '').toString().trim()
+      : '';
+
+    if (this.data && this.data.Accion === 'U' && currentSedeCode) {
+      this.checkedProcesoCodes.clear();
+    }
+
     for (const proc of this.procesosList) {
       const tipoCode = (proc.codigo_Tipo_Proceso || '').trim();
       const label = this.TIPO_PROCESO_LABELS[tipoCode] || tipoCode || 'Otros';
@@ -158,8 +166,9 @@ export class OrganizacionRegeditComponent implements OnInit {
       }
       this.procesosAgrupados[label].push(proc);
 
-      if (this.data.Accion === 'U' && this.data.Datos) {
-        if (proc.codigo_Sede === this.data.Datos.codigo_Sede) {
+      if (this.data && this.data.Accion === 'U' && currentSedeCode) {
+        const procSede = (proc.codigo_Sede || '').toString().trim();
+        if (procSede === currentSedeCode || (procSede !== '' && parseInt(procSede, 10) === parseInt(currentSedeCode, 10))) {
           this.checkedProcesoCodes.add(proc.codigo_Proceso);
         }
       }
@@ -259,7 +268,7 @@ export class OrganizacionRegeditComponent implements OnInit {
             Localidad: estado,
             Provincia: this.data.Datos.provincia || '',
             Pais: this.data.Datos.pais || '',
-            Flg_Activo: this.data.Datos.flg_Activo || '1',
+            Flg_Activo: (this.data.Datos.flg_Activo === '0' || this.data.Datos.flg_Activo === false || this.data.Datos.flg_Activo === 0 || this.data.Datos.flg_Activo === 'False') ? '0' : '1',
             Cod_Usuario: this.sUsuario
           };
         }
@@ -324,26 +333,34 @@ export class OrganizacionRegeditComponent implements OnInit {
       return;
     }
 
+    const normTargetCode = sedeCode.toString().trim();
     const requests: Observable<any>[] = [];
+
     for (const proc of this.procesosList) {
       const isChecked = this.checkedProcesoCodes.has(proc.codigo_Proceso);
-      let newSedeCode = proc.codigo_Sede;
+      const currentProcSede = (proc.codigo_Sede || '').toString().trim();
+      const belongsToThisSede = currentProcSede === normTargetCode || (currentProcSede !== '' && parseInt(currentProcSede, 10) === parseInt(normTargetCode, 10));
 
-      if (isChecked) {
-        newSedeCode = sedeCode;
-      } else if (proc.codigo_Sede === sedeCode) {
-        newSedeCode = '001';
+      let targetSedeCode: string | null = null;
+      let shouldUpdate = false;
+
+      if (isChecked && !belongsToThisSede) {
+        targetSedeCode = normTargetCode;
+        shouldUpdate = true;
+      } else if (!isChecked && belongsToThisSede) {
+        targetSedeCode = '001';
+        shouldUpdate = true;
       }
 
-      if (newSedeCode !== proc.codigo_Sede) {
+      if (shouldUpdate && targetSedeCode !== null) {
         const procData = {
           Accion: 'U',
           Codigo_Proceso: proc.codigo_Proceso,
           Codigo_Organizacion: proc.codigo_Organizacion || '001',
-          Codigo_Sede: newSedeCode,
+          Codigo_Sede: targetSedeCode,
           Proceso: proc.proceso,
           Codigo_Tipo_Proceso: proc.codigo_Tipo_Proceso,
-          Descripcion: proc.descripcion || '',
+          Descripcion: proc.descripcion || proc.proceso || '',
           Nombre_Adjunto: proc.nombre_Adjunto || '',
           Ruta_Adjunto: proc.ruta_Adjunto || '',
           Flg_Activo: '1',
