@@ -63,6 +63,9 @@
           <span class="text-white font-bold">Documentos en cola de carga ({{ filesList.length }})</span>
         </div>
         <div class="quick-actions-right" *ngIf="!isUploading">
+          <button type="button" class="btn-quick-action" (click)="aplicarVersionV1Pendientes()" title="Asignar versión 'v1' a documentos que no tengan versión">
+            <span class="material-icons">numbers</span> Asignar v1 a pendientes
+          </button>
           <button type="button" class="btn-quick-action" (click)="aplicarTipoGlobalTodos()" *ngIf="selectedTipoGlobal" title="Asignar el tipo global seleccionado a todos los archivos">
             <span class="material-icons">category</span> Aplicar Tipo a Todos
           </button>
@@ -126,8 +129,15 @@
               </div>
               
               <div class="field-col">
-                <label class="field-label">Versión</label>
-                <input type="text" [(ngModel)]="item.version" class="form-control-sm text-center font-bold" placeholder="v1" [disabled]="isUploading">
+                <label class="field-label" style="display: flex; align-items: center; justify-content: space-between;">
+                  <span>Versión (*)</span>
+                  <span *ngIf="!item.version || !item.version.trim()" style="color: #ef4444; font-size: 9px; font-weight: bold;">Requerido</span>
+                </label>
+                <input type="text" [(ngModel)]="item.version" (ngModelChange)="onItemVersionChange(item)" 
+                       class="form-control-sm text-center font-bold" 
+                       [style.borderColor]="(!item.version || !item.version.trim()) ? '#ef4444' : ''"
+                       [style.backgroundColor]="(!item.version || !item.version.trim()) ? '#fef2f2' : ''"
+                       placeholder="Obligatorio (ej. v1)" [disabled]="isUploading">
               </div>
 
               <div class="field-col">

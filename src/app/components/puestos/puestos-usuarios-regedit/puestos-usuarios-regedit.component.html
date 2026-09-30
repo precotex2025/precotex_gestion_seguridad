@@ -38,7 +38,7 @@
           <div class="form-field search-combobox-field">
             <label class="form-label">
               <mat-icon class="label-icon">person_search</mat-icon>
-              Colaborador Asignado <span class="req">*</span>
+              (H) Colaborador Asignado <span class="req">*</span>
               <span class="count-tag" *ngIf="trabajadoresList.length > 0">({{ trabajadoresList.length }})</span>
             </label>
             <div class="input-wrapper search-wrapper">
@@ -224,7 +224,8 @@
               <span *ngIf="data.Accion === 'I'" class="badge-pending-auto">Pendiente automático</span>
             </label>
             <div class="input-wrapper">
-              <select formControlName="ctrol_estado" class="form-select" [attr.disabled]="data.Accion === 'I' ? true : null">
+              <select formControlName="ctrol_estado" class="form-select"
+                [attr.disabled]="data.Accion === 'I' ? true : null">
                 <option value="Pendiente de activación">Pendiente de activación</option>
                 <option value="Activo">Activo</option>
                 <option value="Inactivo">Inactivo</option>
@@ -232,8 +233,10 @@
               </select>
             </div>
             <span *ngIf="data.Accion === 'I'" class="estado-helper-text">
-              <mat-icon style="font-size: 13px; width: 13px; height: 13px; vertical-align: middle;">lock_clock</mat-icon>
-              Inicia en <strong>Pendiente de activación</strong> y pasa a <strong>Activo</strong> al cambiar contraseña en su 1er login.
+              <mat-icon
+                style="font-size: 13px; width: 13px; height: 13px; vertical-align: middle;">lock_clock</mat-icon>
+              Inicia en <strong>Pendiente de activación</strong> y pasa a <strong>Activo</strong> al cambiar contraseña
+              en su 1er login.
             </span>
           </div>
         </div>

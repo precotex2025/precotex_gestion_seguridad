@@ -25,9 +25,10 @@
         <input type="text" formControlName="codigo" class="form-input" placeholder="Ej. PRO-OPM-COS-004-01" [disabled]="action === 'E'">
       </div>
       <div class="form-group">
-        <label class="form-label">Versión (DOC-02)</label>
-        <input type="text" formControlName="version" class="form-input" placeholder="Ej. v1">
-        <small style="color: #6366f1; font-size: 10px; margin-top: 3px; display: block; font-weight: 600;">⚡ Extraído del 5to segmento del Código (los 2 últimos dígitos).</small>
+        <label class="form-label">Versión (DOC-02) (*)</label>
+        <input type="text" formControlName="version" class="form-input" placeholder="Ej. v1" [style.borderColor]="(formulario.get('version')?.invalid && formulario.get('version')?.touched) ? '#ef4444' : ''">
+        <small *ngIf="formulario.get('version')?.hasError('required') && formulario.get('version')?.touched" style="color: #ef4444; font-size: 11px; margin-top: 3px; display: block; font-weight: 600;">⚠️ El código de versión es obligatorio.</small>
+        <small *ngIf="!formulario.get('version')?.invalid" style="color: #6366f1; font-size: 10px; margin-top: 3px; display: block; font-weight: 600;">⚡ Extraído del 5to segmento del Código o ingréselo manualmente (ej. v1).</small>
       </div>
     </div>
 

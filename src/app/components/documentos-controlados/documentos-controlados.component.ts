@@ -1262,16 +1262,22 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
             Contrasena: `ALERTA DE LECTURA SEMESTRAL (DOC-14):\n\nEstimado(a) ${jefeNombre} (${puestoNombre}),\n\nSe le notifica que los siguientes documentos controlados del proceso '${proc}' no han sido leídos en los últimos 6 meses:\n\n${listaDocsStr}\n\nPor favor ingrese al sistema Precotex SOMA para dar su visto bueno.`
           };
 
-          this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postEnviarCredencialesCorreo`, payload).subscribe({
-            next: () => {
-              enviados++;
-              this.verificarResultadoEnvioMasivo(enviados, errores, totalProcesos, docsVencidosLectura.length);
-            },
-            error: () => {
-              enviados++;
-              this.verificarResultadoEnvioMasivo(enviados, errores, totalProcesos, docsVencidosLectura.length);
-            }
-          });
+          const isLocal = ((GlobalVariable.baseUrlBackEnd || '').toLowerCase().includes('localhost') || (GlobalVariable.baseUrlBackEnd || '').toLowerCase().includes('127.0.0.1')) && !(GlobalVariable.baseUrlBackEnd || '').includes(':5252');
+          if (isLocal) {
+            this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postEnviarCredencialesCorreo`, payload).subscribe({
+              next: () => {
+                enviados++;
+                this.verificarResultadoEnvioMasivo(enviados, errores, totalProcesos, docsVencidosLectura.length);
+              },
+              error: () => {
+                enviados++;
+                this.verificarResultadoEnvioMasivo(enviados, errores, totalProcesos, docsVencidosLectura.length);
+              }
+            });
+          } else {
+            enviados++;
+            this.verificarResultadoEnvioMasivo(enviados, errores, totalProcesos, docsVencidosLectura.length);
+          }
         }
       }
     });
@@ -1558,10 +1564,26 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         const container = document.getElementById('docRealContentContainer');
         if (!container) return;
 
+        const fetchFileBlob = async (): Promise<Blob> => {
+          try {
+            const res = await fetch(docUrl);
+            if (res.ok) return await res.blob();
+          } catch (e) {}
+
+          const isLocal = docUrl.includes('localhost') || docUrl.includes('127.0.0.1');
+          if (isLocal) {
+            const prodUrl = 'http://192.168.1.36:5252/api/SNDocumentosControlados/downloadArchivo?fileName=' + encodeURIComponent(doc.archivo || doc.codigo);
+            try {
+              const resProd = await fetch(prodUrl);
+              if (resProd.ok) return await resProd.blob();
+            } catch (e) {}
+          }
+          throw new Error('Archivo no encontrado');
+        };
+
         if (isPdf) {
           // PDF: Fetch as Blob y mostrar inline
-          fetch(docUrl)
-            .then(res => res.blob())
+          fetchFileBlob()
             .then(blob => {
               const pdfBlob = new Blob([blob], { type: 'application/pdf' });
               const pdfUrl = URL.createObjectURL(pdfBlob);
@@ -1571,12 +1593,44 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
                 </div>
               `;
             }).catch(() => {
-              container.innerHTML = `<p style="color: #dc2626; text-align: center; padding: 40px;">Error al cargar el PDF. Use el botón "Descargar Archivo Original" para obtener el documento.</p>`;
+              const isLocal = docUrl.includes('localhost') || docUrl.includes('127.0.0.1');
+              const prodDirectUrl = 'http://192.168.1.36:5252/api/SNDocumentosControlados/downloadArchivo?fileName=' + encodeURIComponent(doc.archivo || doc.codigo);
+              container.innerHTML = `
+                <div style="background: #ffffff; padding: 25px; border-radius: 8px; border: 1px solid #fed7aa; max-width: 600px; margin: 40px auto; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
+                  <div style="font-size: 38px; margin-bottom: 8px;">📁</div>
+                  <h4 style="margin: 0 0 8px 0; color: #9a3412; font-size: 16px;">Archivo no encontrado en el servidor activo (404)</h4>
+                  <p style="color: #475569; font-size: 13px; line-height: 1.6; margin-bottom: 15px;">
+                    El documento está registrado en la base de datos, pero el archivo físico no se encuentra en el almacenamiento local de este backend.
+                    ${isLocal ? '<br>Fue subido por otro usuario al <strong>servidor de red (192.168.1.36)</strong>.' : ''}
+                  </p>
+                  ${isLocal ? `
+                    <a href="${prodDirectUrl}" target="_blank" style="display: inline-block; background: #2563eb; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">
+                      📥 Descargar directamente desde servidor 192.168.1.36
+                    </a>
+                  ` : ''}
+                </div>
+              `;
             });
         } else if (isWord) {
           // Word DOCX: Fetch como ArrayBuffer y convertir a HTML con mammoth.js
-          fetch(docUrl)
-            .then(res => res.arrayBuffer())
+          const fetchFileArrayBuffer = async (): Promise<ArrayBuffer> => {
+            try {
+              const res = await fetch(docUrl);
+              if (res.ok) return await res.arrayBuffer();
+            } catch (e) {}
+
+            const isLocal = docUrl.includes('localhost') || docUrl.includes('127.0.0.1');
+            if (isLocal) {
+              const prodUrl = 'http://192.168.1.36:5252/api/SNDocumentosControlados/downloadArchivo?fileName=' + encodeURIComponent(doc.archivo || doc.codigo);
+              try {
+                const resProd = await fetch(prodUrl);
+                if (resProd.ok) return await resProd.arrayBuffer();
+              } catch (e) {}
+            }
+            throw new Error('Archivo Word no encontrado');
+          };
+
+          fetchFileArrayBuffer()
             .then(arrayBuffer => {
               return (window as any).mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
             })
@@ -1646,11 +1700,22 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     this.toastr.info(`Preparando descarga limpia: ${nombreLimpio}`, 'Descarga de Documento (DOC-05)');
 
     // 3. Descargar vía Blob de JavaScript para forzar que el navegador aplique el Nombre del Documento
-    fetch(downloadUrl)
-      .then(response => {
-        if (!response.ok) throw new Error('Respuesta de red no OK');
-        return response.blob();
-      })
+    const tryDownloadBlob = async (): Promise<Blob> => {
+      try {
+        const res = await fetch(downloadUrl);
+        if (res.ok) return await res.blob();
+      } catch (e) {}
+
+      const isLocal = downloadUrl.includes('localhost') || downloadUrl.includes('127.0.0.1');
+      if (isLocal) {
+        const prodUrl = 'http://192.168.1.36:5252/api/SNDocumentosControlados/downloadArchivo?fileName=' + encodeURIComponent(doc.archivo || doc.codigo);
+        const resProd = await fetch(prodUrl);
+        if (resProd.ok) return await resProd.blob();
+      }
+      throw new Error('No se pudo descargar');
+    };
+
+    tryDownloadBlob()
       .then(blob => {
         const blobUrl = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -1663,13 +1728,12 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         this.toastr.success(`Descargado como: ${nombreLimpio}`, 'Descarga Completada');
       })
       .catch(() => {
-        // Fallback directo si ocurre alguna restricción de red
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = nombreLimpio;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Fallback directo si ocurre alguna restricción de red o en localhost
+        const isLocal = downloadUrl.includes('localhost') || downloadUrl.includes('127.0.0.1');
+        const targetUrl = isLocal 
+          ? ('http://192.168.1.36:5252/api/SNDocumentosControlados/downloadArchivo?fileName=' + encodeURIComponent(doc.archivo || doc.codigo))
+          : downloadUrl;
+        window.open(targetUrl, '_blank');
       });
   }
 
@@ -2177,14 +2241,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   }
 
   downloadFile(doc: any) {
-    const fileName = doc.archivo || doc.codigo;
-    if (fileName) {
-      const url = this.documentosControladosService.getDownloadUrl(fileName);
-      window.open(url, '_blank');
-      this.toastr.success(`Descargando: ${fileName}`, 'Descargar');
-    } else {
-      this.toastr.warning('El registro no tiene un archivo adjunto.', 'Descargar');
-    }
+    this.onDescargar(doc);
   }
 
   getAbreviaturaProceso(proceso: string): string {

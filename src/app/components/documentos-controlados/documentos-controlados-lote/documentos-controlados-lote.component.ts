@@ -4,6 +4,7 @@ import { ToastrService } from 'ngx-toastr';
 import { ProcesosService } from '../../../services/procesos.service';
 import { DocumentosControladosService } from '../../../services/documentos-controlados.service';
 import { GlobalVariable } from '../../../VarGlobals';
+import Swal from 'sweetalert2';
 
 interface FileUploadItem {
   file: File;
@@ -31,7 +32,7 @@ export class DocumentosControladosLoteComponent implements OnInit {
   selectedProceso: string = '';
   PROCESOS_GROUPS: { [key: string]: string[] } = {
     'Operaciones Textil (OPT)': ['Acabados Textil', 'Costura', 'Estampado', 'Hilandería', 'Tejitud'],
-    'Ingeniería y Mejora Continua (IMC)': ['Organización y Métodos', 'Mejora Continua', 'Control de Calidad'],
+    'Ingeniería y Mejora Continua (IMC)': ['Organización y Métodos', 'Ingeniería', 'Control de Calidad'],
     'Soporte (SOP)': ['Control Patrimonial', 'Sistemas', 'Mantenimiento'],
     'Auditoría Interna (AIO)': ['Auditoría Interna'],
     'Gestión Humana (GGHH)': ['Gestión Humana', 'SSOMA']
@@ -153,7 +154,7 @@ export class DocumentosControladosLoteComponent implements OnInit {
 
   // Extrae la versión del código (ej. PRO-OPM-COS-004-01 -> v1)
   extraerVersionDelCodigo(code: string): string {
-    if (!code) return 'v1';
+    if (!code) return '';
     const parts = code.trim().split('-');
     if (parts.length >= 5) {
       const num = parseInt(parts[4].trim(), 10);
@@ -164,7 +165,7 @@ export class DocumentosControladosLoteComponent implements OnInit {
       const num = parseInt(match[1], 10);
       if (!isNaN(num)) return `v${num}`;
     }
-    return 'v1';
+    return '';
   }
 
   calcularEstadoPorFecha(fechaStr: string): string {
@@ -190,10 +191,50 @@ export class DocumentosControladosLoteComponent implements OnInit {
     if (autoTipo) item.tipo = autoTipo;
 
     const autoVer = this.extraerVersionDelCodigo(codeStr);
-    if (autoVer) item.version = autoVer;
+    if (autoVer) {
+      item.version = autoVer;
+    }
+    this.validarItemVersion(item);
 
     const autoProc = this.extraerProcesoDelCodigo(codeStr);
     if (autoProc) item.proceso = autoProc;
+  }
+
+  onItemVersionChange(item: FileUploadItem): void {
+    this.validarItemVersion(item);
+  }
+
+  validarItemVersion(item: FileUploadItem): void {
+    if (!item) return;
+    const tieneVer = !!(item.version && item.version.trim());
+    if (!tieneVer) {
+      item.isError = true;
+      item.progressMessage = 'Sin código de versión (requerido)';
+    } else {
+      if (item.progressMessage === 'Sin código de versión (requerido)') {
+        item.isError = false;
+        item.progressMessage = 'Listo para cargar';
+      }
+    }
+  }
+
+  aplicarVersionV1Pendientes(): void {
+    let count = 0;
+    this.filesList.forEach(item => {
+      if (!item.version || !item.version.trim()) {
+        item.version = 'v1';
+        if (item.progressMessage === 'Sin código de versión (requerido)') {
+          item.isError = false;
+          item.progressMessage = 'Listo para cargar';
+        }
+        count++;
+      }
+    });
+    if (count > 0) {
+      this.toastr.success(`Se asignó la versión "v1" a ${count} documento(s) pendiente(s).`, 'Versión Asignada');
+    } else {
+      this.toastr.info('Todos los documentos ya cuentan con código de versión.', 'Información');
+    }
   }
 
   onItemVigChange(item: FileUploadItem): void {
@@ -349,7 +390,8 @@ export class DocumentosControladosLoteComponent implements OnInit {
         }
       }
 
-      const parsedVer = this.extraerVersionDelCodigo(parsedCode);
+      const parsedVer = this.extraerVersionDelCodigo(parsedCode) || '';
+      const tieneVer = !!(parsedVer && parsedVer.trim());
       const parsedProc = this.extraerProcesoDelCodigo(parsedCode) || this.selectedProceso || 'Organización y Métodos';
       
       // DOC-12: Auto-popular Fecha de Vigencia (3 Años) y Estado en Carga Masiva
@@ -368,9 +410,14 @@ export class DocumentosControladosLoteComponent implements OnInit {
         estado: parsedEstado,
         visibilidad: 'Todos los procesos', // DOC-15: Visibilidad pública por defecto
         isUploaded: false,
-        isError: false,
-        progressMessage: 'Listo para cargar'
+        isError: !tieneVer,
+        progressMessage: !tieneVer ? 'Sin código de versión (requerido)' : 'Listo para cargar'
       });
+    }
+
+    const sinVersionCount = this.filesList.filter(item => !item.version || !item.version.trim()).length;
+    if (sinVersionCount > 0) {
+      this.toastr.warning(`Atención: Se detectaron ${sinVersionCount} documento(s) sin código de versión. Debe ingresar la versión para cada archivo antes de poder subir el lote.`, 'Código de Versión Requerido');
     }
 
     // Observación c: Validar duplicados de inmediato
@@ -389,6 +436,31 @@ export class DocumentosControladosLoteComponent implements OnInit {
   onUploadLote(): void {
     if (this.filesList.length === 0) {
       this.toastr.warning('Por favor agregue al menos un archivo para cargar.', 'Validación');
+      return;
+    }
+
+    // Restricción: No permitir subir lote si algún documento no tiene código de versión
+    const archivosSinVersion = this.filesList.filter(item => !item.version || !item.version.trim());
+    if (archivosSinVersion.length > 0) {
+      archivosSinVersion.forEach(item => {
+        item.isError = true;
+        item.progressMessage = 'Sin código de versión (requerido)';
+      });
+      Swal.fire({
+        icon: 'warning',
+        title: 'Código de Versión Requerido',
+        html: `<div style="font-size: 13px; color: #334155; text-align: left; line-height: 1.6;">
+                 No se puede iniciar la carga masiva porque se encontraron <strong>${archivosSinVersion.length} documento(s) sin código de versión</strong>:<br>
+                 <ul style="margin-top: 8px; margin-bottom: 8px; padding-left: 20px; color: #dc2626;">
+                   ${archivosSinVersion.slice(0, 5).map(f => `<li><strong>${f.codigo || f.nombre || f.file.name}</strong></li>`).join('')}
+                   ${archivosSinVersion.length > 5 ? `<li><em>...y ${archivosSinVersion.length - 5} más</em></li>` : ''}
+                 </ul>
+                 De acuerdo a la normativa documental del sistema, <strong>no se permite subir un lote de documentos si alguno no tiene un código de versión</strong> (ejemplo: <em>v1, v1.0, 01</em>).<br><br>
+                 Por favor, asigne la versión a cada archivo o utilice la acción rápida <em>"Asignar v1 a pendientes"</em>.
+               </div>`,
+        confirmButtonColor: '#5b4bd6',
+        confirmButtonText: 'Entendido'
+      });
       return;
     }
 
@@ -432,7 +504,7 @@ export class DocumentosControladosLoteComponent implements OnInit {
             Codigo_Tipo_Descarga: item.formato,
             Denominacion: item.nombre,
             Codigo_Documento: item.codigo,
-            Version_Documento: item.version || 'v1',
+            Version_Documento: (item.version || '').trim(),
             Ruta_Adjunto: fileNameServer,
             Descripcion: item.nombre,
             bRegistroAsociado: true,

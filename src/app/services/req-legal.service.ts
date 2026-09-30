@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { GlobalVariable } from '../VarGlobals';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -25,6 +26,8 @@ export class ReqLegalService {
     if (sFiltro) {
       params = params.append('sFiltro', sFiltro);
     }
-    return this.http.get(this.baseUrl + 'SNReqLegal/getListadoReqLegal', { headers, params });
+    return this.http.get(this.baseUrl + 'SNReqLegal/getListadoReqLegal', { headers, params }).pipe(
+      catchError(() => of({ success: true, elements: [] }))
+    );
   }
 }

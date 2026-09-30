@@ -94,7 +94,7 @@ export class PlanificacionObjetivosRegeditComponent implements OnInit {
     ],
     'Ingeniería y Mejora Continua (IMC)': [
       'Organización y Métodos',
-      'Mejora Continua',
+      'Ingeniería',
       'Investigación, Desarrollo e Innovación',
       'Certificaciones'
     ],

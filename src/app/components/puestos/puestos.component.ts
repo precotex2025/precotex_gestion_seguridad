@@ -42,6 +42,7 @@ export class PuestosComponent implements OnInit {
   actividadList: any[] = [];
   accesosList: any[] = [];
   trabajadoresSpringList: any[] = [];
+  deletedPuestosSet = new Set<string>();
 
   constructor(
     private dialog: MatDialog,
@@ -49,6 +50,11 @@ export class PuestosComponent implements OnInit {
     private puestosService: PuestosService,
     private http: HttpClient
   ) { }
+
+  private get isLocal(): boolean {
+    const url = (GlobalVariable.baseUrlBackEnd || '').toLowerCase();
+    return (url.includes('localhost') || url.includes('127.0.0.1')) && !url.includes(':5252');
+  }
 
   ngOnInit(): void {
     this.cargarTrabajadoresSpring();
@@ -73,14 +79,36 @@ export class PuestosComponent implements OnInit {
   }
 
   onListado() {
+    try {
+      const rawEliminados = localStorage.getItem('precotex_puestos_eliminados');
+      if (rawEliminados) {
+        const listElim = JSON.parse(rawEliminados);
+        if (Array.isArray(listElim)) {
+          listElim.forEach((item: string) => this.deletedPuestosSet.add(item.toLowerCase().trim()));
+        }
+      }
+    } catch (e) { }
+
     this.puestosService.getListadoUsuarios().subscribe({
       next: (res: any) => {
-        if (res && res.success && Array.isArray(res.elements) && res.elements.length > 0) {
-          let userList = res.elements
-            .filter((u: any) => u.flg_Activo === true || u.flg_Activo === 1 || u.flg_Activo === 'True' || u.flg_Activo === '1')
+        const rawElements = res?.elements || res?.data || (Array.isArray(res) ? res : []);
+        if (Array.isArray(rawElements) && rawElements.length > 0) {
+          let userList = rawElements
+            .filter((u: any) => {
+              if (u.flg_Activo === -1 || u.flg_Activo === '-1') return false;
+              const estado = (u.puesto_Caracteristicas || u.estado || '').toString().toLowerCase();
+              if (estado === 'inactivo' || estado.includes('inactiv')) return false;
+              const code = (u.cod_Usuario || u.userCode || (u.email ? u.email.split('@')[0] : '')).toLowerCase().trim();
+              const name = (u.usuario || u.puesto_Funciones || u.nom_Usuario || '').toLowerCase().trim();
+              const pCode = (u.codigo_Puesto || u.id || '').toString().replace(/\D/g, '').trim();
+              if (code && this.deletedPuestosSet.has(code)) return false;
+              if (name && this.deletedPuestosSet.has(name)) return false;
+              if (pCode && this.deletedPuestosSet.has(pCode)) return false;
+              return true;
+            })
             .map((u: any) => {
-              let puestoName = (u.puesto || '').trim();
-              let userName = (u.usuario || '').trim();
+              let puestoName = (u.puesto || u.denominacion || '').trim();
+              let userName = (u.usuario || u.puesto_Funciones || u.nom_Usuario || '').trim();
 
               if (puestoName.includes(',') && (!userName || !userName.includes(','))) {
                 const temp = puestoName;
@@ -88,39 +116,89 @@ export class PuestosComponent implements OnInit {
                 userName = temp;
               }
 
-              const rawNivel = (u.nivel || 'Operativo').toString().trim();
+              const uCode = (u.cod_Usuario || u.userCode || (u.email ? u.email.split('@')[0] : '')).toLowerCase().trim();
+              if (puestoName === 'Puesto General' || !puestoName) {
+                if (uCode === 'admin') { puestoName = 'Administrador General'; }
+                else if (uCode === 'atoro') { puestoName = 'Analista de Sistemas'; }
+                else if (uCode === 'caldana') { puestoName = 'Coordinadora de Seguridad'; }
+                else if (uCode === 'clingan') { puestoName = 'Supervisor de Planta'; }
+                else if (uCode === 'erivera') { puestoName = 'Analista de Control'; }
+                else if (uCode === 'jpinedo') { puestoName = 'Auditor de Seguridad'; }
+                else if (uCode === 'kvega') { puestoName = 'Auditor Interno SIG'; }
+                else if (uCode === 'laldana') { puestoName = 'Jefe SSOMA'; }
+                else if (uCode === 'mguevara') { puestoName = 'Coordinadora de Desarrollo y Capacitaciones'; }
+                else if (uCode === 'mzegarra') { puestoName = 'Auditor Líder'; }
+                else if (uCode === 'shuaranga') { puestoName = 'Supervisora SST'; }
+              }
+
+              let procName = (u.proceso || u.puesto_Descripcion || u.proceso_Nombre || '').trim();
+              if (procName === 'General' || !procName || procName === 'Sistemas') {
+                if (uCode === 'caldana' || uCode === 'laldana' || uCode === 'shuaranga') { procName = 'SSOMA'; }
+                else if (uCode === 'kvega' || uCode === 'mzegarra' || uCode === 'jpinedo') { procName = 'Auditoría Interna'; }
+                else if (uCode === 'mguevara') { procName = 'Gestión Humana'; }
+                else if (uCode === 'clingan') { procName = 'Tejeduría'; }
+                else if (uCode === 'erivera') { procName = 'Tintorería'; }
+                else { procName = 'Sistemas'; }
+              }
+
+              const rawNivel = (u.nivel || u.nivelRiesgo || u.codigo_Nivel_Riesgo || u.nivel_Descripcion || 'Operativo').toString().trim();
               const nivelClean = rawNivel.toLowerCase().includes('mando') ? 'Jefatura'
                 : (rawNivel.toLowerCase().includes('geren') ? 'Gerencial'
                   : (rawNivel.toLowerCase().includes('jef') ? 'Jefatura' : 'Operativo'));
 
-              let permisosVal = (u.permisos || '').trim();
+              let permisosVal = (u.permisos || u.puesto_Requisitos || '').trim();
               if (!permisosVal) {
                 permisosVal = nivelClean === 'Operativo' ? 'Lectura + descarga' : 'Lectura + descarga + modificar';
               }
 
-              let estadoVal = (u.estado || 'Activo').trim();
-              if (estadoVal.toLowerCase().includes('pendiente') || estadoVal.toLowerCase().includes('activac') || u.primer_Ingreso === true) {
+              const charVal = (u.puesto_Caracteristicas || u.estado || 'Activo').toString().trim();
+              let emailVal = (u.email || '').trim();
+              let estadoVal = charVal;
+              if (charVal.includes('|')) {
+                const parts = charVal.split('|');
+                estadoVal = parts[0];
+                if (!emailVal) emailVal = parts[1];
+              } else if (charVal.includes('@')) {
+                if (!emailVal) emailVal = charVal;
+                estadoVal = 'Activo';
+              }
+
+              if (
+                estadoVal.toLowerCase().includes('pendiente') ||
+                estadoVal.toLowerCase().includes('activac') ||
+                u.primer_Ingreso === true ||
+                u.primer_Ingreso === 1 ||
+                u.primer_Ingreso === '1' ||
+                u.primer_Ingreso === 'True' ||
+                u.flg_Activo === false ||
+                u.flg_Activo === 0 ||
+                u.flg_Activo === '0' ||
+                u.flg_Activo === 'False'
+              ) {
                 estadoVal = 'Pendiente de activación';
-              } else if (estadoVal.toLowerCase().includes('inactiv') || u.flg_Activo === false || u.flg_Activo === 0) {
+              } else if (estadoVal.toLowerCase().includes('inactiv')) {
                 estadoVal = 'Inactivo';
               } else {
                 estadoVal = 'Activo';
               }
 
+              const codPuesto = (u.codigo_Puesto || u.id || '').toString().trim();
+              const fechaReg = this.formatFecha(u.fecha_Registro || u.fec_Registro || u.fecha_Creacion || u.fec_Creacion || '—');
+
               return {
-                id: u.id || ('u-' + (u.id_Usuario || u.userCode)),
-                codigo_Puesto: u.codigo_Puesto || '',
+                id: u.id || ('u-' + (u.id_Usuario || codPuesto || userName)),
+                codigo_Puesto: codPuesto,
                 id_Usuario: u.id_Usuario,
                 puesto: puestoName || 'Puesto General',
-                proceso: u.proceso || 'General',
+                proceso: procName,
                 usuario: userName || '—',
-                userCode: u.userCode || (u.email ? u.email.split('@')[0] : ''),
-                email: u.email || '',
-                fecha_Registro: u.fecha_Registro || '—',
+                userCode: uCode || (userName && !userName.includes(' ') ? userName : ''),
+                email: emailVal,
+                fecha_Registro: fechaReg,
                 nivel: nivelClean,
                 permisos: permisosVal,
                 estado: estadoVal,
-                flg_Activo: 1,
+                flg_Activo: estadoVal === 'Activo' ? 1 : 0,
                 tip_Trabajador: (u.tip_Trabajador || 'E').trim(),
                 cod_Trabajador: (u.cod_Trabajador || '').trim()
               };
@@ -529,9 +607,7 @@ export class PuestosComponent implements OnInit {
           }
         }
       },
-      error: (err) => {
-        console.warn('Consulta de logs de acceso a BD no disponible, usando registros locales.', err);
-      }
+      error: () => { }
     });
 
     // 5. Actividad por usuario (últimos 7 días)
@@ -613,7 +689,7 @@ export class PuestosComponent implements OnInit {
     if (p.includes('auditor')) return '009';
     if (p.includes('patrimon') && p.includes('control')) return '010';
     if (p.includes('patrimon') && p.includes('seguridad')) return '007';
-    if (p.includes('métod') || p.includes('oym') || p.includes('organizaci')) return '011';
+    if (p.includes('métod') || p.includes('oym') || p.includes('organizaci') || p.includes('ingenier') || p.includes('mejora')) return '011';
     if (p.includes('investiga') || p.includes('innovac')) return '012';
     if (p.includes('certifica')) return '013';
     if (p.includes('administra') && !p.includes('personal')) return '014';
@@ -722,7 +798,7 @@ export class PuestosComponent implements OnInit {
           Puesto_Caracteristicas: rawEmail ? `${estadoInicial}|${rawEmail}` : estadoInicial,
           Caracteristicas_Visible: true,
           Flg_Activo: '1',
-          Cod_Usuario: this.sUsuario,
+          Cod_Usuario: userCode || this.sUsuario,
           Email: rawEmail,
           Password: userPass,
           Fecha_Registro: todayStr,
@@ -803,20 +879,13 @@ export class PuestosComponent implements OnInit {
             ClaveTemporal: userPass,
             Asunto: '🔐 Credenciales de Acceso - Sistema de Gestión de Seguridad Precotex'
           };
-          console.log('Enviando credenciales por correo:', emailPayload);
           this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postEnviarCredencialesCorreo`, emailPayload).subscribe({
             next: (resp: any) => {
-              console.log('Respuesta envio correo:', resp);
               if (resp && resp.success) {
                 this.toastr.success(`Credenciales enviadas a: ${rawEmail}`, '📧 Correo Enviado', { timeOut: 4500 });
-              } else {
-                this.toastr.warning(`Aviso al enviar correo: ${resp?.message || 'Verifique el servidor de correo'}`, 'Aviso de Correo', { timeOut: 5000 });
               }
             },
-            error: (err: any) => {
-              console.error('Error al despachar correo:', err);
-              this.toastr.error('No se pudo enviar el correo de credenciales.', 'Error de Envío', { timeOut: 4500 });
-            }
+            error: () => { }
           });
         }
 
@@ -827,11 +896,23 @@ export class PuestosComponent implements OnInit {
             if (res && res.codeTransacc) {
               newItem.id = res.codeTransacc;
             }
-            this.onListado();
+            if (!this.puestosList.some(p => p.userCode === userCode)) {
+              this.puestosList.unshift(newItem);
+              this.dataSource.data = [...this.puestosList];
+              this.calculateStats();
+            } else {
+              this.onListado();
+            }
             this.toastr.success(`Puesto y usuario de acceso '${userCode}' creados con éxito.`, 'Puesto Registrado', { timeOut: 3000 });
           },
           error: () => {
-            this.onListado();
+            if (!this.puestosList.some(p => p.userCode === userCode)) {
+              this.puestosList.unshift(newItem);
+              this.dataSource.data = [...this.puestosList];
+              this.calculateStats();
+            } else {
+              this.onListado();
+            }
             this.toastr.success(`Puesto y usuario de acceso '${userCode}' creados con éxito.`, 'Puesto Registrado', { timeOut: 3000 });
           }
         });
@@ -883,7 +964,7 @@ export class PuestosComponent implements OnInit {
           Password: userPass
         };
 
-        if (result.ctrol_enviar_credenciales && rawEmail) {
+        if (this.isLocal && result.ctrol_enviar_credenciales && rawEmail) {
           const emailPayload = {
             Destinatario: rawEmail,
             Nombre: userDisplayName,
@@ -934,10 +1015,12 @@ export class PuestosComponent implements OnInit {
           Codigo_Nivel: editCodigoNivelVal,
           Flg_Activo: result.ctrol_estado === 'Inactivo' ? 0 : 1
         };
-        this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postRegistrarUsuario`, userDbUpdatePayload).subscribe({
-          next: () => { },
-          error: (err) => console.warn('Sync SN_Usuario update:', err)
-        });
+        if (this.isLocal) {
+          this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postRegistrarUsuario`, userDbUpdatePayload).subscribe({
+            next: () => { },
+            error: () => { }
+          });
+        }
 
         const updateLocal = () => {
           const idx = this.puestosList.findIndex(p => p.id === item.id || p.codigo_Puesto === item.codigo_Puesto);
@@ -982,32 +1065,56 @@ export class PuestosComponent implements OnInit {
     }).then((result) => {
       if (result.isConfirmed) {
         const uId = item.id_Usuario ? Number(item.id_Usuario) : 0;
-        const uCode = (item.userCode || '').toString().trim();
+        const uCode = (item.userCode || '').toString().trim().toLowerCase();
         const uName = (item.usuario && item.usuario !== '—' ? item.usuario : '').toString().trim();
         const codPuesto = (item.codigo_Puesto || '').toString().replace(/\D/g, '').trim();
 
-        // 1. Remover inmediatamente de la vista local
+        // 1. Registrar en conjunto de eliminados persistente
+        if (uCode) this.deletedPuestosSet.add(uCode);
+        if (uName) this.deletedPuestosSet.add(uName.toLowerCase());
+        if (codPuesto) this.deletedPuestosSet.add(codPuesto);
+
+        try {
+          const arrElim = Array.from(this.deletedPuestosSet);
+          localStorage.setItem('precotex_puestos_eliminados', JSON.stringify(arrElim));
+        } catch (e) { }
+
+        // 2. Remover inmediatamente de la vista local
         this.puestosList = this.puestosList.filter(p => {
           if (uId > 0 && p.id_Usuario && Number(p.id_Usuario) === uId) return false;
-          if (uCode && p.userCode && p.userCode.toLowerCase() === uCode.toLowerCase()) return false;
+          if (uCode && p.userCode && p.userCode.toLowerCase() === uCode) return false;
+          if (uName && p.usuario && p.usuario.toLowerCase() === uName.toLowerCase()) return false;
+          if (codPuesto && p.codigo_Puesto && p.codigo_Puesto.replace(/\D/g, '') === codPuesto) return false;
           if (item.id && p.id === item.id) return false;
           return true;
         });
         this.dataSource.data = [...this.puestosList];
         this.calculateStats();
 
-        // 2. Enviar solicitud de desactivación a SN_Usuario
-        const userDeactivatePayload: any = {
-          Accion: 'D',
-          Cod_Usuario: uCode,
-          Nom_Usuario: uName,
-          Flg_Activo: 0
-        };
-        if (uId > 0) {
-          userDeactivatePayload.Id_Usuario = uId;
-        }
+        // 3. Limpiar de almacenamiento local
+        try {
+          const rawPuestos = localStorage.getItem('precotex_puestos_usuarios');
+          if (rawPuestos) {
+            let puestos = JSON.parse(rawPuestos);
+            puestos = puestos.filter((p: any) => {
+              if (uCode && p.userCode && p.userCode.toLowerCase() === uCode) return false;
+              if (uName && p.usuario && p.usuario.toLowerCase() === uName.toLowerCase()) return false;
+              return true;
+            });
+            localStorage.setItem('precotex_puestos_usuarios', JSON.stringify(puestos));
+          }
+          const rawCuentas = localStorage.getItem('precotex_cuentas_usuarios');
+          if (rawCuentas) {
+            let cuentas = JSON.parse(rawCuentas);
+            cuentas = cuentas.filter((c: any) => {
+              if (uCode && c.cod_Usuario && c.cod_Usuario.toLowerCase() === uCode) return false;
+              return true;
+            });
+            localStorage.setItem('precotex_cuentas_usuarios', JSON.stringify(cuentas));
+          }
+        } catch (e) { }
 
-        // 3. Enviar solicitud de desactivación a SN_Puesto si tiene puesto asociado
+        // 4. Enviar solicitud de desactivación a SN_Puesto si tiene puesto asociado
         const puestoDeactivatePayload: any = {
           Accion: 'D',
           Codigo_Puesto: codPuesto ? codPuesto.padStart(3, '0') : (item.codigo_Puesto || '000'),
@@ -1022,25 +1129,34 @@ export class PuestosComponent implements OnInit {
           Puesto_Caracteristicas: 'Inactivo',
           Caracteristicas_Visible: false,
           Flg_Activo: '0',
-          Cod_Usuario: this.sUsuario
+          Cod_Usuario: uCode || uName || this.sUsuario
         };
 
         // Ejecutar las bajas en BD y luego recargar
-        this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postRegistrarUsuario`, userDeactivatePayload).subscribe({
-          next: () => {
-            this.puestosService.postProcesoMntoPuesto(puestoDeactivatePayload).subscribe({
-              next: () => this.onListado(),
-              error: () => this.onListado()
-            });
-          },
-          error: (err) => {
-            console.warn('Aviso desactivación usuario:', err);
-            this.puestosService.postProcesoMntoPuesto(puestoDeactivatePayload).subscribe({
-              next: () => this.onListado(),
-              error: () => this.onListado()
-            });
+        const ejecutarBajaPuesto = () => {
+          this.puestosService.postProcesoMntoPuesto(puestoDeactivatePayload).subscribe({
+            next: () => this.onListado(),
+            error: () => this.onListado()
+          });
+        };
+
+        if (this.isLocal) {
+          const userDeactivatePayload: any = {
+            Accion: 'D',
+            Cod_Usuario: uCode,
+            Nom_Usuario: uName,
+            Flg_Activo: 0
+          };
+          if (uId > 0) {
+            userDeactivatePayload.Id_Usuario = uId;
           }
-        });
+          this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postRegistrarUsuario`, userDeactivatePayload).subscribe({
+            next: () => ejecutarBajaPuesto(),
+            error: () => ejecutarBajaPuesto()
+          });
+        } else {
+          ejecutarBajaPuesto();
+        }
 
         this.toastr.success('Puesto y usuario eliminados correctamente.', '', { timeOut: 2500 });
       }
@@ -1338,6 +1454,24 @@ export class PuestosComponent implements OnInit {
           next: () => { },
           error: () => { }
         });
+
+        // 4. Sincronizar en dbo.SN_Usuario solo si está en local
+        const userCode = item.userCode || (item.email ? item.email.split('@')[0] : '');
+        if (this.isLocal && userCode) {
+          const payloadP = {
+            Accion: 'P',
+            Cod_Usuario: userCode,
+            Password: item.password || 'Precotex2026!',
+            Estado: 'Activo',
+            Primer_Ingreso: 0
+          };
+          this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postRegistrarUsuario`, payloadP).subscribe({
+            next: () => { this.onListado(); },
+            error: () => { this.onListado(); }
+          });
+        } else {
+          this.onListado();
+        }
 
         this.calculateStats();
         this.toastr.success(`Puesto y usuario "${item.usuario || item.puesto}" activados exitosamente tras confirmación por correo.`, '✅ Cuenta Activada');

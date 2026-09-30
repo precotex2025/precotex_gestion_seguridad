@@ -97,7 +97,7 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
     ],
     'Ingeniería y Mejora Continua (IMC)': [
       'Organización y Métodos',
-      'Mejora Continua',
+      'Ingeniería',
       'Investigación, Desarrollo e Innovación',
       'Certificaciones'
     ],
@@ -143,6 +143,7 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
     this.cargarKeyUsers();
     this.cargarUsuariosExistentes();
     this.cargarTrabajadoresSpring();
+    // this.cargarHistorialUsuario(); // Comentado por petición del usuario
     this.cargarNivelJerarquico();
 
     this.procesosService.getProcesosAgrupados().subscribe({
@@ -327,7 +328,7 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
   trabajadoresFiltrados: any[] = [];
   indiceSeleccionadoTrabajador: number = -1;
 
-  // Carga de trabajadores desde Spring ERP (192.168.1.86) mediante UP_MuestraDatosTrabajador
+  // Carga de trabajadores desde Spring ERP (192.168.1.86) o directorio local
   cargarTrabajadoresSpring(): void {
     this.cargandoTrabajadores = true;
     this.puestosService.getTrabajadoresSpring().subscribe({
@@ -343,17 +344,22 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
             tipo: t.tipo || t.Tipo || 'E'
           }));
           this.filtrarTrabajadores();
-
-          // Notificación visual de carga suprimida según solicitud de usuario
+        } else if (this.trabajadoresList.length === 0) {
+          this.trabajadoresList = this.keyUsersList.map(d => ({
+            codigo: d.email ? d.email.split('@')[0] : '',
+            nombre: d.nombre,
+            correo: d.email,
+            cargo: d.puesto,
+            tipo: 'E'
+          }));
+          this.filtrarTrabajadores();
         }
       },
-      error: (err) => {
+      error: () => {
         this.cargandoTrabajadores = false;
-        console.warn('Backend aún no responde para getTrabajadoresSpring:', err);
-        // Fallback temporal si el backend aún no ha sido recompilado
         if (this.trabajadoresList.length === 0) {
           this.trabajadoresList = this.keyUsersList.map(d => ({
-            codigo: d.email.split('@')[0],
+            codigo: d.email ? d.email.split('@')[0] : '',
             nombre: d.nombre,
             correo: d.email,
             cargo: d.puesto,
@@ -362,6 +368,33 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
           this.filtrarTrabajadores();
         }
       }
+    });
+  }
+
+  // Carga e integración del Stored Procedure UP_MuestraHistorialUsuario
+  cargarHistorialUsuario(): void {
+    this.puestosService.getHistorialUsuario().subscribe({
+      next: (res: any) => {
+        const raw = res?.elements || res?.data || (Array.isArray(res) ? res : []);
+        if (Array.isArray(raw) && raw.length > 0) {
+          raw.forEach((h: any) => {
+            const nom = (h.nom_Usuario || h.usuario || '').trim();
+            const cod = (h.cod_Usuario || h.userCode || '').trim();
+            const cargo = (h.puesto || '').trim();
+            if (nom && !this.trabajadoresList.some(t => t.nombre.toLowerCase() === nom.toLowerCase())) {
+              this.trabajadoresList.push({
+                codigo: cod,
+                nombre: nom,
+                correo: h.email || (cod ? `${cod}@precotexperu.com` : ''),
+                cargo: cargo,
+                tipo: 'E'
+              });
+            }
+          });
+          this.filtrarTrabajadores();
+        }
+      },
+      error: () => { }
     });
   }
 
@@ -385,12 +418,12 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
               unicos.push(item);
             }
           });
-          this.lstNivelJerarquico = unicos;
+          if (unicos.length > 0) {
+            this.lstNivelJerarquico = unicos;
+          }
         }
       },
-      error: (err) => {
-        console.warn('Backend aún no responde para getListadoNivelJerarquico:', err);
-      }
+      error: () => { }
     });
   }
 

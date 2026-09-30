@@ -139,7 +139,15 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    // 2. Verificar estado local en almacenamiento
+    // 2. Verificar estado en backend (TxLogin devuelve resultado: 'PENDIENTE_PRIMER_INGRESO' o flg_Activo: 0)
+    const isPendingBackend =
+      (userObj?.resultado === 'PENDIENTE_PRIMER_INGRESO') ||
+      (userObj?.respuesta === 'PENDIENTE_PRIMER_INGRESO') ||
+      (userObj?.primer_Ingreso === true || userObj?.primer_Ingreso === 1 || userObj?.primer_Ingreso === '1') ||
+      (userObj?.flg_Activo === 0 || userObj?.flg_Activo === false || userObj?.flg_Activo === '0') ||
+      (userObj?.estado && userObj.estado.toString().toLowerCase().includes('pendiente'));
+
+    // 3. Verificar estado local en almacenamiento
     let isPendingLocal = false;
     try {
       const rawCuentas = localStorage.getItem('precotex_cuentas_usuarios');
@@ -165,27 +173,38 @@ export class LoginComponent implements OnInit {
       }
     }
 
-    // 3. Consultar al endpoint backend dedicado SNUsuario/getValidarPrimerIngreso
+    if (isPendingBackend || isPendingLocal) {
+      this.abrirModalPrimerIngreso(userObj, username, userNombre, userPuesto, tokenReceived);
+      return;
+    }
+
+    // 4. Si es backend local y no está marcado directamente, verificar con endpoint dedicado
+    const isLocal = (GlobalVariable.baseUrlBackEnd || '').toLowerCase().includes('localhost') || (GlobalVariable.baseUrlBackEnd || '').toLowerCase().includes('127.0.0.1');
+    if (!isLocal) {
+      this.completarLogin(userObj, username, userNombre, userPuesto, tokenReceived);
+      return;
+    }
+
     this.http.get(`${GlobalVariable.baseUrlBackEnd}SNUsuario/getValidarPrimerIngreso?Cod_Usuario=${username}`).subscribe({
       next: (res: any) => {
-        if (res && res.success && res.requiereCambioPassword) {
+        const data = res?.element || res;
+        const requiereCambio =
+          res?.requiereCambioPassword === true ||
+          data?.requiereCambioPassword === true ||
+          data?.primer_Ingreso === true ||
+          data?.primer_Ingreso === 1 ||
+          data?.primer_Ingreso === 'True' ||
+          data?.primer_Ingreso === '1' ||
+          (data?.estado && data.estado.toString().toLowerCase().includes('pendiente'));
+
+        if (requiereCambio) {
           this.abrirModalPrimerIngreso(userObj, username, userNombre, userPuesto, tokenReceived);
-        } else if (res && res.success && res.requiereCambioPassword === false) {
-          this.completarLogin(userObj, username, userNombre, userPuesto, tokenReceived);
         } else {
-          if (isPendingLocal) {
-            this.abrirModalPrimerIngreso(userObj, username, userNombre, userPuesto, tokenReceived);
-          } else {
-            this.completarLogin(userObj, username, userNombre, userPuesto, tokenReceived);
-          }
+          this.completarLogin(userObj, username, userNombre, userPuesto, tokenReceived);
         }
       },
       error: () => {
-        if (isPendingLocal) {
-          this.abrirModalPrimerIngreso(userObj, username, userNombre, userPuesto, tokenReceived);
-        } else {
-          this.completarLogin(userObj, username, userNombre, userPuesto, tokenReceived);
-        }
+        this.completarLogin(userObj, username, userNombre, userPuesto, tokenReceived);
       }
     });
   }
@@ -233,7 +252,7 @@ export class LoginComponent implements OnInit {
     const userCode = this.primerIngresoUser.cod_Usuario;
     const newPass = this.nuevaPassword.trim();
 
-    // 1. Notificar al Backend para actualizar la base de datos BDSecureNorm (dbo.SN_Usuario)
+    // 1. Notificar al Backend para actualizar la base de datos BDSecureNorm (dbo.SN_Usuario y dbo.SN_Puesto)
     // Se ejecuta SP dbo.SP_SN_USUARIO_MANTENIMIENTO con @Accion = 'P' (Password = @Password, Estado = 'Activo', Primer_Ingreso = 0)
     const payloadP = {
       Accion: 'P',
@@ -243,17 +262,10 @@ export class LoginComponent implements OnInit {
       Primer_Ingreso: 0
     };
 
-    // Llamada al endpoint activo de sincronización
-    this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postRegistrarUsuario`, payloadP).subscribe({
-      next: () => {},
-      error: () => {}
-    });
-
-    // Llamada al endpoint dedicado de primer ingreso
-    this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postCambiarPasswordPrimerIngreso`, { Cod_Usuario: userCode, Password: newPass }).subscribe({
-      next: () => {},
-      error: () => {}
-    });
+    // Actualizar contraseña en el objeto de sesión del usuario
+    if (this.primerIngresoUser.userObj) {
+      this.primerIngresoUser.userObj.password = newPass;
+    }
 
     // 2. Actualizar almacenamiento local para sincronía inmediata
     try {
@@ -291,7 +303,11 @@ export class LoginComponent implements OnInit {
       }
     } catch (e) { }
 
-    setTimeout(() => {
+    let yaFinalizado = false;
+    const finalizar = () => {
+      if (yaFinalizado) return;
+      yaFinalizado = true;
+
       this.isUpdatingPassword = false;
       this.mostrarModalPrimerIngreso = false;
       this.toastr.success('¡Contraseña actualizada exitosamente! Su cuenta ha sido activada.', 'Cuenta Activada', { timeOut: 5000 });
@@ -304,7 +320,52 @@ export class LoginComponent implements OnInit {
         this.primerIngresoUser.puesto,
         this.primerIngresoUser.tokenReceived
       );
-    }, 700);
+    };
+
+    // Llamada al backend para persistir la nueva contraseña y activar la cuenta (dbo.SN_Usuario y dbo.SN_Puesto)
+    const payloadPuesto = {
+      Accion: 'P',
+      Codigo_Puesto: '',
+      Codigo_Organizacion: '001',
+      Codigo_Sede: '001',
+      Denominacion: this.primerIngresoUser?.puesto || '',
+      Codigo_Nivel_Riesgo: 'Operativo',
+      Validacion_Periodica: true,
+      Puesto_Descripcion: newPass,
+      Puesto_Funciones: this.primerIngresoUser?.nombre || '',
+      Puesto_Requisitos: '',
+      Puesto_Caracteristicas: 'Activo',
+      Caracteristicas_Visible: true,
+      Flg_Activo: '1',
+      Cod_Usuario: userCode
+    };
+
+    this.http.post(`${GlobalVariable.baseUrlBackEnd}SNPuesto/postProcesoMntoPuesto`, payloadPuesto).subscribe({
+      next: () => {
+        finalizar();
+      },
+      error: () => {
+        finalizar();
+      }
+    });
+
+    const isLocal = (GlobalVariable.baseUrlBackEnd || '').toLowerCase().includes('localhost') || (GlobalVariable.baseUrlBackEnd || '').toLowerCase().includes('127.0.0.1');
+    if (isLocal) {
+      this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postCambiarPasswordPrimerIngreso`, { Cod_Usuario: userCode, Password: newPass }).subscribe({
+        next: () => {
+          this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postRegistrarUsuario`, payloadP).subscribe({
+            next: () => { },
+            error: () => { }
+          });
+        },
+        error: () => { }
+      });
+    }
+
+    // Fallback de seguridad en 3s si la red demora
+    setTimeout(() => {
+      finalizar();
+    }, 3000);
   }
 
   completarLogin(userObj: any, username: string, userNombre: string, userPuesto: string, tokenReceived?: string): void {
@@ -425,14 +486,15 @@ export class LoginComponent implements OnInit {
       Flg_Activo: true
     };
 
-    this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postRegistrarLogAcceso`, logBackend).subscribe({
-      next: (res: any) => {
-        console.log('✅ Log de acceso registrado exitosamente en BD:', res);
-      },
-      error: (err: any) => {
-        console.error('❌ Error registrando log de acceso en BD:', err);
-      }
-    });
+    const isLocal = ((GlobalVariable.baseUrlBackEnd || '').toLowerCase().includes('localhost') || (GlobalVariable.baseUrlBackEnd || '').toLowerCase().includes('127.0.0.1')) && !(GlobalVariable.baseUrlBackEnd || '').includes(':5252');
+    if (isLocal) {
+      this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postRegistrarLogAcceso`, logBackend).subscribe({
+        next: (res: any) => {
+          console.log('✅ Log de acceso registrado exitosamente en BD:', res);
+        },
+        error: () => {}
+      });
+    }
 
     // 2. Almacenamiento local para widgets del frontend (excluyendo la cuenta de admin)
     if ((codUsuario || '').toLowerCase() === 'admin' || (nomUsuario || '').toLowerCase() === 'admin') return;

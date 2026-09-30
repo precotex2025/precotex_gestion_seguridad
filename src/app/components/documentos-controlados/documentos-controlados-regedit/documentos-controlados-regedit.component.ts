@@ -18,7 +18,7 @@ export class DocumentosControladosRegeditComponent implements OnInit {
 
   PROCESOS_GROUPS: { [key: string]: string[] } = {
     'Operaciones Textil (OPT)': ['Acabados Textil', 'Costura', 'Estampado', 'Hilandería', 'Tejitud'],
-    'Ingeniería y Mejora Continua (IMC)': ['Organización y Métodos', 'Mejora Continua', 'Control de Calidad'],
+    'Ingeniería y Mejora Continua (IMC)': ['Organización y Métodos', 'Ingeniería', 'Control de Calidad'],
     'Soporte (SOP)': ['Control Patrimonial', 'Sistemas', 'Mantenimiento'],
     'Auditoría Interna (AIO)': ['Auditoría Interna'],
     'Gestión Humana (GGHH)': ['Gestión Humana', 'SSOMA']
@@ -56,7 +56,7 @@ export class DocumentosControladosRegeditComponent implements OnInit {
     const initialVig = row?.vig || this.obtenerVigencia3Anios();
     const initialEstado = this.calcularEstadoPorFecha(initialVig, row?.estado || 'Vigente');
     const initialTipo = row?.tipo || this.extraerTipoDelCodigo(row?.codigo) || 'Procedimiento';
-    const initialVersion = row?.version || this.extraerVersionDelCodigo(row?.codigo) || 'v1';
+    const initialVersion = row?.version || this.extraerVersionDelCodigo(row?.codigo) || '';
     const activeProcDestino = (this.data?.ActiveProcess || '').trim();
     const initialProceso = row?.proceso || activeProcDestino || this.extraerProcesoDelCodigo(row?.codigo) || 'Organización y Métodos';
 
@@ -91,7 +91,7 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       nombre: [row?.nombre || '', Validators.required],
       codigo: [row?.codigo || '', Validators.required],
       tipo: [initialTipo],
-      version: [initialVersion],
+      version: [initialVersion, Validators.required],
       formato: [row?.formato || 'PDF'],
       proceso: [this.modoVisibilidad === 'TODOS' ? 'Todos los procesos' : this.procesosSeleccionados.join(', ')],
       vig: [initialVig],
@@ -352,7 +352,7 @@ export class DocumentosControladosRegeditComponent implements OnInit {
     if (parsedName) patchData.nombre = parsedName;
     if (parsedTipo) patchData.tipo = parsedTipo;
     if (parsedFormato) patchData.formato = parsedFormato;
-    if (parsedVersion) patchData.version = parsedVersion;
+    patchData.version = parsedVersion || '';
     
     if (parsedProceso) {
       patchData.proceso = parsedProceso;
@@ -461,7 +461,26 @@ export class DocumentosControladosRegeditComponent implements OnInit {
   }
 
   onSave() {
+    // Restricción: Código de Versión obligatorio
+    const versionVal = (this.formulario.get('version')?.value || '').trim();
+    if (!versionVal) {
+      this.formulario.get('version')?.setErrors({ required: true });
+      this.formulario.get('version')?.markAsTouched();
+      Swal.fire({
+        icon: 'warning',
+        title: 'Código de Versión Requerido',
+        html: `<div style="font-size: 13px; color: #334155; text-align: left; line-height: 1.6;">
+                 De acuerdo a la normativa documental del sistema, <strong>no se permite subir o registrar un documento sin su código de versión</strong> (ejemplo: <em>v1, v1.0, 01</em>).<br><br>
+                 Por favor, ingrese el código de versión correspondiente antes de guardar el documento.
+               </div>`,
+        confirmButtonColor: '#5b4bd6',
+        confirmButtonText: 'Entendido'
+      });
+      return;
+    }
+
     if (this.formulario.invalid) {
+      this.formulario.markAllAsTouched();
       return;
     }
 

@@ -114,7 +114,7 @@ export class ProcesosService {
     ],
     'Ingeniería y Mejora Continua (IMC)': [
       'Organización y Métodos',
-      'Mejora Continua',
+      'Ingeniería',
       'Investigación, Desarrollo e Innovación',
       'Certificaciones'
     ],

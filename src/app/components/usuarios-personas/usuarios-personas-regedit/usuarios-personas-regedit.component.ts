@@ -484,10 +484,13 @@ export class UsuariosPersonasRegeditComponent implements OnInit {
       Asunto: '🔐 Credenciales de Acceso al Sistema de Gestión de Seguridad Precotex SOMA'
     };
 
-    this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postEnviarCredencialesCorreo`, payload).subscribe({
-      next: () => {},
-      error: () => {}
-    });
+    const isLocal = ((GlobalVariable.baseUrlBackEnd || '').toLowerCase().includes('localhost') || (GlobalVariable.baseUrlBackEnd || '').toLowerCase().includes('127.0.0.1')) && !(GlobalVariable.baseUrlBackEnd || '').includes(':5252');
+    if (isLocal) {
+      this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postEnviarCredencialesCorreo`, payload).subscribe({
+        next: () => {},
+        error: () => {}
+      });
+    }
   }
 
   onClose() {
