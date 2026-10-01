@@ -37,9 +37,9 @@ export class DocumentosControladosLoteComponent implements OnInit {
     'Ingeniería y Mejora Continua (IMC)': ['Ingeniería', 'Organización y Métodos', 'Investigación, Desarrollo e Innovación', 'Certificaciones'],
     'Administración y Finanzas (AFC)': ['Administración', 'Finanzas', 'Contabilidad y Costos', 'Tesorería'],
     'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitación', 'Comunicaciones', 'Desarrollo Organizacional', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
-    'Servicio de Estampado y Bordado (SEB)': ['Estampado', 'Bordado', 'Calidad Estampado y Bordado', 'Planeamiento y Programación de la Producción de Estampado y Bordado'],
+    'Servicio de Estampado y Bordado (SEB)': ['Estampado', 'Bordado', 'Calidad Estampado y Bordado', 'Planeamiento y Programación de la Producción E&B'],
     'Operaciones Manufactura (OPM)': ['Corte', 'Costura', 'Inspección', 'Acabados', 'Aseguramiento de la Calidad Manufactura', 'Manufactura', 'Consumos'],
-    'Operaciones Textil (OPT)': ['Tejeduría', 'Tintorería', 'Producción Textil', 'Laboratorio de Color', 'Estampado Digital', 'Acabados Textil', 'Laboratorio de Calidad Textil', 'Aseguramiento de la Calidad Textil', 'Lavandería', 'Hilandería'],
+    'Operaciones Textil (OPT)': ['Tejeduría', 'Tintorería', 'Producción Textil', 'Laboratorio de Color', 'Estampado Digital', 'Acabados Textil', 'Laboratorio de Calidad Textil', 'Aseguramiento de la Calidad Textil', 'Lavandería'],
     'Balance de Materia (BM)': ['Balance de Materia'],
     'Planeamiento y Control de la Producción (PCP)': ['PCP Textil', 'PCP Manufactura', 'PCP Estampado y Bordado'],
     'Logística (LOG)': ['Almacén', 'Comercio Exterior', 'Logística', 'Transporte'],
@@ -285,7 +285,7 @@ export class DocumentosControladosLoteComponent implements OnInit {
       'BORD': 'Bordado',
       'BOR': 'Bordado',
       'CEB': 'Calidad Estampado y Bordado',
-      'PCEB': 'Planeamiento y Programación de la Producción de Estampado y Bordado',
+      'PCEB': 'Planeamiento y Programación de la Producción E&B',
 
       // 8. OPERACIONES MANUFACTURA (OPM)
       'COR': 'Corte',
@@ -312,8 +312,6 @@ export class DocumentosControladosLoteComponent implements OnInit {
       'CTX': 'Aseguramiento de la Calidad Textil',
       'ADT': 'Aseguramiento de la Calidad Textil',
       'LAV': 'Lavandería',
-      'HIL': 'Hilandería',
-
       // 10. BALANCE DE MATERIA (BM)
       'BM': 'Balance de Materia',
 

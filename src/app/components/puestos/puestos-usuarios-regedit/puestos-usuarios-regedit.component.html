@@ -33,7 +33,7 @@
           <span class="section-title">1. Información del Colaborador y Puesto</span>
         </div>
 
-        <div class="form-row split-4">
+        <div class="form-row split-4 colaborador-row">
           <!-- Col 1: Colaborador / Usuario Asignado (Nombre y Apellido) - Filtrado por tecleo desde UP_MuestraDatosTrabajador (Spring ERP) -->
           <div class="form-field search-combobox-field">
             <label class="form-label">
@@ -78,11 +78,11 @@
                     <div class="worker-avatar">{{ getInitials(trab.nombre) }}</div>
                     <div class="worker-details">
                       <div class="worker-name-line">
-                        <span class="worker-fullname">{{ trab.nombre }}</span>
+                        <span class="worker-fullname" [title]="trab.nombre">{{ trab.nombre }}</span>
                         <span class="worker-ficha-badge">Tipo: {{ trab.tipo }} | Ficha: {{ trab.codigo }}</span>
                       </div>
                       <div class="worker-subline">
-                        <span class="worker-cargo-tag">{{ trab.cargo || 'Trabajador' }}</span>
+                        <span class="worker-cargo-tag" [title]="trab.cargo || 'Trabajador'">{{ trab.cargo || 'Trabajador' }}</span>
                         <span *ngIf="trab.correo" class="worker-email-tag">{{ trab.correo }}</span>
                       </div>
                     </div>

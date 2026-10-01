@@ -100,7 +100,23 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   }
 
   getFilteredProcesosByMacro(macro: string): string[] {
-    const list = this.PROCESOS_GROUPS[macro] || [];
+    const rawList = this.PROCESOS_GROUPS[macro] || [];
+    let list = rawList.filter(p => {
+      const lower = p.toLowerCase();
+      if (lower === 'hilanderia' || lower === 'hilandería' || lower === 'capacitaciones y desarrollo') return false;
+      if (macro === 'Gerencia General (GG)' && lower.includes('comercial')) return false;
+      return true;
+    });
+
+    // Deduplicación estricta por nombre normalizado
+    const seen = new Set<string>();
+    list = list.filter(p => {
+      const norm = this.normalizarNombreProceso(p).toLowerCase();
+      if (seen.has(norm)) return false;
+      seen.add(norm);
+      return true;
+    });
+
     if (!this.searchProcesoTree || !this.searchProcesoTree.trim()) return list;
     const q = this.searchProcesoTree.toLowerCase().trim();
     return list.filter(p => p.toLowerCase().includes(q) || this.getAbreviaturaProceso(p).toLowerCase().includes(q));
@@ -144,10 +160,10 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     'Control Patrimonial (CPT)': ['Control Patrimonial'],
     'Ingeniería y Mejora Continua (IMC)': ['Ingeniería', 'Organización y Métodos', 'Investigación, Desarrollo e Innovación', 'Certificaciones'],
     'Administración y Finanzas (AFC)': ['Administración', 'Finanzas', 'Contabilidad y Costos', 'Tesorería'],
-    'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitaciones y Desarrollo', 'Comunicaciones', 'Desarrollo Organizacional', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
+    'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitación', 'Comunicaciones', 'Desarrollo Organizacional', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
     'Servicio de Estampado y Bordado (SEB)': ['Estampado', 'Bordado', 'Calidad Estampado y Bordado', 'Planeamiento y Programación de la Producción E&B'],
     'Operaciones Manufactura (OPM)': ['Corte', 'Costura', 'Inspección', 'Acabados', 'Aseguramiento de la Calidad Manufactura', 'Consumos'],
-    'Operaciones Textil (OPT)': ['Tejeduría', 'Tintorería', 'Laboratorio de Color', 'Estampado Digital', 'Acabados Textil', 'Aseguramiento de Calidad Textil', 'Lavandería'],
+    'Operaciones Textil (OPT)': ['Tejeduría', 'Tintorería', 'Producción Textil', 'Laboratorio de Color', 'Estampado Digital', 'Acabados Textil', 'Laboratorio de Calidad Textil', 'Aseguramiento de la Calidad Textil', 'Lavandería'],
     'Balance de Materia (BM)': ['Balance de Materia'],
     'Planeamiento y Control de la Producción (PCP)': ['PCP Textil', 'PCP Manufactura', 'PCP Estampado y Bordado'],
     'Logística (LOG)': ['Almacén', 'Comercio Exterior', 'Logística', 'Transporte'],
@@ -275,7 +291,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     '016': 'Contabilidad y Costos', '16': 'Contabilidad y Costos', 'CONT': 'Contabilidad y Costos',
     '017': 'Tesorería', '17': 'Tesorería', 'TES': 'Tesorería',
     '018': 'Administración de Personal', '18': 'Administración de Personal', 'AP': 'Administración de Personal',
-    '019': 'Capacitaciones y Desarrollo', '19': 'Capacitaciones y Desarrollo', 'CAP': 'Capacitaciones y Desarrollo',
+    '019': 'Capacitación', '19': 'Capacitación', 'CAP': 'Capacitación',
     '020': 'Comunicaciones', '20': 'Comunicaciones', 'COMU': 'Comunicaciones',
     '021': 'Gestión Humana', '21': 'Gestión Humana', 'GH': 'Gestión Humana', 'GGHH': 'Gestión Humana',
     '022': 'Bienestar Social', '22': 'Bienestar Social', 'BSO': 'Bienestar Social',
@@ -295,7 +311,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     '036': 'Laboratorio de Color', '36': 'Laboratorio de Color', 'LDC': 'Laboratorio de Color',
     '037': 'Estampado Digital', '37': 'Estampado Digital', 'EDG': 'Estampado Digital',
     '038': 'Acabados Textil', '38': 'Acabados Textil', 'ATX': 'Acabados Textil', 'ACT': 'Acabados Textil',
-    '039': 'Aseguramiento de Calidad Textil', '39': 'Aseguramiento de Calidad Textil', 'CTX': 'Aseguramiento de Calidad Textil', 'LTX': 'Aseguramiento de Calidad Textil',
+    '039': 'Aseguramiento de Calidad Textil', '39': 'Aseguramiento de Calidad Textil', 'CTX': 'Aseguramiento de la Calidad Textil', 'LTX': 'Aseguramiento de Calidad Textil',
     '040': 'Lavandería', '40': 'Lavandería', 'LAV': 'Lavandería',
     '041': 'Balance de Materia', '41': 'Balance de Materia', 'BM': 'Balance de Materia',
     '042': 'PCP Textil', '42': 'PCP Textil', 'PTX': 'PCP Textil',
@@ -330,6 +346,15 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     }
     if (lower.includes('investiga') && lower.includes('innova')) {
       return 'Investigación, Desarrollo e Innovación';
+    }
+    if (lower === 'capacitaciones y desarrollo' || lower === 'capacitacion' || lower === 'capacitación') {
+      return 'Capacitación';
+    }
+    if (lower === 'aseguramiento de calidad textil' || lower === 'aseguramiento de la calidad textil') {
+      return 'Aseguramiento de la Calidad Textil';
+    }
+    if (lower.includes('planeamiento') && (lower.includes('estampado') || lower.includes('e&b') || lower.includes('pceb'))) {
+      return 'Planeamiento y Programación de la Producción E&B';
     }
     return clean;
   }
@@ -367,12 +392,35 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Limpieza preventiva de documentos mock residuales de localStorage
+    try {
+      const mockCodes = ['pro-cos-001', 'ins-cos-002', 'for-cos-003', 'pro-imc-oym-003', 'ins-imc-oym-002', 'man-imc-oym-001', 'per-imc-oym-004', 'pro-sop-ctp-002', 'pln-aio-001'];
+      const locCreatedRaw = localStorage.getItem('precotex_documentos_creados');
+      if (locCreatedRaw) {
+        const parsed = JSON.parse(locCreatedRaw);
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter((d: any) => !mockCodes.includes((d.codigo || '').toLowerCase().trim()));
+          localStorage.setItem('precotex_documentos_creados', JSON.stringify(cleaned));
+        }
+      }
+    } catch (e) { }
+
     // Cargar permisos finos del usuario
     this.loadFinePermissions();
 
     this.loadDocs();
     this.procesosService.getProcesosAgrupados().subscribe({
       next: (groups: any) => {
+        if (groups) {
+          for (const k in groups) {
+            groups[k] = groups[k].filter((p: string) => {
+              const lower = (p || '').toLowerCase();
+              if (lower === 'hilanderia' || lower === 'hilandería' || lower === 'capacitaciones y desarrollo') return false;
+              if (k === 'Gerencia General (GG)' && lower.includes('comercial')) return false;
+              return true;
+            });
+          }
+        }
         this.PROCESOS_GROUPS = groups;
       }
     });
@@ -381,7 +429,8 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       next: (res: any) => {
         if (res && res.success && res.elements) {
           res.elements.forEach((p: any) => {
-            const name = (p.proceso || p.nombre_Proceso || p.denominacion || '').trim();
+            const raw = (p.proceso || p.nombre_Proceso || p.denominacion || '').trim();
+            const name = this.normalizarNombreProceso(raw);
             const code = (p.codigo_Proceso || p.codigoProceso || '').toString().trim();
             if (name && code) {
               const lower = name.toLowerCase();
@@ -478,7 +527,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       'CERT': 'Certificaciones',
       'ADMIN': 'Administración', 'ADM': 'Administración',
       'FIN': 'Finanzas', 'CONT': 'Contabilidad y Costos', 'TES': 'Tesorería',
-      'AP': 'Administración de Personal', 'CAP': 'Capacitaciones y Desarrollo',
+      'AP': 'Administración de Personal', 'CAP': 'Capacitación',
       'COMU': 'Comunicaciones', 'DO': 'Desarrollo Organizacional',
       'GH': 'Gestión Humana', 'BSO': 'Bienestar Social', 'SDP': 'Selección de Personal',
       'EST': 'Estampado', 'BORD': 'Bordado', 'BOR': 'Bordado',
@@ -509,18 +558,11 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     };
 
     const candidateParts = parts.length > 1 ? parts.slice(1) : [];
-    if (parts.length >= 3 && mapSubProcesos[parts[2]]) {
-      return mapSubProcesos[parts[2]];
-    }
-    if (parts.length >= 2 && mapSubProcesos[parts[1]]) {
-      return mapSubProcesos[parts[1]];
-    }
-    if (parts.length >= 2 && mapMacros[parts[1]]) {
-      return mapMacros[parts[1]];
-    }
+    // 1. Prioridad: Verificar si alguna parte coincide exactamente con un Subproceso oficial
     for (const part of candidateParts) {
       if (mapSubProcesos[part]) return mapSubProcesos[part];
     }
+    // 2. Si no hay subproceso específico, verificar si alguna parte es un Macroproceso
     for (const part of candidateParts) {
       if (mapMacros[part]) return mapMacros[part];
     }
@@ -530,38 +572,92 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   /**
    * Comparador flexible de procesos con soporte para alias (Calidad, Costura, O&M, etc.)
    */
+  /**
+   * Clave canónica normalizada para identificación unívoca y exacta de cada proceso
+   */
+  normalizeProcessKey(p: string): string {
+    if (!p) return '';
+    let s = p.toString().trim().toLowerCase();
+    if (s === 'todos los procesos' || s === '__all__') return '__all__';
+
+    // Resolver código o abreviación directa sin recursión
+    const rawTrim = p.toString().trim();
+    if (this.codeToProcessMap && this.codeToProcessMap[rawTrim]) {
+      s = this.codeToProcessMap[rawTrim].trim().toLowerCase();
+    } else if (this.codeToProcessMap && this.codeToProcessMap[s.toUpperCase()]) {
+      s = this.codeToProcessMap[s.toUpperCase()].trim().toLowerCase();
+    }
+
+    // Quitar acentos
+    s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    // 1. Alias específicos unívocos por proceso
+    if (s === 'o&m' || s === 'oym' || s === 'om' || s === 'organizacion y metodos') return 'organizacion y metodos';
+    if (s === 'sst' || s === 'ssoma' || s === 'seguridad y salud en el trabajo') return 'ssoma';
+    if (s === 'costuras' || s === 'costura' || s === 'cos' || s === 'cost') return 'costura';
+    if (s === 'inspeccion' || s === 'inspecciones' || s === 'insp') return 'inspeccion';
+    if (s === 'acabados' || s === 'acabado' || s === 'acab') return 'acabados';
+    if (s === 'corte' || s === 'cort' || s === 'cor') return 'corte';
+    if (s === 'consumos' || s === 'consumo' || s === 'cons') return 'consumos';
+    if (s === 'ingenieria' || s === 'ing' || s === 'mejora continua') return 'ingenieria';
+    if (s.includes('investiga') && s.includes('innova')) return 'investigacion, desarrollo e innovacion';
+    if (s === 'idi' || s === 'i+d+i' || s === 'i+d') return 'investigacion, desarrollo e innovacion';
+
+    // 2. SERVICIO DE ESTAMPADO Y BORDADO (SEB) - Diferenciación estricta
+    if (s === 'calidad estampado y bordado' || s === 'calidad e&b' || s === 'ceb') return 'calidad estampado y bordado';
+    if (s === 'estampado' || s === 'est') return 'estampado';
+    if (s === 'bordado' || s === 'bord' || s === 'bor') return 'bordado';
+    if (s.includes('planeamiento') && (s.includes('estampado') || s.includes('e&b') || s.includes('pceb'))) {
+      return 'planeamiento y programacion de la produccion e&b';
+    }
+
+    // 3. CALIDAD MANUFACTURA vs CALIDAD TEXTIL vs CALIDAD E&B - Diferenciación estricta
+    if (s === 'aseguramiento de la calidad manufactura' || s === 'aseguramiento de calidad manufactura' || s === 'calidad manufactura' || s === 'cal') {
+      return 'aseguramiento de la calidad manufactura';
+    }
+    if (s === 'aseguramiento de la calidad textil' || s === 'aseguramiento de calidad textil' || s === 'calidad textil' || s === 'ctx') {
+      return 'aseguramiento de la calidad textil';
+    }
+    if (s === 'laboratorio de calidad textil' || s === 'ltx') return 'laboratorio de calidad textil';
+
+    // 4. PCP - Diferenciación estricta
+    if (s === 'pcp textil' || s === 'ptx') return 'pcp textil';
+    if (s === 'pcp manufactura' || s === 'pma') return 'pcp manufactura';
+    if (s === 'pcp estampado y bordado') return 'planeamiento y programacion de la produccion e&b';
+
+    // 5. COMERCIAL
+    if (s === 'comercial exportacion de telas' || s === 'cet') return 'comercial exportacion de telas';
+    if (s === 'comercial venta local textil' || s === 'cvl') return 'comercial venta local textil';
+    if (s === 'comercial exportacion de prendas' || s === 'com') return 'comercial exportacion de prendas';
+    if (s === 'desarrollo textil' || s === 'dtx') return 'desarrollo textil';
+    if (s === 'desarrollo de estampado y bordado' || s === 'udp') return 'desarrollo de estampado y bordado';
+    if (s === 'desarrollo de producto' || s === 'ddp') return 'desarrollo de producto';
+
+    // 6. GESTIÓN HUMANA
+    if (s === 'capacitacion' || s === 'capacitaciones y desarrollo' || s === 'cap') return 'capacitacion';
+    if (s === 'administracion de personal' || s === 'ap') return 'administracion de personal';
+    if (s === 'bienestar social' || s === 'bso') return 'bienestar social';
+    if (s === 'seleccion de personal' || s === 'sdp') return 'seleccion de personal';
+    if (s === 'desarrollo organizacional' || s === 'do') return 'desarrollo organizacional';
+    if (s === 'comunicaciones' || s === 'comu') return 'comunicaciones';
+    if (s === 'gestion humana' || s === 'gh' || s === 'gghh') return 'gestion humana';
+
+    return s;
+  }
+
+  /**
+   * Comparador estricto y seguro de procesos que evita falsos positivos por inclusión de texto
+   */
   matchesProcess(procA: string, procB: string): boolean {
     if (!procA || !procB) return false;
-    const a = procA.toLowerCase().trim();
-    const b = procB.toLowerCase().trim();
-    if (a === b) return true;
-    if (a === 'todos los procesos' || b === 'todos los procesos' || a === '__all__' || b === '__all__') return true;
+    if (procA === 'Todos los procesos' || procB === 'Todos los procesos' || procA === '__all__' || procB === '__all__') return true;
 
-    const aClean = a.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const bClean = b.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    if (aClean === bClean) return true;
+    const keyA = this.normalizeProcessKey(procA);
+    const keyB = this.normalizeProcessKey(procB);
+    if (!keyA || !keyB) return false;
+    if (keyA === '__all__' || keyB === '__all__') return true;
 
-    // Equivalencia bidireccional Calidad
-    if ((aClean.includes('calidad') && bClean.includes('calidad')) ||
-        (aClean === 'calidad' && bClean.includes('calidad')) ||
-        (bClean === 'calidad' && aClean.includes('calidad'))) {
-      return true;
-    }
-
-    // Equivalencia Costura
-    if (aClean.includes('costura') && bClean.includes('costura')) return true;
-
-    // Equivalencia O&M
-    if ((aClean.includes('organizacion') && aClean.includes('metodos') && bClean.includes('organizacion') && bClean.includes('metodos')) ||
-        (aClean.includes('o&m') && bClean.includes('metodos')) || (bClean.includes('o&m') && aClean.includes('metodos'))) {
-      return true;
-    }
-
-    if (aClean.length >= 4 && bClean.length >= 4) {
-      if (aClean.includes(bClean) || bClean.includes(aClean)) return true;
-    }
-
-    return false;
+    return keyA === keyB;
   }
 
   loadDocs() {
@@ -578,14 +674,13 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
 
   procesarYPersistirLista(rawElements: any[]): void {
     let rawList: any[] = [];
-    if (rawElements && rawElements.length > 0) {
+    const isApiConnected = rawElements && rawElements.length > 0;
+
+    if (isApiConnected) {
       rawList = rawElements.map((d: any) => {
-        const codDoc = d.codigo_Documento || d.codigo_Documentos_Controlados || d.codigo || 'DOC-' + (d.id || '001');
-        let procName = d.nombre_Proceso || d.proceso || (d.codigo_Proceso ? this.getProcessNameByCode(d.codigo_Proceso) : '');
-        if (!procName || procName === 'Organización y Métodos') {
-          const inferred = this.extraerProcesoDelCodigo(codDoc);
-          if (inferred) procName = inferred;
-        }
+        const codDoc = (d.codigo_Documento || d.codigo_Documentos_Controlados || d.codigo || 'DOC-' + (d.id || '001')).toString().trim();
+        const inferred = this.extraerProcesoDelCodigo(codDoc);
+        let procName = inferred || d.nombre_Proceso || d.proceso || (d.codigo_Proceso ? this.getProcessNameByCode(d.codigo_Proceso) : '');
         if (!procName) procName = 'Organización y Métodos';
 
         const nomDoc = d.denominacion || d.nombre || d.descripcion || 'Documento';
@@ -602,43 +697,43 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
           vig: fecVenc,
           estado: this.calcularEstadoDinamico(fecVenc, d.flg_Estado || d.estado),
           archivo: d.ruta_Adjunto || d.archivo || codDoc,
-          procesos: d.procesos || (d.nombre_Proceso ? [d.nombre_Proceso] : [procName]),
+          procesos: d.procesos || [procName],
           procesosVisibles: d.procesosVisibles || ['Todos los procesos'],
           modoVisibilidad: d.modoVisibilidad || 'TODOS',
           raw: d
         };
       });
     } else {
-      rawList = [...this.defaultDocs];
+      // Fallback sólo si no hay conexión al backend ni datos en API
+      const cached = localStorage.getItem('precotex:documentacion');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            rawList = parsed;
+          }
+        } catch (e) { }
+      }
+      if (rawList.length === 0) {
+        rawList = [...this.defaultDocs];
+      }
     }
 
-    // 1. Unificar almacenamiento local: precotex_documentos_creados + precotex:documentacion
+    // 1. Fusionar únicamente documentos subidos/creados por el usuario localmente
     const localCombined: any[] = [];
     try {
       const localCreatedRaw = localStorage.getItem('precotex_documentos_creados');
       if (localCreatedRaw) {
         const parsed = JSON.parse(localCreatedRaw);
-        if (Array.isArray(parsed)) localCombined.push(...parsed);
-      }
-      const localDocsRaw = localStorage.getItem('precotex:documentacion');
-      if (localDocsRaw) {
-        const parsedDocs = JSON.parse(localDocsRaw);
-        if (Array.isArray(parsedDocs)) {
-          parsedDocs.forEach((pd: any) => {
-            const pdCode = (pd.codigo || pd.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
-            const pdNom = (pd.nombre || pd.denominacion || '').toString().trim().toLowerCase();
-            const yaExiste = localCombined.some((lc: any) => {
-              const lcCode = (lc.codigo || lc.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
-              const lcNom = (lc.nombre || lc.denominacion || '').toString().trim().toLowerCase();
-              return (pdCode && lcCode && pdCode === lcCode) || (pdNom && lcNom && pdNom === lcNom);
-            });
-            if (!yaExiste) localCombined.push(pd);
-          });
+        if (Array.isArray(parsed)) {
+          // Filtrar cualquier documento mock antiguo
+          const mockCodes = ['pro-cos-001', 'ins-cos-002', 'for-cos-003', 'pro-imc-oym-003', 'ins-imc-oym-002', 'man-imc-oym-001', 'per-imc-oym-004', 'pro-sop-ctp-002', 'pln-aio-001'];
+          const cleanUserDocs = parsed.filter((ud: any) => !mockCodes.includes((ud.codigo || '').toLowerCase().trim()));
+          localCombined.push(...cleanUserDocs);
         }
       }
     } catch (e) { }
 
-    // 2. Fusionar documentos locales en rawList garantizando que ningún registro subido desaparezca al recargar
     localCombined.forEach(locDoc => {
       const codeClean = (locDoc.codigo || locDoc.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
       const nomClean = (locDoc.nombre || locDoc.denominacion || '').toString().trim().toLowerCase();
@@ -652,45 +747,15 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         rawList[matchIdx] = {
           ...rawList[matchIdx],
           ...locDoc,
-          proceso: locDoc.proceso || rawList[matchIdx].proceso,
-          procesos: locDoc.procesos || (locDoc.proceso ? [locDoc.proceso] : rawList[matchIdx].procesos),
-          procesosVisibles: locDoc.procesosVisibles || rawList[matchIdx].procesosVisibles || ['Todos los procesos'],
-          modoVisibilidad: locDoc.modoVisibilidad || rawList[matchIdx].modoVisibilidad || 'TODOS',
-          version: locDoc.version || rawList[matchIdx].version,
-          estado: locDoc.estado || rawList[matchIdx].estado,
-          vig: locDoc.vig || rawList[matchIdx].vig,
-          tipo: locDoc.tipo || rawList[matchIdx].tipo,
-          formato: locDoc.formato || rawList[matchIdx].formato,
-          archivo: locDoc.archivo || rawList[matchIdx].archivo
+          archivo: locDoc.archivo || rawList[matchIdx].archivo,
+          version: locDoc.version || rawList[matchIdx].version
         };
       } else {
         rawList.unshift(locDoc);
       }
     });
 
-    // 3. Fusionar documentos en memoria previa si existían
-    if (this.docsList && this.docsList.length > 0) {
-      this.docsList.forEach(curr => {
-        const codeClean = (curr.codigo || curr.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
-        const nomClean = (curr.nombre || curr.denominacion || '').toString().trim().toLowerCase();
-        const matchIdx = rawList.findIndex((r: any) => {
-          const rCode = (r.codigo || r.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
-          const rNom = (r.nombre || r.denominacion || '').toString().trim().toLowerCase();
-          return (codeClean !== '' && rCode !== '' && rCode === codeClean) ||
-                 (nomClean !== '' && rNom !== '' && rNom === nomClean);
-        });
-        if (matchIdx >= 0) {
-          if (curr.proceso && curr.proceso !== rawList[matchIdx].proceso) {
-            rawList[matchIdx].proceso = curr.proceso;
-            rawList[matchIdx].procesos = curr.procesos || [curr.proceso];
-          }
-        } else {
-          rawList.unshift(curr);
-        }
-      });
-    }
-
-    // 4. Filtrar eliminados según papelera/deleted_items
+    // 2. Filtrar eliminados según papelera/deleted_items
     const deletedKey = 'precotex:docs_deleted_items';
     let deletedItems: string[] = [];
     try {
@@ -708,24 +773,16 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       });
     }
 
-    // 5. Auto-corrección / Self-healing: asegurar Calidad y Costura
+    // 3. Garantía absoluta de asignación canónica según código oficial Precotex
     rawList.forEach((d: any) => {
       const c = (d.codigo || d.codigo_Documentos_Controlados || '').toString().trim().toUpperCase();
-      const p = (d.proceso || '').toString().trim();
-      const lowerNom = (d.nombre || d.denominacion || '').toString().toLowerCase();
-
-      // Costura: código con -COS- o -COST- o nombre con costura
-      if ((p === 'Inspección' || p === 'Organización y Métodos') && (c.includes('-COS-') || c.includes('-COST-') || lowerNom.includes('costura'))) {
-        d.proceso = 'Costura';
-        d.procesos = ['Costura'];
-      }
-
-      // Calidad: código con -CAL- o nombre con calidad
-      if (c.includes('-CAL-') || c.includes('-CALIDAD-') || lowerNom.includes('calidad') || lowerNom.includes('aseguramiento de calidad')) {
-        if (!d.proceso || d.proceso === 'Organización y Métodos' || d.proceso === 'Costura' || d.proceso === 'Inspección') {
-          d.proceso = 'Aseguramiento de la Calidad Manufactura';
-          d.procesos = ['Aseguramiento de la Calidad Manufactura'];
-        }
+      const inferred = this.extraerProcesoDelCodigo(c);
+      if (inferred) {
+        d.proceso = inferred;
+        d.procesos = [inferred];
+      } else if (!d.proceso) {
+        d.proceso = 'Organización y Métodos';
+        d.procesos = ['Organización y Métodos'];
       }
     });
 
@@ -2179,7 +2236,8 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
           res.tipo = activeTipo;
         }
 
-        const procPrincipal = res.procesos && res.procesos.length > 0 ? res.procesos[0] : res.proceso;
+        const inferredFromCode = this.extraerProcesoDelCodigo(res.codigo);
+        const procPrincipal = inferredFromCode || (res.procesos && res.procesos.length > 0 ? res.procesos[0] : res.proceso);
         const finalProc = procPrincipal || activeProc || 'Costura';
         res.proceso = finalProc;
         if (!res.procesos || res.procesos.length === 0) {

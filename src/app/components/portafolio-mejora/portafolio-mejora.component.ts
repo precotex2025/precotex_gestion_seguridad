@@ -146,9 +146,9 @@ export class PortafolioMejoraComponent implements OnInit {
     'Ingeniería y Mejora Continua (IMC)': ['Ingeniería', 'Organización y Métodos', 'Investigación, Desarrollo e Innovación', 'Certificaciones'],
     'Administración y Finanzas (AFC)': ['Administración', 'Finanzas', 'Contabilidad y Costos', 'Tesorería'],
     'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitación', 'Comunicaciones', 'Desarrollo Organizacional', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
-    'Servicio de Estampado y Bordado (SEB)': ['Estampado', 'Bordado', 'Calidad Estampado y Bordado', 'Planeamiento y Programación de la Producción de Estampado y Bordado'],
+    'Servicio de Estampado y Bordado (SEB)': ['Estampado', 'Bordado', 'Calidad Estampado y Bordado', 'Planeamiento y Programación de la Producción E&B'],
     'Operaciones Manufactura (OPM)': ['Corte', 'Costura', 'Inspección', 'Acabados', 'Aseguramiento de la Calidad Manufactura', 'Manufactura', 'Consumos'],
-    'Operaciones Textil (OPT)': ['Tejeduría', 'Tintorería', 'Producción Textil', 'Laboratorio de Color', 'Estampado Digital', 'Acabados Textil', 'Laboratorio de Calidad Textil', 'Aseguramiento de la Calidad Textil', 'Lavandería', 'Hilandería'],
+    'Operaciones Textil (OPT)': ['Tejeduría', 'Tintorería', 'Producción Textil', 'Laboratorio de Color', 'Estampado Digital', 'Acabados Textil', 'Laboratorio de Calidad Textil', 'Aseguramiento de la Calidad Textil', 'Lavandería'],
     'Balance de Materia (BM)': ['Balance de Materia'],
     'Planeamiento y Control de la Producción (PCP)': ['PCP Textil', 'PCP Manufactura', 'PCP Estampado y Bordado'],
     'Logística (LOG)': ['Almacén', 'Comercio Exterior', 'Logística', 'Transporte'],
@@ -509,7 +509,7 @@ export class PortafolioMejoraComponent implements OnInit {
 
       // Anchos de columna configurados exactamente al formato impreso
       ws.columns = [
-        { width: 14 }, // A (N° / Tags)
+        { width: 16 }, // A (N° / Tags)
         { width: 14 }, // B (Tag ¿Por qué? / Contenido)
         { width: 16 }, // C
         { width: 16 }, // D
@@ -603,7 +603,7 @@ export class PortafolioMejoraComponent implements OnInit {
         ws.addImage(imgId, {
           tl: { col: 0.1, row: 0.1 } as any,
           br: { col: 0.9, row: 2.9 } as any,
-          editAs: 'oneCell'
+          editAs: 'twoCell'
         } as any);
       } catch (errImg) {
         console.warn('Fallback: no se pudo renderizar imagen, aplicando texto:', errImg);
@@ -632,7 +632,7 @@ export class PortafolioMejoraComponent implements OnInit {
       ws.getCell('I3').alignment = { horizontal: 'center', vertical: 'middle' };
 
       // 4. Metadata Fila 4 (Fecha Registro, Área, Equipo - valores en blanco)
-      ws.getCell('A4').value = 'Fecha Registr';
+      ws.getCell('A4').value = 'Fecha Registro';
       ws.getCell('A4').font = { name: 'Calibri', size: 10, bold: true };
       ws.getCell('A4').alignment = { horizontal: 'center', vertical: 'middle' };
 
@@ -765,7 +765,7 @@ export class PortafolioMejoraComponent implements OnInit {
 
       // Alturas de fila proporcionales
       const heights: { [key: number]: number } = {
-        1: 20, 2: 20, 3: 20, 4: 28, 5: 24, 6: 45, 7: 45, 8: 45, 9: 45,
+        1: 20, 2: 20, 3: 20, 4: 30, 5: 24, 6: 45, 7: 45, 8: 45, 9: 45,
         10: 24, 11: 22, 12: 50, 13: 24, 14: 28, 15: 22,
         16: 32, 17: 32, 18: 32, 19: 32, 20: 32,
         21: 24, 22: 22, 23: 45, 24: 45
@@ -830,7 +830,7 @@ export class PortafolioMejoraComponent implements OnInit {
       // 13 Columnas en total: A (lateral) + 12 columnas de contenido (B a M)
       ws.columns = [
         { width: 4.5 },  // A: Banda lateral vertical (IR-VER / PENSAR / HACER)
-        { width: 8.0 },  // B: Badge / Labels (Proveniente de, Sistema Afectado, etc.)
+        { width: 11.0 }, // B: Badge / Labels (Proveniente de, Sistema Afectado, etc.)
         { width: 13.0 }, // C: Subcol 2
         { width: 11.5 }, // D: Subcol 3
         { width: 11.5 }, // E: Subcol 4
@@ -873,7 +873,7 @@ export class PortafolioMejoraComponent implements OnInit {
           ws.addImage(logoId, {
             tl: { col: 1.05, row: 0.1 } as any,
             br: { col: 3.95, row: 2.9 } as any,
-            editAs: 'oneCell'
+            editAs: 'twoCell'
           } as any);
         } catch (err) {
           ws.getCell('B1').value = 'PRECOTEX';
@@ -1052,7 +1052,7 @@ export class PortafolioMejoraComponent implements OnInit {
           ws.addImage(pezId, {
             tl: { col: 1.05, row: 28.05 } as any,
             br: { col: 12.95, row: 39.95 } as any,
-            editAs: 'oneCell'
+            editAs: 'twoCell'
           } as any);
         } catch (ePez) {
           console.warn('No se pudo incrustar Pez.png en ACR:', ePez);
@@ -1197,7 +1197,7 @@ export class PortafolioMejoraComponent implements OnInit {
           ws.addImage(img2Id, {
             tl: { col: 1.1, row: 58.1 } as any,
             br: { col: 6.9, row: 67.9 } as any,
-            editAs: 'oneCell'
+            editAs: 'twoCell'
           } as any);
         } catch (eImg2) {
           console.warn('No se pudo incrustar Imagen2.png en ACR:', eImg2);
@@ -1210,7 +1210,7 @@ export class PortafolioMejoraComponent implements OnInit {
           ws.addImage(img3Id, {
             tl: { col: 7.1, row: 58.1 } as any,
             br: { col: 12.9, row: 67.9 } as any,
-            editAs: 'oneCell'
+            editAs: 'twoCell'
           } as any);
         } catch (eImg3) {
           console.warn('No se pudo incrustar Imagen3.png en ACR:', eImg3);
@@ -1232,10 +1232,46 @@ export class PortafolioMejoraComponent implements OnInit {
       ws.mergeCells('H70:I71');
       ws.mergeCells('J70:M71');
 
-      // Optimizar alturas de fila para el documento continuo
-      ws.getRow(1).height = 20;
-      ws.getRow(2).height = 20;
-      ws.getRow(3).height = 20;
+            // Alturas por fila (pt). Las filas con texto largo en celdas combinadas llevan 2-3 líneas.
+      const acrHeights: Record<number, number> = {
+        // Encabezado
+        1: 20, 2: 20, 3: 20,
+
+        // Proveniente de / Sistema afectado
+        4: 18, 5: 28,          // 5 = "INFORMES ORGANISMOS DE CONTROL" (2 líneas)
+        6: 18, 7: 18,
+        8: 20, 9: 30,          // 9 = "OPORTUNIDAD DE MEJORA" (2 líneas)
+
+        // ① Información general / ② Metodología 5W-2H
+        10: 24, 11: 24, 12: 24,
+        13: 32,                // "¿Ha ocurrido antes? / Describa lo ocurrido"
+        14: 24, 15: 24, 16: 24,
+
+        // ③ Diagrama de flujo / Evidencias
+        17: 22, 18: 20,
+        19: 22, 20: 22, 21: 22, 22: 22, 23: 22, 24: 22, 25: 22, 26: 22,
+
+        // ④ Ishikawa
+        27: 22, 28: 20,
+        // 29-40 ya están a 24 (imagen del pez)
+
+        // ⑤ 5 Porqués
+        41: 22, 42: 20, 43: 26,
+        44: 28, 45: 28, 46: 28, 47: 28, 48: 28, 49: 28, 50: 28,
+
+        // ⑥ Acciones correctivas
+        51: 24, 52: 28,        // 52 = "Puesto / Nombre y Apellido" (2 líneas)
+        53: 24, 54: 24, 55: 24, 56: 24,
+
+        // ⑦ Verificación de efectividad
+        57: 22,
+        58: 44,                // "Antes:" y "Después:" (hasta 3 líneas a 8.5 pt)
+        // 59-68 ya están a 20 (imágenes Antes/Después)
+        69: 20, 70: 24, 71: 24
+      };
+      Object.entries(acrHeights).forEach(([r, h]) => {
+        ws.getRow(Number(r)).height = h;
+      });
 
       // Generar buffer y descargar archivo
       const buffer = await wb.xlsx.writeBuffer();

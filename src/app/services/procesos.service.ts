@@ -82,7 +82,7 @@ export class ProcesosService {
       'Estampado',
       'Bordado',
       'Calidad Estampado y Bordado',
-      'Planeamiento y Programación de la Producción de Estampado y Bordado'
+      'Planeamiento y Programación de la Producción E&B'
     ],
     'Operaciones Manufactura (OPM)': [
       'Corte',
@@ -102,8 +102,7 @@ export class ProcesosService {
       'Acabados Textil',
       'Laboratorio de Calidad Textil',
       'Aseguramiento de la Calidad Textil',
-      'Lavandería',
-      'Hilandería'
+      'Lavandería'
     ],
     'Balance de Materia (BM)': [
       'Balance de Materia'
@@ -150,6 +149,15 @@ export class ProcesosService {
     if (lower.includes('investiga') && lower.includes('innova')) {
       return 'Investigación, Desarrollo e Innovación';
     }
+    if (lower === 'capacitaciones y desarrollo' || lower === 'capacitacion' || lower === 'capacitación') {
+      return 'Capacitación';
+    }
+    if (lower === 'aseguramiento de calidad textil' || lower === 'aseguramiento de la calidad textil') {
+      return 'Aseguramiento de la Calidad Textil';
+    }
+    if (lower.includes('planeamiento') && (lower.includes('estampado') || lower.includes('e&b') || lower.includes('pceb'))) {
+      return 'Planeamiento y Programación de la Producción E&B';
+    }
     return clean;
   }
 
@@ -166,34 +174,55 @@ export class ProcesosService {
         }
         if (response && response.success && response.elements && response.elements.length > 0) {
           for (const proc of response.elements) {
-            const tipoCode = (proc.codigo_Tipo_Proceso || '').trim();
-            const label = this.TIPO_PROCESO_LABELS[tipoCode] || tipoCode || 'Operativos / Cadena de Valor';
+            const rawNom = (proc.proceso || proc.denominacion || proc.des_Proceso || '').trim();
+            const pNom = this.normalizarNombreProceso(rawNom);
+            if (!pNom) continue;
+
+            const pLower = pNom.toLowerCase();
+            if (pLower === 'hilanderia' || pLower === 'hilandería' || pLower === 'capacitaciones y desarrollo') {
+              continue;
+            }
+
+            let tipoCode = (proc.codigo_Tipo_Proceso || '').trim();
+            if (pLower.startsWith('comercial') || pLower.includes('exportacion de telas') || pLower.includes('venta local')) {
+              tipoCode = 'GC';
+            }
+
+            let label = this.TIPO_PROCESO_LABELS[tipoCode] || tipoCode || 'Operativos / Cadena de Valor';
+            if (label === 'Gerencia General (GG)' && pLower.includes('comercial')) {
+              label = 'Gestión Comercial (GCOM)';
+            }
+
             if (!groups[label]) {
               groups[label] = [];
             }
-            const rawNom = (proc.proceso || proc.denominacion || proc.des_Proceso || '').trim();
-            const pNom = this.normalizarNombreProceso(rawNom);
-            if (pNom) {
-              const alreadyExists = groups[label].some(existing => 
-                existing.toLowerCase() === pNom.toLowerCase() ||
-                this.normalizarNombreProceso(existing).toLowerCase() === pNom.toLowerCase()
-              );
-              if (!alreadyExists) {
-                groups[label].push(pNom);
-              }
+
+            const alreadyExists = groups[label].some(existing => 
+              existing.toLowerCase() === pNom.toLowerCase() ||
+              this.normalizarNombreProceso(existing).toLowerCase() === pNom.toLowerCase()
+            );
+            if (!alreadyExists) {
+              groups[label].push(pNom);
             }
           }
         }
 
-        // Deduplicación estricta final en cada grupo
+        // Deduplicación estricta final en cada grupo y exclusión de procesos no deseados
         for (const k in groups) {
           const seen = new Set<string>();
-          groups[k] = groups[k].filter(item => {
-            const norm = this.normalizarNombreProceso(item).toLowerCase();
-            if (seen.has(norm)) return false;
-            seen.add(norm);
-            return true;
-          });
+          groups[k] = groups[k]
+            .filter(item => {
+              const itmLower = item.toLowerCase();
+              if (itmLower === 'hilanderia' || itmLower === 'hilandería' || itmLower === 'capacitaciones y desarrollo') return false;
+              if (k === 'Gerencia General (GG)' && itmLower.includes('comercial')) return false;
+              return true;
+            })
+            .filter(item => {
+              const norm = this.normalizarNombreProceso(item).toLowerCase();
+              if (seen.has(norm)) return false;
+              seen.add(norm);
+              return true;
+            });
         }
 
         return groups;

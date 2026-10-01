@@ -58,13 +58,12 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
       'Balance de Materia'
     ],
     'Operaciones Textil (OPT)': [
-      'Hilandería',
       'Tejeduría',
       'Tintorería',
       'Laboratorio de Color',
       'Estampado Digital',
       'Acabados Textil',
-      'Aseguramiento de Calidad Textil',
+      'Aseguramiento de la Calidad Textil',
       'Lavandería'
     ],
     'Operaciones Manufactura (OPM)': [
@@ -84,7 +83,7 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
     'Gestión Humana (GGHH)': [
       'Gestión Humana',
       'Administración de Personal',
-      'Capacitaciones y Desarrollo',
+      'Capacitación',
       'Comunicaciones',
       'Bienestar Social',
       'Selección de Personal'
@@ -290,9 +289,9 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
       { nombre: 'Cynthia Aldana', email: 'caldana@precotexperu.com', puesto: 'Coordinador de SSOMA', proceso: 'SSOMA (Seguridad, Salud Ocupacional y Medio Ambiente)', nivel: 'Jefatura' },
       { nombre: 'Luis Aldana', email: 'laldana@precotexperu.com', puesto: 'Jefe de Seguridad y Salud Ocupacional', proceso: 'SSOMA (Seguridad, Salud Ocupacional y Medio Ambiente)', nivel: 'Gerencial' },
       { nombre: 'Sayda Huaranga', email: 'shuaranga@precotexperu.com', puesto: 'Supervisor de SST', proceso: 'SSOMA (Seguridad, Salud Ocupacional y Medio Ambiente)', nivel: 'Jefatura' },
-      { nombre: 'Elizabet Rivera', email: 'erivera@precotexperu.com', puesto: 'Jefatura de Calidad', proceso: 'Aseguramiento de Calidad Textil', nivel: 'Jefatura' },
+      { nombre: 'Elizabet Rivera', email: 'erivera@precotexperu.com', puesto: 'Jefatura de Calidad', proceso: 'Aseguramiento de la Calidad Textil', nivel: 'Jefatura' },
       { nombre: 'Cesar Lingan', email: 'clingan@precotexperu.com', puesto: 'Analista de Auditoría Interna', proceso: 'Auditoría Interna', nivel: 'Operativo' },
-      { nombre: 'Mary Guevara', email: 'mguevara@precotexperu.com', puesto: 'Coordinadora de Desarrollo y Capacitaciones', proceso: 'Capacitaciones y Desarrollo', nivel: 'Jefatura' },
+      { nombre: 'Mary Guevara', email: 'mguevara@precotexperu.com', puesto: 'Coordinadora de Desarrollo y Capacitaciones', proceso: 'Capacitación', nivel: 'Jefatura' },
       { nombre: 'Alfredo Toro', email: 'atoro@precotexperu.com', puesto: 'Analista de Sistemas', proceso: 'Tecnologías de la Información (Sistemas)', nivel: 'Operativo' },
       { nombre: 'Francisco Huamani', email: 'fhuamani@precotexperu.com', puesto: 'Analista SIG', proceso: 'Sistema de Gestión General', nivel: 'Operativo' },
       { nombre: 'Max Soria', email: 'msoria@precotexperu.com', puesto: 'Analista de Sistemas', proceso: 'Tecnologías de la Información (Sistemas)', nivel: 'Operativo' },

@@ -55,13 +55,12 @@ export class PlanificacionObjetivosRegeditComponent implements OnInit {
       'Balance de Materia'
     ],
     'Operaciones Textil (OPT)': [
-      'Hilandería',
       'Tejeduría',
       'Tintorería',
       'Laboratorio de Color',
       'Estampado Digital',
       'Acabados Textil',
-      'Aseguramiento de Calidad Textil',
+      'Aseguramiento de la Calidad Textil',
       'Lavandería'
     ],
     'Operaciones Manufactura (OPM)': [
@@ -81,7 +80,7 @@ export class PlanificacionObjetivosRegeditComponent implements OnInit {
     'Gestión Humana (GGHH)': [
       'Gestión Humana',
       'Administración de Personal',
-      'Capacitaciones y Desarrollo',
+      'Capacitación',
       'Comunicaciones',
       'Bienestar Social',
       'Selección de Personal'
