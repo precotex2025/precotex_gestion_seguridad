@@ -22,6 +22,15 @@ export class NormasService {
     let params = new HttpParams();
     params = params.append('sEstado', sEstado);
     return this.http.get(this.baseUrl + 'SNNorma/getListadoNormas', { headers, params });
-  }   
+  }
 
+  uploadArchivo(file: File){
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    return this.http.post(this.baseUrl + 'SNDocumentosControlados/uploadArchivo', formData);
+  }
+
+  getDownloadUrl(fileName: string): string {
+    return this.baseUrl + 'SNDocumentosControlados/downloadArchivo?fileName=' + encodeURIComponent(fileName);
+  }
 }

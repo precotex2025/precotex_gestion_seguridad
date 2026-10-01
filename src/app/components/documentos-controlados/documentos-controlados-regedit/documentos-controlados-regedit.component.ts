@@ -64,9 +64,10 @@ export class DocumentosControladosRegeditComponent implements OnInit {
 
     const initialVig = row?.vig || this.obtenerVigencia3Anios();
     const initialEstado = this.calcularEstadoPorFecha(initialVig, row?.estado || 'Vigente');
-    const initialTipo = row?.tipo || this.extraerTipoDelCodigo(row?.codigo) || 'Procedimiento';
-    const initialVersion = row?.version || this.extraerVersionDelCodigo(row?.codigo) || '';
     const activeProcDestino = (this.data?.ActiveProcess || '').trim();
+    const activeTipoDestino = (this.data?.ActiveTipo || '').trim();
+    const initialTipo = row?.tipo || activeTipoDestino || this.extraerTipoDelCodigo(row?.codigo) || 'Procedimiento';
+    const initialVersion = row?.version || this.extraerVersionDelCodigo(row?.codigo) || '';
     const initialProceso = row?.proceso || activeProcDestino || this.extraerProcesoDelCodigo(row?.codigo) || 'Organización y Métodos';
 
     if (row) {
@@ -113,23 +114,30 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       if (codeStr) {
         const patchObj: any = {};
 
-        // Auto-extraer Tipo de Documento
+        // Auto-extraer Tipo de Documento solo si tiene prefijo explícito diferente
         const autoTipo = this.extraerTipoDelCodigo(codeStr);
-        if (autoTipo) patchObj.tipo = autoTipo;
+        if (autoTipo && autoTipo !== 'Procedimiento') {
+          patchObj.tipo = autoTipo;
+        } else if (this.data?.ActiveTipo) {
+          patchObj.tipo = this.data.ActiveTipo;
+        }
 
         // Auto-extraer Versión
         const autoVer = this.extraerVersionDelCodigo(codeStr);
         if (autoVer) patchObj.version = autoVer;
 
-        // Auto-extraer Proceso Responsable
-        const autoProc = this.extraerProcesoDelCodigo(codeStr);
-        if (autoProc) {
-          patchObj.proceso = autoProc;
-          if (this.modoVisibilidad === 'PERSONALIZADO' && !this.procesosSeleccionados.includes(autoProc)) {
-            if (this.procesosSeleccionados.length === 1 && this.procesosSeleccionados[0] === 'Organización y Métodos') {
-              this.procesosSeleccionados = [autoProc];
-            } else {
-              this.procesosSeleccionados.push(autoProc);
+        // Auto-extraer Proceso Responsable: Solo si no hay un proceso activo asignado
+        const currentActive = (this.data?.ActiveProcess || '').trim();
+        if (!currentActive || currentActive === 'Todos los procesos') {
+          const autoProc = this.extraerProcesoDelCodigo(codeStr);
+          if (autoProc) {
+            patchObj.proceso = autoProc;
+            if (this.modoVisibilidad === 'PERSONALIZADO' && !this.procesosSeleccionados.includes(autoProc)) {
+              if (this.procesosSeleccionados.length === 1 && this.procesosSeleccionados[0] === 'Organización y Métodos') {
+                this.procesosSeleccionados = [autoProc];
+              } else {
+                this.procesosSeleccionados.push(autoProc);
+              }
             }
           }
         }
@@ -176,7 +184,6 @@ export class DocumentosControladosRegeditComponent implements OnInit {
     return d.toISOString().substring(0, 10);
   }
 
-  // Extrae el Área/Proceso Responsable según la sigla o abreviatura del Código (ej. PER-IMC-ACT-012 -> Acabados Textil)
   // Extrae el Área/Proceso Responsable según la sigla o abreviatura del Código (ej. PER-IMC-ACT-012 -> Acabados Textil)
   extraerProcesoDelCodigo(code: string): string {
     if (!code) return '';
@@ -238,10 +245,10 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       'COST': 'Costura',
       'COS': 'Costura',
       'INSP': 'Inspección',
-      'INS': 'Inspección',
       'ACAB': 'Acabados',
       'CAL': 'Aseguramiento de la Calidad Manufactura',
-      'MAN': 'Manufactura',
+      'MNF': 'Manufactura',
+      'MANUF': 'Manufactura',
       'CONS': 'Consumos',
       'CON': 'Consumos',
 
@@ -308,27 +315,37 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       'GG': 'Sistema de Gestión General'
     };
 
-    // 1. Buscar coincidencia exacta de sub-proceso (prioridad: segmento 3, luego segmento 2, luego otros)
+    // parts[0] es SIEMPRE el prefijo del Tipo de Documento (INS, PRO, FOR, MAN, POL, etc.)
+    // NUNCA debe evaluarse como Proceso. Solo evaluar parts.slice(1)
+    const candidateParts = parts.length > 1 ? parts.slice(1) : [];
+
+    // 1. Prioridad: segmento 3 (ej. PRO-OPM-COS-004 -> Costura)
     if (parts.length >= 3 && mapSubProcesos[parts[2]]) {
       const targetProc = mapSubProcesos[parts[2]];
       this.asegurarProcesoEnGrupos(targetProc);
       return targetProc;
     }
+    // 2. Segmento 2 (ej. INS-COS-001 -> Costura)
     if (parts.length >= 2 && mapSubProcesos[parts[1]]) {
       const targetProc = mapSubProcesos[parts[1]];
       this.asegurarProcesoEnGrupos(targetProc);
       return targetProc;
     }
-    for (const part of parts) {
+    // 3. Segmento 2 macro (ej. INS-OPM-001 -> Costura)
+    if (parts.length >= 2 && mapMacros[parts[1]]) {
+      const targetProc = mapMacros[parts[1]];
+      this.asegurarProcesoEnGrupos(targetProc);
+      return targetProc;
+    }
+    // 4. Otros segmentos candidatos
+    for (const part of candidateParts) {
       if (mapSubProcesos[part]) {
         const targetProc = mapSubProcesos[part];
         this.asegurarProcesoEnGrupos(targetProc);
         return targetProc;
       }
     }
-
-    // 2. Si no coincide con sub-proceso, buscar en macros
-    for (const part of parts) {
+    for (const part of candidateParts) {
       if (mapMacros[part]) {
         const targetProc = mapMacros[part];
         this.asegurarProcesoEnGrupos(targetProc);
@@ -437,23 +454,43 @@ export class DocumentosControladosRegeditComponent implements OnInit {
     this.selectedFile = file;
     this.fileName = file.name;
     
-    // Parse file name (e.g. "PER-IMC-ACT-012 Perfil de Puesto.pdf")
+    // Parse file name con regex inteligente para códigos Precotex (ej. INS-COS-001 Instructivo Costura.pdf)
     const nameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-    const firstSpaceIdx = nameWithoutExt.indexOf(' ');
+    const codeRegex = /([A-Za-z]{2,4}-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)/i;
+    const codeMatch = nameWithoutExt.match(codeRegex);
     
     let parsedCode = '';
     let parsedName = '';
     
-    if (firstSpaceIdx !== -1) {
-      parsedCode = nameWithoutExt.substring(0, firstSpaceIdx).trim();
-      parsedName = nameWithoutExt.substring(firstSpaceIdx + 1).trim();
+    if (codeMatch) {
+      parsedCode = codeMatch[1].toUpperCase();
+      parsedName = nameWithoutExt.replace(codeMatch[0], '')
+                                 .replace(/^[\s\-_\.:#]+|[\s\-_\.:#]+$/g, '')
+                                 .trim();
+      if (!parsedName) {
+        parsedName = nameWithoutExt.trim();
+      }
     } else {
-      parsedCode = nameWithoutExt.trim();
-      parsedName = nameWithoutExt.trim();
+      const firstSpaceIdx = nameWithoutExt.indexOf(' ');
+      if (firstSpaceIdx !== -1) {
+        parsedCode = nameWithoutExt.substring(0, firstSpaceIdx).trim();
+        parsedName = nameWithoutExt.substring(firstSpaceIdx + 1).trim();
+      } else {
+        parsedCode = nameWithoutExt.trim();
+        parsedName = nameWithoutExt.trim();
+      }
     }
 
-    // DOC-12: Auto-popular Tipo de Documento desde prefijo del código
-    const parsedTipo = this.extraerTipoDelCodigo(parsedCode);
+    // DOC-12: Auto-popular Tipo de Documento respetando la carpeta seleccionada
+    const autoTipoFromCode = parsedCode ? this.extraerTipoDelCodigo(parsedCode) : '';
+    let parsedTipo = '';
+    if (autoTipoFromCode && autoTipoFromCode !== 'Procedimiento') {
+      parsedTipo = autoTipoFromCode;
+    } else if (this.data?.ActiveTipo) {
+      parsedTipo = this.data.ActiveTipo;
+    } else {
+      parsedTipo = autoTipoFromCode || this.extraerTipoDelCodigo(nameWithoutExt) || 'Procedimiento';
+    }
 
     // Auto-populate Formato basado en extensión de archivo
     let parsedFormato = 'PDF';
@@ -469,7 +506,7 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       }
     }
 
-    const parsedVersion = this.extraerVersionDelCodigo(parsedCode);
+    const parsedVersion = this.extraerVersionDelCodigo(parsedCode || nameWithoutExt);
     const parsedProceso = this.extraerProcesoDelCodigo(parsedCode);
 
     // Build patching data
@@ -483,16 +520,17 @@ export class DocumentosControladosRegeditComponent implements OnInit {
     if (parsedFormato) patchData.formato = parsedFormato;
     patchData.version = parsedVersion || '';
     
-    if (parsedProceso) {
+    // Si se abrió desde un proceso activo específico (ej. Costura), SIEMPRE preservar ese proceso
+    if (this.data?.ActiveProcess && this.data.ActiveProcess !== 'Todos los procesos') {
+      patchData.proceso = this.data.ActiveProcess;
+      this.procesosSeleccionados = [this.data.ActiveProcess];
+    } else if (parsedProceso) {
       patchData.proceso = parsedProceso;
       if (this.modoVisibilidad === 'PERSONALIZADO') {
         if (!this.procesosSeleccionados.includes(parsedProceso)) {
           this.procesosSeleccionados = [parsedProceso];
         }
       }
-    } else if (this.data?.ActiveProcess && this.data.ActiveProcess !== 'Todos los procesos') {
-      patchData.proceso = this.data.ActiveProcess;
-      this.procesosSeleccionados = [this.data.ActiveProcess];
     }
 
     this.formulario.patchValue(patchData);
@@ -642,9 +680,10 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       return;
     }
 
-    // 2. Validar nombre duplicado
+    // 2. Validar nombre duplicado (solo advertencia informativa, nunca bloquear si los códigos son distintos)
     const esNombreDuplicado = existingDocs.some((d: any) => 
       d.nombre && d.nombre.trim().toLowerCase() === nuevoNombre.toLowerCase() &&
+      d.codigo && d.codigo.trim().toLowerCase() === codigoActual.toLowerCase() &&
       (this.action === 'I' || (d.codigo && d.codigo.trim().toLowerCase() !== originalCodigo))
     );
 
@@ -653,11 +692,11 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       this.formulario.get('nombre')?.markAsTouched();
       Swal.fire({
         icon: 'error',
-        title: 'Nombre de Documento Duplicado',
+        title: 'Documento Duplicado',
         html: `<div style="font-size: 13px; color: #334155; text-align: left; line-height: 1.6;">
-                 Ya existe un documento registrado con el nombre:<br>
-                 <strong style="color: #dc2626; font-size: 14px;">"${nuevoNombre}"</strong><br><br>
-                 De acuerdo a la normativa del sistema, no se permite registrar o subir documentos con el mismo nombre.
+                 Ya existe un documento con el mismo código y nombre registrado en el sistema:<br>
+                 <strong style="color: #dc2626; font-size: 14px;">"${codigoActual}" - "${nuevoNombre}"</strong><br><br>
+                 Por favor modifique el código o nombre para continuar.
                </div>`,
         confirmButtonColor: '#5b4bd6',
         confirmButtonText: 'Entendido'

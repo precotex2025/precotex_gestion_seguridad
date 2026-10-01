@@ -144,6 +144,9 @@ export class ProcesosService {
     if (!nombre) return '';
     const clean = nombre.trim();
     const lower = clean.toLowerCase();
+    if (lower === 'costuras' || lower === 'costura') {
+      return 'Costura';
+    }
     if (lower.includes('investiga') && lower.includes('innova')) {
       return 'Investigación, Desarrollo e Innovación';
     }

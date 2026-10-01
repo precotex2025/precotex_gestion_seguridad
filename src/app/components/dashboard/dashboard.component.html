@@ -1,6 +1,75 @@
 ﻿<div class="dashboard-container sn-animate-in">
 
   <!-- =========================================================================
+       0. BANNER DE BIENVENIDA (ESTILO IMAGEN 2)
+       ========================================================================= -->
+  <div class="welcome-banner-card">
+    <div class="welcome-top-accent"></div>
+    <div class="welcome-banner-content">
+      
+      <!-- LADO IZQUIERDO: AVATAR, BADGE, SALUDO, FECHA -->
+      <div class="welcome-left">
+        <!-- Avatar usuario con inicial -->
+        <div class="welcome-avatar-wrapper">
+          <div class="welcome-avatar">
+            {{ getUserInitial() }}
+          </div>
+        </div>
+
+        <!-- Pill badge panel con punto verde -->
+        <div class="welcome-badge-pill">
+          <span class="pulse-dot"></span>
+          <span class="badge-text">PANEL DE GESTIÓN DOCUMENTARIA</span>
+        </div>
+
+        <!-- Saludo dinámico y nombre de usuario -->
+        <h1 class="welcome-title">
+          {{ greeting }}, <span class="welcome-user-highlight">{{ userName }}</span>
+        </h1>
+
+        <!-- Fecha actual formateada con icono de calendario -->
+        <div class="welcome-date-row">
+          <svg class="welcome-calendar-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span class="welcome-date-text">{{ getFormattedDateCapitalized() }}</span>
+        </div>
+      </div>
+
+      <!-- LADO DERECHO: ESTADO DEL SISTEMA, ROL Y ACCESOS RÁPIDOS -->
+      <div class="welcome-right">
+        <div class="welcome-quick-chips">
+          <div class="quick-chip chip-status">
+            <span class="chip-dot-online"></span>
+            <span class="chip-label">Sistema 100% Operativo</span>
+          </div>
+          <div class="quick-chip chip-role">
+            <i class="pi pi-shield"></i>
+            <span class="chip-label">{{ getUserRoleName() }}</span>
+          </div>
+        </div>
+
+        <div class="welcome-quick-actions">
+          <button type="button" class="btn-welcome-action primary" (click)="navigateTo('/principal/documentosControlados')">
+            <i class="pi pi-folder-open"></i>
+            <span>Control Documental</span>
+          </button>
+          <button type="button" class="btn-welcome-action secondary" (click)="navigateTo('/principal/normas')">
+            <i class="pi pi-bookmark"></i>
+            <span>Normas ISO</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  
+
+  <!-- =========================================================================
        1. INDICADORES CLAVE DEL SIG (IMAGEN 2)
        ========================================================================= -->
   <section class="sig-section">

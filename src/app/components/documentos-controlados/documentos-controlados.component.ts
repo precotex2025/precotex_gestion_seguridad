@@ -138,7 +138,22 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     this.selectedDoc = null;
   }
 
-  PROCESOS_GROUPS: { [key: string]: string[] } = {};
+    PROCESOS_GROUPS: { [key: string]: string[] } = {
+    'Soporte (SOP)': ['Sistemas', 'Mantenimiento General', 'Seguridad Patrimonial', 'SSOMA'],
+    'Auditoría Interna (AIO)': ['Auditoría Interna'],
+    'Control Patrimonial (CPT)': ['Control Patrimonial'],
+    'Ingeniería y Mejora Continua (IMC)': ['Ingeniería', 'Organización y Métodos', 'Investigación, Desarrollo e Innovación', 'Certificaciones'],
+    'Administración y Finanzas (AFC)': ['Administración', 'Finanzas', 'Contabilidad y Costos', 'Tesorería'],
+    'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitaciones y Desarrollo', 'Comunicaciones', 'Desarrollo Organizacional', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
+    'Servicio de Estampado y Bordado (SEB)': ['Estampado', 'Bordado', 'Calidad Estampado y Bordado', 'Planeamiento y Programación de la Producción E&B'],
+    'Operaciones Manufactura (OPM)': ['Corte', 'Costura', 'Inspección', 'Acabados', 'Aseguramiento de la Calidad Manufactura', 'Consumos'],
+    'Operaciones Textil (OPT)': ['Tejeduría', 'Tintorería', 'Laboratorio de Color', 'Estampado Digital', 'Acabados Textil', 'Aseguramiento de Calidad Textil', 'Lavandería'],
+    'Balance de Materia (BM)': ['Balance de Materia'],
+    'Planeamiento y Control de la Producción (PCP)': ['PCP Textil', 'PCP Manufactura', 'PCP Estampado y Bordado'],
+    'Logística (LOG)': ['Almacén', 'Comercio Exterior', 'Logística', 'Transporte'],
+    'Gestión Comercial (GCOM)': ['Desarrollo de Producto', 'Desarrollo de Estampado y Bordado', 'Desarrollo Textil', 'Comercial Exportación de Prendas', 'Comercial Exportación de Telas', 'Comercial Venta Local Textil'],
+    'Gerencia General (GG)': ['Alianzas Estratégicas', 'Desarrollo de Negocios', 'Proyectos Gerenciales', 'Sistema de Gestión General', 'Gestión Estratégica']
+  };
 
   defaultDocs: any[] = [
     { nombre: 'Procedimiento de Operación de Costura Industrial', codigo: 'PRO-COS-001', tipo: 'Procedimiento', version: 'v1.0', formato: 'PDF', proceso: 'Costura', vig: '2026-12-31', estado: 'Vigente', archivo: 'PRO-COS-001.pdf' },
@@ -161,46 +176,146 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     private http: HttpClient
   ) { }
 
-  procesosMap: { [name: string]: string } = {
+    procesosMap: { [name: string]: string } = {
+    'acabados': '031',
+    'acabados textil': '038',
+    'administración': '014',
+    'administracion': '014',
+    'administración de personal': '018',
+    'administracion de personal': '018',
+    'alianzas estratégicas': '055',
+    'alianzas estrategicas': '055',
+    'almacén': '045',
+    'almacen': '045',
+    'aseguramiento de calidad textil': '039',
+    'aseguramiento de la calidad manufactura': '032',
+    'calidad': '032',
+    'calidad manufactura': '032',
+    'auditoría interna': '009',
+    'auditoria interna': '009',
+    'balance de materia': '041',
+    'bienestar social': '022',
+    'bordado': '025',
+    'calidad estampado y bordado': '026',
+    'capacitaciones y desarrollo': '019',
+    'capacitacion y desarrollo': '019',
+    'capacitación': '019',
+    'capacitacion': '019',
+    'certificaciones': '013',
+    'comercial exportación de prendas': '052',
+    'comercial exportacion de prendas': '052',
+    'comercial exportación de telas': '053',
+    'comercial exportacion de telas': '053',
+    'comercial venta local textil': '054',
+    'comercio exterior': '046',
+    'comunicaciones': '020',
+    'consumos': '033',
+    'consumo': '033',
+    'contabilidad y costos': '016',
+    'control patrimonial': '010',
+    'corte': '028',
+    'costura': '029',
+    'costuras': '029',
+    'desarrollo de estampado y bordado': '050',
+    'desarrollo de negocios': '056',
+    'desarrollo de producto': '049',
+    'desarrollo textil': '051',
+    'estampado': '024',
+    'estampado digital': '037',
+    'finanzas': '015',
+    'gestión estratégica': '059',
+    'gestion estrategica': '059',
+    'gestión humana': '021',
+    'gestion humana': '021',
     'ingeniería': '004',
     'ingenieria': '004',
     'mejora continua': '004',
     'ingeniería y mejora continua': '004',
-    'ingenieria y mejora continua': '004',
-    'sistemas': '005',
-    'mantenimiento general': '006',
-    'seguridad patrimonial': '007',
-    'ssoma': '008',
-    'auditoría interna': '009',
-    'auditoria interna': '009',
-    'control patrimonial': '010',
-    'organización y métodos': '011',
-    'organizacion y metodos': '011',
+    'inspección': '030',
+    'inspeccion': '030',
     'investigación, desarrollo e innovación': '012',
     'investigacion, desarrollo e innovacion': '012',
-    'investigación, desarrollo, innovación': '012',
-    'investigacion, desarrollo, innovacion': '012',
-    'certificaciones': '013'
+    'laboratorio de color': '036',
+    'lavandería': '040',
+    'lavanderia': '040',
+    'logística': '047',
+    'logistica': '047',
+    'mantenimiento general': '006',
+    'organización y métodos': '011',
+    'organizacion y metodos': '011',
+    'pcp estampado y bordado': '044',
+    'pcp manufactura': '043',
+    'pcp textil': '042',
+    'planeamiento y programación de la producción e&b': '027',
+    'proyectos gerenciales': '057',
+    'seguridad patrimonial': '007',
+    'selección de personal': '023',
+    'sistema de gestión general': '058',
+    'sistemas': '005',
+    'ssoma': '008',
+    'tejeduría': '034',
+    'tejeduria': '034',
+    'tesorería': '017',
+    'tesoreria': '017',
+    'transporte': '048'
   };
   codeToProcessMap: { [code: string]: string } = {
-    '004': 'Ingeniería',
-    '4': 'Ingeniería',
-    'ING': 'Ingeniería',
-    '005': 'Sistemas',
-    '006': 'Mantenimiento General',
-    '007': 'Seguridad Patrimonial',
-    '008': 'SSOMA',
-    '009': 'Auditoría Interna',
-    '010': 'Control Patrimonial',
-    '011': 'Organización y Métodos',
-    '11': 'Organización y Métodos',
-    'OYM': 'Organización y Métodos',
-    '012': 'Investigación, Desarrollo e Innovación',
-    '12': 'Investigación, Desarrollo e Innovación',
-    'IDI': 'Investigación, Desarrollo e Innovación',
-    '013': 'Certificaciones',
-    '13': 'Certificaciones',
-    'CERT': 'Certificaciones'
+    '004': 'Ingeniería', '4': 'Ingeniería', 'ING': 'Ingeniería',
+    '005': 'Sistemas', '5': 'Sistemas', 'SIS': 'Sistemas', 'SIST': 'Sistemas',
+    '006': 'Mantenimiento General', '6': 'Mantenimiento General', 'MANT': 'Mantenimiento General',
+    '007': 'Seguridad Patrimonial', '7': 'Seguridad Patrimonial', 'SEGP': 'Seguridad Patrimonial',
+    '008': 'SSOMA', '8': 'SSOMA', 'SST': 'SSOMA',
+    '009': 'Auditoría Interna', '9': 'Auditoría Interna', 'AUD': 'Auditoría Interna', 'AUDI': 'Auditoría Interna', 'AIO': 'Auditoría Interna',
+    '010': 'Control Patrimonial', '10': 'Control Patrimonial', 'CPT': 'Control Patrimonial', 'CTP': 'Control Patrimonial',
+    '011': 'Organización y Métodos', '11': 'Organización y Métodos', 'OYM': 'Organización y Métodos', 'OM': 'Organización y Métodos', 'IMC': 'Organización y Métodos',
+    '012': 'Investigación, Desarrollo e Innovación', '12': 'Investigación, Desarrollo e Innovación', 'IDI': 'Investigación, Desarrollo e Innovación',
+    '013': 'Certificaciones', '13': 'Certificaciones', 'CERT': 'Certificaciones',
+    '014': 'Administración', '14': 'Administración', 'ADM': 'Administración',
+    '015': 'Finanzas', '15': 'Finanzas', 'FIN': 'Finanzas',
+    '016': 'Contabilidad y Costos', '16': 'Contabilidad y Costos', 'CONT': 'Contabilidad y Costos',
+    '017': 'Tesorería', '17': 'Tesorería', 'TES': 'Tesorería',
+    '018': 'Administración de Personal', '18': 'Administración de Personal', 'AP': 'Administración de Personal',
+    '019': 'Capacitaciones y Desarrollo', '19': 'Capacitaciones y Desarrollo', 'CAP': 'Capacitaciones y Desarrollo',
+    '020': 'Comunicaciones', '20': 'Comunicaciones', 'COMU': 'Comunicaciones',
+    '021': 'Gestión Humana', '21': 'Gestión Humana', 'GH': 'Gestión Humana', 'GGHH': 'Gestión Humana',
+    '022': 'Bienestar Social', '22': 'Bienestar Social', 'BSO': 'Bienestar Social',
+    '023': 'Selección de Personal', '23': 'Selección de Personal', 'SDP': 'Selección de Personal',
+    '024': 'Estampado', '24': 'Estampado', 'EST': 'Estampado',
+    '025': 'Bordado', '25': 'Bordado', 'BORD': 'Bordado',
+    '026': 'Calidad Estampado y Bordado', '26': 'Calidad Estampado y Bordado', 'CEB': 'Calidad Estampado y Bordado',
+    '027': 'Planeamiento y Programación de la Producción E&B', '27': 'Planeamiento y Programación de la Producción E&B', 'PCEB': 'Planeamiento y Programación de la Producción E&B',
+    '028': 'Corte', '28': 'Corte', 'COR': 'Corte',
+    '029': 'Costura', '29': 'Costura', 'COS': 'Costura', 'COST': 'Costura',
+    '030': 'Inspección', '30': 'Inspección', 'INSP': 'Inspección',
+    '031': 'Acabados', '31': 'Acabados', 'ACAB': 'Acabados',
+    '032': 'Aseguramiento de la Calidad Manufactura', '32': 'Aseguramiento de la Calidad Manufactura', 'CAL': 'Aseguramiento de la Calidad Manufactura',
+    '033': 'Consumos', '33': 'Consumos', 'CONS': 'Consumos',
+    '034': 'Tejeduría', '34': 'Tejeduría', 'TEJ': 'Tejeduría',
+    '035': 'Tintorería', '35': 'Tintorería', 'TIN': 'Tintorería',
+    '036': 'Laboratorio de Color', '36': 'Laboratorio de Color', 'LDC': 'Laboratorio de Color',
+    '037': 'Estampado Digital', '37': 'Estampado Digital', 'EDG': 'Estampado Digital',
+    '038': 'Acabados Textil', '38': 'Acabados Textil', 'ATX': 'Acabados Textil', 'ACT': 'Acabados Textil',
+    '039': 'Aseguramiento de Calidad Textil', '39': 'Aseguramiento de Calidad Textil', 'CTX': 'Aseguramiento de Calidad Textil', 'LTX': 'Aseguramiento de Calidad Textil',
+    '040': 'Lavandería', '40': 'Lavandería', 'LAV': 'Lavandería',
+    '041': 'Balance de Materia', '41': 'Balance de Materia', 'BM': 'Balance de Materia',
+    '042': 'PCP Textil', '42': 'PCP Textil', 'PTX': 'PCP Textil',
+    '043': 'PCP Manufactura', '43': 'PCP Manufactura', 'PMA': 'PCP Manufactura',
+    '044': 'PCP Estampado y Bordado', '44': 'PCP Estampado y Bordado',
+    '045': 'Almacén', '45': 'Almacén', 'ALM': 'Almacén',
+    '046': 'Comercio Exterior', '46': 'Comercio Exterior', 'CEXT': 'Comercio Exterior',
+    '047': 'Logística', '47': 'Logística', 'LOG': 'Logística',
+    '048': 'Transporte', '48': 'Transporte', 'TRANS': 'Transporte', 'TRA': 'Transporte',
+    '049': 'Desarrollo de Producto', '49': 'Desarrollo de Producto', 'DDP': 'Desarrollo de Producto',
+    '050': 'Desarrollo de Estampado y Bordado', '50': 'Desarrollo de Estampado y Bordado', 'UDP': 'Desarrollo de Estampado y Bordado',
+    '051': 'Desarrollo Textil', '51': 'Desarrollo Textil', 'DTX': 'Desarrollo Textil',
+    '052': 'Comercial Exportación de Prendas', '52': 'Comercial Exportación de Prendas', 'COM': 'Comercial Exportación de Prendas',
+    '053': 'Comercial Exportación de Telas', '53': 'Comercial Exportación de Telas', 'CET': 'Comercial Exportación de Telas',
+    '054': 'Comercial Venta Local Textil', '54': 'Comercial Venta Local Textil', 'CVL': 'Comercial Venta Local Textil',
+    '055': 'Alianzas Estratégicas', '55': 'Alianzas Estratégicas', 'AES': 'Alianzas Estratégicas',
+    '056': 'Desarrollo de Negocios', '56': 'Desarrollo de Negocios', 'DDN': 'Desarrollo de Negocios',
+    '057': 'Proyectos Gerenciales', '57': 'Proyectos Gerenciales', 'PGE': 'Proyectos Gerenciales',
+    '058': 'Sistema de Gestión General', '58': 'Sistema de Gestión General', 'SGG': 'Sistema de Gestión General',
+    '059': 'Gestión Estratégica', '59': 'Gestión Estratégica', 'GGE': 'Gestión Estratégica'
   };
 
   /**
@@ -210,6 +325,9 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     if (!nombre) return '';
     const clean = nombre.trim();
     const lower = clean.toLowerCase();
+    if (lower === 'costuras' || lower === 'costura') {
+      return 'Costura';
+    }
     if (lower.includes('investiga') && lower.includes('innova')) {
       return 'Investigación, Desarrollo e Innovación';
     }
@@ -306,7 +424,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     }
   }
 
-  getProcessCodeByName(procName: string): string {
+    getProcessCodeByName(procName: string): string {
     if (!procName) return '011';
     const key = procName.trim().toLowerCase();
     const cleanNoAccents = key.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -317,6 +435,17 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         return v;
       }
     }
+    // Fallbacks inteligentes por palabras clave en vez de asignar ciegamente 011
+    if (cleanNoAccents.includes('calidad')) return '032';
+    if (cleanNoAccents.includes('costura')) return '029';
+    if (cleanNoAccents.includes('corte')) return '028';
+    if (cleanNoAccents.includes('inspecc')) return '030';
+    if (cleanNoAccents.includes('acabad')) return '031';
+    if (cleanNoAccents.includes('estamp')) return '024';
+    if (cleanNoAccents.includes('sist')) return '005';
+    if (cleanNoAccents.includes('ssoma')) return '008';
+    if (cleanNoAccents.includes('audit')) return '009';
+    if (cleanNoAccents.includes('patrimon')) return '010';
     return '011';
   }
 
@@ -329,261 +458,294 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
            'Organización y Métodos';
   }
 
+  /**
+   * Extrae el Proceso Responsable según la nomenclatura oficial Precotex (ej. PRO-OPM-CAL-001 -> Aseguramiento de la Calidad)
+   */
+  extraerProcesoDelCodigo(code: string): string {
+    if (!code) return '';
+    const parts = code.trim().toUpperCase().split('-');
+
+    const mapSubProcesos: { [key: string]: string } = {
+      'SIST': 'Sistemas', 'SIS': 'Sistemas',
+      'MANT': 'Mantenimiento General', 'MNT': 'Mantenimiento General',
+      'SEGP': 'Seguridad Patrimonial',
+      'SSOMA': 'SSOMA', 'SST': 'SSOMA',
+      'AUDI': 'Auditoría Interna', 'AUD': 'Auditoría Interna',
+      'CPT': 'Control Patrimonial', 'CTP': 'Control Patrimonial',
+      'ING': 'Ingeniería', 'MC': 'Ingeniería',
+      'OYM': 'Organización y Métodos', 'OM': 'Organización y Métodos',
+      'IDI': 'Investigación, Desarrollo e Innovación', 'ID': 'Investigación, Desarrollo e Innovación',
+      'CERT': 'Certificaciones',
+      'ADMIN': 'Administración', 'ADM': 'Administración',
+      'FIN': 'Finanzas', 'CONT': 'Contabilidad y Costos', 'TES': 'Tesorería',
+      'AP': 'Administración de Personal', 'CAP': 'Capacitaciones y Desarrollo',
+      'COMU': 'Comunicaciones', 'DO': 'Desarrollo Organizacional',
+      'GH': 'Gestión Humana', 'BSO': 'Bienestar Social', 'SDP': 'Selección de Personal',
+      'EST': 'Estampado', 'BORD': 'Bordado', 'BOR': 'Bordado',
+      'CEB': 'Calidad Estampado y Bordado',
+      'PCEB': 'Planeamiento y Programación de la Producción E&B',
+      'COR': 'Corte', 'COST': 'Costura', 'COS': 'Costura',
+      'INSP': 'Inspección', 'ACAB': 'Acabados',
+      'CAL': 'Aseguramiento de la Calidad Manufactura',
+      'MNF': 'Manufactura', 'CONS': 'Consumos', 'CON': 'Consumos',
+      'TEJ': 'Tejeduría', 'TIN': 'Tintorería', 'LDC': 'Laboratorio de Color',
+      'EDG': 'Estampado Digital', 'ATX': 'Acabados Textil', 'ACT': 'Acabados Textil',
+      'LTX': 'Laboratorio de Calidad Textil', 'CTX': 'Aseguramiento de Calidad Textil',
+      'LAV': 'Lavandería', 'BM': 'Balance de Materia',
+      'PTX': 'PCP Textil', 'PMA': 'PCP Manufactura',
+      'ALM': 'Almacén', 'CEXT': 'Comercio Exterior', 'LOG': 'Logística',
+      'TRANS': 'Transporte', 'TRA': 'Transporte',
+      'DDP': 'Desarrollo de Producto', 'UDP': 'Desarrollo de Estampado y Bordado', 'DTX': 'Desarrollo Textil',
+      'COM': 'Comercial Exportación de Prendas', 'CET': 'Comercial Exportación de Telas', 'CVL': 'Comercial Venta Local Textil',
+      'AES': 'Alianzas Estratégicas', 'DDN': 'Desarrollo de Negocios', 'PGE': 'Proyectos Gerenciales',
+      'SGG': 'Sistema de Gestión General', 'GGE': 'Gestión Estratégica'
+    };
+
+    const mapMacros: { [key: string]: string } = {
+      'SOP': 'Sistemas', 'AIO': 'Auditoría Interna', 'CPT': 'Control Patrimonial',
+      'IMC': 'Organización y Métodos', 'AFC': 'Administración', 'GGHH': 'Gestión Humana',
+      'RRHH': 'Gestión Humana', 'SEB': 'Estampado', 'OPM': 'Costura', 'OPT': 'Acabados Textil',
+      'PCP': 'PCP Manufactura', 'GCOM': 'Desarrollo de Producto', 'GG': 'Sistema de Gestión General'
+    };
+
+    const candidateParts = parts.length > 1 ? parts.slice(1) : [];
+    if (parts.length >= 3 && mapSubProcesos[parts[2]]) {
+      return mapSubProcesos[parts[2]];
+    }
+    if (parts.length >= 2 && mapSubProcesos[parts[1]]) {
+      return mapSubProcesos[parts[1]];
+    }
+    if (parts.length >= 2 && mapMacros[parts[1]]) {
+      return mapMacros[parts[1]];
+    }
+    for (const part of candidateParts) {
+      if (mapSubProcesos[part]) return mapSubProcesos[part];
+    }
+    for (const part of candidateParts) {
+      if (mapMacros[part]) return mapMacros[part];
+    }
+    return '';
+  }
+
+  /**
+   * Comparador flexible de procesos con soporte para alias (Calidad, Costura, O&M, etc.)
+   */
+  matchesProcess(procA: string, procB: string): boolean {
+    if (!procA || !procB) return false;
+    const a = procA.toLowerCase().trim();
+    const b = procB.toLowerCase().trim();
+    if (a === b) return true;
+    if (a === 'todos los procesos' || b === 'todos los procesos' || a === '__all__' || b === '__all__') return true;
+
+    const aClean = a.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const bClean = b.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (aClean === bClean) return true;
+
+    // Equivalencia bidireccional Calidad
+    if ((aClean.includes('calidad') && bClean.includes('calidad')) ||
+        (aClean === 'calidad' && bClean.includes('calidad')) ||
+        (bClean === 'calidad' && aClean.includes('calidad'))) {
+      return true;
+    }
+
+    // Equivalencia Costura
+    if (aClean.includes('costura') && bClean.includes('costura')) return true;
+
+    // Equivalencia O&M
+    if ((aClean.includes('organizacion') && aClean.includes('metodos') && bClean.includes('organizacion') && bClean.includes('metodos')) ||
+        (aClean.includes('o&m') && bClean.includes('metodos')) || (bClean.includes('o&m') && aClean.includes('metodos'))) {
+      return true;
+    }
+
+    if (aClean.length >= 4 && bClean.length >= 4) {
+      if (aClean.includes(bClean) || bClean.includes(aClean)) return true;
+    }
+
+    return false;
+  }
+
   loadDocs() {
     this.documentosControladosService.getListadoDocumentosControlados('001', '', '', '').subscribe({
       next: (res: any) => {
-        let rawList: any[] = [];
-        if (res && res.success && res.elements && res.elements.length > 0) {
-          rawList = res.elements.map((d: any) => {
-            const procName = d.nombre_Proceso || d.proceso || (d.codigo_Proceso ? this.getProcessNameByCode(d.codigo_Proceso) : 'Organización y Métodos');
-            const codDoc = d.codigo_Documento || d.codigo_Documentos_Controlados || d.codigo || 'DOC-' + (d.id || '001');
-            const nomDoc = d.denominacion || d.nombre || d.descripcion || 'Documento';
-            const fecVenc = d.fec_Vencimiento ? d.fec_Vencimiento.split('T')[0] : (d.fec_Registro ? d.fec_Registro.split('T')[0] : (d.vig || ''));
-
-            return {
-              codigo_Documentos_Controlados: d.codigo_Documentos_Controlados || codDoc,
-              nombre: nomDoc,
-              codigo: codDoc,
-              tipo: d.codigo_Normas || d.tipo || 'Procedimiento',
-              version: d.version_Documento || d.version || 'v1.0',
-              formato: d.codigo_Tipo_Descarga || d.formato || 'PDF',
-              proceso: procName,
-              vig: fecVenc,
-              estado: this.calcularEstadoDinamico(fecVenc, d.flg_Estado || d.estado),
-              archivo: d.ruta_Adjunto || d.archivo || codDoc,
-              procesos: d.procesos || (d.nombre_Proceso ? [d.nombre_Proceso] : [procName]),
-              raw: d
-            };
-          });
-        } else {
-          rawList = [...this.defaultDocs];
-        }
-
-        const localCreatedRaw = localStorage.getItem('precotex_documentos_creados');
-        if (localCreatedRaw) {
-          try {
-            const localCreated: any[] = JSON.parse(localCreatedRaw);
-            localCreated.forEach(locDoc => {
-              const codeClean = (locDoc.codigo || locDoc.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
-              const nomClean = (locDoc.nombre || locDoc.denominacion || '').toString().trim().toLowerCase();
-              const matchIdx = rawList.findIndex((r: any) => {
-                const rCode = (r.codigo || r.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
-                const rNom = (r.nombre || r.denominacion || '').toString().trim().toLowerCase();
-                const cMatch = codeClean !== '' && rCode !== '' && rCode === codeClean;
-                const nMatch = nomClean !== '' && rNom !== '' && rNom === nomClean;
-                return cMatch || nMatch;
-              });
-              if (matchIdx >= 0) {
-                rawList[matchIdx] = {
-                  ...rawList[matchIdx],
-                  ...locDoc,
-                  proceso: locDoc.proceso || rawList[matchIdx].proceso,
-                  procesos: locDoc.procesos || (locDoc.proceso ? [locDoc.proceso] : rawList[matchIdx].procesos),
-                  procesosVisibles: locDoc.procesosVisibles || rawList[matchIdx].procesosVisibles,
-                  modoVisibilidad: locDoc.modoVisibilidad || rawList[matchIdx].modoVisibilidad,
-                  version: locDoc.version || rawList[matchIdx].version,
-                  estado: locDoc.estado || rawList[matchIdx].estado,
-                  vig: locDoc.vig || rawList[matchIdx].vig,
-                  tipo: locDoc.tipo || rawList[matchIdx].tipo,
-                  formato: locDoc.formato || rawList[matchIdx].formato,
-                  archivo: locDoc.archivo || rawList[matchIdx].archivo
-                };
-              } else {
-                rawList.unshift(locDoc);
-              }
-            });
-          } catch (e) { }
-        }
-
-        if (this.docsList && this.docsList.length > 0) {
-          this.docsList.forEach(curr => {
-            const codeClean = (curr.codigo || curr.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
-            const nomClean = (curr.nombre || curr.denominacion || '').toString().trim().toLowerCase();
-            const matchIdx = rawList.findIndex((r: any) => {
-              const rCode = (r.codigo || r.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
-              const rNom = (r.nombre || r.denominacion || '').toString().trim().toLowerCase();
-              const cMatch = codeClean !== '' && rCode !== '' && rCode === codeClean;
-              const nMatch = nomClean !== '' && rNom !== '' && rNom === nomClean;
-              return cMatch || nMatch;
-            });
-            if (matchIdx >= 0) {
-              if (curr.proceso && curr.proceso !== rawList[matchIdx].proceso) {
-                rawList[matchIdx].proceso = curr.proceso;
-                rawList[matchIdx].procesos = curr.procesos || [curr.proceso];
-              }
-            } else {
-              rawList.unshift(curr);
-            }
-          });
-        }
-
-        const deletedKey = 'precotex:docs_deleted_items';
-        let deletedItems: string[] = [];
-        try {
-          deletedItems = JSON.parse(localStorage.getItem(deletedKey) || '[]');
-        } catch { deletedItems = []; }
-
-        deletedItems = (deletedItems || []).filter(x => typeof x === 'string' && x.trim() !== '');
-
-        if (deletedItems.length > 0) {
-          rawList = rawList.filter((d: any) => {
-            const c = (d.codigo || d.codigo_Documentos_Controlados || '').toString().trim();
-            const n = (d.nombre || d.denominacion || '').toString().trim();
-            const cMatch = c !== '' && deletedItems.includes(c);
-            const nMatch = n !== '' && deletedItems.includes(n);
-            return !cMatch && !nMatch;
-          });
-        }
-
-        const vusuStr = (GlobalVariable.vusu || localStorage.getItem('vusu') || localStorage.getItem('precotex:usuario:nombre') || '').toLowerCase().trim();
-        const rolVal = (localStorage.getItem('vCod_Rol') || GlobalVariable.vCod_Rol || '0').toString();
-        const isUserAdmin = rolVal === '1' || vusuStr === 'admin' || vusuStr === 'superadmin' || vusuStr === 'administrador' || vusuStr.includes('admin');
-
-        if (!isUserAdmin) {
-          const userProceso = this.getUserProcesoActual();
-          if (userProceso && userProceso.toLowerCase() !== 'general') {
-            rawList = rawList.filter((d: any) => {
-              const docP = (d.proceso || '').toLowerCase().trim();
-              const uP = userProceso.toLowerCase().trim();
-              const esMismoProceso = docP === uP || docP.includes(uP) || uP.includes(docP);
-
-              const visList: string[] = d.procesosVisibles || [];
-              const esPublico = visList.length === 0 || visList.includes('Todos los procesos') || visList.includes('__ALL__');
-              const tienePermisoEspecifico = visList.some((p: string) => p.toLowerCase().trim() === uP);
-
-              return esMismoProceso || esPublico || tienePermisoEspecifico;
-            });
-          }
-        }
-
-        this.docsList = this.deduplicarDocumentos(rawList);
-        this.aplicarReglaObsoletosPorVersion(this.docsList);
-        this.restaurarHistorialVersiones(this.docsList);
-        this.saveDocs();
+        const elements = (res && res.success && res.elements && res.elements.length > 0) ? res.elements : [];
+        this.procesarYPersistirLista(elements);
       },
       error: () => {
-        let rawList: any[] = [...this.defaultDocs];
-
-        const localCreatedRaw = localStorage.getItem('precotex_documentos_creados');
-        if (localCreatedRaw) {
-          try {
-            const localCreated: any[] = JSON.parse(localCreatedRaw);
-            localCreated.forEach(locDoc => {
-              const codeClean = (locDoc.codigo || locDoc.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
-              const nomClean = (locDoc.nombre || locDoc.denominacion || '').toString().trim().toLowerCase();
-              const matchIdx = rawList.findIndex((r: any) => {
-                const rCode = (r.codigo || r.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
-                const rNom = (r.nombre || r.denominacion || '').toString().trim().toLowerCase();
-                const cMatch = codeClean !== '' && rCode !== '' && rCode === codeClean;
-                const nMatch = nomClean !== '' && rNom !== '' && rNom === nomClean;
-                return cMatch || nMatch;
-              });
-              if (matchIdx >= 0) {
-                rawList[matchIdx] = {
-                  ...rawList[matchIdx],
-                  ...locDoc,
-                  proceso: locDoc.proceso || rawList[matchIdx].proceso,
-                  procesos: locDoc.procesos || (locDoc.proceso ? [locDoc.proceso] : rawList[matchIdx].procesos),
-                  procesosVisibles: locDoc.procesosVisibles || rawList[matchIdx].procesosVisibles,
-                  modoVisibilidad: locDoc.modoVisibilidad || rawList[matchIdx].modoVisibilidad,
-                  version: locDoc.version || rawList[matchIdx].version,
-                  estado: locDoc.estado || rawList[matchIdx].estado,
-                  vig: locDoc.vig || rawList[matchIdx].vig,
-                  tipo: locDoc.tipo || rawList[matchIdx].tipo,
-                  formato: locDoc.formato || rawList[matchIdx].formato,
-                  archivo: locDoc.archivo || rawList[matchIdx].archivo
-                };
-              } else {
-                rawList.unshift(locDoc);
-              }
-            });
-          } catch (e) { }
-        }
-
-        if (this.docsList && this.docsList.length > 0) {
-          this.docsList.forEach(curr => {
-            const codeClean = (curr.codigo || curr.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
-            const nomClean = (curr.nombre || curr.denominacion || '').toString().trim().toLowerCase();
-            const matchIdx = rawList.findIndex((r: any) => {
-              const rCode = (r.codigo || r.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
-              const rNom = (r.nombre || r.denominacion || '').toString().trim().toLowerCase();
-              const cMatch = codeClean !== '' && rCode !== '' && rCode === codeClean;
-              const nMatch = nomClean !== '' && rNom !== '' && rNom === nomClean;
-              return cMatch || nMatch;
-            });
-            if (matchIdx >= 0) {
-              if (curr.proceso && curr.proceso !== rawList[matchIdx].proceso) {
-                rawList[matchIdx].proceso = curr.proceso;
-                rawList[matchIdx].procesos = curr.procesos || [curr.proceso];
-              }
-            } else {
-              rawList.unshift(curr);
-            }
-          });
-        }
-
-        const deletedKey = 'precotex:docs_deleted_items';
-        let deletedItems: string[] = [];
-        try {
-          deletedItems = JSON.parse(localStorage.getItem(deletedKey) || '[]');
-        } catch { deletedItems = []; }
-
-        deletedItems = (deletedItems || []).filter(x => typeof x === 'string' && x.trim() !== '');
-
-        if (deletedItems.length > 0) {
-          rawList = rawList.filter((d: any) => {
-            const c = (d.codigo || d.codigo_Documentos_Controlados || '').toString().trim();
-            const n = (d.nombre || d.denominacion || '').toString().trim();
-            const cMatch = c !== '' && deletedItems.includes(c);
-            const nMatch = n !== '' && deletedItems.includes(n);
-            return !cMatch && !nMatch;
-          });
-        }
-
-        const vusuStr = (GlobalVariable.vusu || localStorage.getItem('vusu') || localStorage.getItem('precotex:usuario:nombre') || '').toLowerCase().trim();
-        const rolVal = (localStorage.getItem('vCod_Rol') || GlobalVariable.vCod_Rol || '0').toString();
-        const isUserAdmin = rolVal === '1' || vusuStr === 'admin' || vusuStr === 'superadmin' || vusuStr === 'administrador' || vusuStr.includes('admin');
-
-        if (!isUserAdmin) {
-          const userProceso = this.getUserProcesoActual();
-          if (userProceso && userProceso.toLowerCase() !== 'general') {
-            rawList = rawList.filter((d: any) => {
-              const docP = (d.proceso || '').toLowerCase().trim();
-              const uP = userProceso.toLowerCase().trim();
-              const esMismoProceso = docP === uP || docP.includes(uP) || uP.includes(docP);
-
-              const visList: string[] = d.procesosVisibles || [];
-              const esPublico = visList.length === 0 || visList.includes('Todos los procesos') || visList.includes('__ALL__');
-              const tienePermisoEspecifico = visList.some((p: string) => p.toLowerCase().trim() === uP);
-
-              return esMismoProceso || esPublico || tienePermisoEspecifico;
-            });
-          }
-        }
-        this.docsList = this.deduplicarDocumentos(rawList);
-        this.aplicarReglaObsoletosPorVersion(this.docsList);
-        this.restaurarHistorialVersiones(this.docsList);
-        this.saveDocs();
+        this.procesarYPersistirLista([]);
       }
     });
   }
 
-  // Garantiza que no se muestren documentos con el mismo código ni con el mismo nombre
+  procesarYPersistirLista(rawElements: any[]): void {
+    let rawList: any[] = [];
+    if (rawElements && rawElements.length > 0) {
+      rawList = rawElements.map((d: any) => {
+        const codDoc = d.codigo_Documento || d.codigo_Documentos_Controlados || d.codigo || 'DOC-' + (d.id || '001');
+        let procName = d.nombre_Proceso || d.proceso || (d.codigo_Proceso ? this.getProcessNameByCode(d.codigo_Proceso) : '');
+        if (!procName || procName === 'Organización y Métodos') {
+          const inferred = this.extraerProcesoDelCodigo(codDoc);
+          if (inferred) procName = inferred;
+        }
+        if (!procName) procName = 'Organización y Métodos';
+
+        const nomDoc = d.denominacion || d.nombre || d.descripcion || 'Documento';
+        const fecVenc = d.fec_Vencimiento ? d.fec_Vencimiento.split('T')[0] : (d.fec_Registro ? d.fec_Registro.split('T')[0] : (d.vig || ''));
+
+        return {
+          codigo_Documentos_Controlados: d.codigo_Documentos_Controlados || codDoc,
+          nombre: nomDoc,
+          codigo: codDoc,
+          tipo: d.codigo_Normas || d.tipo || 'Procedimiento',
+          version: d.version_Documento || d.version || 'v1.0',
+          formato: d.codigo_Tipo_Descarga || d.formato || 'PDF',
+          proceso: procName,
+          vig: fecVenc,
+          estado: this.calcularEstadoDinamico(fecVenc, d.flg_Estado || d.estado),
+          archivo: d.ruta_Adjunto || d.archivo || codDoc,
+          procesos: d.procesos || (d.nombre_Proceso ? [d.nombre_Proceso] : [procName]),
+          procesosVisibles: d.procesosVisibles || ['Todos los procesos'],
+          modoVisibilidad: d.modoVisibilidad || 'TODOS',
+          raw: d
+        };
+      });
+    } else {
+      rawList = [...this.defaultDocs];
+    }
+
+    // 1. Unificar almacenamiento local: precotex_documentos_creados + precotex:documentacion
+    const localCombined: any[] = [];
+    try {
+      const localCreatedRaw = localStorage.getItem('precotex_documentos_creados');
+      if (localCreatedRaw) {
+        const parsed = JSON.parse(localCreatedRaw);
+        if (Array.isArray(parsed)) localCombined.push(...parsed);
+      }
+      const localDocsRaw = localStorage.getItem('precotex:documentacion');
+      if (localDocsRaw) {
+        const parsedDocs = JSON.parse(localDocsRaw);
+        if (Array.isArray(parsedDocs)) {
+          parsedDocs.forEach((pd: any) => {
+            const pdCode = (pd.codigo || pd.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
+            const pdNom = (pd.nombre || pd.denominacion || '').toString().trim().toLowerCase();
+            const yaExiste = localCombined.some((lc: any) => {
+              const lcCode = (lc.codigo || lc.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
+              const lcNom = (lc.nombre || lc.denominacion || '').toString().trim().toLowerCase();
+              return (pdCode && lcCode && pdCode === lcCode) || (pdNom && lcNom && pdNom === lcNom);
+            });
+            if (!yaExiste) localCombined.push(pd);
+          });
+        }
+      }
+    } catch (e) { }
+
+    // 2. Fusionar documentos locales en rawList garantizando que ningún registro subido desaparezca al recargar
+    localCombined.forEach(locDoc => {
+      const codeClean = (locDoc.codigo || locDoc.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
+      const nomClean = (locDoc.nombre || locDoc.denominacion || '').toString().trim().toLowerCase();
+      const matchIdx = rawList.findIndex((r: any) => {
+        const rCode = (r.codigo || r.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
+        const rNom = (r.nombre || r.denominacion || '').toString().trim().toLowerCase();
+        return (codeClean !== '' && rCode !== '' && rCode === codeClean) ||
+               (nomClean !== '' && rNom !== '' && rNom === nomClean);
+      });
+      if (matchIdx >= 0) {
+        rawList[matchIdx] = {
+          ...rawList[matchIdx],
+          ...locDoc,
+          proceso: locDoc.proceso || rawList[matchIdx].proceso,
+          procesos: locDoc.procesos || (locDoc.proceso ? [locDoc.proceso] : rawList[matchIdx].procesos),
+          procesosVisibles: locDoc.procesosVisibles || rawList[matchIdx].procesosVisibles || ['Todos los procesos'],
+          modoVisibilidad: locDoc.modoVisibilidad || rawList[matchIdx].modoVisibilidad || 'TODOS',
+          version: locDoc.version || rawList[matchIdx].version,
+          estado: locDoc.estado || rawList[matchIdx].estado,
+          vig: locDoc.vig || rawList[matchIdx].vig,
+          tipo: locDoc.tipo || rawList[matchIdx].tipo,
+          formato: locDoc.formato || rawList[matchIdx].formato,
+          archivo: locDoc.archivo || rawList[matchIdx].archivo
+        };
+      } else {
+        rawList.unshift(locDoc);
+      }
+    });
+
+    // 3. Fusionar documentos en memoria previa si existían
+    if (this.docsList && this.docsList.length > 0) {
+      this.docsList.forEach(curr => {
+        const codeClean = (curr.codigo || curr.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
+        const nomClean = (curr.nombre || curr.denominacion || '').toString().trim().toLowerCase();
+        const matchIdx = rawList.findIndex((r: any) => {
+          const rCode = (r.codigo || r.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
+          const rNom = (r.nombre || r.denominacion || '').toString().trim().toLowerCase();
+          return (codeClean !== '' && rCode !== '' && rCode === codeClean) ||
+                 (nomClean !== '' && rNom !== '' && rNom === nomClean);
+        });
+        if (matchIdx >= 0) {
+          if (curr.proceso && curr.proceso !== rawList[matchIdx].proceso) {
+            rawList[matchIdx].proceso = curr.proceso;
+            rawList[matchIdx].procesos = curr.procesos || [curr.proceso];
+          }
+        } else {
+          rawList.unshift(curr);
+        }
+      });
+    }
+
+    // 4. Filtrar eliminados según papelera/deleted_items
+    const deletedKey = 'precotex:docs_deleted_items';
+    let deletedItems: string[] = [];
+    try {
+      deletedItems = JSON.parse(localStorage.getItem(deletedKey) || '[]');
+    } catch { deletedItems = []; }
+    deletedItems = (deletedItems || []).filter(x => typeof x === 'string' && x.trim() !== '');
+
+    if (deletedItems.length > 0) {
+      rawList = rawList.filter((d: any) => {
+        const c = (d.codigo || d.codigo_Documentos_Controlados || '').toString().trim();
+        const n = (d.nombre || d.denominacion || '').toString().trim();
+        const cMatch = c !== '' && deletedItems.includes(c);
+        const nMatch = n !== '' && deletedItems.includes(n);
+        return !cMatch && !nMatch;
+      });
+    }
+
+    // 5. Auto-corrección / Self-healing: asegurar Calidad y Costura
+    rawList.forEach((d: any) => {
+      const c = (d.codigo || d.codigo_Documentos_Controlados || '').toString().trim().toUpperCase();
+      const p = (d.proceso || '').toString().trim();
+      const lowerNom = (d.nombre || d.denominacion || '').toString().toLowerCase();
+
+      // Costura: código con -COS- o -COST- o nombre con costura
+      if ((p === 'Inspección' || p === 'Organización y Métodos') && (c.includes('-COS-') || c.includes('-COST-') || lowerNom.includes('costura'))) {
+        d.proceso = 'Costura';
+        d.procesos = ['Costura'];
+      }
+
+      // Calidad: código con -CAL- o nombre con calidad
+      if (c.includes('-CAL-') || c.includes('-CALIDAD-') || lowerNom.includes('calidad') || lowerNom.includes('aseguramiento de calidad')) {
+        if (!d.proceso || d.proceso === 'Organización y Métodos' || d.proceso === 'Costura' || d.proceso === 'Inspección') {
+          d.proceso = 'Aseguramiento de la Calidad Manufactura';
+          d.procesos = ['Aseguramiento de la Calidad Manufactura'];
+        }
+      }
+    });
+
+    this.docsList = this.deduplicarDocumentos(rawList);
+    this.aplicarReglaObsoletosPorVersion(this.docsList);
+    this.restaurarHistorialVersiones(this.docsList);
+    this.saveDocs();
+  }
+
   deduplicarDocumentos(list: any[]): any[] {
     if (!list || list.length === 0) return [];
     const seenCodes = new Set<string>();
-    const seenNames = new Set<string>();
     const uniqueList: any[] = [];
 
     for (const doc of list) {
       const c = (doc.codigo || doc.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
-      const n = (doc.nombre || doc.denominacion || doc.descripcion || '').toString().trim().toLowerCase();
-
-      if (c && seenCodes.has(c)) continue;
-      if (n && seenNames.has(n)) continue;
-
-      if (c) seenCodes.add(c);
-      if (n) seenNames.add(n);
+      if (c) {
+        if (seenCodes.has(c)) continue;
+        seenCodes.add(c);
+      }
       uniqueList.push(doc);
     }
     return uniqueList;
@@ -715,18 +877,19 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   getMacroCount(group: string): number {
     const processes = (this.PROCESOS_GROUPS[group] || []).map(p => this.normalizarNombreProceso(p));
     return this.docsList.filter(d => {
-      const procs = this.getDocProcesosList(d).map(p => this.normalizarNombreProceso(p));
-      const docP = this.normalizarNombreProceso(d.proceso);
-      return processes.some(p => procs.includes(p) || docP === p) || procs.includes('Todos los procesos');
+      const procs = this.getDocProcesosList(d);
+      const docP = d.proceso || '';
+      return processes.some(p => procs.some(pr => this.matchesProcess(pr, p)) || this.matchesProcess(docP, p)) || procs.includes('Todos los procesos');
     }).length;
   }
 
   getProcessCount(proc: string): number {
-    const targetProc = this.normalizarNombreProceso(proc);
     return this.docsList.filter(d => {
-      const procs = this.getDocProcesosList(d).map(p => this.normalizarNombreProceso(p));
-      const docP = this.normalizarNombreProceso(d.proceso);
-      return procs.includes(targetProc) || docP === targetProc || procs.includes('Todos los procesos');
+      const procs = this.getDocProcesosList(d);
+      const docP = d.proceso || '';
+      return procs.some(p => this.matchesProcess(p, proc)) ||
+             this.matchesProcess(docP, proc) ||
+             procs.includes('Todos los procesos');
     }).length;
   }
 
@@ -753,7 +916,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       const macro = this.activeFilter.substring(6);
       this.headerTitleService.setTitle({
         title: macro,
-        breadcrumb: `Documentación · ${macro}`
+        breadcrumb: 'Documentación · ' + macro
       });
       return;
     }
@@ -763,16 +926,16 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       const proc = parts[0];
       const folderType = parts[1] || '';
       this.headerTitleService.setTitle({
-        title: folderType ? `${proc} — ${folderType}` : proc,
-        breadcrumb: folderType ? `Documentación · ${proc} · ${folderType}` : `Documentación · ${proc}`
+        title: folderType ? (proc + ' — ' + folderType) : proc,
+        breadcrumb: folderType ? ('Documentación · ' + proc + ' · ' + folderType) : ('Documentación · ' + proc)
       });
       return;
     }
 
-    // Proceso directo (ej: 'Auditoría Interna')
+    // Proceso directo (ej: 'Auditoría Interna', 'Aseguramiento de la Calidad Manufactura')
     this.headerTitleService.setTitle({
       title: this.activeFilter,
-      breadcrumb: `Documentación · ${this.activeFilter}`
+      breadcrumb: 'Documentación · ' + this.activeFilter
     });
   }
 
@@ -781,7 +944,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     if (this.activeFilter.startsWith('macro:')) return this.activeFilter.substring(6);
     if (this.activeFilter.startsWith('folder:')) {
       const parts = this.activeFilter.substring(7).split('|');
-      return parts[1] ? `${parts[0]} — ${parts[1]}` : parts[0];
+      return parts[1] ? (parts[0] + ' — ' + parts[1]) : parts[0];
     }
     return this.activeFilter;
   }
@@ -799,16 +962,39 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   }
 
   getProcessTypeCount(procName: string, tipoName: string): number {
+    const target = (tipoName || '').toLowerCase().trim();
+
     return this.docsList.filter(d => {
       const procs = this.getDocProcesosList(d);
-      if (!procs.includes(procName) && d.proceso !== procName && !procs.includes('Todos los procesos')) return false;
-      const t = (d.tipo || '').toLowerCase();
-      const target = tipoName.toLowerCase();
+      const docP = d.proceso || '';
+
+      const matchesProc = procs.some(p => this.matchesProcess(p, procName)) ||
+                          this.matchesProcess(docP, procName) ||
+                          procs.includes('Todos los procesos');
+
+      if (!matchesProc) return false;
+
+      const t = (d.tipo || '').toLowerCase().trim();
       if (target === 'otros') {
-        return !['procedimiento', 'instructivo', 'formato', 'politica', 'manual', 'perfil', 'descripci'].some(k => t.includes(k));
+        return t === 'otros' || !['procedimiento', 'instructivo', 'formato', 'politica', 'manual', 'perfil', 'descripci'].some(k => t.includes(k));
       }
-      if (target.includes('descripci') || target.includes('puesto')) {
+      if (target.includes('descripci') || target.includes('puesto') || target.includes('perfil')) {
         return t.includes('perfil') || t.includes('puesto') || t.includes('descripci') || (!['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k)));
+      }
+      if (target.startsWith('proced')) {
+        return t.includes('proced');
+      }
+      if (target.startsWith('instruct')) {
+        return t.includes('instruct');
+      }
+      if (target.startsWith('format')) {
+        return t.includes('format');
+      }
+      if (target.startsWith('polit') || target.startsWith('polít')) {
+        return t.includes('polit') || t.includes('polít');
+      }
+      if (target.startsWith('manu')) {
+        return t.includes('manu');
       }
       return t.includes(target.substring(0, 4));
     }).length;
@@ -823,19 +1009,16 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
 
     Swal.fire({
       title: '📁 Nombres de Carpetas por Proceso',
-      html: `
-        <div style="text-align: left; font-size: 13px; color: #334155; line-height: 1.6;">
-          <p>Los nombres de carpetas están estandarizados por proceso:</p>
-          <div style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 8px;">
-            <div>📂 <strong>Procedimientos</strong> (Direccionamiento automático de código PRO-)</div>
-            <div>📂 <strong>Instructivos</strong> (Direccionamiento automático de código INS-)</div>
-            <div>📂 <strong>Formatos</strong> (Direccionamiento automático de código FOR-)</div>
-            <div>📂 <strong>Politica</strong> (Direccionamiento automático de código POL-)</div>
-            <div>📂 <strong>Manual</strong> (Direccionamiento automático de código MAN-)</div>
-            <div>📂 <strong>Descripción del Puesto</strong> (Para C&D / Otros para demás procesos)</div>
-          </div>
-        </div>
-      `,
+      html: '<div style="text-align: left; font-size: 13px; color: #334155; line-height: 1.6;">' +
+            '<p>Los nombres de carpetas están estandarizados por proceso:</p>' +
+            '<div style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 8px;">' +
+            '<div>📂 <strong>Procedimientos</strong> (Direccionamiento automático de código PRO-)</div>' +
+            '<div>📂 <strong>Instructivos</strong> (Direccionamiento automático de código INS-)</div>' +
+            '<div>📂 <strong>Formatos</strong> (Direccionamiento automático de código FOR-)</div>' +
+            '<div>📂 <strong>Politica</strong> (Direccionamiento automático de código POL-)</div>' +
+            '<div>📂 <strong>Manual</strong> (Direccionamiento automático de código MAN-)</div>' +
+            '<div>📂 <strong>Descripción del Puesto</strong> (Para C&D / Otros para demás procesos)</div>' +
+            '</div></div>',
       icon: 'info',
       confirmButtonText: 'Aceptar',
       confirmButtonColor: '#3085d6'
@@ -849,36 +1032,59 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         const macro = this.activeFilter.substring(6);
         const processes = (this.PROCESOS_GROUPS[macro] || []).map(p => this.normalizarNombreProceso(p));
         list = list.filter(d => {
-          const procs = this.getDocProcesosList(d).map(p => this.normalizarNombreProceso(p));
-          const docP = this.normalizarNombreProceso(d.proceso);
-          return processes.some(p => procs.includes(p) || docP === p) || procs.includes('Todos los procesos');
+          const procs = this.getDocProcesosList(d);
+          const docP = d.proceso || '';
+          return processes.some(p => procs.some(pr => this.matchesProcess(pr, p)) || this.matchesProcess(docP, p)) || procs.includes('Todos los procesos');
         });
       } else if (this.activeFilter.startsWith('folder:')) {
         // Formato: folder:NombreProceso|TipoCarpeta
         const parts = this.activeFilter.substring(7).split('|');
-        const proc = this.normalizarNombreProceso(parts[0]);
-        const folderType = parts[1];
+        const proc = parts[0];
+        const folderType = parts[1] || '';
         list = list.filter(d => {
-          const procs = this.getDocProcesosList(d).map(p => this.normalizarNombreProceso(p));
-          const docP = this.normalizarNombreProceso(d.proceso);
-          const matchesProc = procs.includes(proc) || docP === proc || procs.includes('Todos los procesos');
+          const procs = this.getDocProcesosList(d);
+          const docP = d.proceso || '';
+
+          const matchesProc = procs.some(p => this.matchesProcess(p, proc)) ||
+                              this.matchesProcess(docP, proc) ||
+                              procs.includes('Todos los procesos');
+
           if (!matchesProc) return false;
-          const t = (d.tipo || '').toLowerCase();
-          const target = folderType.toLowerCase();
+
+          const t = (d.tipo || '').toLowerCase().trim();
+          const target = folderType.toLowerCase().trim();
+
           if (target === 'otros') {
-            return !['procedimiento', 'instructivo', 'formato', 'politica', 'manual', 'perfil', 'descripci'].some(k => t.includes(k));
+            return t === 'otros' || !['procedimiento', 'instructivo', 'formato', 'politica', 'manual', 'perfil', 'descripci'].some(k => t.includes(k));
           }
-          if (target.includes('descripci') || target.includes('puesto')) {
+          if (target.includes('descripci') || target.includes('puesto') || target.includes('perfil')) {
             return t.includes('perfil') || t.includes('puesto') || t.includes('descripci') || (!['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k)));
+          }
+          if (target.startsWith('proced')) {
+            return t.includes('proced');
+          }
+          if (target.startsWith('instruct')) {
+            return t.includes('instruct');
+          }
+          if (target.startsWith('format')) {
+            return t.includes('format');
+          }
+          if (target.startsWith('polit') || target.startsWith('polít')) {
+            return t.includes('polit') || t.includes('polít');
+          }
+          if (target.startsWith('manu')) {
+            return t.includes('manu');
           }
           return t.includes(target.substring(0, 4));
         });
       } else {
-        const filterP = this.normalizarNombreProceso(this.activeFilter);
+        const filterP = this.activeFilter;
         list = list.filter(d => {
-          const procs = this.getDocProcesosList(d).map(p => this.normalizarNombreProceso(p));
-          const docP = this.normalizarNombreProceso(d.proceso);
-          return procs.includes(filterP) || docP === filterP || procs.includes('Todos los procesos');
+          const procs = this.getDocProcesosList(d);
+          const docP = d.proceso || '';
+          return procs.some(p => this.matchesProcess(p, filterP)) ||
+                 this.matchesProcess(docP, filterP) ||
+                 procs.includes('Todos los procesos');
         });
       }
     }
@@ -1871,6 +2077,28 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       });
   }
 
+  getActiveFolderTypeName(): string {
+    if (this.activeFilter && this.activeFilter.startsWith('folder:')) {
+      const parts = this.activeFilter.substring(7).split('|');
+      return parts[1] || '';
+    }
+    return '';
+  }
+
+  getActiveFolderDocTipo(): string {
+    const fType = this.getActiveFolderTypeName();
+    if (!fType) return '';
+    const c = fType.toLowerCase().trim();
+    if (c.startsWith('proced')) return 'Procedimiento';
+    if (c.startsWith('instruct')) return 'Instructivo';
+    if (c.startsWith('format')) return 'Formato';
+    if (c.startsWith('polit') || c.startsWith('polít')) return 'Politica';
+    if (c.startsWith('manu')) return 'Manual';
+    if (c.includes('descrip') || c.includes('puesto') || c.includes('perfil')) return 'Perfil de puesto';
+    if (c.startsWith('otr')) return 'Otros';
+    return '';
+  }
+
   getActiveProcessName(): string {
     if (this.activeFilter && this.activeFilter !== '__all__' && !this.activeFilter.startsWith('macro:')) {
       if (this.activeFilter.startsWith('folder:')) {
@@ -1922,6 +2150,9 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
 
   onAgregar(initialFile?: File) {
     const activeProc = this.getActiveProcessName();
+    const activeFolder = this.getActiveFolderTypeName();
+    const activeTipo = this.getActiveFolderDocTipo();
+
     let dialogRef = this.dialog.open(DocumentosControladosRegeditComponent, {
       width: '640px',
       maxHeight: '92vh',
@@ -1931,6 +2162,8 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         Accion: "I",
         Datos: null,
         ActiveProcess: activeProc,
+        ActiveFolder: activeFolder,
+        ActiveTipo: activeTipo,
         InitialFile: initialFile,
         ExistingDocs: this.docsList.map(d => ({
           nombre: (d.nombre || '').trim(),
@@ -1941,8 +2174,18 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe((res) => {
       if (res) {
+        // Garantizar coherencia si se subió desde una carpeta específica (ej. Instructivos, Formatos)
+        if (activeTipo && (!res.tipo || (res.tipo === 'Procedimiento' && activeTipo !== 'Procedimiento' && !(res.codigo || '').toUpperCase().startsWith('PRO-')))) {
+          res.tipo = activeTipo;
+        }
+
         const procPrincipal = res.procesos && res.procesos.length > 0 ? res.procesos[0] : res.proceso;
-        const procCode = this.getProcessCodeByName(procPrincipal);
+        const finalProc = procPrincipal || activeProc || 'Costura';
+        res.proceso = finalProc;
+        if (!res.procesos || res.procesos.length === 0) {
+          res.procesos = [finalProc];
+        }
+        const procCode = this.getProcessCodeByName(finalProc);
         const requestData = {
           Accion: 'I',
           Codigo_Organizacion: '001',
@@ -2335,6 +2578,9 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
 
   onCargarLote(initialFiles?: File[]) {
     const activeProc = this.getActiveProcessName();
+    const activeFolder = this.getActiveFolderTypeName();
+    const activeTipo = this.getActiveFolderDocTipo();
+
     let dialogRef = this.dialog.open(DocumentosControladosLoteComponent, {
       width: '92vw',
       maxWidth: '1150px',
@@ -2342,6 +2588,8 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       disableClose: true,
       data: {
         ActiveProcess: activeProc,
+        ActiveFolder: activeFolder,
+        ActiveTipo: activeTipo,
         InitialFiles: initialFiles,
         ExistingDocs: this.docsList.map(d => ({
           nombre: (d.nombre || '').trim(),

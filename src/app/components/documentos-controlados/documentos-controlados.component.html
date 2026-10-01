@@ -11,7 +11,7 @@
       <p class="drop-overlay-desc">Se cargará directamente en el módulo de Documentación</p>
       <div class="drop-target-folder" *ngIf="getActiveProcessName()">
         <mat-icon style="font-size: 16px; width: 16px; height: 16px;">folder</mat-icon>
-        <span>Carpeta de destino: <strong>{{ getActiveProcessName() }}</strong></span>
+        <span>Carpeta de destino: <strong>{{ getActiveFolderTitle() }}</strong></span>
       </div>
       <div class="drop-compat-chips">
         <span class="chip-format">PDF</span>
@@ -380,14 +380,18 @@
             </tr>
 
             <tr *ngIf="filteredDocs.length === 0">
-              <td colspan="10" class="empty-row" style="padding: 24px;">
-                <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;" *ngIf="false">
-                  <div class="skeleton-row" style="height: 16px;"></div>
-                  <div class="skeleton-row" style="height: 16px; width: 80%;"></div>
-                  <div class="skeleton-row" style="height: 16px; width: 60%;"></div>
-                </div>
-                <mat-icon class="empty-icon">folder_off</mat-icon>
-                <p>No se encontraron documentos en esta selección.</p>
+              <td colspan="11" class="empty-row" style="padding: 32px 24px; text-align: center;">
+                <mat-icon class="empty-icon" style="font-size: 38px; width: 38px; height: 38px; color: #94a3b8; margin-bottom: 8px;">folder_off</mat-icon>
+                <p style="font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 4px;">
+                  No hay documentos en <span style="color: #6366f1;">{{ getActiveFolderTitle() }}</span>
+                </p>
+                <p style="font-size: 12px; color: #64748b; margin-bottom: 14px;">
+                  Sube o registra un documento directamente en esta carpeta
+                </p>
+                <button type="button" class="btn-primary-glow" (click)="onAgregar()" *ngIf="canCreate" style="margin: 0 auto; display: inline-flex; align-items: center; gap: 6px;">
+                  <mat-icon style="font-size: 16px; width: 16px; height: 16px;">add</mat-icon>
+                  <span>Subir documento a {{ getActiveFolderTypeName() || 'esta carpeta' }}</span>
+                </button>
               </td>
             </tr>
           </tbody>

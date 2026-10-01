@@ -47,16 +47,87 @@ export class DocumentosControladosLoteComponent implements OnInit {
     'Gerencia General (GG)': ['Directorio', 'Alianzas Estratégicas', 'Desarrollo de Negocios', 'Proyectos Gerenciales', 'Sistema de Gestión General', 'Gestión Estratégica']
   };
   procesosMap: { [name: string]: string } = {
+    'acabados': '031',
+    'acabados textil': '038',
+    'administración': '014',
+    'administracion': '014',
+    'administración de personal': '018',
+    'administracion de personal': '018',
+    'alianzas estratégicas': '055',
+    'alianzas estrategicas': '055',
+    'almacén': '045',
+    'almacen': '045',
+    'aseguramiento de calidad textil': '039',
+    'aseguramiento de la calidad manufactura': '032',
+    'calidad': '032',
+    'calidad manufactura': '032',
+    'auditoría interna': '009',
+    'auditoria interna': '009',
+    'balance de materia': '041',
+    'bienestar social': '022',
+    'bordado': '025',
+    'calidad estampado y bordado': '026',
+    'capacitaciones y desarrollo': '019',
+    'capacitacion y desarrollo': '019',
+    'capacitación': '019',
+    'capacitacion': '019',
+    'certificaciones': '013',
+    'comercial exportación de prendas': '052',
+    'comercial exportacion de prendas': '052',
+    'comercial exportación de telas': '053',
+    'comercial exportacion de telas': '053',
+    'comercial venta local textil': '054',
+    'comercio exterior': '046',
+    'comunicaciones': '020',
+    'consumos': '033',
+    'consumo': '033',
+    'contabilidad y costos': '016',
+    'control patrimonial': '010',
+    'corte': '028',
+    'costura': '029',
+    'costuras': '029',
+    'desarrollo de estampado y bordado': '050',
+    'desarrollo de negocios': '056',
+    'desarrollo de producto': '049',
+    'desarrollo textil': '051',
+    'estampado': '024',
+    'estampado digital': '037',
+    'finanzas': '015',
+    'gestión estratégica': '059',
+    'gestion estrategica': '059',
+    'gestión humana': '021',
+    'gestion humana': '021',
     'ingeniería': '004',
     'ingenieria': '004',
     'mejora continua': '004',
-    'organización y métodos': '011',
-    'organizacion y metodos': '011',
+    'ingeniería y mejora continua': '004',
+    'inspección': '030',
+    'inspeccion': '030',
     'investigación, desarrollo e innovación': '012',
     'investigacion, desarrollo e innovacion': '012',
-    'investigación, desarrollo, innovación': '012',
-    'investigacion, desarrollo, innovacion': '012',
-    'certificaciones': '013'
+    'laboratorio de color': '036',
+    'lavandería': '040',
+    'lavanderia': '040',
+    'logística': '047',
+    'logistica': '047',
+    'mantenimiento general': '006',
+    'organización y métodos': '011',
+    'organizacion y metodos': '011',
+    'pcp estampado y bordado': '044',
+    'pcp manufactura': '043',
+    'pcp textil': '042',
+    'planeamiento y programación de la producción e&b': '027',
+    'proyectos gerenciales': '057',
+    'seguridad patrimonial': '007',
+    'selección de personal': '023',
+    'sistema de gestión general': '058',
+    'sistemas': '005',
+    'ssoma': '008',
+    'tejeduría': '034',
+    'tejeduria': '034',
+    'tesorería': '017',
+    'tesoreria': '017',
+    'transporte': '048'
   };
   
   filesList: FileUploadItem[] = [];
@@ -106,7 +177,10 @@ export class DocumentosControladosLoteComponent implements OnInit {
     });
 
     if (this.data?.ActiveProcess && this.data.ActiveProcess !== 'Todos los procesos') {
-      this.selectedProceso = this.data.ActiveProcess;
+      this.selectedProceso = this.procesosService.normalizarNombreProceso(this.data.ActiveProcess) || this.data.ActiveProcess;
+    }
+    if (this.data?.ActiveTipo) {
+      this.selectedTipoGlobal = this.data.ActiveTipo;
     }
     if (this.data?.InitialFiles && this.data.InitialFiles.length > 0) {
       this.procesarArchivosList(this.data.InitialFiles);
@@ -128,6 +202,17 @@ export class DocumentosControladosLoteComponent implements OnInit {
         return v;
       }
     }
+    // Fallbacks inteligentes por palabras clave en vez de asignar ciegamente 011
+    if (cleanNoAccents.includes('calidad')) return '032';
+    if (cleanNoAccents.includes('costura')) return '029';
+    if (cleanNoAccents.includes('corte')) return '028';
+    if (cleanNoAccents.includes('inspecc')) return '030';
+    if (cleanNoAccents.includes('acabad')) return '031';
+    if (cleanNoAccents.includes('estamp')) return '024';
+    if (cleanNoAccents.includes('sist')) return '005';
+    if (cleanNoAccents.includes('ssoma')) return '008';
+    if (cleanNoAccents.includes('audit')) return '009';
+    if (cleanNoAccents.includes('patrimon')) return '010';
     return '011';
   }
 
@@ -207,10 +292,10 @@ export class DocumentosControladosLoteComponent implements OnInit {
       'COST': 'Costura',
       'COS': 'Costura',
       'INSP': 'Inspección',
-      'INS': 'Inspección',
       'ACAB': 'Acabados',
       'CAL': 'Aseguramiento de la Calidad Manufactura',
-      'MAN': 'Manufactura',
+      'MNF': 'Manufactura',
+      'MANUF': 'Manufactura',
       'CONS': 'Consumos',
       'CON': 'Consumos',
 
@@ -276,16 +361,23 @@ export class DocumentosControladosLoteComponent implements OnInit {
       'GG': 'Sistema de Gestión General'
     };
 
+    // parts[0] es SIEMPRE el prefijo del Tipo de Documento (INS, PRO, FOR, MAN, POL, etc.)
+    // NUNCA debe evaluarse como Proceso. Solo evaluar parts.slice(1)
+    const candidateParts = parts.length > 1 ? parts.slice(1) : [];
+
     if (parts.length >= 3 && mapSubProcesos[parts[2]]) {
       return mapSubProcesos[parts[2]];
     }
     if (parts.length >= 2 && mapSubProcesos[parts[1]]) {
       return mapSubProcesos[parts[1]];
     }
-    for (const part of parts) {
+    if (parts.length >= 2 && mapMacros[parts[1]]) {
+      return mapMacros[parts[1]];
+    }
+    for (const part of candidateParts) {
       if (mapSubProcesos[part]) return mapSubProcesos[part];
     }
-    for (const part of parts) {
+    for (const part of candidateParts) {
       if (mapMacros[part]) return mapMacros[part];
     }
     return '';
@@ -335,8 +427,11 @@ export class DocumentosControladosLoteComponent implements OnInit {
     }
     this.validarItemVersion(item);
 
-    const autoProc = this.extraerProcesoDelCodigo(codeStr);
-    if (autoProc && !this.selectedProceso) item.proceso = autoProc;
+    const targetProcActive = this.selectedProceso || this.data?.ActiveProcess;
+    if (!targetProcActive || targetProcActive === 'Todos los procesos') {
+      const autoProc = this.extraerProcesoDelCodigo(codeStr);
+      if (autoProc) item.proceso = autoProc;
+    }
 
     this.validarDuplicadosLote();
   }
@@ -467,25 +562,7 @@ export class DocumentosControladosLoteComponent implements OnInit {
           duplMsg = item.codigo;
         }
       }
-      // 2. Revisar duplicado de nombre
-      else if (cleanName && catalogNames.includes(cleanName)) {
-        item.isError = true;
-        item.progressMessage = 'Error: Nombre ya registrado en el catálogo.';
-        if (!hasDupl) {
-          hasDupl = true;
-          duplTipo = 'nombre';
-          duplMsg = item.nombre;
-        }
-      } else if (cleanName && batchNameCounts[cleanName] > 1) {
-        item.isError = true;
-        item.progressMessage = 'Error: Nombre repetido dentro de este lote.';
-        if (!hasDupl) {
-          hasDupl = true;
-          duplTipo = 'nombre';
-          duplMsg = item.nombre;
-        }
-      }
-      // 3. Sin error de duplicados
+      // 2. Sin error de duplicados de código
       else {
         if (sinVersion) {
           item.isError = true;
@@ -573,21 +650,66 @@ export class DocumentosControladosLoteComponent implements OnInit {
       }
 
       const nameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-      const firstSpaceIdx = nameWithoutExt.indexOf(' ');
+      
+      // Extraer código con formato estándar Precotex (ej. INS-COS-001, PRO-OPM-002, etc.)
+      const codeRegex = /([A-Za-z]{2,4}-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)/i;
+      const codeMatch = nameWithoutExt.match(codeRegex);
       
       let parsedCode = '';
       let parsedName = '';
       
-      if (firstSpaceIdx !== -1) {
-        parsedCode = nameWithoutExt.substring(0, firstSpaceIdx).trim();
-        parsedName = nameWithoutExt.substring(firstSpaceIdx + 1).trim();
+      if (codeMatch) {
+        parsedCode = codeMatch[1].toUpperCase();
+        parsedName = nameWithoutExt.replace(codeMatch[0], '')
+                                   .replace(/^[\s\-_\.:#]+|[\s\-_\.:#]+$/g, '')
+                                   .trim();
+        if (!parsedName) {
+          parsedName = nameWithoutExt.trim();
+        }
       } else {
-        parsedCode = nameWithoutExt.trim();
-        parsedName = nameWithoutExt.trim();
+        const firstSpaceIdx = nameWithoutExt.indexOf(' ');
+        if (firstSpaceIdx !== -1) {
+          const firstWord = nameWithoutExt.substring(0, firstSpaceIdx).trim();
+          if (firstWord.length <= 15 && /\d/.test(firstWord)) {
+            parsedCode = firstWord.toUpperCase();
+            parsedName = nameWithoutExt.substring(firstSpaceIdx + 1).trim();
+          } else {
+            parsedName = nameWithoutExt.trim();
+          }
+        } else {
+          parsedName = nameWithoutExt.trim();
+        }
       }
 
-      // Observación e: Si hay tipo global seleccionado arriba, aplicarlo por defecto
-      const parsedTipo = this.selectedTipoGlobal || this.extraerTipoDelCodigo(parsedCode);
+      // DOC-12: Auto-popular Tipo de Documento respetando la carpeta activa
+      const autoTipoCode = this.extraerTipoDelCodigo(parsedCode || nameWithoutExt);
+      const parsedTipo = (autoTipoCode && autoTipoCode !== 'Procedimiento')
+        ? autoTipoCode
+        : (this.selectedTipoGlobal || this.data?.ActiveTipo || autoTipoCode || 'Procedimiento');
+
+      // Si el archivo no traía código, generar uno secuencial y único para este lote respetando tipo y proceso
+      if (!parsedCode) {
+        let prefix = 'DOC';
+        if (parsedTipo === 'Instructivo') prefix = 'INS';
+        else if (parsedTipo === 'Procedimiento') prefix = 'PRO';
+        else if (parsedTipo === 'Formato') prefix = 'FOR';
+        else if (parsedTipo === 'Manual') prefix = 'MAN';
+        else if (parsedTipo === 'Politica') prefix = 'POL';
+
+        const procTarget = (this.selectedProceso || this.data?.ActiveProcess || '').toLowerCase();
+        let procAbbr = 'COS';
+        if (procTarget.includes('costura')) procAbbr = 'COS';
+        else if (procTarget.includes('corte')) procAbbr = 'COR';
+        else if (procTarget.includes('inspecc')) procAbbr = 'INSP';
+        else if (procTarget.includes('sist')) procAbbr = 'SIS';
+        else if (procTarget.includes('ssoma')) procAbbr = 'SST';
+        else if (procTarget.includes('calidad')) procAbbr = 'CAL';
+        else if (procTarget.includes('estamp')) procAbbr = 'EST';
+        else if (procTarget.includes('almac')) procAbbr = 'ALM';
+
+        const seq = String(this.filesList.length + 1).padStart(3, '0');
+        parsedCode = `${prefix}-${procAbbr}-${seq}`;
+      }
 
       let parsedFormato = 'PDF';
       const dotIdx = file.name.lastIndexOf('.');
@@ -602,9 +724,13 @@ export class DocumentosControladosLoteComponent implements OnInit {
         }
       }
 
-      const parsedVer = this.extraerVersionDelCodigo(parsedCode) || '';
+      const parsedVer = this.extraerVersionDelCodigo(parsedCode || nameWithoutExt) || '';
       const tieneVer = !!(parsedVer && parsedVer.trim());
-      const parsedProc = this.selectedProceso || this.extraerProcesoDelCodigo(parsedCode) || 'Organización y Métodos';
+      
+      const targetProcActive = this.selectedProceso || this.data?.ActiveProcess || '';
+      const parsedProc = (targetProcActive && targetProcActive !== 'Todos los procesos')
+        ? targetProcActive
+        : (this.extraerProcesoDelCodigo(parsedCode) || 'Costura');
       
       // DOC-12: Auto-popular Fecha de Vigencia (3 Años) y Estado en Carga Masiva
       const parsedVig = defaultVig3Anios;
@@ -613,14 +739,14 @@ export class DocumentosControladosLoteComponent implements OnInit {
       this.filesList.push({
         file: file,
         nombre: parsedName,
-        codigo: parsedCode || ('LOTE-' + Math.floor(1000 + Math.random() * 9000)),
+        codigo: parsedCode,
         tipo: parsedTipo,
         version: parsedVer,
         formato: parsedFormato,
         proceso: parsedProc,
         vig: parsedVig,
         estado: parsedEstado,
-        visibilidad: 'Todos los procesos', // DOC-15: Visibilidad pública por defecto
+        visibilidad: 'Todos los procesos',
         isUploaded: false,
         isError: !tieneVer,
         progressMessage: !tieneVer ? 'Sin código de versión (requerido)' : 'Listo para cargar'
@@ -632,7 +758,7 @@ export class DocumentosControladosLoteComponent implements OnInit {
       this.toastr.warning(`Atención: Se detectaron ${sinVersionCount} documento(s) sin código de versión. Debe ingresar la versión para cada archivo antes de poder subir el lote.`, 'Código de Versión Requerido');
     }
 
-    // Validar duplicados de inmediato
+        // Validar duplicados de inmediato
     const val = this.validarDuplicadosLote();
     if (val.tieneDuplicados) {
       const tipoTexto = val.tipo === 'codigo' ? 'el código' : 'el nombre';
@@ -677,22 +803,17 @@ export class DocumentosControladosLoteComponent implements OnInit {
       return;
     }
 
-    // Restricción: No permitir subir documentos con el mismo código ni con el mismo nombre
+    // Restricción: No permitir subir documentos con código duplicado
     const val = this.validarDuplicadosLote();
-    if (val.tieneDuplicados) {
-      const tituloModal = val.tipo === 'codigo' ? 'Código de Documento Duplicado' : 'Nombre de Documento Duplicado';
-      const detalleTexto = val.tipo === 'codigo'
-        ? `Ya existe un documento con el código <strong style="color: #dc2626;">"${val.mensaje}"</strong> registrado en el sistema o repetido dentro de este lote.`
-        : `Ya existe un documento con el nombre <strong style="color: #dc2626;">"${val.mensaje}"</strong> registrado en el sistema o repetido dentro de este lote.`;
-
+    if (val.tieneDuplicados && val.tipo === 'codigo') {
       Swal.fire({
         icon: 'error',
-        title: tituloModal,
+        title: 'Código de Documento Duplicado',
         html: `<div style="font-size: 13px; color: #334155; text-align: left; line-height: 1.6;">
                  No se puede iniciar la carga masiva:<br><br>
-                 ${detalleTexto}<br><br>
-                 De acuerdo a la normativa del sistema, <strong>no se permite subir documentos con el mismo código ni con el mismo nombre</strong>.<br>
-                 Por favor, modifique el ${val.tipo === 'codigo' ? 'código' : 'nombre'} antes de continuar.
+                 Ya existe un documento con el código <strong style="color: #dc2626;">"${val.mensaje}"</strong> registrado en el sistema o repetido dentro de este lote.<br><br>
+                 De acuerdo a la normativa del sistema, <strong>no se permite subir documentos con el mismo código</strong>.<br>
+                 Por favor, modifique el código antes de continuar.
                </div>`,
         confirmButtonColor: '#5b4bd6',
         confirmButtonText: 'Entendido'

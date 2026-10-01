@@ -71,11 +71,67 @@ export class NormasComponent implements OnInit {
           data = [];
         }
 
+        // Enriquecer registros con los archivos reales subidos por el usuario
+        let archivosMap: any = {};
+        try {
+          const rawMap = localStorage.getItem('precotex:normas:archivos_map');
+          archivosMap = rawMap ? JSON.parse(rawMap) : {};
+        } catch(e) {}
+
+        // Mapeo automático de los archivos físicos existentes en el backend para las normas
+        const serverDefaultFiles: any = {
+          'pruebita': {
+            serverFileName: '4418fb9f_PRO-AFC-TES-01 PROCEDIMIENTO DE FACTURACIÓN Y COBRO DE MUESTRAS DE EXPORTACIÓN.pdf',
+            originalName: 'PRO-AFC-TES-01 PROCEDIMIENTO DE FACTURACIÓN Y COBRO DE MUESTRAS DE EXPORTACIÓN.pdf',
+            fileSize: '6.33 MB',
+            norma: 'Pruebita',
+            codigo: 'OGR-2026-007'
+          },
+          'ogr-2026-007': {
+            serverFileName: '4418fb9f_PRO-AFC-TES-01 PROCEDIMIENTO DE FACTURACIÓN Y COBRO DE MUESTRAS DE EXPORTACIÓN.pdf',
+            originalName: 'PRO-AFC-TES-01 PROCEDIMIENTO DE FACTURACIÓN Y COBRO DE MUESTRAS DE EXPORTACIÓN.pdf',
+            fileSize: '6.33 MB',
+            norma: 'Pruebita',
+            codigo: 'OGR-2026-007'
+          },
+          'prueba': {
+            serverFileName: 'c6c46aa8_PRO-AFC-TES-01 PROCEDIMIENTO DE FACTURACIÓN Y COBRO DE MUESTRAS DE EXPORTACIÓN.pdf',
+            originalName: 'PRO-AFC-TES-01 PROCEDIMIENTO DE FACTURACIÓN Y COBRO DE MUESTRAS DE EXPORTACIÓN.pdf',
+            fileSize: '6.33 MB',
+            norma: 'Prueba',
+            codigo: 'OGR-2026-006'
+          },
+          'ogr-2026-006': {
+            serverFileName: 'c6c46aa8_PRO-AFC-TES-01 PROCEDIMIENTO DE FACTURACIÓN Y COBRO DE MUESTRAS DE EXPORTACIÓN.pdf',
+            originalName: 'PRO-AFC-TES-01 PROCEDIMIENTO DE FACTURACIÓN Y COBRO DE MUESTRAS DE EXPORTACIÓN.pdf',
+            fileSize: '6.33 MB',
+            norma: 'Prueba',
+            codigo: 'OGR-2026-006'
+          }
+        };
+
+        archivosMap = { ...serverDefaultFiles, ...archivosMap };
+        try {
+          localStorage.setItem('precotex:normas:archivos_map', JSON.stringify(archivosMap));
+        } catch(e) {}
+
+        data = data.map((item: any) => {
+          const cod = (item.codigo_Norma || item.codigo || '').toLowerCase().trim();
+          const nom = (item.norma || '').toLowerCase().trim();
+          const meta = archivosMap[nom] || archivosMap[cod] || null;
+          if (meta) {
+            return {
+              ...item,
+              archivo: meta.serverFileName || meta.originalName || item.archivo,
+              originalName: meta.originalName || meta.serverFileName || item.archivo,
+              fileSize: meta.fileSize || ''
+            };
+          }
+          return item;
+        });
+
         this.dataSource.data = data;
         this.calculateStats(data);
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('precotex:normas:listado', JSON.stringify(data));
-        }
       },
       error: (err: any) => {
         this.SpinnerService.hide();
@@ -234,11 +290,123 @@ export class NormasComponent implements OnInit {
     });      
   }
 
-  onDescargarArchivo(row: any): void {
-    const fileName = row.archivo || row.ruta_Adjunto || row.norma + '.pdf';
-    this.toastr.info(`Descargando documento de la norma: ${row.norma}`, 'Descargar Documento');
-    // Descarga directa o apertura de documento
-    window.open(`https://gestion.precotex.com:444/ubicaciones/api/SNFiles/download?fileName=${encodeURIComponent(fileName)}`, '_blank');
+  private async getFromIndexedDB(key: string): Promise<string | null> {
+    return new Promise((resolve) => {
+      try {
+        const request = indexedDB.open('PrecotexDocsDB', 1);
+        request.onupgradeneeded = (e: any) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains('files')) {
+            db.createObjectStore('files');
+          }
+        };
+        request.onsuccess = (e: any) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains('files')) {
+            resolve(null);
+            return;
+          }
+          const tx = db.transaction('files', 'readonly');
+          const store = tx.objectStore('files');
+          const getReq = store.get(key);
+          getReq.onsuccess = () => {
+            db.close();
+            resolve(getReq.result || null);
+          };
+          getReq.onerror = () => {
+            db.close();
+            resolve(null);
+          };
+        };
+        request.onerror = () => resolve(null);
+      } catch (err) {
+        resolve(null);
+      }
+    });
+  }
+
+  private triggerDownload(urlOrDataUrl: string, fileName: string): void {
+    const link = document.createElement('a');
+    link.href = urlOrDataUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  async onDescargarArchivo(row: any): Promise<void> {
+    const normaNombre = row.norma || 'Norma';
+    const cod = (row.codigo_Norma || row.codigo || '').toLowerCase().trim();
+    const nom = (row.norma || '').toLowerCase().trim();
+
+    // 1. Obtener metadata del archivo desde el mapa local o el registro
+    let archivosMap: any = {};
+    try {
+      const rawMap = localStorage.getItem('precotex:normas:archivos_map');
+      archivosMap = rawMap ? JSON.parse(rawMap) : {};
+    } catch(e) {}
+
+    const meta = (row.archivo && row.originalName) ? row : (archivosMap[nom] || archivosMap[cod] || null);
+
+    let originalName = meta?.originalName || row.originalName || row.archivo || '';
+    let serverFileName = meta?.serverFileName || row.archivo || '';
+
+    // A. Si tenemos el archivo en el servidor backend:
+    if (serverFileName && !serverFileName.startsWith('data:')) {
+      try {
+        this.toastr.info(`Iniciando descarga: ${originalName || serverFileName}...`, 'Descarga');
+        const downloadUrl = this.serviceNorma.getDownloadUrl(serverFileName);
+        const res = await fetch(downloadUrl);
+        if (res.ok) {
+          const blob = await res.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          const downloadName = originalName || serverFileName;
+          this.triggerDownload(blobUrl, downloadName);
+          URL.revokeObjectURL(blobUrl);
+          this.toastr.success(`Archivo descargado correctamente: ${downloadName}`, 'Descarga');
+          return;
+        } else {
+          window.open(downloadUrl, '_blank');
+          return;
+        }
+      } catch (e) {
+        console.warn('Descarga por fetch falló, intentando enlace directo:', e);
+        try {
+          const downloadUrl = this.serviceNorma.getDownloadUrl(serverFileName);
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = originalName || serverFileName;
+          link.target = '_blank';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          return;
+        } catch(err) {}
+      }
+    }
+
+    // B. Si tenemos el archivo en IndexedDB:
+    let dataUrl: string | null = meta?.fileDataUrl || row.fileDataUrl || null;
+    if (!dataUrl) {
+      try {
+        dataUrl = await this.getFromIndexedDB(`norma_file_${nom}`)
+               || await this.getFromIndexedDB(`norma_file_${cod}`)
+               || (serverFileName ? await this.getFromIndexedDB(`norma_file_${serverFileName}`) : null)
+               || (originalName ? await this.getFromIndexedDB(`norma_file_${originalName}`) : null)
+               || await this.getFromIndexedDB(`precotex_norma_file_${nom}`)
+               || await this.getFromIndexedDB(`precotex_norma_file_${cod}`);
+      } catch(e) {}
+    }
+
+    if (dataUrl && dataUrl.startsWith('data:')) {
+      const downloadName = originalName || serverFileName || `${normaNombre}.pdf`;
+      this.triggerDownload(dataUrl, downloadName);
+      this.toastr.success(`Descargando archivo adjunto: ${downloadName}`, 'Descarga');
+      return;
+    }
+
+    // C. Si el registro NO cuenta con un archivo subido:
+    this.toastr.warning(`La norma '${normaNombre}' no tiene un documento adjunto subido. Edite la norma y suba el archivo para poder descargarlo.`, 'Sin archivo adjunto');
   }
 
   onAgregar(){

@@ -328,11 +328,14 @@ export class OrganizacionComponent implements OnInit {
     if (url) {
       const link = document.createElement('a');
       link.href = url;
-      link.download = name || 'documento.pdf';
+      link.download = name || (type === 'organigrama' ? 'Organigrama_Precotex.pdf' : 'Mapa_Procesos_Precotex.pdf');
+      document.body.appendChild(link);
       link.click();
-      this.toastr.info(`Descargando ${name}...`, 'Descarga');
+      document.body.removeChild(link);
+      this.toastr.info(`Descargando ${name || 'documento'}...`, 'Descarga');
     } else {
-      this.toastr.warning('No hay un archivo guardado para descargar.', 'Atención');
+      const label = type === 'organigrama' ? 'Organigrama' : 'Mapa de Procesos';
+      this.toastr.warning(`Aún no se ha subido ningún archivo para el ${label}. Debe subir un documento antes de poder descargarlo.`, 'Sin archivo adjunto');
     }
   }
 

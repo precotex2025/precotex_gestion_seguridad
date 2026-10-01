@@ -582,4 +582,27 @@ export class DashboardComponent implements OnInit {
       this.router.navigate([route]);
     }
   }
+  getUserInitial(): string {
+    return (this.userName || 'Admin').trim().charAt(0).toUpperCase();
+  }
+
+  getFormattedDateCapitalized(): string {
+    const d = new Date();
+    const str = d.toLocaleDateString('es-PE', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    // Capitalizar cada palabra (ej. Jueves, 1 De Octubre De 2026)
+    return str.replace(/\b\w/g, char => char.toUpperCase());
+  }
+
+  getUserRoleName(): string {
+    const rol = (localStorage.getItem('vCod_Rol') || GlobalVariable.vCod_Rol || '0').toString();
+    if (rol === '1' || (this.userName || '').toLowerCase() === 'admin') return 'Administrador SIG';
+    if (rol === '2') return 'Gestor de Procesos';
+    if (rol === '3') return 'Auditor / Revisor';
+    return 'Usuario del Sistema';
+  }
 }

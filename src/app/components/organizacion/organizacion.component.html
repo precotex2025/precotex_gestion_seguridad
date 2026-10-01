@@ -139,7 +139,7 @@
             <mat-icon style="font-size: 16px; width: 16px; height: 16px;">{{ mostrarPreviewOrganigrama ? 'visibility_off' : 'visibility' }}</mat-icon>
             <span>{{ mostrarPreviewOrganigrama ? 'Ocultar previsualización' : 'Ver previsualización' }}</span>
           </button>
-          <button type="button" class="btn-download-doc" (click)="onDescargarArchivo('organigrama')" *ngIf="organigramaUrl">
+          <button type="button" class="btn-download-doc" (click)="onDescargarArchivo('organigrama')" title="Descargar Organigrama Corporativo">
             <mat-icon>file_download</mat-icon> Descargar
           </button>
         </div>
@@ -157,7 +157,7 @@
         
         <div class="file-info-badge">
           <span class="file-name" [class.no-file]="!organigramaNombre">
-            {{ organigramaNombre || 'Organigrama Predeterminado' }}
+            {{ organigramaNombre || 'Sin archivo adjunto subido' }}
           </span>
           <span class="file-size-tag" *ngIf="organigramaFileSize">{{ organigramaFileSize }}</span>
         </div>
@@ -254,7 +254,7 @@
             <mat-icon style="font-size: 16px; width: 16px; height: 16px;">{{ mostrarPreviewMapaProcesos ? 'visibility_off' : 'visibility' }}</mat-icon>
             <span>{{ mostrarPreviewMapaProcesos ? 'Ocultar previsualización' : 'Ver previsualización' }}</span>
           </button>
-          <button type="button" class="btn-download-doc" (click)="onDescargarArchivo('mapaprocesos')" *ngIf="mapaProcesosUrl">
+          <button type="button" class="btn-download-doc" (click)="onDescargarArchivo('mapaprocesos')" title="Descargar Mapa de Macroprocesos SIG">
             <mat-icon>file_download</mat-icon> Descargar
           </button>
         </div>
@@ -272,7 +272,7 @@
         
         <div class="file-info-badge">
           <span class="file-name" [class.no-file]="!mapaProcesosNombre">
-            {{ mapaProcesosNombre || 'Mapa de Procesos Predeterminado' }}
+            {{ mapaProcesosNombre || 'Sin archivo adjunto subido' }}
           </span>
           <span class="file-size-tag" *ngIf="mapaProcesosFileSize">{{ mapaProcesosFileSize }}</span>
         </div>

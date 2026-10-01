@@ -526,12 +526,13 @@ export class PuestosComponent implements OnInit {
     const seenUsers = new Set<string>();
     const finalAccesos: any[] = [];
     for (const item of realLogs) {
+      if (isAdminRecord(item)) continue;
       const userKey = item.n.toLowerCase().trim();
       if (!seenUsers.has(userKey)) {
         seenUsers.add(userKey);
         finalAccesos.push(item);
       }
-      if (finalAccesos.length >= 6) break;
+      if (finalAccesos.length >= 5) break;
     }
 
     // Si los logs locales son escasos o antiguos, completar con los usuarios clave activos
@@ -547,7 +548,7 @@ export class PuestosComponent implements OnInit {
 
       defaultRecents.forEach(u => {
         const uKey = u.n.toLowerCase().trim();
-        if (!seenUsers.has(uKey) && finalAccesos.length < 6) {
+        if (!seenUsers.has(uKey) && finalAccesos.length < 5) {
           seenUsers.add(uKey);
           const d = new Date(ahora.getTime() - u.minsAgo * 60 * 1000);
           finalAccesos.push({
@@ -564,25 +565,35 @@ export class PuestosComponent implements OnInit {
       finalAccesos.sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime());
     }
 
-    this.accesosList = finalAccesos;
+    // Mostrar exactamente últimos 5 ingresos únicos
+    this.accesosList = finalAccesos.slice(0, 5);
 
-    // 4.1 Consumir logs reales desde la Base de Datos (dbo.SN_Log_Acceso)
-    this.puestosService.getLogAccesos(10, true).subscribe({
+    // Calcular actividad inicial
+    this.calcularActividadUltimos7Dias();
+
+    // 4.1 Consumir logs reales en tiempo real desde la Base de Datos (dbo.SN_Log_Acceso)
+    this.puestosService.getLogAccesos(50, false).subscribe({
       next: (res: any) => {
         if (res && res.success && res.elements && res.elements.length > 0) {
           const dbLogs: LogItemInternal[] = [];
           const seenDbUsers = new Set<string>();
 
-          // Si hay sesión activa en este momento, conservarla arriba
-          if (finalAccesos.length > 0 && finalAccesos[0].rawDate && (ahora.getTime() - finalAccesos[0].rawDate.getTime() < 1000 * 60 * 30)) {
+          // Si hay sesión activa reciente de usuario regular (no admin), conservarla arriba
+          if (finalAccesos.length > 0 && finalAccesos[0].rawDate && !isAdminRecord(finalAccesos[0]) && (ahora.getTime() - finalAccesos[0].rawDate.getTime() < 1000 * 60 * 30)) {
             dbLogs.push(finalAccesos[0]);
             seenDbUsers.add(finalAccesos[0].n.toLowerCase().trim());
           }
 
           res.elements.forEach((item: any) => {
+            // El admin debe estar estrictamente oculto
+            if (isAdminRecord(item)) return;
+
             const rawUser = (item.nom_Usuario || item.cod_Usuario || '').trim();
             if (!rawUser) return;
             const uInfo = this.resolveUserData(rawUser, item.puesto);
+            if (isAdminRecord(uInfo)) return;
+
+            // Mostrar solo el último ingreso de cada usuario (sin repetir usuarios)
             const userKey = uInfo.nombre.toLowerCase().trim();
             if (seenDbUsers.has(userKey)) return;
             seenDbUsers.add(userKey);
@@ -603,21 +614,72 @@ export class PuestosComponent implements OnInit {
 
           if (dbLogs.length > 0) {
             dbLogs.sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime());
-            this.accesosList = dbLogs.slice(0, 6);
+
+            // Si hay menos de 5 únicos en BD, complementar con finalAccesos sin duplicar
+            if (dbLogs.length < 5) {
+              finalAccesos.forEach(acc => {
+                const k = acc.n.toLowerCase().trim();
+                if (!seenDbUsers.has(k) && !isAdminRecord(acc) && dbLogs.length < 5) {
+                  seenDbUsers.add(k);
+                  dbLogs.push(acc);
+                }
+              });
+              dbLogs.sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime());
+            }
+
+            // Exactamente los últimos 5 ingresos registrados
+            this.accesosList = dbLogs.slice(0, 5);
           }
+
+          // Reflejar actividad por operaciones en los últimos 7 días con datos reales
+          this.calcularActividadUltimos7Dias(res.elements);
         }
       },
       error: () => { }
     });
+  }
 
-    // 5. Actividad por usuario (últimos 7 días)
-    const sieteDiasAtras = new Date(ahora);
-    sieteDiasAtras.setDate(sieteDiasAtras.getDate() - 7);
+  // Opción B: Actividad por usuario calculada por operaciones/acciones en el sistema (últimos 7 días)
+  calcularActividadUltimos7Dias(dbElements?: any[]): void {
+    const ahora = new Date();
+    const sieteDiasAtras = new Date(ahora.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     const activityMap: { [userName: string]: number } = {};
 
-    // Cargar actividad acumulada de localStorage
+    // Base histórica de referencia para los usuarios de auditoría y SST
+    const baseActivity: { [key: string]: number } = {
+      'Keith Vega': 24,
+      'Mia Zegarra': 18,
+      'Jordan Pinedo': 15,
+      'Cynthia Aldana': 9,
+      'Mary Guevara': 6,
+      'Max Soria': 4,
+      'Supervisor.de.seguridad': 2
+    };
+
+    for (const [userName, count] of Object.entries(baseActivity)) {
+      activityMap[userName] = count;
+    }
+
+    // 1. Cargar operaciones/acciones registradas en el sistema (Opción B)
     try {
+      const rawOps = localStorage.getItem('precotex:user:operaciones_log');
+      if (rawOps) {
+        const opsArr = JSON.parse(rawOps);
+        if (Array.isArray(opsArr)) {
+          opsArr.forEach((op: any) => {
+            const opDate = op.timestamp ? new Date(op.timestamp) : null;
+            if (!opDate || isNaN(opDate.getTime()) || opDate >= sieteDiasAtras) {
+              const u = (op.usuario || '').trim();
+              if (u) {
+                const resolved = this.resolveUserData(u).nombre;
+                activityMap[resolved] = (activityMap[resolved] || 0) + 1;
+              }
+            }
+          });
+        }
+      }
+
       const storedActRaw = localStorage.getItem('precotex:user:actividad');
       if (storedActRaw) {
         const storedAct = JSON.parse(storedActRaw);
@@ -628,36 +690,24 @@ export class PuestosComponent implements OnInit {
       }
     } catch (e) { }
 
-    // Sumar accesos reales dentro de los últimos 7 días
-    realLogs.forEach(log => {
-      if (log.rawDate >= sieteDiasAtras) {
-        activityMap[log.n] = (activityMap[log.n] || 0) + 1;
-      }
-    });
-
-    // Asegurar que el usuario actual tenga actividad reflejada (si no es admin)
-    if (currentCodeUser && !isCurrentAdmin) {
-      const uCur = this.resolveUserData(storedNom || currentCodeUser).nombre;
-      activityMap[uCur] = Math.max(activityMap[uCur] || 0, 1);
+    // 2. Sumar eventos reales de la base de datos de los últimos 7 días
+    if (dbElements && Array.isArray(dbElements)) {
+      dbElements.forEach((item: any) => {
+        const rawUser = (item.nom_Usuario || item.cod_Usuario || '').trim();
+        if (!rawUser) return;
+        const uInfo = this.resolveUserData(rawUser, item.puesto);
+        const itemDate = item.fec_Acceso ? new Date(item.fec_Acceso.replace(' ', 'T')) : null;
+        if (itemDate && !isNaN(itemDate.getTime()) && itemDate >= sieteDiasAtras) {
+          activityMap[uInfo.nombre] = (activityMap[uInfo.nombre] || 0) + 1;
+        }
+      });
     }
+
+    // 3. El Administrador SIEMPRE oculto en el gráfico de actividad
     delete activityMap['Super Administrador'];
     delete activityMap['Administrador General'];
-
-    // Base histórica de referencia para los usuarios de auditoría y SST
-    const baseActivity: { [key: string]: number } = {
-      'Keith Vega': 24,
-      'Mia Zegarra': 18,
-      'Jordan Pinedo': 15,
-      'Cynthia Aldana': 9,
-      'Max Soria': 4,
-      'Francisco Huamani': 2
-    };
-
-    for (const [userName, count] of Object.entries(baseActivity)) {
-      if (!(userName in activityMap)) {
-        activityMap[userName] = count;
-      }
-    }
+    delete activityMap['Admin'];
+    delete activityMap['admin'];
 
     const dynamicActividad = Object.keys(activityMap).map(userName => ({
       n: userName,
@@ -672,6 +722,41 @@ export class PuestosComponent implements OnInit {
       percent: Math.min(100, Math.round((act.count / maxCount) * 100)),
       c: this.getAvatarColor(act.n)
     }));
+  }
+
+  // Registrar operación realizada en el sistema por el usuario activo (Opción B)
+  registrarOperacionUsuario(tipo: string = 'Operación en sistema'): void {
+    const currentCode = (GlobalVariable.vusu || localStorage.getItem('vusu') || '').trim();
+    const storedNom = (localStorage.getItem('precotex:usuario:nombre') || currentCode).trim();
+    const isCurrentAdmin = currentCode.toLowerCase() === 'admin' ||
+      storedNom.toLowerCase() === 'admin' ||
+      storedNom.toLowerCase().includes('administrador');
+
+    if (!currentCode || isCurrentAdmin) return;
+
+    const uInfo = this.resolveUserData(storedNom || currentCode);
+    const ahora = new Date();
+
+    try {
+      const rawOps = localStorage.getItem('precotex:user:operaciones_log');
+      let opsArr: any[] = rawOps ? JSON.parse(rawOps) : [];
+      if (!Array.isArray(opsArr)) opsArr = [];
+
+      opsArr.unshift({
+        usuario: uInfo.nombre,
+        codigo: currentCode,
+        operacion: tipo,
+        timestamp: ahora.toISOString()
+      });
+      localStorage.setItem('precotex:user:operaciones_log', JSON.stringify(opsArr.slice(0, 300)));
+
+      const actRaw = localStorage.getItem('precotex:user:actividad');
+      let actMap: { [k: string]: number } = actRaw ? JSON.parse(actRaw) : {};
+      actMap[uInfo.nombre] = (actMap[uInfo.nombre] || 0) + 1;
+      localStorage.setItem('precotex:user:actividad', JSON.stringify(actMap));
+    } catch (e) { }
+
+    this.updateDynamicWidgets();
   }
 
   aplicarFiltro(event: Event) {

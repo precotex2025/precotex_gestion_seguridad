@@ -486,15 +486,17 @@ export class LoginComponent implements OnInit {
       Flg_Activo: true
     };
 
-    const isLocal = ((GlobalVariable.baseUrlBackEnd || '').toLowerCase().includes('localhost') || (GlobalVariable.baseUrlBackEnd || '').toLowerCase().includes('127.0.0.1')) && !(GlobalVariable.baseUrlBackEnd || '').includes(':5252');
-    if (isLocal) {
-      this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postRegistrarLogAcceso`, logBackend).subscribe({
-        next: (res: any) => {
-          console.log('✅ Log de acceso registrado exitosamente en BD:', res);
-        },
-        error: () => {}
-      });
-    }
+    const clientHost = (typeof window !== 'undefined' && window.location && window.location.hostname) ? window.location.hostname : '192.168.1.36';
+    logBackend.Ip_Acceso = clientHost;
+
+    this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postRegistrarLogAcceso`, logBackend).subscribe({
+      next: (res: any) => {
+        console.log('✅ Log de acceso registrado exitosamente en BD:', res);
+      },
+      error: (err: any) => {
+        console.warn('Aviso: Registro de log en BD:', err?.message || err);
+      }
+    });
 
     // 2. Almacenamiento local para widgets del frontend (excluyendo la cuenta de admin)
     if ((codUsuario || '').toLowerCase() === 'admin' || (nomUsuario || '').toLowerCase() === 'admin') return;

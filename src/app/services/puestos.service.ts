@@ -42,13 +42,24 @@ export class PuestosService {
     );
   }
 
-  // Comentado temporalmente por petición del usuario
   getLogAccesos(top: number = 50, soloUltimo: boolean = false): Observable<any> {
-    return of({ success: true, elements: [] });
+    const headers = this.Header;
+    let params = new HttpParams();
+    params = params.append('top', top.toString());
+    params = params.append('soloUltimo', soloUltimo.toString());
+    return this.http.get(this.baseUrl + 'SNUsuario/getLogAccesos', { headers, params }).pipe(
+      catchError(() => of({ success: false, elements: [] }))
+    );
   }
 
   getHistorialUsuario(top: number = 50, soloUltimo: boolean = false): Observable<any> {
-    return of({ success: true, elements: [] });
+    const headers = this.Header;
+    let params = new HttpParams();
+    params = params.append('top', top.toString());
+    params = params.append('soloUltimo', soloUltimo.toString());
+    return this.http.get(this.baseUrl + 'SNUsuario/getLogAccesos', { headers, params }).pipe(
+      catchError(() => of({ success: false, elements: [] }))
+    );
   }
 
   // Integración con Spring ERP (192.168.1.86) ejecutando UP_MuestraDatosTrabajador (2,285 trabajadores)
