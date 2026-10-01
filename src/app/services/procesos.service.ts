@@ -60,7 +60,7 @@ export class ProcesosService {
     'Ingeniería y Mejora Continua (IMC)': [
       'Ingeniería',
       'Organización y Métodos',
-      'Investigación, Desarrollo, Innovación',
+      'Investigación, Desarrollo e Innovación',
       'Certificaciones'
     ],
     'Administración y Finanzas (AFC)': [
@@ -138,13 +138,29 @@ export class ProcesosService {
   };
 
   /**
+   * Normaliza nombres de procesos para evitar duplicidades por comas o conjunciones
+   */
+  normalizarNombreProceso(nombre: string): string {
+    if (!nombre) return '';
+    const clean = nombre.trim();
+    const lower = clean.toLowerCase();
+    if (lower.includes('investiga') && lower.includes('innova')) {
+      return 'Investigación, Desarrollo e Innovación';
+    }
+    return clean;
+  }
+
+  /**
    * Retorna los procesos agrupados en el formato { [tipoLabel]: string[] }
    * compatible con PROCESOS_GROUPS que usaban los componentes
    */
   getProcesosAgrupados(sCodigoOrganizacion: string = '001'): Observable<{ [key: string]: string[] }> {
     return this.getListadoProcesos(sCodigoOrganizacion, '1').pipe(
       map((response: any) => {
-        const groups: { [key: string]: string[] } = { ...this.DEFAULT_PROCESOS };
+        const groups: { [key: string]: string[] } = {};
+        for (const k in this.DEFAULT_PROCESOS) {
+          groups[k] = this.DEFAULT_PROCESOS[k].map(p => this.normalizarNombreProceso(p));
+        }
         if (response && response.success && response.elements && response.elements.length > 0) {
           for (const proc of response.elements) {
             const tipoCode = (proc.codigo_Tipo_Proceso || '').trim();
@@ -152,12 +168,31 @@ export class ProcesosService {
             if (!groups[label]) {
               groups[label] = [];
             }
-            const pNom = (proc.proceso || proc.denominacion || proc.des_Proceso || '').trim();
-            if (pNom && !groups[label].includes(pNom)) {
-              groups[label].push(pNom);
+            const rawNom = (proc.proceso || proc.denominacion || proc.des_Proceso || '').trim();
+            const pNom = this.normalizarNombreProceso(rawNom);
+            if (pNom) {
+              const alreadyExists = groups[label].some(existing => 
+                existing.toLowerCase() === pNom.toLowerCase() ||
+                this.normalizarNombreProceso(existing).toLowerCase() === pNom.toLowerCase()
+              );
+              if (!alreadyExists) {
+                groups[label].push(pNom);
+              }
             }
           }
         }
+
+        // Deduplicación estricta final en cada grupo
+        for (const k in groups) {
+          const seen = new Set<string>();
+          groups[k] = groups[k].filter(item => {
+            const norm = this.normalizarNombreProceso(item).toLowerCase();
+            if (seen.has(norm)) return false;
+            seen.add(norm);
+            return true;
+          });
+        }
+
         return groups;
       })
     );

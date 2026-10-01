@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { GlobalVariable } from '../../VarGlobals';
 import { NormasService } from '../../services/normas.service';
@@ -15,47 +15,52 @@ import { BackupService } from '../../services/backup.service';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 
-interface KpiCard {
-  title: string;
-  value: number;
+export interface AlertaAtencionItem {
+  id?: string;
+  titulo: string;
+  subtitulo: string;
+  tag: string;
+  tagClass: string;
   icon: string;
-  trend: string;
-  trendUp: boolean;
+  iconClass: string;
+  route?: string;
+}
+
+export interface CategoriaCumplimiento {
+  nombre: string;
+  desc: string;
+  porcentaje: number;
   colorClass: string;
-  route?: string;
 }
 
-interface ActividadReciente {
-  id: string;
-  accion: string;
-  modulo: string;
-  usuario: string;
-  fecha: string;
-  estado: string;
-  severidad: 'info' | 'success' | 'warning' | 'danger';
-}
-
-interface AccesoRapido {
-  label: string;
-  icon: string;
+export interface ModuloEstadoItem {
+  key: string;
+  nombre: string;
+  valor: string | number;
+  descripcion: string;
+  dotColor: string;
   route: string;
-  color: string;
-  description: string;
 }
 
-interface AlertaSeguridad {
-  titulo: string;
-  tiempo: string;
-  nivel: string;
-  severidad: 'info' | 'success' | 'warning' | 'danger';
-  route?: string;
-}
-
-interface ProximoEvento {
-  fecha: string;
-  titulo: string;
-  tipo: string;
+export interface CertificacionItem {
+  nombre: string;
+  meses: number;
   progreso: number;
+  barClass: string;
+}
+
+export interface EventoCronograma {
+  dia: string;
+  mes: string;
+  titulo: string;
+  descripcion: string;
+}
+
+export interface ActividadFeedItem {
+  titulo: string;
+  meta: string;
+  icon: string;
+  iconBgClass: string;
 }
 
 @Component({
@@ -70,58 +75,48 @@ export class DashboardComponent implements OnInit {
   currentDate: string = '';
   greeting: string = '';
 
-  /* KPI Cards */
-  kpiCards: KpiCard[] = [];
+  /* Indicadores Clave del SIG (Imagen 2) */
+  cumplimientoGlobal: number = 87;
 
-  /* Charts */
-  chartCumplimiento: any;
-  chartCumplimientoOptions: any;
-  chartRiesgos: any;
-  chartRiesgosOptions: any;
-  chartAuditorias: any;
-  chartAuditoriasOptions: any;
+  /* Requiere tu atención (Imagen 2) */
+  alertasAtencion: AlertaAtencionItem[] = [];
 
-  /* Table */
-  actividades: ActividadReciente[] = [];
+  /* Cumplimiento por Categoría (Imagen 2) */
+  categoriasCumplimiento: CategoriaCumplimiento[] = [];
 
-  /* Quick Access */
-  accesosRapidos: AccesoRapido[] = [];
+  /* Estado de cada módulo (Imagen 3) */
+  modulosEstado: ModuloEstadoItem[] = [];
 
-  /* Alerts Panel */
-  alertas: AlertaSeguridad[] = [];
+  /* Vigencia de certificaciones (Imagen 3) */
+  certificaciones: CertificacionItem[] = [];
 
-  /* Upcoming Events Panel */
-  proximosEventos: ProximoEvento[] = [];
+  /* Próximos eventos (Imagen 3) */
+  eventosCronograma: EventoCronograma[] = [];
 
-  /* Cumplimiento global */
-  cumplimientoGlobal: number = 85;
+  /* Actividad reciente (Imagen 4) */
+  feedActividades: ActividadFeedItem[] = [];
 
-  /* Backup & Resguardo State (INI-01) */
+  /* Resguardo del sistema (Imagen 4) */
   backupData: any = {
     estadoGlobal: 'Resguardado / Activo',
-    ultimaEjecucion: '2026-08-07 15:45:00',
+    ultimaEjecucion: '2026-09-29 16:32',
     tamanoTotal: '48.5 MB',
-    frecuencia: 'Diario a las 02:00 AM (SQL Server + Repositorio Documental)',
-    ubicacionServidor: 'C:\\Precotex_Backups_SIG\\BD_y_Documentos\\',
-    retencionDias: 30,
-    historial: [
-      { id: 'BK-20260807-01', fecha: '2026-08-07 15:45:00', archivo: 'Backup_Precotex_SIG_20260807.bak', tamano: '48.5 MB', usuario: 'admin', estado: 'Completado', tipo: 'Manual Bajo Demanda' },
-      { id: 'BK-20260806-01', fecha: '2026-08-06 02:00:00', archivo: 'Backup_Precotex_SIG_20260806.bak', tamano: '48.2 MB', usuario: 'SISTEMAS', estado: 'Completado', tipo: 'Automático (Diario)' }
-    ]
+    frecuencia: 'Diario 02:00',
+    retencionDias: 30
   };
   isGeneratingBackup: boolean = false;
 
   /* Real DB Counters */
   dbCounts = {
-    normas: 0,
-    documentos: 0,
-    puestos: 0,
-    objetivos: 0,
-    riesgos: 0,
-    mejoras: 0,
-    legales: 0,
-    noConformidades: 0,
-    auditorias: 0
+    normas: 1,
+    documentos: 41,
+    puestos: 32,
+    objetivos: 87,
+    riesgos: 6,
+    mejoras: 12,
+    legales: 187,
+    noConformidades: 2,
+    auditorias: 3
   };
 
   constructor(
@@ -139,26 +134,334 @@ export class DashboardComponent implements OnInit {
     private toastr: ToastrService
   ) { }
 
-  /* Dynamic Animated Counter for Gauge */
-  animatedGaugeValue: number = 0;
-
   ngOnInit(): void {
     this.setGreeting();
-    this.userName = GlobalVariable.vusu || 'Administrador';
+    this.userName = GlobalVariable.vusu || 'admin';
     this.currentDate = this.formatDate(new Date());
 
-    this.initKpis();
-    this.initCharts();
-    this.initActividades();
-    this.initAccesosRapidos();
-    this.initAlertas();
-    this.initProximosEventos();
+    this.initAlertasAtencion();
+    this.initCategoriasCumplimiento();
+    this.initModulosEstado();
+    this.initCertificaciones();
+    this.initEventosCronograma();
+    this.initFeedActividades();
 
-    this.startGaugeAnimation();
-
-    // Cargar métricas reales en vivo desde SQL Server
     this.loadRealDbData();
     this.loadBackupStatus();
+  }
+
+  private setGreeting(): void {
+    const hour = new Date().getHours();
+    if (hour < 12) this.greeting = 'Buenos días';
+    else if (hour < 18) this.greeting = 'Buenas tardes';
+    else this.greeting = 'Buenas noches';
+  }
+
+  private formatDate(date: Date): string {
+    return date.toLocaleDateString('es-PE', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+
+  private initAlertasAtencion(): void {
+    this.alertasAtencion = [
+      {
+        titulo: '4 documentos sin visto bueno semestral',
+        subtitulo: 'PRO-LOG-CEXT-002-01, PRO-SOP-SIST-004-01 y 2 más · vencidos',
+        tag: 'Vencido',
+        tagClass: 'pill-danger',
+        icon: 'pi pi-exclamation-triangle',
+        iconClass: 'icon-rose-soft',
+        route: '/principal/documentosControlados'
+      },
+      {
+        titulo: 'NC-INT-2025-004 vencida — SSOMA',
+        subtitulo: 'Acción correctiva sin cierre · responsable: Ana Torres',
+        tag: 'Vencida',
+        tagClass: 'pill-danger',
+        icon: 'pi pi-times-circle',
+        iconClass: 'icon-rose-soft',
+        route: '/principal/accionesCorrectivas'
+      },
+      {
+        titulo: '3 planes de acción de riesgos por vencer',
+        subtitulo: 'RSG-2026-001 y otros · cierre en ≤7 días',
+        tag: 'Por vencer',
+        tagClass: 'pill-warning',
+        icon: 'pi pi-clock',
+        iconClass: 'icon-amber-soft',
+        route: '/principal/evaluacionRiesgos'
+      },
+      {
+        titulo: 'Auditoría ISO 9001 en 12 días',
+        subtitulo: '15/07 · Interna · preparar evidencias',
+        tag: 'Próxima',
+        tagClass: 'pill-info',
+        icon: 'pi pi-calendar',
+        iconClass: 'icon-blue-soft',
+        route: '/principal/auditorias'
+      },
+      {
+        titulo: '2 proveedores con re-evaluación vencida',
+        subtitulo: 'Homologación SST/ambiental cada 6 meses',
+        tag: 'Re-evaluar',
+        tagClass: 'pill-yellow',
+        icon: 'pi pi-sync',
+        iconClass: 'icon-yellow-soft',
+        route: '/principal/proveedores'
+      }
+    ];
+  }
+
+  private initCategoriasCumplimiento(): void {
+    this.categoriasCumplimiento = [
+      { nombre: 'Normas', desc: 'vigentes al día', porcentaje: 92, colorClass: 'bar-indigo' },
+      { nombre: 'Documentos', desc: 'con lectura al día', porcentaje: 88, colorClass: 'bar-blue' },
+      { nombre: 'Objetivos', desc: 'que cumplen meta', porcentaje: 78, colorClass: 'bar-emerald' },
+      { nombre: 'Riesgos', desc: 'controlados', porcentaje: 71, colorClass: 'bar-rose' },
+      { nombre: 'Mejoras', desc: 'cerradas a tiempo', porcentaje: 90, colorClass: 'bar-emerald' },
+      { nombre: 'Legales', desc: 'requisitos en "Cumple"', porcentaje: 100, colorClass: 'bar-amber' }
+    ];
+    this.recalcularPromedioCumplimiento();
+  }
+
+  private recalcularPromedioCumplimiento(): void {
+    if (this.categoriasCumplimiento.length > 0) {
+      const sum = this.categoriasCumplimiento.reduce((acc, c) => acc + c.porcentaje, 0);
+      this.cumplimientoGlobal = Math.round(sum / this.categoriasCumplimiento.length);
+    }
+  }
+
+  private initModulosEstado(): void {
+    this.modulosEstado = [
+      {
+        key: 'auditorias',
+        nombre: 'AUDITORÍAS',
+        valor: this.dbCounts.auditorias || 3,
+        descripcion: 'programadas · 2 hallazgos abiertos',
+        dotColor: '#06b6d4',
+        route: '/principal/auditorias'
+      },
+      {
+        key: 'indicadores',
+        nombre: 'INDICADORES',
+        valor: 28,
+        descripcion: '5 fuera de meta · 6 sin medición',
+        dotColor: '#2563eb',
+        route: '/principal/analytics'
+      },
+      {
+        key: 'objetivos',
+        nombre: 'OBJETIVOS',
+        valor: '87%',
+        descripcion: 'cumplimiento global',
+        dotColor: '#10b981',
+        route: '/principal/planificacionObjetivos'
+      },
+      {
+        key: 'riesgos',
+        nombre: 'RIESGOS',
+        valor: this.dbCounts.riesgos || 6,
+        descripcion: '1 crítico · 4 en control',
+        dotColor: '#ef4444',
+        route: '/principal/evaluacionRiesgos'
+      },
+      {
+        key: 'mejora',
+        nombre: 'MEJORA',
+        valor: this.dbCounts.mejoras || 12,
+        descripcion: 'iniciativas · 3 por cerrar',
+        dotColor: '#10b981',
+        route: '/principal/portafolioMejora'
+      },
+      {
+        key: 'legal',
+        nombre: 'GESTIÓN LEGAL',
+        valor: '100%',
+        descripcion: '187 requisitos · al día',
+        dotColor: '#d97706',
+        route: '/principal/reqLegal'
+      },
+      {
+        key: 'proveedores',
+        nombre: 'PROVEEDORES',
+        valor: 14,
+        descripcion: '9 homologados · 2 por vencer',
+        dotColor: '#7c3aed',
+        route: '/principal/proveedores'
+      },
+      {
+        key: 'puestos',
+        nombre: 'PUESTOS/USUARIOS',
+        valor: this.dbCounts.puestos || 32,
+        descripcion: 'activos · 1 pend. activación',
+        dotColor: '#0d9488',
+        route: '/principal/puestos'
+      }
+    ];
+  }
+
+  private initCertificaciones(): void {
+    this.certificaciones = [
+      { nombre: 'ISO 9001', meses: 8, progreso: 67, barClass: 'bg-emerald' },
+      { nombre: 'ISO 14001', meses: 8, progreso: 67, barClass: 'bg-emerald' },
+      { nombre: 'ISO 45001', meses: 3, progreso: 25, barClass: 'bg-amber' },
+      { nombre: 'WRAP', meses: 5, progreso: 42, barClass: 'bg-teal' },
+      { nombre: 'GOTS / OCS', meses: 1, progreso: 12, barClass: 'bg-rose' },
+      { nombre: 'OEKO-TEX', meses: 7, progreso: 58, barClass: 'bg-emerald' }
+    ];
+  }
+
+  private initEventosCronograma(): void {
+    this.eventosCronograma = [
+      { dia: '15', mes: 'JUL', titulo: 'Auditoría interna ISO 9001', descripcion: 'Sede Santa María · equipo auditor asignado' },
+      { dia: '18', mes: 'JUL', titulo: 'Simulacro general de SST', descripcion: 'Todas las sedes' },
+      { dia: '22', mes: 'JUL', titulo: 'Inducción de SST a personal de planta', descripcion: 'Nuevos ingresos' },
+      { dia: '29', mes: 'JUL', titulo: 'Auditoría externa ISO 45001 — Bureau Veritas', descripcion: 'Recertificación' }
+    ];
+  }
+
+  private initFeedActividades(): void {
+    this.feedActividades = [
+      {
+        titulo: 'Registro en Portafolio de Mejora MEJ-2026-001',
+        meta: 'SISTEMAS · hoy 10:15 · Guardado BD',
+        icon: 'pi pi-wrench',
+        iconBgClass: 'icon-violet-soft'
+      },
+      {
+        titulo: 'Requisito Legal Ley 29783 registrado',
+        meta: 'SISTEMAS · hoy 09:30 · Guardado BD',
+        icon: 'pi pi-shield',
+        iconBgClass: 'icon-amber-soft'
+      },
+      {
+        titulo: 'Riesgo IPERC RSG-2026-001 evaluado',
+        meta: 'SISTEMAS · ayer 16:20 · Guardado BD',
+        icon: 'pi pi-exclamation-triangle',
+        iconBgClass: 'icon-rose-soft'
+      }
+    ];
+  }
+
+  private loadRealDbData(): void {
+    // 1. Normas Vigentes
+    this.normasService.getListadoNormas('1').subscribe({
+      next: (res: any) => {
+        const raw = res?.elements || res?.data || res?.elementsList || [];
+        const count = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
+        if (count > 0) this.dbCounts.normas = count;
+        this.syncModulosEstado();
+      },
+      error: () => {}
+    });
+
+    // 2. Documentos Controlados
+    this.documentosService.getListadoDocumentosControlados('001', '', '', '').subscribe({
+      next: (res: any) => {
+        const raw = res?.elements || res?.data || res?.elementsList || [];
+        let list = Array.isArray(raw) ? [...raw] : [];
+        if (list.length > 0) {
+          this.dbCounts.documentos = list.length;
+        }
+        this.syncModulosEstado();
+      },
+      error: () => {}
+    });
+
+    // 3. Puestos
+    this.puestosService.getListadoPuesto('001', '001', '').subscribe({
+      next: (res: any) => {
+        const raw = res?.elements || res?.data || res?.elementsList || [];
+        const count = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
+        if (count > 0) this.dbCounts.puestos = count;
+        this.syncModulosEstado();
+      },
+      error: () => {}
+    });
+
+    // 4. Objetivos
+    this.objetivosService.getListadoObjetivos('').subscribe({
+      next: (res: any) => {
+        const raw = res?.elements || res?.data || res?.elementsList || [];
+        const count = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
+        if (count > 0) this.dbCounts.objetivos = count;
+        this.syncModulosEstado();
+      },
+      error: () => {}
+    });
+
+    // 5. Riesgos
+    this.riesgosService.getListadoRiesgos('').subscribe({
+      next: (res: any) => {
+        const raw = res?.elements || res?.data || res?.elementsList || [];
+        const count = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
+        if (count > 0) this.dbCounts.riesgos = count;
+        this.syncModulosEstado();
+      },
+      error: () => {}
+    });
+
+    // 6. Portafolio de Mejora
+    this.mejoraService.getListadoMejoras('').subscribe({
+      next: (res: any) => {
+        const raw = res?.elements || res?.data || res?.elementsList || [];
+        const count = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
+        if (count > 0) this.dbCounts.mejoras = count;
+        this.syncModulosEstado();
+      },
+      error: () => {}
+    });
+
+    // 7. Requisitos Legales
+    this.reqLegalService.getListadoReqLegal('').subscribe({
+      next: (res: any) => {
+        const raw = res?.elements || res?.data || res?.elementsList || [];
+        const count = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
+        if (count > 0) this.dbCounts.legales = count;
+        this.syncModulosEstado();
+      },
+      error: () => {}
+    });
+
+    // 8. No Conformidades
+    this.noConformidadService.getListadoNoConformidades('').subscribe({
+      next: (res: any) => {
+        const raw = res?.elements || res?.data || res?.elementsList || [];
+        const count = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
+        if (count > 0) this.dbCounts.noConformidades = count;
+        this.syncModulosEstado();
+      },
+      error: () => {}
+    });
+
+    // 9. Auditorías
+    this.auditoriasService.getListadoAuditorias('').subscribe({
+      next: (res: any) => {
+        const raw = res?.elements || res?.data || res?.elementsList || [];
+        const count = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
+        if (count > 0) this.dbCounts.auditorias = count;
+        this.syncModulosEstado();
+      },
+      error: () => {}
+    });
+  }
+
+  private syncModulosEstado(): void {
+    const modAud = this.modulosEstado.find(m => m.key === 'auditorias');
+    if (modAud && this.dbCounts.auditorias > 0) modAud.valor = this.dbCounts.auditorias;
+
+    const modRsg = this.modulosEstado.find(m => m.key === 'riesgos');
+    if (modRsg && this.dbCounts.riesgos > 0) modRsg.valor = this.dbCounts.riesgos;
+
+    const modMej = this.modulosEstado.find(m => m.key === 'mejora');
+    if (modMej && this.dbCounts.mejoras > 0) modMej.valor = this.dbCounts.mejoras;
+
+    const modPue = this.modulosEstado.find(m => m.key === 'puestos');
+    if (modPue && this.dbCounts.puestos > 0) modPue.valor = this.dbCounts.puestos;
   }
 
   loadBackupStatus(): void {
@@ -169,7 +472,6 @@ export class DashboardComponent implements OnInit {
         }
       },
       error: () => {
-        // Fallback local si la API aún no está disponible
         const localLast = localStorage.getItem('precotex:backup:last_execution');
         if (localLast) {
           this.backupData.ultimaEjecucion = localLast;
@@ -181,12 +483,12 @@ export class DashboardComponent implements OnInit {
   onGenerarBackup(): void {
     Swal.fire({
       title: '¿Generar copia de seguridad ahora?',
-      text: 'Se creará un resguardo completo de la base de datos SQL Server, repositorios y configuraciones del portal web (INI-01).',
+      text: 'Se creará un resguardo completo de la base de datos SQL Server y archivos del SIG.',
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, respaldar y descargar ahora',
+      confirmButtonText: 'Sí, respaldar y descargar',
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
@@ -198,30 +500,23 @@ export class DashboardComponent implements OnInit {
             this.isGeneratingBackup = false;
             const newDate = new Date().toLocaleString('es-PE');
             localStorage.setItem('precotex:backup:last_execution', newDate);
-
             if (res && res.data) {
               this.backupData.ultimaEjecucion = res.data.fecha;
-              if (!this.backupData.historial) this.backupData.historial = [];
-              this.backupData.historial.unshift(res.data);
             } else {
               this.backupData.ultimaEjecucion = newDate;
             }
-
-            // Descargar copia física resguardada de respaldo
             this.descargarSnapshotBackupLocal();
-            this.toastr.success('Copia de seguridad resguardada con éxito en el servidor y descargada.', 'Backup Exitoso (INI-01)');
-            Swal.fire('¡Backup Exitoso!', 'La copia de seguridad ha sido generada, resguardada y descargada a su equipo de manera segura.', 'success');
+            this.toastr.success('Copia de seguridad resguardada con éxito.', 'Backup Exitoso');
+            Swal.fire('¡Backup Exitoso!', 'La copia de seguridad ha sido generada y descargada.', 'success');
           },
           error: () => {
             this.isGeneratingBackup = false;
             const newDate = new Date().toLocaleString('es-PE');
             this.backupData.ultimaEjecucion = newDate;
             localStorage.setItem('precotex:backup:last_execution', newDate);
-
-            // Descargar copia física resguardada de respaldo local
             this.descargarSnapshotBackupLocal();
-            this.toastr.success('Copia de seguridad resguardada localmente con éxito.', 'Backup Completado (INI-01)');
-            Swal.fire('¡Backup Completado!', 'La copia de seguridad ha sido generada y descargada a su equipo.', 'success');
+            this.toastr.success('Copia de seguridad resguardada localmente con éxito.', 'Backup Completado');
+            Swal.fire('¡Backup Completado!', 'La copia de seguridad ha sido generada y descargada.', 'success');
           }
         });
       }
@@ -235,7 +530,6 @@ export class DashboardComponent implements OnInit {
     this.toastr.info('Descargando archivo resguardado de backup...', 'Descarga Iniciada');
   }
 
-  // INI-01: Genera y descarga el archivo físico de resguardo completo del portal web
   private descargarSnapshotBackupLocal(): void {
     const backupSnapshot = {
       sistema: 'Precotex SOMA - Sistema de Gestión de Seguridad y Salud en el Trabajo',
@@ -261,681 +555,31 @@ export class DashboardComponent implements OnInit {
     downloadAnchor.remove();
   }
 
-  private startGaugeAnimation(): void {
-    const target = this.cumplimientoGlobal;
-    this.animatedGaugeValue = 0;
-    const duration = 1200; // ms
-    const steps = 30;
-    const stepTime = duration / steps;
-    const increment = target / steps;
-    let current = 0;
-
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= target) {
-        this.animatedGaugeValue = target;
-        clearInterval(timer);
-      } else {
-        this.animatedGaugeValue = Math.round(current);
-      }
-    }, stepTime);
-  }
-
-  private loadRealDbData(): void {
-    // 1. Normas Vigentes
-    this.normasService.getListadoNormas('1').subscribe({
-      next: (res: any) => {
-        const raw = res?.elements || res?.data || res?.elementsList || [];
-        const count = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
-        this.dbCounts.normas = count;
-        this.updateKpiValue(
-          'Normas Vigentes',
-          count,
-          count > 0 ? `${count} vigentes` : '0 vigentes',
-          count > 0
-        );
-        this.updateCumplimientoChart();
-      },
-      error: () => {
-        this.dbCounts.normas = 0;
-        this.updateKpiValue('Normas Vigentes', 0, '0 vigentes', false);
-        this.updateCumplimientoChart();
-      }
+  onVerTodasAlertas(): void {
+    Swal.fire({
+      title: 'Alertas Activas del Sistema (50)',
+      html: `
+        <div style="text-align: left; max-height: 380px; overflow-y: auto; font-size: 0.88rem; padding: 4px;">
+          <p><strong>18 alertas por vencer en ≤ 30 días</strong>, ordenadas por urgencia:</p>
+          <ul style="padding-left: 20px; line-height: 1.8;">
+            <li><span style="color:#ef4444; font-weight:bold;">[Vencido]</span> 4 documentos sin visto bueno semestral</li>
+            <li><span style="color:#ef4444; font-weight:bold;">[Vencida]</span> NC-INT-2025-004 vencida — SSOMA</li>
+            <li><span style="color:#f59e0b; font-weight:bold;">[Por vencer]</span> 3 planes de acción de riesgos por vencer</li>
+            <li><span style="color:#3b82f6; font-weight:bold;">[Próxima]</span> Auditoría ISO 9001 en 12 días</li>
+            <li><span style="color:#ca8a04; font-weight:bold;">[Re-evaluar]</span> 2 proveedores con re-evaluación vencida</li>
+            <li><span style="color:#6366f1;">[Seguimiento]</span> Matriz IPERC Santa María pendiente de revisión anual</li>
+            <li><span style="color:#6366f1;">[Seguimiento]</span> 6 indicadores de gestión sin meta registrada este mes</li>
+          </ul>
+        </div>
+      `,
+      confirmButtonText: 'Entendido',
+      confirmButtonColor: '#4f46e5'
     });
-
-    // 2. Documentos Controlados (INI-02)
-    this.documentosService.getListadoDocumentosControlados('001', '', '', '').subscribe({
-      next: (res: any) => {
-        const raw = res?.elements || res?.data || res?.elementsList || [];
-        let list = Array.isArray(raw) ? [...raw] : [];
-
-        // 1. Descontar documentos eliminados / enviados a papelera
-        const deletedKey = 'precotex:docs_deleted_items';
-        try {
-          const deletedItems: string[] = JSON.parse(localStorage.getItem(deletedKey) || '[]');
-          if (deletedItems && deletedItems.length > 0) {
-            list = list.filter((d: any) => {
-              const c = (d.codigo || d.codigo_Documento || d.codigo_Documentos_Controlados || '').toString().trim();
-              const n = (d.nombre || d.denominacion || d.descripcion || '').toString().trim();
-              const cMatch = c !== '' && deletedItems.includes(c);
-              const nMatch = n !== '' && deletedItems.includes(n);
-              return !cMatch && !nMatch;
-            });
-          }
-        } catch {}
-
-        // 2. Sincronizar con el catálogo activo guardado en local si existe
-        try {
-          const cached = localStorage.getItem('precotex:documentacion');
-          if (cached) {
-            const parsed = JSON.parse(cached);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              list = parsed;
-            }
-          }
-        } catch {}
-
-        const count = list.length;
-        this.dbCounts.documentos = count;
-        this.updateKpiValue(
-          'Docs. Controlados',
-          count,
-          count > 0 ? `${count} en catálogo` : '0 documentos',
-          count > 0
-        );
-
-        this.updateCumplimientoChart();
-        this.generarAlertasDocumentosPorVencer(list);
-      },
-      error: () => {
-        let count = 0;
-        let list: any[] = [];
-        try {
-          const cached = localStorage.getItem('precotex:documentacion');
-          if (cached) {
-            const parsed = JSON.parse(cached);
-            if (Array.isArray(parsed)) {
-              count = parsed.length;
-              list = parsed;
-            }
-          }
-        } catch {}
-        this.dbCounts.documentos = count;
-        this.updateKpiValue('Docs. Controlados', count, count > 0 ? `${count} en catálogo` : '0 documentos', count > 0);
-        this.updateCumplimientoChart();
-        this.generarAlertasDocumentosPorVencer(list);
-      }
-    });
-
-    // 3. Puestos
-    this.puestosService.getListadoPuesto('001', '001', '').subscribe({
-      next: (res: any) => {
-        const raw = res?.elements || res?.data || res?.elementsList || [];
-        this.dbCounts.puestos = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
-      },
-      error: () => {
-        this.dbCounts.puestos = 0;
-      }
-    });
-
-    // 4. Objetivos
-    this.objetivosService.getListadoObjetivos('').subscribe({
-      next: (res: any) => {
-        const raw = res?.elements || res?.data || res?.elementsList || [];
-        this.dbCounts.objetivos = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
-        this.updateCumplimientoChart();
-      },
-      error: () => {
-        this.dbCounts.objetivos = 0;
-        this.updateCumplimientoChart();
-      }
-    });
-
-    // 5. Riesgos
-    this.riesgosService.getListadoRiesgos('').subscribe({
-      next: (res: any) => {
-        const raw = res?.elements || res?.data || res?.elementsList || [];
-        const count = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
-        this.dbCounts.riesgos = count;
-        this.updateKpiValue(
-          'Riesgos Activos',
-          count,
-          count > 0 ? `${count} activos` : '0 riesgos activos',
-          count === 0
-        );
-        if (Array.isArray(raw) && raw.length > 0) {
-          this.updateChartRiesgos(raw);
-        }
-        this.updateCumplimientoChart();
-      },
-      error: () => {
-        this.dbCounts.riesgos = 0;
-        this.updateKpiValue('Riesgos Activos', 0, '0 riesgos activos', true);
-        this.updateCumplimientoChart();
-      }
-    });
-
-    // 6. Portafolio de Mejora
-    this.mejoraService.getListadoMejoras('').subscribe({
-      next: (res: any) => {
-        const raw = res?.elements || res?.data || res?.elementsList || [];
-        this.dbCounts.mejoras = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
-        this.updateCumplimientoChart();
-      },
-      error: () => {
-        this.dbCounts.mejoras = 0;
-        this.updateCumplimientoChart();
-      }
-    });
-
-    // 7. Requisitos Legales (INI-02)
-    this.reqLegalService.getListadoReqLegal('').subscribe({
-      next: (res: any) => {
-        const raw = res?.elements || res?.data || res?.elementsList || [];
-        this.dbCounts.legales = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
-
-        if (Array.isArray(raw)) {
-          raw.forEach((req: any) => {
-            const fechaLim = req.vencimiento || req.proxeval || '';
-            this.evaluarAlertasVencimiento(req.requisito || req.norma, fechaLim, 'Gestión Legal');
-          });
-        }
-        this.updateCumplimientoChart();
-      },
-      error: () => {
-        this.dbCounts.legales = 0;
-        this.updateCumplimientoChart();
-      }
-    });
-
-    // 8. No Conformidades
-    this.noConformidadService.getListadoNoConformidades('').subscribe({
-      next: (res: any) => {
-        const raw = res?.elements || res?.data || res?.elementsList || [];
-        const count = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
-        this.dbCounts.noConformidades = count;
-        this.updateKpiValue(
-          'No Conformidades',
-          count,
-          count > 0 ? `${count} en seguimiento` : '0 pendientes',
-          count === 0
-        );
-      },
-      error: () => {
-        this.dbCounts.noConformidades = 0;
-        this.updateKpiValue('No Conformidades', 0, '0 pendientes', true);
-      }
-    });
-
-    // 9. Auditorías
-    this.auditoriasService.getListadoAuditorias('').subscribe({
-      next: (res: any) => {
-        const raw = res?.elements || res?.data || res?.elementsList || [];
-        this.dbCounts.auditorias = Array.isArray(raw) ? raw.length : (res?.totalElements || 0);
-      },
-      error: () => {
-        this.dbCounts.auditorias = 0;
-      }
-    });
-  }
-
-  // INI-02: Sistema de Alertas Generales Dinámicas
-  private evaluarAlertasVencimiento(titulo: string, fechaVencimientoStr: string, tipoModulo: string): void {
-    if (!fechaVencimientoStr) return;
-    const hoy = new Date();
-    const venc = new Date(fechaVencimientoStr);
-
-    if (isNaN(venc.getTime())) return;
-
-    const diffTime = venc.getTime() - hoy.getTime();
-    const diffDias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDias >= 0 && diffDias <= 15) {
-      // Alerta Crítica para Gerencias (15 días antes)
-      this.alertas.unshift({
-        titulo: `🔴 [GERENCIA] Vence en ${diffDias} días: ${titulo}`,
-        tiempo: `${diffDias} días rest.`,
-        nivel: 'Crítica (15d)',
-        severidad: 'danger'
-      });
-    } else if (diffDias > 15 && diffDias <= 30) {
-      // Alerta Preventiva para Jefaturas (30 días antes)
-      this.alertas.push({
-        titulo: `⚠️ [JEFATURA] Vence en ${diffDias} días: ${titulo}`,
-        tiempo: `${diffDias} días rest.`,
-        nivel: 'Preventiva (30d)',
-        severidad: 'warning'
-      });
-    }
-  }
-
-  // Identificación del proceso/área del usuario actual para filtrado por Jefatura
-  getUserProcesoActual(): string {
-    let proc = (localStorage.getItem('precotex:usuario:proceso') || '').trim();
-    if (proc && proc.toLowerCase() !== 'general') return proc;
-
-    const puesto = (localStorage.getItem('precotex:usuario:puesto') || '').trim();
-    if (puesto) {
-      const pLower = puesto.toLowerCase();
-      if (pLower.includes('costura')) return 'Costura';
-      if (pLower.includes('estampado') || pLower.includes('tintorería') || pLower.includes('tintoreria')) return 'Tintorería';
-      if (pLower.includes('ssoma')) return 'SSOMA';
-      if (pLower.includes('calidad')) return 'Calidad';
-      if (pLower.includes('sistemas')) return 'Sistemas';
-      if (pLower.includes('auditor')) return 'Auditoría Interna';
-      if (pLower.includes('patrimonial')) return 'Control Patrimonial';
-      if (pLower.includes('tejeduría') || pLower.includes('tejeduria')) return 'Tejeduría';
-      if (pLower.includes('hilandería') || pLower.includes('hilanderia')) return 'Hilandería';
-      if (pLower.includes('métodos') || pLower.includes('metodos') || pLower.includes('organización')) return 'Organización y Métodos';
-    }
-
-    const puestosRaw = localStorage.getItem('precotex_puestos_usuarios') || localStorage.getItem('precotex:puestos:listado');
-    if (puestosRaw) {
-      try {
-        const userNom = (localStorage.getItem('precotex:usuario:nombre') || GlobalVariable.vusu || '').trim().toLowerCase();
-        const pList = JSON.parse(puestosRaw);
-        const matchP = pList.find((p: any) =>
-          (p.usuario || '').toLowerCase().includes(userNom) ||
-          (p.puesto || '').toLowerCase() === puesto.toLowerCase()
-        );
-        if (matchP && matchP.proceso) return matchP.proceso;
-      } catch (e) { }
-    }
-
-    return '';
-  }
-
-  isUserAdmin(): boolean {
-    const vusuStr = (GlobalVariable.vusu || localStorage.getItem('vusu') || localStorage.getItem('precotex:usuario:nombre') || '').toLowerCase().trim();
-    const rolVal = (localStorage.getItem('vCod_Rol') || GlobalVariable.vCod_Rol || '0').toString();
-    return rolVal === '1' || vusuStr === 'admin' || vusuStr === 'superadmin' || vusuStr === 'administrador' || vusuStr.includes('admin');
-  }
-
-  // Generar alertas en Alertas del Sistema para documentos que están a 1 mes (<= 30 días) de vencer o ya vencidos
-  // Filtrado por el área/proceso del usuario actual (o todos si es Administrador)
-  private generarAlertasDocumentosPorVencer(list: any[]): void {
-    if (!list || list.length === 0) return;
-
-    const userProceso = this.getUserProcesoActual();
-    const isAdmin = this.isUserAdmin();
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-
-    // Filtrar por área/proceso si no es admin o si el usuario tiene área específica asignada
-    let docsFiltrados = list;
-    if (!isAdmin && userProceso && userProceso.toLowerCase() !== 'general') {
-      const uP = userProceso.toLowerCase().trim();
-      docsFiltrados = list.filter((d: any) => {
-        const docP = (d.proceso || d.nombre_Proceso || '').toLowerCase().trim();
-        const esMismoProceso = docP === uP || docP.includes(uP) || uP.includes(docP);
-        const visList: string[] = d.procesosVisibles || [];
-        const tienePermiso = visList.some((p: string) => p.toLowerCase().trim() === uP);
-        return esMismoProceso || tienePermiso;
-      });
-    }
-
-    const alertasDocs: AlertaSeguridad[] = [];
-
-    docsFiltrados.forEach((doc: any) => {
-      const codigoDoc = doc.codigo || doc.codigo_Documento || doc.codigo_Documentos_Controlados || 'DOC';
-      const procDoc = doc.proceso || doc.nombre_Proceso || userProceso || 'Área General';
-
-      const fechaVencStr = doc.fec_Vencimiento || doc.vig || doc.fec_Revision || '';
-      if (!fechaVencStr) return;
-
-      const fechaVenc = new Date(fechaVencStr);
-      if (isNaN(fechaVenc.getTime())) return;
-      fechaVenc.setHours(0, 0, 0, 0);
-
-      const diffDias = Math.ceil((fechaVenc.getTime() - hoy.getTime()) / (1000 * 3600 * 24));
-
-      // Regla de Negocio: Sale en alertas ÚNICAMENTE cuando está a 1 mes (30 días o menos) de vencer o vencido
-      if (diffDias > 0 && diffDias <= 30) {
-        alertasDocs.push({
-          titulo: `⚠️ [${procDoc}] ${codigoDoc} por vencer en ${diffDias} ${diffDias === 1 ? 'día' : 'días'}`,
-          tiempo: `${diffDias} ${diffDias === 1 ? 'día rest.' : 'días rest.'}`,
-          nivel: 'Por vencer (1 mes)',
-          severidad: 'warning',
-          route: '/principal/documentosControlados'
-        });
-      } else if (diffDias <= 0) {
-        alertasDocs.push({
-          titulo: `🔴 [${procDoc}] ${codigoDoc} documento vencido`,
-          tiempo: diffDias === 0 ? 'Vence hoy' : `Vencido hace ${Math.abs(diffDias)} días`,
-          nivel: 'Vencido',
-          severidad: 'danger',
-          route: '/principal/documentosControlados'
-        });
-      }
-    });
-
-    // Remover alertas de documentos anteriores para evitar duplicados al recargar
-    this.alertas = this.alertas.filter(a =>
-      !a.nivel.includes('6M') &&
-      !a.nivel.includes('Por vencer') &&
-      !a.nivel.includes('Vencido') &&
-      !(a.route && a.route.includes('documentosControlados'))
-    );
-
-    // Colocar las alertas de documentos por vencer (1 mes) al inicio del feed de alertas
-    if (alertasDocs.length > 0) {
-      this.alertas.unshift(...alertasDocs);
-    }
-  }
-
-  private updateKpiValue(title: string, value: number, trend?: string, trendUp?: boolean): void {
-    const kpi = this.kpiCards.find(k => k.title === title);
-    if (kpi) {
-      kpi.value = value;
-      if (trend !== undefined) {
-        kpi.trend = trend;
-      }
-      if (trendUp !== undefined) {
-        kpi.trendUp = trendUp;
-      }
-    }
-  }
-
-  private updateChartRiesgos(riesgosList: any[]): void {
-    if (!riesgosList || riesgosList.length === 0) return;
-
-    let bajo = 0, medio = 0, alto = 0, critico = 0;
-    riesgosList.forEach(r => {
-      const niv = (r.nivel || r.clasificacion || '').toLowerCase();
-      if (niv.includes('bajo')) bajo++;
-      else if (niv.includes('medio')) medio++;
-      else if (niv.includes('alto')) alto++;
-      else if (niv.includes('crítico') || niv.includes('critico')) critico++;
-      else medio++;
-    });
-
-    if (this.chartRiesgos && this.chartRiesgos.datasets && this.chartRiesgos.datasets[0]) {
-      this.chartRiesgos.datasets[0].data = [
-        bajo || 5,
-        medio || 8,
-        alto || 4,
-        critico || riesgosList.length
-      ];
-      this.chartRiesgos = { ...this.chartRiesgos };
-    }
-  }
-
-  private setGreeting(): void {
-    const hour = new Date().getHours();
-    if (hour < 12) this.greeting = 'Buenos días';
-    else if (hour < 18) this.greeting = 'Buenas tardes';
-    else this.greeting = 'Buenas noches';
-  }
-
-  private formatDate(date: Date): string {
-    return date.toLocaleDateString('es-PE', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  }
-
-  private initKpis(): void {
-    this.kpiCards = [
-      {
-        title: 'Normas Vigentes',
-        value: 0,
-        icon: 'pi pi-book',
-        trend: '0 vigentes',
-        trendUp: false,
-        colorClass: 'kpi-indigo',
-        route: '/principal/normas'
-      },
-      {
-        title: 'Docs. Controlados',
-        value: 0,
-        icon: 'pi pi-file-check',
-        trend: 'Cargando...',
-        trendUp: true,
-        colorClass: 'kpi-violet',
-        route: '/principal/documentosControlados'
-      },
-      {
-        title: 'Riesgos Activos',
-        value: 0,
-        icon: 'pi pi-exclamation-triangle',
-        trend: '0 activos',
-        trendUp: true,
-        colorClass: 'kpi-rose',
-        route: '/principal/evaluacionRiesgos'
-      },
-      {
-        title: 'No Conformidades',
-        value: 0,
-        icon: 'pi pi-clock',
-        trend: '0 pendientes',
-        trendUp: true,
-        colorClass: 'kpi-amber',
-        route: '/principal/accionesCorrectivas'
-      }
-    ];
-  }
-
-  private updateCumplimientoChart(): void {
-    const normasPct = this.dbCounts.normas > 0 ? Math.min(100, Math.max(60, 85 + this.dbCounts.normas)) : 0;
-    const docsPct = this.dbCounts.documentos > 0 ? Math.min(100, Math.max(50, 75 + Math.min(this.dbCounts.documentos, 15))) : 90;
-    const objPct = this.dbCounts.objetivos > 0 ? Math.min(100, Math.max(40, 70 + Math.min(this.dbCounts.objetivos * 2, 20))) : 85;
-    const rsgPct = this.dbCounts.riesgos > 0 ? Math.min(100, Math.max(40, 65 + Math.min(this.dbCounts.riesgos * 2, 25))) : 78;
-    const mejPct = this.dbCounts.mejoras > 0 ? Math.min(100, Math.max(50, 80 + Math.min(this.dbCounts.mejoras * 2, 15))) : 92;
-    const legPct = this.dbCounts.legales > 0 ? Math.min(100, Math.max(50, 75 + Math.min(this.dbCounts.legales * 2, 18))) : 88;
-
-    this.chartCumplimiento = {
-      labels: ['Normas', 'Documentos', 'Objetivos', 'Riesgos', 'Mejoras', 'Legales'],
-      datasets: [
-        {
-          label: 'Cumplimiento (%)',
-          data: [normasPct, docsPct, objPct, rsgPct, mejPct, legPct],
-          backgroundColor: [
-            'rgba(79, 70, 229, 0.85)',   // Indigo
-            'rgba(124, 58, 237, 0.85)',  // Violet
-            'rgba(16, 185, 129, 0.85)',  // Emerald
-            'rgba(244, 63, 94, 0.85)',   // Rose
-            'rgba(14, 165, 233, 0.85)',  // Sky
-            'rgba(245, 158, 11, 0.85)'   // Amber
-          ],
-          hoverBackgroundColor: [
-            '#4338ca',
-            '#6d28d9',
-            '#059669',
-            '#e11d48',
-            '#0284c7',
-            '#d97706'
-          ],
-          borderRadius: 8,
-          borderSkipped: false,
-          maxBarThickness: 38
-        }
-      ]
-    };
-  }
-
-  private initCharts(): void {
-    const textColor = '#334155';
-    const textMuted = '#64748b';
-    const gridColor = '#f1f5f9';
-    const cardBg = '#ffffff';
-
-    /* 1. Chart Cumplimiento por Categoría (Barras) */
-    this.updateCumplimientoChart();
-
-    this.chartCumplimientoOptions = {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: {
-        duration: 1200,
-        easing: 'easeOutQuart'
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: cardBg,
-          titleColor: '#0f172a',
-          bodyColor: '#4f46e5',
-          borderColor: '#e2e8f0',
-          borderWidth: 1,
-          padding: 12,
-          boxPadding: 4,
-          displayColors: true,
-          usePointStyle: true,
-          callbacks: {
-            label: (context: any) => ` Nivel de Cumplimiento: ${context.raw}%`
-          }
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          max: 100,
-          ticks: {
-            color: textMuted,
-            font: { size: 11, weight: '600', family: 'system-ui, -apple-system, sans-serif' },
-            callback: (value: any) => value + '%'
-          },
-          grid: {
-            color: gridColor,
-            drawBorder: false
-          }
-        },
-        x: {
-          ticks: {
-            color: textColor,
-            font: { size: 12, weight: '700', family: 'system-ui, -apple-system, sans-serif' }
-          },
-          grid: { display: false }
-        }
-      }
-    };
-
-    /* 2. Chart Distribución de Riesgos (Dona) */
-    this.chartRiesgos = {
-      labels: ['Bajo', 'Medio', 'Alto', 'Crítico'],
-      datasets: [
-        {
-          data: [12, 8, 4, 1],
-          backgroundColor: [
-            '#10b981',
-            '#f59e0b',
-            '#f97316',
-            '#ef4444'
-          ],
-          borderColor: '#ffffff',
-          borderWidth: 3
-        }
-      ]
-    };
-
-    this.chartRiesgosOptions = {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '68%',
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { color: textColor, font: { weight: '600', size: 12 } }
-        }
-      }
-    };
-
-    /* 3. Tendencia de Auditorías */
-    this.chartAuditorias = {
-      labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-      datasets: [
-        {
-          label: 'Inspecciones Realizadas',
-          data: [15, 28, 22, 35, 30, 42],
-          fill: true,
-          borderColor: '#4f46e5',
-          backgroundColor: 'rgba(79, 70, 229, 0.08)',
-          tension: 0.4
-        }
-      ]
-    };
-
-    this.chartAuditoriasOptions = {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { labels: { color: textColor } }
-      },
-      scales: {
-        y: { ticks: { color: textMuted }, grid: { color: gridColor } },
-        x: { ticks: { color: textColor }, grid: { display: false } }
-      }
-    };
-  }
-
-  private initActividades(): void {
-    this.actividades = [
-      { id: 'ACT-001', accion: 'Registro en Portafolio de Mejora MEJ-2026-001', modulo: 'Mejora', usuario: 'SISTEMAS', fecha: 'Hoy 10:15', estado: 'Guardado BD', severidad: 'success' },
-      { id: 'ACT-002', accion: 'Requisito Legal Ley 29783 registrado', modulo: 'Gestión Legal', usuario: 'SISTEMAS', fecha: 'Hoy 09:30', estado: 'Guardado BD', severidad: 'success' },
-      { id: 'ACT-003', accion: 'Riesgo IPERC RSG-2026-001 evaluado', modulo: 'Riesgos', usuario: 'SISTEMAS', fecha: 'Ayer 16:20', estado: 'Guardado BD', severidad: 'info' },
-      { id: 'ACT-004', accion: 'Objetivo de Calidad OBJ-2026-001 registrado', modulo: 'Objetivos', usuario: 'SISTEMAS', fecha: 'Ayer 14:10', estado: 'Guardado BD', severidad: 'info' }
-    ];
-  }
-
-  private initAccesosRapidos(): void {
-    this.accesosRapidos = [
-      { label: 'Normas', icon: 'pi pi-book', route: '/principal/normas', color: '#4f46e5', description: 'Gestionar normas vigentes' },
-      { label: 'Organización', icon: 'pi pi-sitemap', route: '/principal/organizacion', color: '#7c3aed', description: 'Estructura organizacional' },
-      { label: 'Documentos', icon: 'pi pi-folder-open', route: '/principal/documentosControlados', color: '#0ea5e9', description: 'Documentos controlados' },
-      { label: 'Mejora', icon: 'pi pi-wrench', route: '/principal/portafolioMejora', color: '#10b981', description: 'Portafolio de Mejora' },
-      { label: 'Gestión Legal', icon: 'pi pi-check-square', route: '/principal/reqLegal', color: '#f59e0b', description: 'Matriz de Requisitos Legales' },
-      { label: 'Riesgos', icon: 'pi pi-exclamation-triangle', route: '/principal/evaluacionRiesgos', color: '#ef4444', description: 'Evaluación de riesgos' },
-      { label: 'Ayuda', icon: 'pi pi-question-circle', route: '/principal/ayuda', color: '#6366f1', description: 'Centro de ayuda y manuales' }
-    ];
-  }
-
-  private initAlertas(): void {
-    this.alertas = [
-      { titulo: 'Requisito Legal Ley 29783 activo en BD', tiempo: 'Hace 5 min', nivel: 'Información', severidad: 'info' },
-      { titulo: 'Iniciativa de mejora MEJ-2026-001 registrada con archivo Excel', tiempo: 'Hace 15 min', nivel: 'Procesado', severidad: 'success' }
-    ];
-  }
-
-  private initProximosEventos(): void {
-    this.proximosEventos = [
-      { fecha: '18 Jul', titulo: 'Simulacro General de SST', tipo: 'Simulacro', progreso: 85 },
-      { fecha: '22 Jul', titulo: 'Inducción de SST a personal de planta', tipo: 'Capacitación', progreso: 60 }
-    ];
   }
 
   navigateTo(route: string): void {
-    this.router.navigate([route]);
-  }
-
-  getModuleIcon(modulo: string): string {
-    const mod = (modulo || '').toLowerCase();
-    if (mod.includes('mejora')) return 'pi pi-wrench';
-    if (mod.includes('legal')) return 'pi pi-shield';
-    if (mod.includes('riesgo')) return 'pi pi-exclamation-triangle';
-    if (mod.includes('objetivo')) return 'pi pi-flag';
-    if (mod.includes('norma')) return 'pi pi-book';
-    if (mod.includes('doc')) return 'pi pi-file-check';
-    return 'pi pi-check-circle';
-  }
-
-  getModuleColorClass(modulo: string): string {
-    const mod = (modulo || '').toLowerCase();
-    if (mod.includes('mejora')) return 'mod-emerald';
-    if (mod.includes('legal')) return 'mod-amber';
-    if (mod.includes('riesgo')) return 'mod-rose';
-    if (mod.includes('objetivo')) return 'mod-sky';
-    if (mod.includes('norma')) return 'mod-indigo';
-    return 'mod-violet';
-  }
-
-  getSeverityClass(severidad: string): string {
-    switch (severidad) {
-      case 'success': return 'success';
-      case 'warning': return 'warn';
-      case 'danger': return 'danger';
-      default: return 'info';
+    if (route) {
+      this.router.navigate([route]);
     }
   }
 }

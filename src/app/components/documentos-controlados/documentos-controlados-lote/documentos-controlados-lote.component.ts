@@ -34,7 +34,7 @@ export class DocumentosControladosLoteComponent implements OnInit {
     'Soporte (SOP)': ['Sistemas', 'Mantenimiento General', 'Seguridad Patrimonial', 'SSOMA'],
     'Auditoría Interna (AIO)': ['Auditoría Interna'],
     'Control Patrimonial (CPT)': ['Control Patrimonial'],
-    'Ingeniería y Mejora Continua (IMC)': ['Ingeniería', 'Organización y Métodos', 'Investigación, Desarrollo, Innovación', 'Certificaciones'],
+    'Ingeniería y Mejora Continua (IMC)': ['Ingeniería', 'Organización y Métodos', 'Investigación, Desarrollo e Innovación', 'Certificaciones'],
     'Administración y Finanzas (AFC)': ['Administración', 'Finanzas', 'Contabilidad y Costos', 'Tesorería'],
     'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitación', 'Comunicaciones', 'Desarrollo Organizacional', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
     'Servicio de Estampado y Bordado (SEB)': ['Estampado', 'Bordado', 'Calidad Estampado y Bordado', 'Planeamiento y Programación de la Producción de Estampado y Bordado'],
@@ -46,7 +46,18 @@ export class DocumentosControladosLoteComponent implements OnInit {
     'Gestión Comercial (GCOM)': ['Desarrollo de Producto', 'Desarrollo de Estampado y Bordado', 'Desarrollo Textil', 'Comercial Exportación de Prendas', 'Comercial Exportación de Telas', 'Comercial Venta Local Textil'],
     'Gerencia General (GG)': ['Directorio', 'Alianzas Estratégicas', 'Desarrollo de Negocios', 'Proyectos Gerenciales', 'Sistema de Gestión General', 'Gestión Estratégica']
   };
-  procesosMap: { [name: string]: string } = {};
+  procesosMap: { [name: string]: string } = {
+    'ingeniería': '004',
+    'ingenieria': '004',
+    'mejora continua': '004',
+    'organización y métodos': '011',
+    'organizacion y metodos': '011',
+    'investigación, desarrollo e innovación': '012',
+    'investigacion, desarrollo e innovacion': '012',
+    'investigación, desarrollo, innovación': '012',
+    'investigacion, desarrollo, innovacion': '012',
+    'certificaciones': '013'
+  };
   
   filesList: FileUploadItem[] = [];
   isUploading: boolean = false;
@@ -85,7 +96,9 @@ export class DocumentosControladosLoteComponent implements OnInit {
             const name = (p.proceso || p.nombre_Proceso || p.denominacion || '').trim();
             const code = (p.codigo_Proceso || p.codigoProceso || '').toString().trim();
             if (name && code) {
-              this.procesosMap[name.toLowerCase()] = code;
+              const nameLower = name.toLowerCase();
+              this.procesosMap[nameLower] = code;
+              this.procesosMap[nameLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '')] = code;
             }
           });
         }
@@ -107,7 +120,15 @@ export class DocumentosControladosLoteComponent implements OnInit {
   getProcessCodeByName(procName: string): string {
     if (!procName) return '011';
     const key = procName.trim().toLowerCase();
-    return this.procesosMap[key] || '011';
+    const cleanNoAccents = key.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (this.procesosMap[key]) return this.procesosMap[key];
+    if (this.procesosMap[cleanNoAccents]) return this.procesosMap[cleanNoAccents];
+    for (const [k, v] of Object.entries(this.procesosMap)) {
+      if (k === key || k === cleanNoAccents || key.includes(k) || k.includes(key)) {
+        return v;
+      }
+    }
+    return '011';
   }
 
   // DOC-12: Extraer Tipo de Documento automáticamente en Carga Masiva desde el prefijo del Código
@@ -154,8 +175,8 @@ export class DocumentosControladosLoteComponent implements OnInit {
       'MC': 'Ingeniería',
       'OYM': 'Organización y Métodos',
       'OM': 'Organización y Métodos',
-      'IDI': 'Investigación, Desarrollo, Innovación',
-      'ID': 'Investigación, Desarrollo, Innovación',
+      'IDI': 'Investigación, Desarrollo e Innovación',
+      'ID': 'Investigación, Desarrollo e Innovación',
       'CERT': 'Certificaciones',
 
       // 5. ADMINISTRACIÓN Y FINANZAS (AFC)
@@ -315,7 +336,7 @@ export class DocumentosControladosLoteComponent implements OnInit {
     this.validarItemVersion(item);
 
     const autoProc = this.extraerProcesoDelCodigo(codeStr);
-    if (autoProc) item.proceso = autoProc;
+    if (autoProc && !this.selectedProceso) item.proceso = autoProc;
 
     this.validarDuplicadosLote();
   }
@@ -583,7 +604,7 @@ export class DocumentosControladosLoteComponent implements OnInit {
 
       const parsedVer = this.extraerVersionDelCodigo(parsedCode) || '';
       const tieneVer = !!(parsedVer && parsedVer.trim());
-      const parsedProc = this.extraerProcesoDelCodigo(parsedCode) || this.selectedProceso || 'Organización y Métodos';
+      const parsedProc = this.selectedProceso || this.extraerProcesoDelCodigo(parsedCode) || 'Organización y Métodos';
       
       // DOC-12: Auto-popular Fecha de Vigencia (3 Años) y Estado en Carga Masiva
       const parsedVig = defaultVig3Anios;
@@ -722,6 +743,49 @@ export class DocumentosControladosLoteComponent implements OnInit {
             Flg_Activo: true,
             Cod_Usuario: this.sUsuario
           };
+
+          const docProcesoFinal = item.proceso || this.selectedProceso || 'Organización y Métodos';
+          const newDoc = {
+            codigo_Documentos_Controlados: item.codigo,
+            nombre: item.nombre,
+            codigo: item.codigo,
+            tipo: item.tipo,
+            version: (item.version || '').trim(),
+            formato: item.formato,
+            proceso: docProcesoFinal,
+            vig: item.vig,
+            estado: item.estado,
+            archivo: fileNameServer,
+            procesos: [docProcesoFinal],
+            procesosVisibles: [item.visibilidad || 'Todos los procesos'],
+            modoVisibilidad: item.visibilidad === 'Todos los procesos' ? 'TODOS' : 'PERSONALIZADO',
+            historialVersiones: [
+              {
+                version: (item.version || '').trim(),
+                usuarioSubio: this.sUsuario || 'admin',
+                fechaHora: new Date().toLocaleString(),
+                tipoCarga: 'Versión Vigente (Lote)',
+                archivo: fileNameServer
+              }
+            ]
+          };
+          try {
+            const locCreated = JSON.parse(localStorage.getItem('precotex_documentos_creados') || '[]');
+            const existingIdx = locCreated.findIndex((d: any) => (d.codigo || '').toLowerCase() === (newDoc.codigo || '').toLowerCase());
+            if (existingIdx >= 0) {
+              locCreated[existingIdx] = newDoc;
+            } else {
+              locCreated.unshift(newDoc);
+            }
+            localStorage.setItem('precotex_documentos_creados', JSON.stringify(locCreated));
+          } catch (e) { }
+
+          try {
+            const histMap = JSON.parse(localStorage.getItem('precotex:docs_version_history') || '{}');
+            const codeKey = (item.codigo || '').toLowerCase().trim();
+            histMap[codeKey] = newDoc.historialVersiones;
+            localStorage.setItem('precotex:docs_version_history', JSON.stringify(histMap));
+          } catch (e) { }
 
           this.documentosControladosService.postProcesoMnto(requestData).subscribe({
             next: (regRes: any) => {

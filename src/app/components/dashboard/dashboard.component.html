@@ -1,297 +1,325 @@
-<div class="dashboard sn-animate-in">
-  <header class="dashboard-hero">
-    <div class="hero-content">
-      <div class="hero-user">
-        <div class="user-avatar-glow">
-          <span class="user-initial">{{ userName.charAt(0).toUpperCase() }}</span>
-        </div>
-        <div class="hero-text">
-          <div class="hero-badge-role">
-            <span class="pulse-dot-green"></span>
-            <span>Panel de Gestión Documentaria</span>
-          </div>
-          <h1 class="hero-greeting">{{ greeting }}, <span class="highlight-name">{{ userName }}</span></h1>
-          <p class="hero-date"><i class="pi pi-calendar"></i> {{ currentDate | titlecase }}</p>
-        </div>
-      </div>
+﻿<div class="dashboard-container sn-animate-in">
 
-      <!-- Animated SVG Compliance Radial Gauge con Gradiente -->
-      <div class="hero-gauge-box">
-        <div class="svg-gauge-container">
-          <svg class="gauge-svg" viewBox="0 0 100 100">
-            <defs>
-              <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#4f46e5" />
-                <stop offset="100%" stop-color="#06b6d4" />
-              </linearGradient>
-            </defs>
-            <!-- Background circle -->
-            <circle class="gauge-bg" cx="50" cy="50" r="40" />
-            <!-- Animated progress circle -->
-            <circle class="gauge-progress" cx="50" cy="50" r="40" stroke="url(#gaugeGrad)"
-              [style.strokeDashoffset]="251.2 - (251.2 * animatedGaugeValue) / 100" />
-          </svg>
-          <div class="gauge-center-text">
-            <span class="gauge-percent">{{ animatedGaugeValue }}%</span>
-            <span class="gauge-caption">Cumplimiento Global</span>
-          </div>
-        </div>
+  <!-- =========================================================================
+       1. INDICADORES CLAVE DEL SIG (IMAGEN 2)
+       ========================================================================= -->
+  <section class="sig-section">
+    <div class="section-title-bar">
+      <div class="title-with-accent">
+        <span class="accent-bar"></span>
+        <h2 class="section-title-text">Indicadores clave del SIG</h2>
       </div>
     </div>
-  </header>
 
-  <!-- BENTO GRID TIER 1: 4 Primary KPI Cards -->
-  <section class="bento-kpi-grid">
-    <div *ngFor="let kpi of kpiCards; let i = index" class="bento-kpi-card" [ngClass]="kpi.colorClass"
-      (click)="kpi.route ? navigateTo(kpi.route) : null">
-      <div class="kpi-header-row">
-        <div class="kpi-icon-badge">
-          <i [class]="kpi.icon"></i>
+    <!-- 4 KPI CARDS SUPERIORES -->
+    <div class="kpi-sig-grid">
+      <!-- 1. Cumplimiento Global SIG -->
+      <div class="kpi-card card-kpi-indigo">
+        <div class="kpi-card-header">
+          <span class="kpi-name">CUMPLIMIENTO GLOBAL SIG</span>
+          <span class="pill-badge pill-badge-growth">
+            <i class="pi pi-arrow-up"></i> 2%
+          </span>
         </div>
-        <span class="kpi-trend-pill" [class.positive]="kpi.trendUp" [class.neutral]="!kpi.trendUp">
-          <i [class]="kpi.trendUp ? 'pi pi-arrow-up-right' : 'pi pi-check-circle'"></i>
-          {{ kpi.trend }}
-        </span>
+        <div class="kpi-card-body">
+          <span class="kpi-number text-indigo">{{ cumplimientoGlobal }}%</span>
+        </div>
+        <div class="kpi-card-footer">
+          <span class="kpi-subtext">promedio de las 6 categorías ↓</span>
+        </div>
       </div>
-      <div class="kpi-main-body">
-        <span class="kpi-big-number">{{ kpi.value }}</span>
-        <span class="kpi-label-text">{{ kpi.title }}</span>
+
+      <!-- 2. Documentos Controlados -->
+      <div class="kpi-card card-kpi-blue" (click)="navigateTo('/principal/documentosControlados')">
+        <div class="kpi-card-header">
+          <span class="kpi-name">DOCUMENTOS CONTROLADOS</span>
+          <span class="pill-badge pill-badge-catalog">{{ dbCounts.documentos || 41 }} en catálogo</span>
+        </div>
+        <div class="kpi-card-body">
+          <span class="kpi-number text-blue">{{ dbCounts.documentos || 41 }}</span>
+        </div>
+        <div class="kpi-card-footer">
+          <span class="kpi-subtext">{{ dbCounts.normas || 1 }} norma vigente</span>
+        </div>
       </div>
-      <div class="kpi-progress-track">
-        <div class="kpi-progress-bar"
-          [style.width.%]="kpi.value > 0 ? (kpi.value * 15 > 100 ? 100 : kpi.value * 15) : 0"></div>
+
+      <!-- 3. No Conformidades -->
+      <div class="kpi-card card-kpi-rose" (click)="navigateTo('/principal/accionesCorrectivas')">
+        <div class="kpi-card-header">
+          <span class="kpi-name">NO CONFORMIDADES</span>
+          <span class="pill-badge pill-badge-danger">4 vencidas</span>
+        </div>
+        <div class="kpi-card-body">
+          <span class="kpi-number text-rose">{{ dbCounts.noConformidades || 2 }}</span>
+        </div>
+        <div class="kpi-card-footer">
+          <span class="kpi-subtext">abiertas · 1 crítica</span>
+        </div>
+      </div>
+
+      <!-- 4. Alertas Activas (Total) -->
+      <div class="kpi-card card-kpi-amber">
+        <div class="kpi-card-header">
+          <span class="kpi-name">ALERTAS ACTIVAS (TOTAL)</span>
+          <span class="pill-badge pill-badge-warning">18 en ≤30 días</span>
+        </div>
+        <div class="kpi-card-body">
+          <span class="kpi-number text-amber">50</span>
+        </div>
+        <div class="kpi-card-footer">
+          <span class="kpi-subtext">bajan al resolverse</span>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- BENTO GRID TIER 2: Category Compliance Bar Chart (2/3) + System Alerts Panel (1/3) -->
-  <section class="bento-middle-grid">
+  <!-- =========================================================================
+       2. REQUIERE TU ATENCIÓN & CUMPLIMIENTO POR CATEGORÍA (IMAGEN 2)
+       ========================================================================= -->
+  <section class="sig-section">
+    <div class="sig-two-column-layout">
 
-    <!-- Left: Bar Chart (2/3 width) -->
-    <div class="bento-box chart-bento-box">
-      <div class="bento-box-header">
-        <div class="header-title-wrapper">
-          <div class="icon-circle icon-circle-indigo">
-            <i class="pi pi-chart-bar"></i>
-          </div>
-          <div>
-            <h3 class="bento-box-title">Cumplimiento por Categoría</h3>
-            <span class="bento-box-sub">Evaluación actual registrada en base de datos</span>
-          </div>
-        </div>
-        <span class="status-badge-mini info-badge">
-          <span class="dot"></span> En vivo
-        </span>
-      </div>
-      <div class="bento-box-body">
-        <div class="chart-wrapper">
-          <p-chart type="bar" [data]="chartCumplimiento" [options]="chartCumplimientoOptions" height="100%"></p-chart>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right: Glassmorphic Alerts Panel (1/3 width) -->
-    <div class="bento-box alerts-bento-box">
-      <div class="bento-box-header">
-        <div class="header-title-wrapper">
-          <div class="icon-circle icon-circle-rose">
-            <i class="pi pi-bell animated-bell"></i>
-          </div>
-          <div>
-            <h3 class="bento-box-title">Alertas del Sistema</h3>
-            <span class="bento-box-sub">Notificaciones de control</span>
-          </div>
-        </div>
-        <span class="badge-pill-soft">
-          <span class="pulse-dot"></span> {{ alertas.length }} Activas
-        </span>
-      </div>
-      <div class="bento-box-body">
-        <div class="alerts-feed-list">
-          <div *ngFor="let alerta of alertas" class="alert-item-card" [ngClass]="'alert-sev-' + alerta.severidad"
-            (click)="alerta.route ? navigateTo(alerta.route) : null"
-            [style.cursor]="alerta.route ? 'pointer' : 'default'"
-            [title]="alerta.route ? 'Clic para ir a ' + alerta.route : ''">
-            <div class="alert-icon-wrap">
-              <i
-                [class]="alerta.severidad === 'danger' ? 'pi pi-exclamation-circle' : (alerta.severidad === 'warning' ? 'pi pi-exclamation-triangle' : (alerta.severidad === 'success' ? 'pi pi-check-circle' : 'pi pi-info-circle'))"></i>
+      <!-- LEFT: Requiere tu atención -->
+      <div class="sig-box-panel">
+        <div class="panel-header-complex">
+          <div class="header-text-group">
+            <div class="title-with-accent">
+              <span class="accent-bar"></span>
+              <h3 class="panel-title-text">Requiere tu atención</h3>
+              <span class="badge-pill-nuevo">NUEVO</span>
             </div>
-            <div class="alert-content-wrapper">
-              <p class="alert-msg">{{ alerta.titulo }}</p>
-              <div class="alert-meta-bar">
-                <span class="alert-time-tag"><i class="pi pi-clock"></i> {{ alerta.tiempo }}</span>
-                <span class="alert-level-badge">{{ alerta.nivel }}</span>
-              </div>
+            <p class="panel-sub-caption">
+              Muestra alertas con fecha límite dentro de los próximos 30 días, ordenadas por urgencia. Cada una desaparece al resolverse. Arriba las vencidas/críticas.
+            </p>
+          </div>
+          <span class="badge-tag-purple">18 EN ≤30 DÍAS</span>
+        </div>
+
+        <div class="attention-list-wrapper">
+          <div *ngFor="let item of alertasAtencion" class="attention-card-item"
+            (click)="item.route ? navigateTo(item.route) : null"
+            [class.is-clickable]="item.route">
+            <div class="attention-icon-box" [ngClass]="item.iconClass">
+              <i [class]="item.icon"></i>
             </div>
+            <div class="attention-content-block">
+              <h4 class="attention-item-title">{{ item.titulo }}</h4>
+              <p class="attention-item-desc">{{ item.subtitulo }}</p>
+            </div>
+            <span class="attention-tag" [ngClass]="item.tagClass">{{ item.tag }}</span>
           </div>
         </div>
-      </div>
-    </div>
 
+        <div class="attention-footer-row">
+          <span>Mostrando 5 urgentes de 18 por vencer en ≤30 días · </span>
+          <a class="attention-footer-link" (click)="onVerTodasAlertas()">Ver todas las alertas (50)</a>
+        </div>
+      </div>
+
+      <!-- RIGHT: Cumplimiento por categoría -->
+      <div class="sig-box-panel">
+        <div class="panel-header-complex">
+          <div class="header-text-group">
+            <div class="title-with-accent">
+              <span class="accent-bar"></span>
+              <h3 class="panel-title-text">Cumplimiento por categoría</h3>
+            </div>
+            <p class="panel-sub-caption">
+              Cada barra es un % real; su promedio = el Cumplimiento global (87%). Junto a cada nombre, qué mide.
+            </p>
+          </div>
+          <span class="badge-live-pulse">
+            <span class="pulse-dot-green"></span> EN VIVO
+          </span>
+        </div>
+
+        <div class="category-bars-wrapper">
+          <div *ngFor="let cat of categoriasCumplimiento" class="category-bar-row">
+            <div class="cat-label-container">
+              <span class="cat-primary-name">{{ cat.nombre }}</span>
+              <span class="cat-secondary-desc">— {{ cat.desc }}</span>
+            </div>
+            <div class="cat-bar-track">
+              <div class="cat-bar-fill" [ngClass]="cat.colorClass" [style.width.%]="cat.porcentaje"></div>
+            </div>
+            <span class="cat-percent-label">{{ cat.porcentaje }}%</span>
+          </div>
+        </div>
+
+        <div class="category-footer-row">
+          <span class="formula-text">Promedio: (92+88+78+71+90+100)/6 ≈ 87%</span>
+        </div>
+      </div>
+
+    </div>
   </section>
 
-  <!-- BENTO GRID TIER 3: Activity Timeline Feed (2/3) + Quick Access & Upcoming Events (1/3) -->
-  <section class="bento-bottom-grid">
-
-    <!-- Left Column: Activity Timeline Feed -->
-    <div class="bento-box activity-bento-box">
-      <div class="bento-box-header">
-        <div class="header-title-wrapper">
-          <div class="icon-circle icon-circle-violet">
-            <i class="pi pi-history"></i>
-          </div>
-          <div>
-            <h3 class="bento-box-title">Actividad Reciente</h3>
-            <span class="bento-box-sub">Feed de eventos registrados en la plataforma</span>
-          </div>
-        </div>
-        <span class="badge-total-count">{{ actividades.length }} Registros</span>
+  <!-- =========================================================================
+       3. ESTADO DE CADA MÓDULO (IMAGEN 3)
+       ========================================================================= -->
+  <section class="sig-section">
+    <div class="panel-header-simple">
+      <div class="title-with-accent">
+        <span class="accent-bar"></span>
+        <h3 class="panel-title-text">Estado de cada módulo</h3>
+        <span class="badge-pill-nuevo">NUEVO</span>
       </div>
-      <div class="bento-box-body">
-        <div class="timeline-feed">
-          <div *ngFor="let act of actividades" class="timeline-feed-item">
-            <div class="timeline-marker">
-              <div class="timeline-avatar" [ngClass]="getModuleColorClass(act.modulo)">
-                <i [class]="getModuleIcon(act.modulo)"></i>
-              </div>
-              <div class="timeline-line"></div>
-            </div>
-            <div class="timeline-content">
-              <div class="timeline-header-line">
-                <span class="timeline-module-tag" [ngClass]="getModuleColorClass(act.modulo)">{{ act.modulo }}</span>
-                <span class="timeline-time"><i class="pi pi-clock"></i> {{ act.fecha }}</span>
-              </div>
-              <p class="timeline-desc">{{ act.accion }}</p>
-              <div class="timeline-footer-line">
-                <span class="timeline-user"><i class="pi pi-user"></i> {{ act.usuario }}</span>
-                <span class="status-dot-pill" [ngClass]="'dot-' + act.severidad">
-                  <span class="mini-dot"></span> {{ act.estado }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <p class="panel-sub-caption">
+        Si es «dashboard de todos los módulos», todos deben estar representados con al menos un número.
+      </p>
     </div>
 
-    <!-- Right Column: Quick Access & Upcoming Events -->
-    <div class="right-widgets-stack">
-
-      <!-- Quick Access Grid -->
-      <div class="bento-box quick-access-box">
-        <div class="bento-box-header">
-          <div class="header-title-wrapper">
-            <div class="icon-circle icon-circle-sky">
-              <i class="pi pi-th-large"></i>
-            </div>
-            <h3 class="bento-box-title">Accesos Rápidos</h3>
-          </div>
+    <div class="module-status-grid">
+      <div *ngFor="let mod of modulosEstado" class="module-mini-card" (click)="navigateTo(mod.route)">
+        <div class="mod-top-line">
+          <span class="mod-dot" [style.background-color]="mod.dotColor"></span>
+          <span class="mod-name-label">{{ mod.nombre }}</span>
         </div>
-        <div class="bento-box-body">
-          <div class="access-icons-grid">
-            <div *ngFor="let acceso of accesosRapidos" class="access-tile" (click)="navigateTo(acceso.route)"
-              [title]="acceso.description">
-              <div class="tile-icon-box" [style.background-color]="acceso.color + '15'" [style.color]="acceso.color">
-                <i [class]="acceso.icon"></i>
-              </div>
-              <span class="tile-label">{{ acceso.label }}</span>
-            </div>
-          </div>
-        </div>
+        <span class="mod-big-figure">{{ mod.valor }}</span>
+        <span class="mod-sub-caption">{{ mod.descripcion }}</span>
       </div>
-
-      <!-- Upcoming Events Box -->
-      <div class="bento-box events-bento-box">
-        <div class="bento-box-header">
-          <div class="header-title-wrapper">
-            <div class="icon-circle icon-circle-amber">
-              <i class="pi pi-calendar"></i>
-            </div>
-            <h3 class="bento-box-title">Próximos Eventos</h3>
-          </div>
-        </div>
-        <div class="bento-box-body">
-          <div class="events-mini-list">
-            <div *ngFor="let evento of proximosEventos" class="event-mini-card">
-              <div class="event-date-badge">
-                <span class="evt-day">{{ evento.fecha.split(' ')[0] }}</span>
-                <span class="evt-month">{{ evento.fecha.split(' ')[1] }}</span>
-              </div>
-              <div class="event-info-col">
-                <span class="evt-title">{{ evento.titulo }}</span>
-                <div class="evt-progress-bar">
-                  <div class="evt-progress-fill" [style.width.%]="evento.progreso"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
-
   </section>
 
-  <!-- BENTO GRID TIER 4: Resguardo de Copia de Seguridad (INI-01) -->
-  <section class="bento-backup-section">
-    <div class="bento-box backup-bento-box">
-      <div class="bento-box-header">
-        <div class="header-title-wrapper">
-          <div class="icon-circle icon-circle-emerald">
-            <i class="pi pi-shield"></i>
-          </div>
-          <div>
-            <h3 class="bento-box-title">Copia de Seguridad y Resguardo del Sistema (INI-01)</h3>
-            <span class="bento-box-sub">Protección continua de Base de Datos SQL Server + Repositorio Documental</span>
-          </div>
-        </div>
-        <div class="backup-status-badge">
-          <span class="pulse-dot green-dot"></span>
-          <span>{{ backupData.estadoGlobal || 'Resguardado / Activo' }}</span>
-        </div>
-      </div>
+  <!-- =========================================================================
+       4. VIGENCIA DE CERTIFICACIONES & PRÓXIMOS EVENTOS (IMAGEN 3)
+       ========================================================================= -->
+  <section class="sig-section">
+    <div class="sig-two-column-layout">
 
-      <div class="bento-box-body backup-body-grid">
-        <!-- Indicadores de estado de backup -->
-        <div class="backup-info-cards">
-          <div class="backup-metric-card">
-            <span class="metric-label"><i class="pi pi-clock"></i> Último Resguardo</span>
-            <span class="metric-value">{{ backupData.ultimaEjecucion }}</span>
-            <span class="metric-sub">Protección en servidor</span>
+      <!-- LEFT: Vigencia de certificaciones -->
+      <div class="sig-box-panel">
+        <div class="panel-header-simple">
+          <div class="title-with-accent">
+            <span class="accent-bar"></span>
+            <h3 class="panel-title-text">Vigencia de certificaciones</h3>
+            <span class="badge-pill-nuevo">NUEVO</span>
           </div>
-
-          <div class="backup-metric-card">
-            <span class="metric-label"><i class="pi pi-database"></i> Tamaño de Copia</span>
-            <span class="metric-value text-emerald">{{ backupData.tamanoTotal || '48.5 MB' }}</span>
-            <span class="metric-sub">Integridad verificada</span>
-          </div>
-
-          <div class="backup-metric-card">
-            <span class="metric-label"><i class="pi pi-sync"></i> Frecuencia Automática</span>
-            <span class="metric-value text-sky">Diario (02:00 AM)</span>
-            <span class="metric-sub">Retención: 30 días</span>
-          </div>
-        </div>
-
-        <!-- Acciones de backup y botones -->
-        <div class="backup-actions-panel">
-          <div class="action-buttons-row">
-            <button type="button" class="btn-backup-primary" (click)="onGenerarBackup()"
-              [disabled]="isGeneratingBackup">
-              <i [class]="isGeneratingBackup ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"></i>
-              <span>{{ isGeneratingBackup ? 'Resguardando...' : 'Generar Copia Ahora' }}</span>
-            </button>
-
-            <button type="button" class="btn-backup-ghost" (click)="onDescargarBackup()">
-              <i class="pi pi-download"></i>
-              <span>Descargar Copia</span>
-            </button>
-          </div>
-          <p class="backup-security-note">
-            <i class="pi pi-lock"></i> Copias de seguridad cifradas y resguardadas en servidor institucional.
+          <p class="panel-sub-caption">
+            Crítico para Precotex: alertar antes del vencimiento de cada certificación.
           </p>
         </div>
+
+        <div class="certifications-list-wrapper">
+          <div *ngFor="let cert of certificaciones" class="cert-item-row">
+            <span class="cert-name-label">{{ cert.nombre }}</span>
+            <div class="cert-bar-track">
+              <div class="cert-bar-fill" [ngClass]="cert.barClass" [style.width.%]="cert.progreso"></div>
+            </div>
+            <span class="cert-months-badge">{{ cert.meses }} m</span>
+          </div>
+        </div>
       </div>
+
+      <!-- RIGHT: Próximos eventos -->
+      <div class="sig-box-panel">
+        <div class="panel-header-simple">
+          <div class="title-with-accent">
+            <span class="accent-bar"></span>
+            <h3 class="panel-title-text">Próximos eventos</h3>
+          </div>
+          <p class="panel-sub-caption">
+            Auditorías, simulacros, inducciones y vencimientos.
+          </p>
+        </div>
+
+        <div class="events-timeline-wrapper">
+          <div *ngFor="let evt of eventosCronograma" class="event-timeline-card">
+            <div class="event-calendar-badge">
+              <span class="evt-day-number">{{ evt.dia }}</span>
+              <span class="evt-month-label">{{ evt.mes }}</span>
+            </div>
+            <div class="event-info-block">
+              <h4 class="event-main-title">{{ evt.titulo }}</h4>
+              <p class="event-detail-desc">{{ evt.descripcion }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       5. ACTIVIDAD RECIENTE & RESGUARDO DEL SISTEMA (IMAGEN 4)
+       ========================================================================= -->
+  <section class="sig-section">
+    <div class="sig-two-column-layout">
+
+      <!-- LEFT: Actividad reciente -->
+      <div class="sig-box-panel">
+        <div class="panel-header-complex">
+          <div class="title-with-accent">
+            <span class="accent-bar"></span>
+            <h3 class="panel-title-text">Actividad reciente</h3>
+          </div>
+          <span class="badge-tag-purple">FEED BD</span>
+        </div>
+
+        <div class="feed-activities-wrapper">
+          <div *ngFor="let act of feedActividades" class="feed-activity-card">
+            <div class="feed-icon-box" [ngClass]="act.iconBgClass">
+              <i [class]="act.icon"></i>
+            </div>
+            <div class="feed-info-block">
+              <h4 class="feed-title-text">{{ act.titulo }}</h4>
+              <p class="feed-meta-desc">{{ act.meta }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Resguardo del sistema -->
+      <div class="sig-box-panel">
+        <div class="panel-header-complex">
+          <div class="header-text-group">
+            <div class="title-with-accent">
+              <span class="accent-bar"></span>
+              <h3 class="panel-title-text">Resguardo del sistema</h3>
+            </div>
+            <p class="panel-sub-caption">
+              Mantener — transmite que hay respaldo real en servidor.
+            </p>
+          </div>
+          <span class="badge-live-pulse">
+            <span class="pulse-dot-green"></span> ACTIVO
+          </span>
+        </div>
+
+        <!-- 3 Métricas de Resguardo -->
+        <div class="backup-metrics-row">
+          <div class="backup-metric-card">
+            <span class="backup-stat-heading">ÚLTIMO RESGUARDO</span>
+            <span class="backup-stat-value">{{ backupData.ultimaEjecucion || '2026-09-29 16:32' }}</span>
+            <span class="backup-stat-sub">en servidor</span>
+          </div>
+
+          <div class="backup-metric-card">
+            <span class="backup-stat-heading">TAMAÑO</span>
+            <span class="backup-stat-value text-emerald">{{ backupData.tamanoTotal || '48.5 MB' }}</span>
+            <span class="backup-stat-sub">integridad verificada</span>
+          </div>
+
+          <div class="backup-metric-card">
+            <span class="backup-stat-heading">FRECUENCIA</span>
+            <span class="backup-stat-value text-blue">Diario 02:00</span>
+            <span class="backup-stat-sub">retención 30 días</span>
+          </div>
+        </div>
+
+        <!-- Acciones operativas de backup -->
+        <div class="backup-actions-row">
+          <button type="button" class="btn-backup-action-primary" (click)="onGenerarBackup()" [disabled]="isGeneratingBackup">
+            <i [class]="isGeneratingBackup ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"></i>
+            <span>{{ isGeneratingBackup ? 'Resguardando...' : 'Generar Copia Ahora' }}</span>
+          </button>
+          <button type="button" class="btn-backup-action-secondary" (click)="onDescargarBackup()">
+            <i class="pi pi-download"></i>
+            <span>Descargar Copia</span>
+          </button>
+        </div>
+      </div>
+
     </div>
   </section>
 
