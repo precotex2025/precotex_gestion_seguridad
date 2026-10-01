@@ -2,6 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
+import { ProcesosService } from '../../../services/procesos.service';
 
 @Component({
   selector: 'app-proveedores-regedit',
@@ -13,12 +14,22 @@ export class ProveedoresRegeditComponent implements OnInit {
 
   formulario!: FormGroup;
 
+  // PROCESOS GRUPOS OFICIALES PRECOTEX (14 Macroprocesos + Balance de Materia, Finanzas y Consumos)
   PROCESOS_GROUPS: { [key: string]: string[] } = {
-    'CALIDAD': ['Aseguramiento de Calidad Textil', 'Auditoría Interna'],
-    'OPERACIONES Y PRODUCCIÓN': ['Corte', 'Costura', 'Estampado', 'Lavandería', 'Tejeduría', 'Tintorería'],
-    'SSOMA Y MEDIO AMBIENTE': ['SSOMA', 'Gestión Ambiental'],
-    'LOGÍSTICA Y MANTENIMIENTO': ['Almacén', 'Mantenimiento General', 'Transporte', 'Compras'],
-    'ADMINISTRACIÓN': ['Sistemas', 'Recursos Humanos', 'Organización & Métodos']
+    'Soporte (SOP)': ['Sistemas', 'Mantenimiento General', 'Seguridad Patrimonial', 'SSOMA'],
+    'Auditoría Interna (AIO)': ['Auditoría Interna'],
+    'Control Patrimonial (CPT)': ['Control Patrimonial'],
+    'Ingeniería y Mejora Continua (IMC)': ['Ingeniería', 'Organización y Métodos', 'Investigación, Desarrollo, Innovación', 'Certificaciones'],
+    'Administración y Finanzas (AFC)': ['Administración', 'Finanzas', 'Contabilidad y Costos', 'Tesorería'],
+    'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitación', 'Comunicaciones', 'Desarrollo Organizacional', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
+    'Servicio de Estampado y Bordado (SEB)': ['Estampado', 'Bordado', 'Calidad Estampado y Bordado', 'Planeamiento y Programación de la Producción de Estampado y Bordado'],
+    'Operaciones Manufactura (OPM)': ['Corte', 'Costura', 'Inspección', 'Acabados', 'Aseguramiento de la Calidad Manufactura', 'Manufactura', 'Consumos'],
+    'Operaciones Textil (OPT)': ['Tejeduría', 'Tintorería', 'Producción Textil', 'Laboratorio de Color', 'Estampado Digital', 'Acabados Textil', 'Laboratorio de Calidad Textil', 'Aseguramiento de la Calidad Textil', 'Lavandería', 'Hilandería'],
+    'Balance de Materia (BM)': ['Balance de Materia'],
+    'Planeamiento y Control de la Producción (PCP)': ['PCP Textil', 'PCP Manufactura', 'PCP Estampado y Bordado'],
+    'Logística (LOG)': ['Almacén', 'Comercio Exterior', 'Logística', 'Transporte'],
+    'Gestión Comercial (GCOM)': ['Desarrollo de Producto', 'Desarrollo de Estampado y Bordado', 'Desarrollo Textil', 'Comercial Exportación de Prendas', 'Comercial Exportación de Telas', 'Comercial Venta Local Textil'],
+    'Gerencia General (GG)': ['Directorio', 'Alianzas Estratégicas', 'Desarrollo de Negocios', 'Proyectos Gerenciales', 'Sistema de Gestión General', 'Gestión Estratégica']
   };
 
   tiposOptions: string[] = ['Bien', 'Servicio', 'Contratista'];
@@ -28,11 +39,20 @@ export class ProveedoresRegeditComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private toastr: ToastrService,
+    private procesosService: ProcesosService,
     public dialogRef: MatDialogRef<ProveedoresRegeditComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) { }
 
   ngOnInit(): void {
+    this.procesosService.getProcesosAgrupados().subscribe({
+      next: (groups: any) => {
+        if (groups && Object.keys(groups).length > 0) {
+          this.PROCESOS_GROUPS = groups;
+        }
+      }
+    });
+
     const item = this.data?.Datos || {};
 
     this.formulario = this.fb.group({

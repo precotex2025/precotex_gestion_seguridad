@@ -14,7 +14,8 @@
     <div class="form-row">
       <div class="form-group full-width">
         <label class="form-label">Nombre del documento (*)</label>
-        <input type="text" formControlName="nombre" class="form-input" placeholder="Ej. Procedimiento de Gestión de ACR">
+        <input type="text" formControlName="nombre" class="form-input" placeholder="Ej. Procedimiento de Gestión de ACR" [style.borderColor]="(formulario.get('nombre')?.invalid && formulario.get('nombre')?.touched) ? '#ef4444' : ''">
+        <small *ngIf="formulario.get('nombre')?.hasError('duplicateName')" style="color: #ef4444; font-size: 11px; margin-top: 3px; display: block; font-weight: 600;">⚠️ Ya existe un documento registrado con este nombre.</small>
       </div>
     </div>
 
@@ -22,7 +23,8 @@
     <div class="form-row two-cols">
       <div class="form-group">
         <label class="form-label">Código (*)</label>
-        <input type="text" formControlName="codigo" class="form-input" placeholder="Ej. PRO-OPM-COS-004-01" [disabled]="action === 'E'">
+        <input type="text" formControlName="codigo" class="form-input" placeholder="Ej. PRO-OPM-COS-004-01" [disabled]="action === 'E'" [style.borderColor]="(formulario.get('codigo')?.invalid && formulario.get('codigo')?.touched) ? '#ef4444' : ''">
+        <small *ngIf="formulario.get('codigo')?.hasError('duplicateCode')" style="color: #ef4444; font-size: 11px; margin-top: 3px; display: block; font-weight: 600;">⚠️ Ya existe un documento registrado con este código.</small>
       </div>
       <div class="form-group">
         <label class="form-label">Versión (DOC-02) (*)</label>
@@ -169,7 +171,7 @@
         <select formControlName="estado" class="form-input">
           <option *ngFor="let est of estados" [value]="est">{{ est }}</option>
         </select>
-        <small style="color: #6366f1; font-size: 10px; margin-top: 3px; display: block; font-weight: 600;">⚡ 'Por vencer' se auto-calcula a 2 meses (60 días) o menos.</small>
+        <small style="color: #6366f1; font-size: 10px; margin-top: 3px; display: block; font-weight: 600;">⚡ 'Por vencer' se auto-calcula a 1 mes (30 días) o menos.</small>
       </div>
     </div>
 

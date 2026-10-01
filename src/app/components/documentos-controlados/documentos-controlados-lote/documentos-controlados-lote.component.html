@@ -107,7 +107,7 @@
               </div>
               <div class="field-col flex-2">
                 <label class="field-label">Nombre del Documento (*)</label>
-                <input type="text" [(ngModel)]="item.nombre" class="form-control-sm" placeholder="Nombre completo del documento" [disabled]="isUploading">
+                <input type="text" [(ngModel)]="item.nombre" (ngModelChange)="onItemNombreChange(item)" class="form-control-sm" placeholder="Nombre completo del documento" [disabled]="isUploading">
               </div>
               <div class="field-col flex-2">
                 <label class="field-label">Proceso / Área Responsable</label>

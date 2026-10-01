@@ -140,9 +140,20 @@ export class PortafolioMejoraComponent implements OnInit {
 
   expandedMacros: { [key: string]: boolean } = {};
   procesosGroups: { [key: string]: string[] } = {
-    'Estratégicos': ['Organización y Métodos', 'Auditoría Interna', 'Sistemas'],
-    'Operativos': ['Costura', 'Corte', 'Acabados Textil', 'Aseguramiento de Calidad Textil', 'Estampado Digital', 'Laboratorio de Color', 'Lavandería', 'Tejeduría', 'Tintorería'],
-    'Soporte': ['Control Patrimonial', 'Mantenimiento', 'Administración y Finanzas', 'Contabilidad y Costos', 'Finanzas', 'Tesorería']
+    'Soporte (SOP)': ['Sistemas', 'Mantenimiento General', 'Seguridad Patrimonial', 'SSOMA'],
+    'Auditoría Interna (AIO)': ['Auditoría Interna'],
+    'Control Patrimonial (CPT)': ['Control Patrimonial'],
+    'Ingeniería y Mejora Continua (IMC)': ['Ingeniería', 'Organización y Métodos', 'Investigación, Desarrollo, Innovación', 'Certificaciones'],
+    'Administración y Finanzas (AFC)': ['Administración', 'Finanzas', 'Contabilidad y Costos', 'Tesorería'],
+    'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitación', 'Comunicaciones', 'Desarrollo Organizacional', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
+    'Servicio de Estampado y Bordado (SEB)': ['Estampado', 'Bordado', 'Calidad Estampado y Bordado', 'Planeamiento y Programación de la Producción de Estampado y Bordado'],
+    'Operaciones Manufactura (OPM)': ['Corte', 'Costura', 'Inspección', 'Acabados', 'Aseguramiento de la Calidad Manufactura', 'Manufactura', 'Consumos'],
+    'Operaciones Textil (OPT)': ['Tejeduría', 'Tintorería', 'Producción Textil', 'Laboratorio de Color', 'Estampado Digital', 'Acabados Textil', 'Laboratorio de Calidad Textil', 'Aseguramiento de la Calidad Textil', 'Lavandería', 'Hilandería'],
+    'Balance de Materia (BM)': ['Balance de Materia'],
+    'Planeamiento y Control de la Producción (PCP)': ['PCP Textil', 'PCP Manufactura', 'PCP Estampado y Bordado'],
+    'Logística (LOG)': ['Almacén', 'Comercio Exterior', 'Logística', 'Transporte'],
+    'Gestión Comercial (GCOM)': ['Desarrollo de Producto', 'Desarrollo de Estampado y Bordado', 'Desarrollo Textil', 'Comercial Exportación de Prendas', 'Comercial Exportación de Telas', 'Comercial Venta Local Textil'],
+    'Gerencia General (GG)': ['Directorio', 'Alianzas Estratégicas', 'Desarrollo de Negocios', 'Proyectos Gerenciales', 'Sistema de Gestión General', 'Gestión Estratégica']
   };
 
   displayedColumns: string[] = [
@@ -257,51 +268,168 @@ export class PortafolioMejoraComponent implements OnInit {
     if (!proceso) return 'OYM';
     const name = proceso.trim().toLowerCase();
 
+    // Mapeo oficial de Siglas de Procesos y Sub-Procesos según la Matriz Oficial Precotex
     const map: { [key: string]: string } = {
+      // 1. SOPORTE (SOP)
+      'sistemas': 'SIST',
+      'mantenimiento general': 'MANT',
+      'mantenimiento': 'MANT',
+      'seguridad patrimonial': 'SEGP',
+      'ssoma': 'SSOMA',
+      'soporte (sop)': 'SOP',
+      'soporte': 'SOP',
+
+      // 2. AUDITORÍA INTERNA (AIO)
+      'auditoría interna': 'AUDI',
+      'auditoria interna': 'AUDI',
+      'auditoría interna (aio)': 'AIO',
+      'auditoria interna (aio)': 'AIO',
+
+      // 3. CONTROL PATRIMONIAL (CPT)
+      'control patrimonial': 'CPT',
+      'control patrimonial (cpt)': 'CPT',
+
+      // 4. INGENIERÍA Y MEJORA CONTINUA (IMC)
+      'ingeniería': 'ING',
+      'ingenieria': 'ING',
+      'mejora continua': 'ING',
       'organización y métodos': 'OYM',
       'organizacion y metodos': 'OYM',
-      'control patrimonial': 'CTP',
-      'auditoría interna': 'AIO',
-      'auditoria interna': 'AIO',
-      'sistemas': 'SIS',
-      'mantenimiento': 'MNT',
-      'calidad': 'CAL',
-      'costura': 'COS',
-      'acabados': 'ACA',
-      'aseguramiento de la calidad': 'ADC',
-      'consumos': 'CON',
+      'investigación, desarrollo, innovación': 'IDI',
+      'investigacion, desarrollo, innovacion': 'IDI',
+      'investigación, desarrollo e innovación': 'IDI',
+      'investigacion, desarrollo e innovacion': 'IDI',
+      'certificaciones': 'CERT',
+      'ingeniería y mejora continua (imc)': 'IMC',
+      'ingenieria y mejora continua (imc)': 'IMC',
+
+      // 5. ADMINISTRACIÓN Y FINANZAS (AFC)
+      'administración': 'ADMIN',
+      'administracion': 'ADMIN',
+      'finanzas': 'FIN',
+      'contabilidad y costos': 'CONT',
+      'tesorería': 'TES',
+      'tesoreria': 'TES',
+      'administración y finanzas (afc)': 'AFC',
+      'administracion y finanzas (afc)': 'AFC',
+      'administración y finanzas': 'AFC',
+      'administracion y finanzas': 'AFC',
+
+      // 6. GESTIÓN HUMANA (GGHH)
+      'administración de personal': 'AP',
+      'administracion de personal': 'AP',
+      'capacitación': 'CAP',
+      'capacitacion': 'CAP',
+      'capacitaciones y desarrollo': 'CAP',
+      'comunicaciones': 'COMU',
+      'desarrollo organizacional': 'DO',
+      'gestión humana': 'GH',
+      'gestion humana': 'GH',
+      'bienestar social': 'BSO',
+      'selección de personal': 'SDP',
+      'seleccion de personal': 'SDP',
+      'gestión humana (gghh)': 'GGHH',
+      'gestion humana (gghh)': 'GGHH',
+
+      // 7. SERVICIO DE ESTAMPADO Y BORDADO (SEB)
+      'estampado': 'EST',
+      'bordado': 'BORD',
+      'calidad estampado y bordado': 'CEB',
+      'calidad e&b': 'CEB',
+      'planeamiento y programación de la producción de estampado y bordado': 'PCEB',
+      'planeamiento y programacion de la produccion de estampado y bordado': 'PCEB',
+      'planeamiento y programación de la producción e&b': 'PCEB',
+      'planeamiento y programacion de la produccion e&b': 'PCEB',
+      'servicio de estampado y bordado (seb)': 'SEB',
+
+      // 8. OPERACIONES MANUFACTURA (OPM)
       'corte': 'COR',
-      'inspección': 'INS',
-      'inspeccion': 'INS',
-      'acabados textil': 'ACT',
-      'aseguramiento de calidad textil': 'ADT',
-      'estampado digital': 'ESD',
-      'laboratorio de color': 'LDC',
-      'lavandería': 'LAV',
-      'lavanderia': 'LAV',
+      'costura': 'COST',
+      'inspección': 'INSP',
+      'inspeccion': 'INSP',
+      'acabados': 'ACAB',
+      'aseguramiento de la calidad manufactura': 'CAL',
+      'calidad manufactura': 'CAL',
+      'manufactura': 'MAN',
+      'consumos': 'CONS',
+      'consumo': 'CONS',
+      'operaciones manufactura (opm)': 'OPM',
+
+      // 9. OPERACIONES TEXTIL (OPT)
       'tejeduría': 'TEJ',
       'tejeduria': 'TEJ',
       'tintorería': 'TIN',
       'tintoreria': 'TIN',
-      'administración y finanzas': 'AYF',
-      'administracion y finanzas': 'AYF',
-      'administración': 'ADM',
-      'administracion': 'ADM',
-      'contabilidad y costos': 'CYC',
-      'finanzas': 'FIN',
-      'tesorería': 'TES',
-      'tesoreria': 'TES'
+      'producción textil': 'TEX',
+      'produccion textil': 'TEX',
+      'laboratorio de color': 'LDC',
+      'estampado digital': 'EDG',
+      'acabados textil': 'ATX',
+      'laboratorio de calidad textil': 'LTX',
+      'aseguramiento de la calidad textil': 'CTX',
+      'aseguramiento de calidad textil': 'CTX',
+      'lavandería': 'LAV',
+      'lavanderia': 'LAV',
+      'hilandería': 'HIL',
+      'hilanderia': 'HIL',
+      'operaciones textil (opt)': 'OPT',
+
+      // 10. BALANCE DE MATERIA (BM)
+      'balance de materia': 'BM',
+      'balance de materia (bm)': 'BM',
+
+      // 11. PLANEAMIENTO Y CONTROL DE LA PRODUCCIÓN (PCP)
+      'pcp textil': 'PTX',
+      'pcp manufactura': 'PMA',
+      'pcp estampado y bordado': 'PCEB',
+      'planeamiento y control de la producción (pcp)': 'PCP',
+      'planeamiento y control de la produccion (pcp)': 'PCP',
+
+      // 12. LOGÍSTICA (LOG)
+      'almacén': 'ALM',
+      'almacen': 'ALM',
+      'comercio exterior': 'CEXT',
+      'logística': 'LOG',
+      'logistica': 'LOG',
+      'transporte': 'TRANS',
+      'logística (log)': 'LOG',
+      'logistica (log)': 'LOG',
+
+      // 13. GESTIÓN COMERCIAL (GCOM)
+      'desarrollo de producto': 'DDP',
+      'desarrollo de estampado y bordado': 'UDP',
+      'desarrollo textil': 'DTX',
+      'comercial exportación de prendas': 'COM',
+      'comercial exportacion de prendas': 'COM',
+      'comercial exportación de telas': 'CET',
+      'comercial exportacion de telas': 'CET',
+      'comercial venta local textil': 'CVL',
+      'gestión comercial (gcom)': 'GCOM',
+      'gestion comercial (gcom)': 'GCOM',
+
+      // 14. GERENCIA GENERAL (GG)
+      'directorio': 'DIR',
+      'alianzas estratégicas': 'AES',
+      'alianzas estrategicas': 'AES',
+      'desarrollo de negocios': 'DDN',
+      'proyectos gerenciales': 'PGE',
+      'sistema de gestión general': 'SGG',
+      'sistema de gestion general': 'SGG',
+      'gestión estratégica': 'GGE',
+      'gestion estrategica': 'GGE',
+      'gerencia general (gg)': 'GG',
+      'gerencia general': 'GG'
     };
 
     if (map[name]) return map[name];
 
     const palabras = proceso.toUpperCase().replace(/[^A-Z0-9\s]/g, '').split(/\s+/).filter(p => p && p !== 'Y' && p !== 'DE' && p !== 'LA' && p !== 'EL');
     if (palabras.length >= 3) {
-      return (palabras[0][0] + palabras[1][0] + palabras[2][0]).substring(0, 3);
+      return (palabras[0][0] + palabras[1][0] + palabras[2][0]).substring(0, 4);
     } else if (palabras.length === 2) {
-      return (palabras[0].substring(0, 2) + palabras[1][0]).substring(0, 3);
+      return (palabras[0].substring(0, 2) + palabras[1][0]).substring(0, 4);
     } else if (palabras.length === 1) {
-      return palabras[0].substring(0, 3);
+      return palabras[0].substring(0, 4);
     }
     return 'GEN';
   }

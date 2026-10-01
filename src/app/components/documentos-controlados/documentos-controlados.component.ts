@@ -370,7 +370,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
           }
         }
 
-        this.docsList = rawList;
+        this.docsList = this.deduplicarDocumentos(rawList);
         this.aplicarReglaObsoletosPorVersion(this.docsList);
         this.restaurarHistorialVersiones(this.docsList);
         this.saveDocs();
@@ -454,12 +454,33 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
             });
           }
         }
-        this.docsList = rawList;
+        this.docsList = this.deduplicarDocumentos(rawList);
         this.aplicarReglaObsoletosPorVersion(this.docsList);
         this.restaurarHistorialVersiones(this.docsList);
         this.saveDocs();
       }
     });
+  }
+
+  // Garantiza que no se muestren documentos con el mismo código ni con el mismo nombre
+  deduplicarDocumentos(list: any[]): any[] {
+    if (!list || list.length === 0) return [];
+    const seenCodes = new Set<string>();
+    const seenNames = new Set<string>();
+    const uniqueList: any[] = [];
+
+    for (const doc of list) {
+      const c = (doc.codigo || doc.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
+      const n = (doc.nombre || doc.denominacion || doc.descripcion || '').toString().trim().toLowerCase();
+
+      if (c && seenCodes.has(c)) continue;
+      if (n && seenNames.has(n)) continue;
+
+      if (c) seenCodes.add(c);
+      if (n) seenNames.add(n);
+      uniqueList.push(doc);
+    }
+    return uniqueList;
   }
 
   // Observación a: Restaurar versiones pasadas guardadas en backup para descarga o visualización
@@ -1568,7 +1589,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
           try {
             const res = await fetch(docUrl);
             if (res.ok) return await res.blob();
-          } catch (e) {}
+          } catch (e) { }
 
           const isLocal = docUrl.includes('localhost') || docUrl.includes('127.0.0.1');
           if (isLocal) {
@@ -1576,7 +1597,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
             try {
               const resProd = await fetch(prodUrl);
               if (resProd.ok) return await resProd.blob();
-            } catch (e) {}
+            } catch (e) { }
           }
           throw new Error('Archivo no encontrado');
         };
@@ -1617,7 +1638,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
             try {
               const res = await fetch(docUrl);
               if (res.ok) return await res.arrayBuffer();
-            } catch (e) {}
+            } catch (e) { }
 
             const isLocal = docUrl.includes('localhost') || docUrl.includes('127.0.0.1');
             if (isLocal) {
@@ -1625,7 +1646,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
               try {
                 const resProd = await fetch(prodUrl);
                 if (resProd.ok) return await resProd.arrayBuffer();
-              } catch (e) {}
+              } catch (e) { }
             }
             throw new Error('Archivo Word no encontrado');
           };
@@ -1704,7 +1725,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       try {
         const res = await fetch(downloadUrl);
         if (res.ok) return await res.blob();
-      } catch (e) {}
+      } catch (e) { }
 
       const isLocal = downloadUrl.includes('localhost') || downloadUrl.includes('127.0.0.1');
       if (isLocal) {
@@ -1730,7 +1751,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       .catch(() => {
         // Fallback directo si ocurre alguna restricción de red o en localhost
         const isLocal = downloadUrl.includes('localhost') || downloadUrl.includes('127.0.0.1');
-        const targetUrl = isLocal 
+        const targetUrl = isLocal
           ? ('http://192.168.1.36:5252/api/SNDocumentosControlados/downloadArchivo?fileName=' + encodeURIComponent(doc.archivo || doc.codigo))
           : downloadUrl;
         window.open(targetUrl, '_blank');
@@ -2199,7 +2220,11 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       disableClose: true,
       data: {
         ActiveProcess: activeProc,
-        InitialFiles: initialFiles
+        InitialFiles: initialFiles,
+        ExistingDocs: this.docsList.map(d => ({
+          nombre: (d.nombre || '').trim(),
+          codigo: (d.codigo || '').trim()
+        }))
       }
     });
 
@@ -2248,53 +2273,169 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     if (!proceso) return 'OYM';
     const name = proceso.trim().toLowerCase();
 
-    // Mapeo explícito de procesos estándar de Precotex
+    // Mapeo oficial de Siglas de Procesos y Sub-Procesos según la Matriz Oficial Precotex
     const map: { [key: string]: string } = {
+      // 1. SOPORTE (SOP)
+      'sistemas': 'SIST',
+      'mantenimiento general': 'MANT',
+      'mantenimiento': 'MANT',
+      'seguridad patrimonial': 'SEGP',
+      'ssoma': 'SSOMA',
+      'soporte (sop)': 'SOP',
+      'soporte': 'SOP',
+
+      // 2. AUDITORÍA INTERNA (AIO)
+      'auditoría interna': 'AUDI',
+      'auditoria interna': 'AUDI',
+      'auditoría interna (aio)': 'AIO',
+      'auditoria interna (aio)': 'AIO',
+
+      // 3. CONTROL PATRIMONIAL (CPT)
+      'control patrimonial': 'CPT',
+      'control patrimonial (cpt)': 'CPT',
+
+      // 4. INGENIERÍA Y MEJORA CONTINUA (IMC)
+      'ingeniería': 'ING',
+      'ingenieria': 'ING',
+      'mejora continua': 'ING',
       'organización y métodos': 'OYM',
       'organizacion y metodos': 'OYM',
-      'control patrimonial': 'CTP',
-      'auditoría interna': 'AIO',
-      'auditoria interna': 'AIO',
-      'sistemas': 'SIS',
-      'mantenimiento': 'MNT',
-      'calidad': 'CAL',
-      'costura': 'COS',
-      'acabados': 'ACA',
-      'aseguramiento de la calidad': 'ADC',
-      'consumos': 'CON',
+      'investigación, desarrollo, innovación': 'IDI',
+      'investigacion, desarrollo, innovacion': 'IDI',
+      'investigación, desarrollo e innovación': 'IDI',
+      'investigacion, desarrollo e innovacion': 'IDI',
+      'certificaciones': 'CERT',
+      'ingeniería y mejora continua (imc)': 'IMC',
+      'ingenieria y mejora continua (imc)': 'IMC',
+
+      // 5. ADMINISTRACIÓN Y FINANZAS (AFC)
+      'administración': 'ADMIN',
+      'administracion': 'ADMIN',
+      'finanzas': 'FIN',
+      'contabilidad y costos': 'CONT',
+      'tesorería': 'TES',
+      'tesoreria': 'TES',
+      'administración y finanzas (afc)': 'AFC',
+      'administracion y finanzas (afc)': 'AFC',
+      'administración y finanzas': 'AFC',
+      'administracion y finanzas': 'AFC',
+
+      // 6. GESTIÓN HUMANA (GGHH)
+      'administración de personal': 'AP',
+      'administracion de personal': 'AP',
+      'capacitación': 'CAP',
+      'capacitacion': 'CAP',
+      'capacitaciones y desarrollo': 'CAP',
+      'comunicaciones': 'COMU',
+      'desarrollo organizacional': 'DO',
+      'gestión humana': 'GH',
+      'gestion humana': 'GH',
+      'bienestar social': 'BSO',
+      'selección de personal': 'SDP',
+      'seleccion de personal': 'SDP',
+      'gestión humana (gghh)': 'GGHH',
+      'gestion humana (gghh)': 'GGHH',
+
+      // 7. SERVICIO DE ESTAMPADO Y BORDADO (SEB)
+      'estampado': 'EST',
+      'bordado': 'BORD',
+      'calidad estampado y bordado': 'CEB',
+      'calidad e&b': 'CEB',
+      'planeamiento y programación de la producción de estampado y bordado': 'PCEB',
+      'planeamiento y programacion de la produccion de estampado y bordado': 'PCEB',
+      'planeamiento y programación de la producción e&b': 'PCEB',
+      'planeamiento y programacion de la produccion e&b': 'PCEB',
+      'servicio de estampado y bordado (seb)': 'SEB',
+
+      // 8. OPERACIONES MANUFACTURA (OPM)
       'corte': 'COR',
-      'inspección': 'INS',
-      'inspeccion': 'INS',
-      'acabados textil': 'ACT',
-      'aseguramiento de calidad textil': 'ADT',
-      'estampado digital': 'ESD',
-      'laboratorio de color': 'LDC',
-      'lavandería': 'LAV',
-      'lavanderia': 'LAV',
+      'costura': 'COST',
+      'inspección': 'INSP',
+      'inspeccion': 'INSP',
+      'acabados': 'ACAB',
+      'aseguramiento de la calidad manufactura': 'CAL',
+      'calidad manufactura': 'CAL',
+      'manufactura': 'MAN',
+      'consumos': 'CONS',
+      'consumo': 'CONS',
+      'operaciones manufactura (opm)': 'OPM',
+
+      // 9. OPERACIONES TEXTIL (OPT)
       'tejeduría': 'TEJ',
       'tejeduria': 'TEJ',
       'tintorería': 'TIN',
       'tintoreria': 'TIN',
-      'administración y finanzas': 'AYF',
-      'administracion y finanzas': 'AYF',
-      'administración': 'ADM',
-      'administracion': 'ADM',
-      'contabilidad y costos': 'CYC',
-      'finanzas': 'FIN',
-      'tesorería': 'TES',
-      'tesoreria': 'TES'
+      'producción textil': 'TEX',
+      'produccion textil': 'TEX',
+      'laboratorio de color': 'LDC',
+      'estampado digital': 'EDG',
+      'acabados textil': 'ATX',
+      'laboratorio de calidad textil': 'LTX',
+      'aseguramiento de la calidad textil': 'CTX',
+      'aseguramiento de calidad textil': 'CTX',
+      'lavandería': 'LAV',
+      'lavanderia': 'LAV',
+      'hilandería': 'HIL',
+      'hilanderia': 'HIL',
+      'operaciones textil (opt)': 'OPT',
+
+      // 10. BALANCE DE MATERIA (BM)
+      'balance de materia': 'BM',
+      'balance de materia (bm)': 'BM',
+
+      // 11. PLANEAMIENTO Y CONTROL DE LA PRODUCCIÓN (PCP)
+      'pcp textil': 'PTX',
+      'pcp manufactura': 'PMA',
+      'pcp estampado y bordado': 'PCEB',
+      'planeamiento y control de la producción (pcp)': 'PCP',
+      'planeamiento y control de la produccion (pcp)': 'PCP',
+
+      // 12. LOGÍSTICA (LOG)
+      'almacén': 'ALM',
+      'almacen': 'ALM',
+      'comercio exterior': 'CEXT',
+      'logística': 'LOG',
+      'logistica': 'LOG',
+      'transporte': 'TRANS',
+      'logística (log)': 'LOG',
+      'logistica (log)': 'LOG',
+
+      // 13. GESTIÓN COMERCIAL (GCOM)
+      'desarrollo de producto': 'DDP',
+      'desarrollo de estampado y bordado': 'UDP',
+      'desarrollo textil': 'DTX',
+      'comercial exportación de prendas': 'COM',
+      'comercial exportacion de prendas': 'COM',
+      'comercial exportación de telas': 'CET',
+      'comercial exportacion de telas': 'CET',
+      'comercial venta local textil': 'CVL',
+      'gestión comercial (gcom)': 'GCOM',
+      'gestion comercial (gcom)': 'GCOM',
+
+      // 14. GERENCIA GENERAL (GG)
+      'directorio': 'DIR',
+      'alianzas estratégicas': 'AES',
+      'alianzas estrategicas': 'AES',
+      'desarrollo de negocios': 'DDN',
+      'proyectos gerenciales': 'PGE',
+      'sistema de gestión general': 'SGG',
+      'sistema de gestion general': 'SGG',
+      'gestión estratégica': 'GGE',
+      'gestion estrategica': 'GGE',
+      'gerencia general (gg)': 'GG',
+      'gerencia general': 'GG'
     };
 
     if (map[name]) return map[name];
 
-    // Si no está en el mapa, generar una abreviatura de 3 letras basada en las primeras letras de las palabras
+    // Si no está en el mapa, generar una abreviatura basada en las primeras letras
     const palabras = proceso.toUpperCase().replace(/[^A-Z0-9\s]/g, '').split(/\s+/).filter(p => p && p !== 'Y' && p !== 'DE' && p !== 'LA' && p !== 'EL');
     if (palabras.length >= 3) {
-      return (palabras[0][0] + palabras[1][0] + palabras[2][0]).substring(0, 3);
+      return (palabras[0][0] + palabras[1][0] + palabras[2][0]).substring(0, 4);
     } else if (palabras.length === 2) {
-      return (palabras[0].substring(0, 2) + palabras[1][0]).substring(0, 3);
+      return (palabras[0].substring(0, 2) + palabras[1][0]).substring(0, 4);
     } else if (palabras.length === 1) {
-      return palabras[0].substring(0, 3);
+      return palabras[0].substring(0, 4);
     }
     return 'GEN';
   }

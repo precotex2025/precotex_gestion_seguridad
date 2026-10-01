@@ -344,14 +344,8 @@ export class DashboardComponent implements OnInit {
           count > 0
         );
 
-        if (Array.isArray(list)) {
-          list.forEach((doc: any) => {
-            const fechaLim = doc.fec_Vencimiento || doc.vig || '';
-            this.evaluarAlertasVencimiento(doc.nombre || doc.denominacion, fechaLim, 'Documento');
-          });
-        }
         this.updateCumplimientoChart();
-        this.generarAlertasDocumentosSinRevision6Meses(list);
+        this.generarAlertasDocumentosPorVencer(list);
       },
       error: () => {
         let count = 0;
@@ -369,7 +363,7 @@ export class DashboardComponent implements OnInit {
         this.dbCounts.documentos = count;
         this.updateKpiValue('Docs. Controlados', count, count > 0 ? `${count} en catálogo` : '0 documentos', count > 0);
         this.updateCumplimientoChart();
-        this.generarAlertasDocumentosSinRevision6Meses(list);
+        this.generarAlertasDocumentosPorVencer(list);
       }
     });
 
@@ -557,28 +551,22 @@ export class DashboardComponent implements OnInit {
     return rolVal === '1' || vusuStr === 'admin' || vusuStr === 'superadmin' || vusuStr === 'administrador' || vusuStr.includes('admin');
   }
 
-  // Generar alertas en Alertas del Sistema para documentos sin Visto Bueno / revisión > 6 meses (180 días)
-  // Filtrado por el área/proceso del Jefe de cada área
-  private generarAlertasDocumentosSinRevision6Meses(list: any[]): void {
+  // Generar alertas en Alertas del Sistema para documentos que están a 1 mes (<= 30 días) de vencer o ya vencidos
+  // Filtrado por el área/proceso del usuario actual (o todos si es Administrador)
+  private generarAlertasDocumentosPorVencer(list: any[]): void {
     if (!list || list.length === 0) return;
 
     const userProceso = this.getUserProcesoActual();
     const isAdmin = this.isUserAdmin();
     const hoy = new Date();
-    const LIMITE_DIAS_6_MESES = 180;
+    hoy.setHours(0, 0, 0, 0);
 
-    // Obtener vistos buenos guardados localmente
-    let vbLogs: any[] = [];
-    try {
-      vbLogs = JSON.parse(localStorage.getItem('precotex_vistos_buenos') || '[]');
-    } catch { vbLogs = []; }
-
-    // Filtrar por área/proceso si no es admin o si el jefe tiene área específica asignada
+    // Filtrar por área/proceso si no es admin o si el usuario tiene área específica asignada
     let docsFiltrados = list;
     if (!isAdmin && userProceso && userProceso.toLowerCase() !== 'general') {
       const uP = userProceso.toLowerCase().trim();
       docsFiltrados = list.filter((d: any) => {
-        const docP = (d.proceso || '').toLowerCase().trim();
+        const docP = (d.proceso || d.nombre_Proceso || '').toLowerCase().trim();
         const esMismoProceso = docP === uP || docP.includes(uP) || uP.includes(docP);
         const visList: string[] = d.procesosVisibles || [];
         const tienePermiso = visList.some((p: string) => p.toLowerCase().trim() === uP);
@@ -590,46 +578,46 @@ export class DashboardComponent implements OnInit {
 
     docsFiltrados.forEach((doc: any) => {
       const codigoDoc = doc.codigo || doc.codigo_Documento || doc.codigo_Documentos_Controlados || 'DOC';
-      const nombreDoc = doc.nombre || doc.denominacion || doc.descripcion || 'Documento Controlado';
-      const procDoc = doc.proceso || userProceso || 'Área General';
+      const procDoc = doc.proceso || doc.nombre_Proceso || userProceso || 'Área General';
 
-      let vbInfo = doc.vistoBuenoInfo;
-      if (!vbInfo && vbLogs.length > 0) {
-        const matchLog = vbLogs.find((r: any) => r.codigo === codigoDoc || r.nombre === nombreDoc);
-        if (matchLog) {
-          vbInfo = { usuario: matchLog.usuario, puesto: matchLog.puesto, fecha: matchLog.fecha };
-        }
-      }
+      const fechaVencStr = doc.fec_Vencimiento || doc.vig || doc.fec_Revision || '';
+      if (!fechaVencStr) return;
 
-      if (!vbInfo || !vbInfo.fecha) {
+      const fechaVenc = new Date(fechaVencStr);
+      if (isNaN(fechaVenc.getTime())) return;
+      fechaVenc.setHours(0, 0, 0, 0);
+
+      const diffDias = Math.ceil((fechaVenc.getTime() - hoy.getTime()) / (1000 * 3600 * 24));
+
+      // Regla de Negocio: Sale en alertas ÚNICAMENTE cuando está a 1 mes (30 días o menos) de vencer o vencido
+      if (diffDias > 0 && diffDias <= 30) {
         alertasDocs.push({
-          titulo: `⚠️ [${procDoc}] ${codigoDoc} sin visto bueno semestral (6 meses)`,
-          tiempo: 'Sin revisión',
-          nivel: 'Pendiente 6M',
+          titulo: `⚠️ [${procDoc}] ${codigoDoc} por vencer en ${diffDias} ${diffDias === 1 ? 'día' : 'días'}`,
+          tiempo: `${diffDias} ${diffDias === 1 ? 'día rest.' : 'días rest.'}`,
+          nivel: 'Por vencer (1 mes)',
+          severidad: 'warning',
+          route: '/principal/documentosControlados'
+        });
+      } else if (diffDias <= 0) {
+        alertasDocs.push({
+          titulo: `🔴 [${procDoc}] ${codigoDoc} documento vencido`,
+          tiempo: diffDias === 0 ? 'Vence hoy' : `Vencido hace ${Math.abs(diffDias)} días`,
+          nivel: 'Vencido',
           severidad: 'danger',
           route: '/principal/documentosControlados'
         });
-      } else {
-        const fechaVB = new Date(vbInfo.fecha);
-        if (!isNaN(fechaVB.getTime())) {
-          const diffDias = Math.floor((hoy.getTime() - fechaVB.getTime()) / (1000 * 3600 * 24));
-          if (diffDias >= LIMITE_DIAS_6_MESES) {
-            alertasDocs.push({
-              titulo: `🔴 [${procDoc}] ${codigoDoc} revisión vencida (${diffDias} días)`,
-              tiempo: `Hace ${diffDias} días`,
-              nivel: 'Vencido 6M',
-              severidad: 'danger',
-              route: '/principal/documentosControlados'
-            });
-          }
-        }
       }
     });
 
     // Remover alertas de documentos anteriores para evitar duplicados al recargar
-    this.alertas = this.alertas.filter(a => !a.nivel.includes('6M'));
+    this.alertas = this.alertas.filter(a =>
+      !a.nivel.includes('6M') &&
+      !a.nivel.includes('Por vencer') &&
+      !a.nivel.includes('Vencido') &&
+      !(a.route && a.route.includes('documentosControlados'))
+    );
 
-    // Colocar las alertas de documentos sin visto bueno del área al inicio del feed de alertas
+    // Colocar las alertas de documentos por vencer (1 mes) al inicio del feed de alertas
     if (alertasDocs.length > 0) {
       this.alertas.unshift(...alertasDocs);
     }

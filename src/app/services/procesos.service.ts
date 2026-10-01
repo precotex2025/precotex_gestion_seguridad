@@ -45,20 +45,68 @@ export class ProcesosService {
   } 
 
   private DEFAULT_PROCESOS: { [key: string]: string[] } = {
-    'Gerencia General (GG)': [
-      'Sistema de Gestión General',
-      'Gestión Estratégica',
-      'Proyectos Gerenciales',
-      'Desarrollo de Negocios',
-      'Alianzas Estratégicas',
-      'Comercial Exportación de Telas',
-      'Comercial Venta Local Textil'
+    'Soporte (SOP)': [
+      'Sistemas',
+      'Mantenimiento General',
+      'Seguridad Patrimonial',
+      'SSOMA'
     ],
-    'Gestión Comercial (GCOM)': [
-      'Desarrollo de Producto',
-      'Desarrollo de Estampado y Bordado',
-      'Desarrollo Textil',
-      'Comercial Exportación de Prendas'
+    'Auditoría Interna (AIO)': [
+      'Auditoría Interna'
+    ],
+    'Control Patrimonial (CPT)': [
+      'Control Patrimonial'
+    ],
+    'Ingeniería y Mejora Continua (IMC)': [
+      'Ingeniería',
+      'Organización y Métodos',
+      'Investigación, Desarrollo, Innovación',
+      'Certificaciones'
+    ],
+    'Administración y Finanzas (AFC)': [
+      'Administración',
+      'Finanzas',
+      'Contabilidad y Costos',
+      'Tesorería'
+    ],
+    'Gestión Humana (GGHH)': [
+      'Administración de Personal',
+      'Capacitación',
+      'Comunicaciones',
+      'Desarrollo Organizacional',
+      'Gestión Humana',
+      'Bienestar Social',
+      'Selección de Personal'
+    ],
+    'Servicio de Estampado y Bordado (SEB)': [
+      'Estampado',
+      'Bordado',
+      'Calidad Estampado y Bordado',
+      'Planeamiento y Programación de la Producción de Estampado y Bordado'
+    ],
+    'Operaciones Manufactura (OPM)': [
+      'Corte',
+      'Costura',
+      'Inspección',
+      'Acabados',
+      'Aseguramiento de la Calidad Manufactura',
+      'Manufactura',
+      'Consumos'
+    ],
+    'Operaciones Textil (OPT)': [
+      'Tejeduría',
+      'Tintorería',
+      'Producción Textil',
+      'Laboratorio de Color',
+      'Estampado Digital',
+      'Acabados Textil',
+      'Laboratorio de Calidad Textil',
+      'Aseguramiento de la Calidad Textil',
+      'Lavandería',
+      'Hilandería'
+    ],
+    'Balance de Materia (BM)': [
+      'Balance de Materia'
     ],
     'Planeamiento y Control de la Producción (PCP)': [
       'PCP Textil',
@@ -71,64 +119,21 @@ export class ProcesosService {
       'Logística',
       'Transporte'
     ],
-    'Balance de Materia (BM)': [
-      'Balance de Materia'
+    'Gestión Comercial (GCOM)': [
+      'Desarrollo de Producto',
+      'Desarrollo de Estampado y Bordado',
+      'Desarrollo Textil',
+      'Comercial Exportación de Prendas',
+      'Comercial Exportación de Telas',
+      'Comercial Venta Local Textil'
     ],
-    'Operaciones Textil (OPT)': [
-      'Hilandería',
-      'Tejeduría',
-      'Tintorería',
-      'Laboratorio de Color',
-      'Estampado Digital',
-      'Acabados Textil',
-      'Aseguramiento de Calidad Textil',
-      'Lavandería'
-    ],
-    'Operaciones Manufactura (OPM)': [
-      'Corte',
-      'Costura',
-      'Inspección',
-      'Acabados',
-      'Aseguramiento de la Calidad Manufactura',
-      'Consumos'
-    ],
-    'Servicio de Estampado y Bordado (SEB)': [
-      'Estampado',
-      'Bordado',
-      'Calidad Estampado y Bordado',
-      'Planeamiento y Programación de la Producción E&B'
-    ],
-    'Gestión Humana (GGHH)': [
-      'Gestión Humana',
-      'Administración de Personal',
-      'Capacitaciones y Desarrollo',
-      'Comunicaciones',
-      'Bienestar Social',
-      'Selección de Personal'
-    ],
-    'Administración y Finanzas (AFC)': [
-      'Administración',
-      'Finanzas',
-      'Contabilidad y Costos',
-      'Tesorería'
-    ],
-    'Ingeniería y Mejora Continua (IMC)': [
-      'Organización y Métodos',
-      'Ingeniería',
-      'Investigación, Desarrollo e Innovación',
-      'Certificaciones'
-    ],
-    'Control Patrimonial (CPT)': [
-      'Control Patrimonial'
-    ],
-    'Auditoría Interna (AIO)': [
-      'Auditoría Interna'
-    ],
-    'Soporte (SOP)': [
-      'Tecnologías de la Información (Sistemas)',
-      'SSOMA (Seguridad, Salud Ocupacional y Medio Ambiente)',
-      'Seguridad Patrimonial',
-      'Mantenimiento e Infraestructura'
+    'Gerencia General (GG)': [
+      'Directorio',
+      'Alianzas Estratégicas',
+      'Desarrollo de Negocios',
+      'Proyectos Gerenciales',
+      'Sistema de Gestión General',
+      'Gestión Estratégica'
     ]
   };
 

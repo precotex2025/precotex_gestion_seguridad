@@ -38,37 +38,22 @@ export class AuditoriasRegeditComponent implements OnInit {
     'Todas las sedes'
   ];
 
+  // PROCESOS GRUPOS OFICIALES PRECOTEX (14 Macroprocesos + Balance de Materia, Finanzas y Consumos)
   PROCESOS_GROUPS: { [key: string]: string[] } = {
-    'Estratégicos': [
-      'Gestión de la Dirección',
-      'Organización y Métodos',
-      'Gestión de la Calidad y Certificaciones'
-    ],
-    'Operativos / Cadena de Valor': [
-      'Desarrollo de Producto / Diseño',
-      'Comercial / Ventas',
-      'Planeamiento y Control de la Producción (PCP)',
-      'Compras y Abastecimiento',
-      'Hilandería',
-      'Tejeduría',
-      'Tintorería y Acabados Tela',
-      'Corte',
-      'Costura',
-      'Estampado y Bordado',
-      'Acabados Prenda / Empaque',
-      'Aseguramiento de la Calidad Manufactura',
-      'Despacho y Exportaciones'
-    ],
-    'De Apoyo': [
-      'Gestión Humana y Nómina',
-      'SSOMA (Seguridad, Salud Ocupacional y Medio Ambiente)',
-      'Mantenimiento e Infraestructura',
-      'Tecnologías de la Información (Sistemas)',
-      'Control Patrimonial y Almacenes',
-      'Administración, Contabilidad y Finanzas',
-      'Legal y Cumplimiento',
-      'Auditoría Interna'
-    ]
+    'Soporte (SOP)': ['Sistemas', 'Mantenimiento General', 'Seguridad Patrimonial', 'SSOMA'],
+    'Auditoría Interna (AIO)': ['Auditoría Interna'],
+    'Control Patrimonial (CPT)': ['Control Patrimonial'],
+    'Ingeniería y Mejora Continua (IMC)': ['Ingeniería', 'Organización y Métodos', 'Investigación, Desarrollo, Innovación', 'Certificaciones'],
+    'Administración y Finanzas (AFC)': ['Administración', 'Finanzas', 'Contabilidad y Costos', 'Tesorería'],
+    'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitación', 'Comunicaciones', 'Desarrollo Organizacional', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
+    'Servicio de Estampado y Bordado (SEB)': ['Estampado', 'Bordado', 'Calidad Estampado y Bordado', 'Planeamiento y Programación de la Producción de Estampado y Bordado'],
+    'Operaciones Manufactura (OPM)': ['Corte', 'Costura', 'Inspección', 'Acabados', 'Aseguramiento de la Calidad Manufactura', 'Manufactura', 'Consumos'],
+    'Operaciones Textil (OPT)': ['Tejeduría', 'Tintorería', 'Producción Textil', 'Laboratorio de Color', 'Estampado Digital', 'Acabados Textil', 'Laboratorio de Calidad Textil', 'Aseguramiento de la Calidad Textil', 'Lavandería', 'Hilandería'],
+    'Balance de Materia (BM)': ['Balance de Materia'],
+    'Planeamiento y Control de la Producción (PCP)': ['PCP Textil', 'PCP Manufactura', 'PCP Estampado y Bordado'],
+    'Logística (LOG)': ['Almacén', 'Comercio Exterior', 'Logística', 'Transporte'],
+    'Gestión Comercial (GCOM)': ['Desarrollo de Producto', 'Desarrollo de Estampado y Bordado', 'Desarrollo Textil', 'Comercial Exportación de Prendas', 'Comercial Exportación de Telas', 'Comercial Venta Local Textil'],
+    'Gerencia General (GG)': ['Directorio', 'Alianzas Estratégicas', 'Desarrollo de Negocios', 'Proyectos Gerenciales', 'Sistema de Gestión General', 'Gestión Estratégica']
   };
 
   constructor(
@@ -86,7 +71,7 @@ export class AuditoriasRegeditComponent implements OnInit {
     this.procesosService.getProcesosAgrupados().subscribe({
       next: (groups: any) => {
         if (groups && Object.keys(groups).length > 0) {
-          this.PROCESOS_GROUPS = { ...this.PROCESOS_GROUPS, ...groups };
+          this.PROCESOS_GROUPS = groups;
         }
       }
     });

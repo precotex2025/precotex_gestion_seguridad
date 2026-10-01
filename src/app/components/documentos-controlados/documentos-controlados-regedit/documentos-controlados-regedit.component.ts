@@ -17,11 +17,20 @@ export class DocumentosControladosRegeditComponent implements OnInit {
   action: string = 'I';
 
   PROCESOS_GROUPS: { [key: string]: string[] } = {
-    'Operaciones Textil (OPT)': ['Acabados Textil', 'Costura', 'Estampado', 'Hilandería', 'Tejitud'],
-    'Ingeniería y Mejora Continua (IMC)': ['Organización y Métodos', 'Ingeniería', 'Control de Calidad'],
-    'Soporte (SOP)': ['Control Patrimonial', 'Sistemas', 'Mantenimiento'],
+    'Soporte (SOP)': ['Sistemas', 'Mantenimiento General', 'Seguridad Patrimonial', 'SSOMA'],
     'Auditoría Interna (AIO)': ['Auditoría Interna'],
-    'Gestión Humana (GGHH)': ['Gestión Humana', 'SSOMA']
+    'Control Patrimonial (CPT)': ['Control Patrimonial'],
+    'Ingeniería y Mejora Continua (IMC)': ['Ingeniería', 'Organización y Métodos', 'Investigación, Desarrollo, Innovación', 'Certificaciones'],
+    'Administración y Finanzas (AFC)': ['Administración', 'Finanzas', 'Contabilidad y Costos', 'Tesorería'],
+    'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitación', 'Comunicaciones', 'Desarrollo Organizacional', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
+    'Servicio de Estampado y Bordado (SEB)': ['Estampado', 'Bordado', 'Calidad Estampado y Bordado', 'Planeamiento y Programación de la Producción de Estampado y Bordado'],
+    'Operaciones Manufactura (OPM)': ['Corte', 'Costura', 'Inspección', 'Acabados', 'Aseguramiento de la Calidad Manufactura', 'Manufactura', 'Consumos'],
+    'Operaciones Textil (OPT)': ['Tejeduría', 'Tintorería', 'Producción Textil', 'Laboratorio de Color', 'Estampado Digital', 'Acabados Textil', 'Laboratorio de Calidad Textil', 'Aseguramiento de la Calidad Textil', 'Lavandería', 'Hilandería'],
+    'Balance de Materia (BM)': ['Balance de Materia'],
+    'Planeamiento y Control de la Producción (PCP)': ['PCP Textil', 'PCP Manufactura', 'PCP Estampado y Bordado'],
+    'Logística (LOG)': ['Almacén', 'Comercio Exterior', 'Logística', 'Transporte'],
+    'Gestión Comercial (GCOM)': ['Desarrollo de Producto', 'Desarrollo de Estampado y Bordado', 'Desarrollo Textil', 'Comercial Exportación de Prendas', 'Comercial Exportación de Telas', 'Comercial Venta Local Textil'],
+    'Gerencia General (GG)': ['Directorio', 'Alianzas Estratégicas', 'Desarrollo de Negocios', 'Proyectos Gerenciales', 'Sistema de Gestión General', 'Gestión Estratégica']
   };
 
   tipos = ['Procedimiento', 'Instructivo', 'Formato', 'Manual', 'Perfil de puesto', 'Politica', 'Plan', 'Registro'];
@@ -129,7 +138,7 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       }
     });
 
-    // Escuchar cambios de fecha de vigencia para calcular 'Por vencer' automáticamente si falta <= 60 días
+    // Escuchar cambios de fecha de vigencia para calcular 'Por vencer' automáticamente si falta <= 30 días (1 mes)
     this.formulario.get('vig')?.valueChanges.subscribe((fecha: string) => {
       const autoEstado = this.calcularEstadoPorFecha(fecha);
       this.formulario.patchValue({ estado: autoEstado }, { emitEvent: false });
@@ -168,45 +177,165 @@ export class DocumentosControladosRegeditComponent implements OnInit {
   }
 
   // Extrae el Área/Proceso Responsable según la sigla o abreviatura del Código (ej. PER-IMC-ACT-012 -> Acabados Textil)
+  // Extrae el Área/Proceso Responsable según la sigla o abreviatura del Código (ej. PER-IMC-ACT-012 -> Acabados Textil)
   extraerProcesoDelCodigo(code: string): string {
     if (!code) return '';
     const parts = code.trim().toUpperCase().split('-');
 
-    const mapAbbr: { [key: string]: string } = {
-      'ACT': 'Acabados Textil',
-      'ACAB': 'Acabados Textil',
-      'COS': 'Costura',
-      'EST': 'Estampado',
+    // Mapeo exhaustivo de Sub-Procesos según la Matriz Oficial de Siglas de Precotex
+    const mapSubProcesos: { [key: string]: string } = {
+      // 1. SOPORTE (SOP)
+      'SIST': 'Sistemas',
+      'SIS': 'Sistemas',
+      'MANT': 'Mantenimiento General',
+      'MNT': 'Mantenimiento General',
+      'SEGP': 'Seguridad Patrimonial',
+      'SSOMA': 'SSOMA',
+      'SST': 'SSOMA',
+
+      // 2. AUDITORÍA INTERNA (AIO)
+      'AUDI': 'Auditoría Interna',
+      'AUD': 'Auditoría Interna',
+
+      // 3. CONTROL PATRIMONIAL (CPT)
+      'CPT': 'Control Patrimonial',
+      'CTP': 'Control Patrimonial',
+
+      // 4. INGENIERÍA Y MEJORA CONTINUA (IMC)
+      'ING': 'Ingeniería',
+      'MC': 'Ingeniería',
       'OYM': 'Organización y Métodos',
       'OM': 'Organización y Métodos',
-      'CTP': 'Control Patrimonial',
-      'CPT': 'Control Patrimonial',
-      'AIO': 'Auditoría Interna',
-      'AUD': 'Auditoría Interna',
-      'SIS': 'Sistemas',
-      'SST': 'SSOMA',
-      'SSOMA': 'SSOMA',
-      'CAL': 'Calidad',
-      'LOG': 'Logística',
-      'PCP': 'Planeamiento y Control de la Producción',
-      'GGHH': 'Gestión Humana',
-      'RRHH': 'Gestión Humana',
-      'GCOM': 'Gestión Comercial',
-      'GG': 'Gerencia General',
-      'AFC': 'Administración y Finanzas',
-      'ADM': 'Administración y Finanzas',
+      'IDI': 'Investigación, Desarrollo, Innovación',
+      'ID': 'Investigación, Desarrollo, Innovación',
+      'CERT': 'Certificaciones',
+
+      // 5. ADMINISTRACIÓN Y FINANZAS (AFC)
+      'ADMIN': 'Administración',
+      'ADM': 'Administración',
+      'FIN': 'Finanzas',
+      'CONT': 'Contabilidad y Costos',
+      'TES': 'Tesorería',
+
+      // 6. GESTIÓN HUMANA (GGHH)
+      'AP': 'Administración de Personal',
+      'CAP': 'Capacitación',
+      'COMU': 'Comunicaciones',
+      'DO': 'Desarrollo Organizacional',
+      'GH': 'Gestión Humana',
+      'BSO': 'Bienestar Social',
+      'SDP': 'Selección de Personal',
+
+      // 7. SERVICIO DE ESTAMPADO Y BORDADO (SEB)
+      'EST': 'Estampado',
+      'BORD': 'Bordado',
+      'BOR': 'Bordado',
+      'CEB': 'Calidad Estampado y Bordado',
+      'PCEB': 'Planeamiento y Programación de la Producción de Estampado y Bordado',
+
+      // 8. OPERACIONES MANUFACTURA (OPM)
+      'COR': 'Corte',
+      'COST': 'Costura',
+      'COS': 'Costura',
+      'INSP': 'Inspección',
+      'INS': 'Inspección',
+      'ACAB': 'Acabados',
+      'CAL': 'Aseguramiento de la Calidad Manufactura',
+      'MAN': 'Manufactura',
+      'CONS': 'Consumos',
+      'CON': 'Consumos',
+
+      // 9. OPERACIONES TEXTIL (OPT)
+      'TEJ': 'Tejeduría',
+      'TIN': 'Tintorería',
+      'TEX': 'Producción Textil',
+      'LDC': 'Laboratorio de Color',
+      'EDG': 'Estampado Digital',
+      'ESD': 'Estampado Digital',
+      'ATX': 'Acabados Textil',
+      'ACT': 'Acabados Textil',
+      'LTX': 'Laboratorio de Calidad Textil',
+      'CTX': 'Aseguramiento de la Calidad Textil',
+      'ADT': 'Aseguramiento de la Calidad Textil',
+      'LAV': 'Lavandería',
+      'HIL': 'Hilandería',
+
+      // 10. BALANCE DE MATERIA (BM)
       'BM': 'Balance de Materia',
-      'OPM': 'Operaciones Manufactura',
-      'OPT': 'Operaciones Textil'
+
+      // 11. PLANEAMIENTO Y CONTROL DE LA PRODUCCIÓN (PCP)
+      'PTX': 'PCP Textil',
+      'PMA': 'PCP Manufactura',
+
+      // 12. LOGÍSTICA (LOG)
+      'ALM': 'Almacén',
+      'CEXT': 'Comercio Exterior',
+      'LOG': 'Logística',
+      'TRANS': 'Transporte',
+      'TRA': 'Transporte',
+
+      // 13. GESTIÓN COMERCIAL (GCOM)
+      'DDP': 'Desarrollo de Producto',
+      'UDP': 'Desarrollo de Estampado y Bordado',
+      'DTX': 'Desarrollo Textil',
+      'COM': 'Comercial Exportación de Prendas',
+      'CET': 'Comercial Exportación de Telas',
+      'CVL': 'Comercial Venta Local Textil',
+
+      // 14. GERENCIA GENERAL (GG)
+      'DIR': 'Directorio',
+      'AES': 'Alianzas Estratégicas',
+      'DDN': 'Desarrollo de Negocios',
+      'PGE': 'Proyectos Gerenciales',
+      'SGG': 'Sistema de Gestión General',
+      'GGE': 'Gestión Estratégica'
     };
 
+    // Mapeo secundario de Macros
+    const mapMacros: { [key: string]: string } = {
+      'SOP': 'Sistemas',
+      'AIO': 'Auditoría Interna',
+      'CPT': 'Control Patrimonial',
+      'IMC': 'Organización y Métodos',
+      'AFC': 'Administración',
+      'GGHH': 'Gestión Humana',
+      'RRHH': 'Gestión Humana',
+      'SEB': 'Estampado',
+      'OPM': 'Costura',
+      'OPT': 'Acabados Textil',
+      'PCP': 'PCP Manufactura',
+      'GCOM': 'Desarrollo de Producto',
+      'GG': 'Sistema de Gestión General'
+    };
+
+    // 1. Buscar coincidencia exacta de sub-proceso (prioridad: segmento 3, luego segmento 2, luego otros)
+    if (parts.length >= 3 && mapSubProcesos[parts[2]]) {
+      const targetProc = mapSubProcesos[parts[2]];
+      this.asegurarProcesoEnGrupos(targetProc);
+      return targetProc;
+    }
+    if (parts.length >= 2 && mapSubProcesos[parts[1]]) {
+      const targetProc = mapSubProcesos[parts[1]];
+      this.asegurarProcesoEnGrupos(targetProc);
+      return targetProc;
+    }
     for (const part of parts) {
-      if (mapAbbr[part]) {
-        const targetProc = mapAbbr[part];
+      if (mapSubProcesos[part]) {
+        const targetProc = mapSubProcesos[part];
         this.asegurarProcesoEnGrupos(targetProc);
         return targetProc;
       }
     }
+
+    // 2. Si no coincide con sub-proceso, buscar en macros
+    for (const part of parts) {
+      if (mapMacros[part]) {
+        const targetProc = mapMacros[part];
+        this.asegurarProcesoEnGrupos(targetProc);
+        return targetProc;
+      }
+    }
+
     return '';
   }
 
@@ -259,7 +388,7 @@ export class DocumentosControladosRegeditComponent implements OnInit {
     const diffDias = Math.ceil((venc.getTime() - hoy.getTime()) / (1000 * 3600 * 24));
     
     if (diffDias < 0) return 'Obsoleto';
-    if (diffDias <= 60) return 'Por vencer'; // DOC-04: Automático a 2 meses (60 días) o menos
+    if (diffDias <= 30) return 'Por vencer'; // DOC-04: Automático a 1 mes (30 días) o menos
     return 'Vigente';
   }
 
@@ -484,22 +613,47 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       return;
     }
 
-    // Observación c: Restricción en la carga - no permitir documentos con el mismo nombre
+    // Restricción: No permitir documentos con el mismo código ni con el mismo nombre
     const nuevoNombre = (this.formulario.get('nombre')?.value || '').trim();
     const codigoActual = (this.formulario.get('codigo')?.value || '').trim();
     const existingDocs = this.data?.ExistingDocs || [];
-    const originalCodigo = (this.data?.Datos?.codigo || codigoActual).trim().toLowerCase();
-    
-    const esDuplicado = existingDocs.some((d: any) => 
+    const originalCodigo = (this.data?.Datos?.codigo || '').trim().toLowerCase();
+
+    // 1. Validar código duplicado
+    const esCodigoDuplicado = existingDocs.some((d: any) => 
+      d.codigo && d.codigo.trim().toLowerCase() === codigoActual.toLowerCase() &&
+      (this.action === 'I' || (d.codigo.trim().toLowerCase() !== originalCodigo))
+    );
+
+    if (esCodigoDuplicado) {
+      this.formulario.get('codigo')?.setErrors({ duplicateCode: true });
+      this.formulario.get('codigo')?.markAsTouched();
+      Swal.fire({
+        icon: 'error',
+        title: 'Código Duplicado',
+        html: `<div style="font-size: 13px; color: #334155; text-align: left; line-height: 1.6;">
+                 Ya existe un documento registrado con el código:<br>
+                 <strong style="color: #dc2626; font-size: 14px;">"${codigoActual}"</strong><br><br>
+                 De acuerdo a la normativa del sistema, no se permite registrar o subir documentos con el mismo código.
+               </div>`,
+        confirmButtonColor: '#5b4bd6',
+        confirmButtonText: 'Entendido'
+      });
+      return;
+    }
+
+    // 2. Validar nombre duplicado
+    const esNombreDuplicado = existingDocs.some((d: any) => 
       d.nombre && d.nombre.trim().toLowerCase() === nuevoNombre.toLowerCase() &&
       (this.action === 'I' || (d.codigo && d.codigo.trim().toLowerCase() !== originalCodigo))
     );
 
-    if (esDuplicado) {
+    if (esNombreDuplicado) {
       this.formulario.get('nombre')?.setErrors({ duplicateName: true });
+      this.formulario.get('nombre')?.markAsTouched();
       Swal.fire({
         icon: 'error',
-        title: 'Documento Duplicado',
+        title: 'Nombre de Documento Duplicado',
         html: `<div style="font-size: 13px; color: #334155; text-align: left; line-height: 1.6;">
                  Ya existe un documento registrado con el nombre:<br>
                  <strong style="color: #dc2626; font-size: 14px;">"${nuevoNombre}"</strong><br><br>

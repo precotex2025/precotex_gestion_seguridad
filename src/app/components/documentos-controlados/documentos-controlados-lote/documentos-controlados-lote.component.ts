@@ -31,11 +31,20 @@ interface FileUploadItem {
 export class DocumentosControladosLoteComponent implements OnInit {
   selectedProceso: string = '';
   PROCESOS_GROUPS: { [key: string]: string[] } = {
-    'Operaciones Textil (OPT)': ['Acabados Textil', 'Costura', 'Estampado', 'Hilandería', 'Tejitud'],
-    'Ingeniería y Mejora Continua (IMC)': ['Organización y Métodos', 'Ingeniería', 'Control de Calidad'],
-    'Soporte (SOP)': ['Control Patrimonial', 'Sistemas', 'Mantenimiento'],
+    'Soporte (SOP)': ['Sistemas', 'Mantenimiento General', 'Seguridad Patrimonial', 'SSOMA'],
     'Auditoría Interna (AIO)': ['Auditoría Interna'],
-    'Gestión Humana (GGHH)': ['Gestión Humana', 'SSOMA']
+    'Control Patrimonial (CPT)': ['Control Patrimonial'],
+    'Ingeniería y Mejora Continua (IMC)': ['Ingeniería', 'Organización y Métodos', 'Investigación, Desarrollo, Innovación', 'Certificaciones'],
+    'Administración y Finanzas (AFC)': ['Administración', 'Finanzas', 'Contabilidad y Costos', 'Tesorería'],
+    'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitación', 'Comunicaciones', 'Desarrollo Organizacional', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
+    'Servicio de Estampado y Bordado (SEB)': ['Estampado', 'Bordado', 'Calidad Estampado y Bordado', 'Planeamiento y Programación de la Producción de Estampado y Bordado'],
+    'Operaciones Manufactura (OPM)': ['Corte', 'Costura', 'Inspección', 'Acabados', 'Aseguramiento de la Calidad Manufactura', 'Manufactura', 'Consumos'],
+    'Operaciones Textil (OPT)': ['Tejeduría', 'Tintorería', 'Producción Textil', 'Laboratorio de Color', 'Estampado Digital', 'Acabados Textil', 'Laboratorio de Calidad Textil', 'Aseguramiento de la Calidad Textil', 'Lavandería', 'Hilandería'],
+    'Balance de Materia (BM)': ['Balance de Materia'],
+    'Planeamiento y Control de la Producción (PCP)': ['PCP Textil', 'PCP Manufactura', 'PCP Estampado y Bordado'],
+    'Logística (LOG)': ['Almacén', 'Comercio Exterior', 'Logística', 'Transporte'],
+    'Gestión Comercial (GCOM)': ['Desarrollo de Producto', 'Desarrollo de Estampado y Bordado', 'Desarrollo Textil', 'Comercial Exportación de Prendas', 'Comercial Exportación de Telas', 'Comercial Venta Local Textil'],
+    'Gerencia General (GG)': ['Directorio', 'Alianzas Estratégicas', 'Desarrollo de Negocios', 'Proyectos Gerenciales', 'Sistema de Gestión General', 'Gestión Estratégica']
   };
   procesosMap: { [name: string]: string } = {};
   
@@ -121,33 +130,142 @@ export class DocumentosControladosLoteComponent implements OnInit {
     if (!code) return '';
     const parts = code.trim().toUpperCase().split('-');
 
-    const mapAbbr: { [key: string]: string } = {
-      'ACT': 'Acabados Textil',
-      'ACAB': 'Acabados Textil',
-      'COS': 'Costura',
-      'EST': 'Estampado',
+    // Mapeo exhaustivo de Sub-Procesos según la Matriz Oficial de Siglas de Precotex
+    const mapSubProcesos: { [key: string]: string } = {
+      // 1. SOPORTE (SOP)
+      'SIST': 'Sistemas',
+      'SIS': 'Sistemas',
+      'MANT': 'Mantenimiento General',
+      'MNT': 'Mantenimiento General',
+      'SEGP': 'Seguridad Patrimonial',
+      'SSOMA': 'SSOMA',
+      'SST': 'SSOMA',
+
+      // 2. AUDITORÍA INTERNA (AIO)
+      'AUDI': 'Auditoría Interna',
+      'AUD': 'Auditoría Interna',
+
+      // 3. CONTROL PATRIMONIAL (CPT)
+      'CPT': 'Control Patrimonial',
+      'CTP': 'Control Patrimonial',
+
+      // 4. INGENIERÍA Y MEJORA CONTINUA (IMC)
+      'ING': 'Ingeniería',
+      'MC': 'Ingeniería',
       'OYM': 'Organización y Métodos',
       'OM': 'Organización y Métodos',
-      'CTP': 'Control Patrimonial',
-      'CPT': 'Control Patrimonial',
-      'AIO': 'Auditoría Interna',
-      'AUD': 'Auditoría Interna',
-      'SIS': 'Sistemas',
-      'SST': 'SSOMA',
-      'SSOMA': 'SSOMA',
-      'CAL': 'Calidad',
+      'IDI': 'Investigación, Desarrollo, Innovación',
+      'ID': 'Investigación, Desarrollo, Innovación',
+      'CERT': 'Certificaciones',
+
+      // 5. ADMINISTRACIÓN Y FINANZAS (AFC)
+      'ADMIN': 'Administración',
+      'ADM': 'Administración',
+      'FIN': 'Finanzas',
+      'CONT': 'Contabilidad y Costos',
+      'TES': 'Tesorería',
+
+      // 6. GESTIÓN HUMANA (GGHH)
+      'AP': 'Administración de Personal',
+      'CAP': 'Capacitación',
+      'COMU': 'Comunicaciones',
+      'DO': 'Desarrollo Organizacional',
+      'GH': 'Gestión Humana',
+      'BSO': 'Bienestar Social',
+      'SDP': 'Selección de Personal',
+
+      // 7. SERVICIO DE ESTAMPADO Y BORDADO (SEB)
+      'EST': 'Estampado',
+      'BORD': 'Bordado',
+      'BOR': 'Bordado',
+      'CEB': 'Calidad Estampado y Bordado',
+      'PCEB': 'Planeamiento y Programación de la Producción de Estampado y Bordado',
+
+      // 8. OPERACIONES MANUFACTURA (OPM)
+      'COR': 'Corte',
+      'COST': 'Costura',
+      'COS': 'Costura',
+      'INSP': 'Inspección',
+      'INS': 'Inspección',
+      'ACAB': 'Acabados',
+      'CAL': 'Aseguramiento de la Calidad Manufactura',
+      'MAN': 'Manufactura',
+      'CONS': 'Consumos',
+      'CON': 'Consumos',
+
+      // 9. OPERACIONES TEXTIL (OPT)
+      'TEJ': 'Tejeduría',
+      'TIN': 'Tintorería',
+      'TEX': 'Producción Textil',
+      'LDC': 'Laboratorio de Color',
+      'EDG': 'Estampado Digital',
+      'ESD': 'Estampado Digital',
+      'ATX': 'Acabados Textil',
+      'ACT': 'Acabados Textil',
+      'LTX': 'Laboratorio de Calidad Textil',
+      'CTX': 'Aseguramiento de la Calidad Textil',
+      'ADT': 'Aseguramiento de la Calidad Textil',
+      'LAV': 'Lavandería',
+      'HIL': 'Hilandería',
+
+      // 10. BALANCE DE MATERIA (BM)
+      'BM': 'Balance de Materia',
+
+      // 11. PLANEAMIENTO Y CONTROL DE LA PRODUCCIÓN (PCP)
+      'PTX': 'PCP Textil',
+      'PMA': 'PCP Manufactura',
+
+      // 12. LOGÍSTICA (LOG)
+      'ALM': 'Almacén',
+      'CEXT': 'Comercio Exterior',
       'LOG': 'Logística',
-      'PCP': 'Planeamiento y Control de la Producción',
-      'GGHH': 'Gestión Humana',
-      'RRHH': 'Gestión Humana',
-      'GCOM': 'Gestión Comercial',
-      'GG': 'Gerencia General',
-      'AFC': 'Administración y Finanzas',
-      'ADM': 'Administración y Finanzas'
+      'TRANS': 'Transporte',
+      'TRA': 'Transporte',
+
+      // 13. GESTIÓN COMERCIAL (GCOM)
+      'DDP': 'Desarrollo de Producto',
+      'UDP': 'Desarrollo de Estampado y Bordado',
+      'DTX': 'Desarrollo Textil',
+      'COM': 'Comercial Exportación de Prendas',
+      'CET': 'Comercial Exportación de Telas',
+      'CVL': 'Comercial Venta Local Textil',
+
+      // 14. GERENCIA GENERAL (GG)
+      'DIR': 'Directorio',
+      'AES': 'Alianzas Estratégicas',
+      'DDN': 'Desarrollo de Negocios',
+      'PGE': 'Proyectos Gerenciales',
+      'SGG': 'Sistema de Gestión General',
+      'GGE': 'Gestión Estratégica'
     };
 
+    const mapMacros: { [key: string]: string } = {
+      'SOP': 'Sistemas',
+      'AIO': 'Auditoría Interna',
+      'CPT': 'Control Patrimonial',
+      'IMC': 'Organización y Métodos',
+      'AFC': 'Administración',
+      'GGHH': 'Gestión Humana',
+      'RRHH': 'Gestión Humana',
+      'SEB': 'Estampado',
+      'OPM': 'Costura',
+      'OPT': 'Acabados Textil',
+      'PCP': 'PCP Manufactura',
+      'GCOM': 'Desarrollo de Producto',
+      'GG': 'Sistema de Gestión General'
+    };
+
+    if (parts.length >= 3 && mapSubProcesos[parts[2]]) {
+      return mapSubProcesos[parts[2]];
+    }
+    if (parts.length >= 2 && mapSubProcesos[parts[1]]) {
+      return mapSubProcesos[parts[1]];
+    }
     for (const part of parts) {
-      if (mapAbbr[part]) return mapAbbr[part];
+      if (mapSubProcesos[part]) return mapSubProcesos[part];
+    }
+    for (const part of parts) {
+      if (mapMacros[part]) return mapMacros[part];
     }
     return '';
   }
@@ -178,7 +296,7 @@ export class DocumentosControladosLoteComponent implements OnInit {
     const diffDias = Math.ceil((venc.getTime() - hoy.getTime()) / (1000 * 3600 * 24));
     
     if (diffDias < 0) return 'Obsoleto';
-    if (diffDias <= 60) return 'Por vencer';
+    if (diffDias <= 30) return 'Por vencer'; // Automático a 1 mes (30 días) o menos
     return 'Vigente';
   }
 
@@ -198,6 +316,12 @@ export class DocumentosControladosLoteComponent implements OnInit {
 
     const autoProc = this.extraerProcesoDelCodigo(codeStr);
     if (autoProc) item.proceso = autoProc;
+
+    this.validarDuplicadosLote();
+  }
+
+  onItemNombreChange(item: FileUploadItem): void {
+    this.validarDuplicadosLote();
   }
 
   onItemVersionChange(item: FileUploadItem): void {
@@ -235,6 +359,7 @@ export class DocumentosControladosLoteComponent implements OnInit {
     } else {
       this.toastr.info('Todos los documentos ya cuentan con código de versión.', 'Información');
     }
+    this.validarDuplicadosLote();
   }
 
   onItemVigChange(item: FileUploadItem): void {
@@ -255,42 +380,108 @@ export class DocumentosControladosLoteComponent implements OnInit {
     this.onTipoGlobalChange();
   }
 
-  // Observación c: Validar que no se suban documentos con el mismo nombre
-  validarNombresDuplicados(): { tieneDuplicados: boolean; mensaje: string } {
-    const catalogRaw = localStorage.getItem('precotex_documentos_controlados') || '[]';
-    let catalogNames: string[] = [];
-    try {
-      catalogNames = JSON.parse(catalogRaw).map((d: any) => (d.nombre || '').trim().toLowerCase()).filter(Boolean);
-    } catch { catalogNames = []; }
+  // Restricción: No permitir subir documentos con el mismo código ni con el mismo nombre
+  validarDuplicadosLote(): { tieneDuplicados: boolean; tipo: 'codigo' | 'nombre' | ''; mensaje: string } {
+    const existingDocs: any[] = this.data?.ExistingDocs || [];
+    let catalogCodes: string[] = existingDocs.map((d: any) => (d.codigo || '').trim().toLowerCase()).filter(Boolean);
+    let catalogNames: string[] = existingDocs.map((d: any) => (d.nombre || '').trim().toLowerCase()).filter(Boolean);
 
-    const batchMap: { [key: string]: number } = {};
-    let hasDupl = false;
-    let duplName = '';
+    try {
+      const catalogRaw = localStorage.getItem('precotex_documentos_controlados') || '[]';
+      const parsedCat = JSON.parse(catalogRaw);
+      parsedCat.forEach((d: any) => {
+        const c = (d.codigo || '').trim().toLowerCase();
+        const n = (d.nombre || '').trim().toLowerCase();
+        if (c && !catalogCodes.includes(c)) catalogCodes.push(c);
+        if (n && !catalogNames.includes(n)) catalogNames.push(n);
+      });
+      const createdRaw = localStorage.getItem('precotex_documentos_creados') || '[]';
+      const parsedCreated = JSON.parse(createdRaw);
+      parsedCreated.forEach((d: any) => {
+        const c = (d.codigo || '').trim().toLowerCase();
+        const n = (d.nombre || '').trim().toLowerCase();
+        if (c && !catalogCodes.includes(c)) catalogCodes.push(c);
+        if (n && !catalogNames.includes(n)) catalogNames.push(n);
+      });
+    } catch { }
+
+    const batchCodeCounts: { [code: string]: number } = {};
+    const batchNameCounts: { [name: string]: number } = {};
 
     for (const item of this.filesList) {
+      const cleanCode = (item.codigo || '').trim().toLowerCase();
       const cleanName = (item.nombre || '').trim().toLowerCase();
-      if (!cleanName) continue;
+      if (cleanCode) {
+        batchCodeCounts[cleanCode] = (batchCodeCounts[cleanCode] || 0) + 1;
+      }
+      if (cleanName) {
+        batchNameCounts[cleanName] = (batchNameCounts[cleanName] || 0) + 1;
+      }
+    }
 
-      if (catalogNames.includes(cleanName)) {
+    let hasDupl = false;
+    let duplTipo: 'codigo' | 'nombre' | '' = '';
+    let duplMsg = '';
+
+    for (const item of this.filesList) {
+      const cleanCode = (item.codigo || '').trim().toLowerCase();
+      const cleanName = (item.nombre || '').trim().toLowerCase();
+      const sinVersion = !item.version || !item.version.trim();
+
+      // 1. Revisar duplicado de código
+      if (cleanCode && catalogCodes.includes(cleanCode)) {
         item.isError = true;
-        item.progressMessage = 'Error: Ya existe un documento con este nombre en el sistema.';
-        hasDupl = true;
-        duplName = item.nombre;
-      } else {
-        batchMap[cleanName] = (batchMap[cleanName] || 0) + 1;
-        if (batchMap[cleanName] > 1) {
-          item.isError = true;
-          item.progressMessage = 'Error: Nombre repetido dentro de este lote.';
+        item.progressMessage = 'Error: Código ya registrado en el catálogo.';
+        if (!hasDupl) {
           hasDupl = true;
-          duplName = item.nombre;
-        } else if (item.progressMessage && item.progressMessage.startsWith('Error:')) {
+          duplTipo = 'codigo';
+          duplMsg = item.codigo;
+        }
+      } else if (cleanCode && batchCodeCounts[cleanCode] > 1) {
+        item.isError = true;
+        item.progressMessage = 'Error: Código repetido dentro de este lote.';
+        if (!hasDupl) {
+          hasDupl = true;
+          duplTipo = 'codigo';
+          duplMsg = item.codigo;
+        }
+      }
+      // 2. Revisar duplicado de nombre
+      else if (cleanName && catalogNames.includes(cleanName)) {
+        item.isError = true;
+        item.progressMessage = 'Error: Nombre ya registrado en el catálogo.';
+        if (!hasDupl) {
+          hasDupl = true;
+          duplTipo = 'nombre';
+          duplMsg = item.nombre;
+        }
+      } else if (cleanName && batchNameCounts[cleanName] > 1) {
+        item.isError = true;
+        item.progressMessage = 'Error: Nombre repetido dentro de este lote.';
+        if (!hasDupl) {
+          hasDupl = true;
+          duplTipo = 'nombre';
+          duplMsg = item.nombre;
+        }
+      }
+      // 3. Sin error de duplicados
+      else {
+        if (sinVersion) {
+          item.isError = true;
+          item.progressMessage = 'Sin código de versión (requerido)';
+        } else if (item.progressMessage && (item.progressMessage.startsWith('Error:') || item.progressMessage.includes('repetido') || item.progressMessage.includes('registrado'))) {
           item.isError = false;
           item.progressMessage = 'Listo para cargar';
         }
       }
     }
 
-    return { tieneDuplicados: hasDupl, mensaje: duplName };
+    return { tieneDuplicados: hasDupl, tipo: duplTipo, mensaje: duplMsg };
+  }
+
+  validarNombresDuplicados(): { tieneDuplicados: boolean; mensaje: string } {
+    const res = this.validarDuplicadosLote();
+    return { tieneDuplicados: res.tieneDuplicados, mensaje: res.mensaje };
   }
 
   aplicarProcesoGlobalTodos(): void {
@@ -420,17 +611,18 @@ export class DocumentosControladosLoteComponent implements OnInit {
       this.toastr.warning(`Atención: Se detectaron ${sinVersionCount} documento(s) sin código de versión. Debe ingresar la versión para cada archivo antes de poder subir el lote.`, 'Código de Versión Requerido');
     }
 
-    // Observación c: Validar duplicados de inmediato
-    const val = this.validarNombresDuplicados();
+    // Validar duplicados de inmediato
+    const val = this.validarDuplicadosLote();
     if (val.tieneDuplicados) {
-      this.toastr.warning(`Atención: El documento "${val.mensaje}" tiene un nombre duplicado. Modifique el nombre antes de subir.`, 'Validación de Nombres');
+      const tipoTexto = val.tipo === 'codigo' ? 'el código' : 'el nombre';
+      this.toastr.warning(`Atención: Se detectó un documento con ${tipoTexto} duplicado: "${val.mensaje}". Modifíquelo antes de subir.`, 'Validación de Duplicados');
     }
   }
 
   removeFile(index: number): void {
     if (this.isUploading) return;
     this.filesList.splice(index, 1);
-    this.validarNombresDuplicados();
+    this.validarDuplicadosLote();
   }
 
   onUploadLote(): void {
@@ -464,10 +656,26 @@ export class DocumentosControladosLoteComponent implements OnInit {
       return;
     }
 
-    // Observación c: Validar restricción de documentos con el mismo nombre
-    const val = this.validarNombresDuplicados();
+    // Restricción: No permitir subir documentos con el mismo código ni con el mismo nombre
+    const val = this.validarDuplicadosLote();
     if (val.tieneDuplicados) {
-      this.toastr.error(`No se puede iniciar la carga masiva: El documento "${val.mensaje}" tiene un nombre duplicado o ya existente en el catálogo. No se permite subir documentos con el mismo nombre.`, 'Restricción de Nombres');
+      const tituloModal = val.tipo === 'codigo' ? 'Código de Documento Duplicado' : 'Nombre de Documento Duplicado';
+      const detalleTexto = val.tipo === 'codigo'
+        ? `Ya existe un documento con el código <strong style="color: #dc2626;">"${val.mensaje}"</strong> registrado en el sistema o repetido dentro de este lote.`
+        : `Ya existe un documento con el nombre <strong style="color: #dc2626;">"${val.mensaje}"</strong> registrado en el sistema o repetido dentro de este lote.`;
+
+      Swal.fire({
+        icon: 'error',
+        title: tituloModal,
+        html: `<div style="font-size: 13px; color: #334155; text-align: left; line-height: 1.6;">
+                 No se puede iniciar la carga masiva:<br><br>
+                 ${detalleTexto}<br><br>
+                 De acuerdo a la normativa del sistema, <strong>no se permite subir documentos con el mismo código ni con el mismo nombre</strong>.<br>
+                 Por favor, modifique el ${val.tipo === 'codigo' ? 'código' : 'nombre'} antes de continuar.
+               </div>`,
+        confirmButtonColor: '#5b4bd6',
+        confirmButtonText: 'Entendido'
+      });
       return;
     }
 

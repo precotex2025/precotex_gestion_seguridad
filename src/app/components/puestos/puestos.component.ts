@@ -682,15 +682,16 @@ export class PuestosComponent implements OnInit {
 
   getCodigoProceso(proceso: string): string {
     if (!proceso) return '005';
-    const p = proceso.toLowerCase();
+    const p = proceso.toLowerCase().trim();
     if (p.includes('almac')) return '045';
     if (p.includes('ssoma')) return '008';
     if (p.includes('sistem') || p.includes('ti') || p.includes('informát')) return '005';
+    if (p.includes('mantenimiento')) return '006';
+    if (p.includes('patrimon') && p.includes('seguridad')) return '007';
     if (p.includes('auditor')) return '009';
     if (p.includes('patrimon') && p.includes('control')) return '010';
-    if (p.includes('patrimon') && p.includes('seguridad')) return '007';
     if (p.includes('métod') || p.includes('oym') || p.includes('organizaci') || p.includes('ingenier') || p.includes('mejora')) return '011';
-    if (p.includes('investiga') || p.includes('innovac')) return '012';
+    if (p.includes('investiga') || p.includes('innovac') || p.includes('idi')) return '012';
     if (p.includes('certifica')) return '013';
     if (p.includes('administra') && !p.includes('personal')) return '014';
     if (p.includes('finanza')) return '015';
@@ -699,26 +700,28 @@ export class PuestosComponent implements OnInit {
     if (p.includes('personal') && p.includes('administra')) return '018';
     if (p.includes('capacita') || p.includes('desarrollo de perso')) return '019';
     if (p.includes('comunica')) return '020';
+    if (p.includes('organizacional')) return '021';
     if (p.includes('humana') || p.includes('gghh')) return '021';
     if (p.includes('bienestar')) return '022';
     if (p.includes('selecci')) return '023';
     if (p.includes('estampado digital')) return '037';
     if (p.includes('desarrollo de estampado')) return '050';
-    if (p.includes('calidad estampado') || p.includes('calidad e&b')) return '026';
+    if (p.includes('calidad estampado') || p.includes('calidad e&b') || p.includes('ceb')) return '026';
     if (p.includes('planeamiento y programaci') && p.includes('estampado')) return '027';
     if (p.includes('estampado')) return '024';
     if (p.includes('bordado')) return '025';
     if (p.includes('corte')) return '028';
     if (p.includes('costura')) return '029';
     if (p.includes('inspecci')) return '030';
-    if (p.includes('acabados textil')) return '038';
+    if (p.includes('acabados textil') || p.includes('atx')) return '038';
     if (p.includes('acabado')) return '031';
     if (p.includes('calidad manufactura')) return '032';
     if (p.includes('consumo')) return '033';
     if (p.includes('tejedur')) return '034';
     if (p.includes('tintorer')) return '035';
-    if (p.includes('laboratorio') || p.includes('color')) return '036';
-    if (p.includes('calidad textil')) return '039';
+    if (p.includes('producción textil') || p.includes('produccion textil')) return '034';
+    if (p.includes('laboratorio') && p.includes('color')) return '036';
+    if (p.includes('calidad textil') || p.includes('ctx') || p.includes('ltx')) return '039';
     if (p.includes('lavander')) return '040';
     if (p.includes('balance')) return '041';
     if (p.includes('pcp textil')) return '042';
@@ -729,15 +732,16 @@ export class PuestosComponent implements OnInit {
     if (p.includes('transporte')) return '048';
     if (p.includes('desarrollo textil')) return '051';
     if (p.includes('desarrollo de producto')) return '049';
-    if (p.includes('exportación de prendas')) return '052';
-    if (p.includes('exportación de telas')) return '053';
+    if (p.includes('exportación de prendas') || p.includes('exportacion de prendas')) return '052';
+    if (p.includes('exportación de telas') || p.includes('exportacion de telas')) return '053';
     if (p.includes('venta local')) return '054';
+    if (p.includes('directorio')) return '058';
     if (p.includes('alianza')) return '055';
     if (p.includes('negocio')) return '056';
     if (p.includes('proyectos')) return '057';
     if (p.includes('gestión general') || p.includes('gestion general')) return '058';
     if (p.includes('estratégica') || p.includes('estrategica')) return '059';
-    if (p.includes('mantenimiento')) return '006';
+    if (p.includes('manufactura')) return '028';
     return '005';
   }
 

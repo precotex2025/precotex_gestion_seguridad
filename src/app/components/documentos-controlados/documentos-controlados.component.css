@@ -84,7 +84,7 @@
    ------------------------------------------------------------------- */
 .doc-layout {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: 420px minmax(0, 1fr);
   gap: 20px;
   align-items: start;
 }
@@ -108,22 +108,26 @@
 }
 
 .btn-toggle-carpetas {
-  background: transparent;
-  border: none;
-  color: var(--muted);
-  width: 28px;
+  background: var(--panel-2, #f8fafc);
+  border: 1px solid var(--line, #e2e8f0);
+  color: #64748b;
+  padding: 4px 11px;
   height: 28px;
+  width: auto;
   border-radius: 6px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
   transition: all 0.2s ease;
 }
 
 .btn-toggle-carpetas:hover {
-  background: var(--panel-2);
-  color: var(--violet);
+  background: #ede9fe;
+  color: var(--violet, #6366f1);
+  border-color: #c4b5fd;
 }
 
 .btn-expand-carpetas {
