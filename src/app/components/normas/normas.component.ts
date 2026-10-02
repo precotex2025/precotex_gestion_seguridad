@@ -38,13 +38,13 @@ export class NormasComponent implements OnInit {
   }
 
   constructor(
-    private dialog            : MatDialog             ,
-    private serviceNorma      : NormasService         ,
-    private SpinnerService    : NgxSpinnerService     ,
-    private toastr            : ToastrService         ,
-  ) { }   
-  
-   displayedColumns: string[] = [
+    private dialog: MatDialog,
+    private serviceNorma: NormasService,
+    private SpinnerService: NgxSpinnerService,
+    private toastr: ToastrService,
+  ) { }
+
+  displayedColumns: string[] = [
     'codigo_Norma',
     'norma',
     'categoria',
@@ -54,13 +54,13 @@ export class NormasComponent implements OnInit {
     'descripcion',
     'observaciones',
     'acciones'
-   ];  
-  dataSource = new MatTableDataSource<any>();  
+  ];
+  dataSource = new MatTableDataSource<any>();
 
   ngOnInit(): void {
     this.onListado();
   };
-  
+
   onListado(): void {
     this.SpinnerService.show();
     this.serviceNorma.getListadoNormas('1').subscribe({
@@ -76,7 +76,7 @@ export class NormasComponent implements OnInit {
         try {
           const rawMap = localStorage.getItem('precotex:normas:archivos_map');
           archivosMap = rawMap ? JSON.parse(rawMap) : {};
-        } catch(e) {}
+        } catch (e) { }
 
         // Mapeo automático de los archivos físicos existentes en el backend para las normas
         const serverDefaultFiles: any = {
@@ -113,7 +113,7 @@ export class NormasComponent implements OnInit {
         archivosMap = { ...serverDefaultFiles, ...archivosMap };
         try {
           localStorage.setItem('precotex:normas:archivos_map', JSON.stringify(archivosMap));
-        } catch(e) {}
+        } catch (e) { }
 
         data = data.map((item: any) => {
           const cod = (item.codigo_Norma || item.codigo || '').toLowerCase().trim();
@@ -179,26 +179,26 @@ export class NormasComponent implements OnInit {
     }
   }
 
-  onEditar(item: any){
+  onEditar(item: any) {
     let dialogRef = this.dialog.open(NormasRegeditComponent, {
       width: '680px',
       maxWidth: '95vw',
       disableClose: true,
       panelClass: 'my-class',
       data: {
-         Title  : "::. Editar norma .::",
-         Accion : "U",
-         Datos  : item
+        Title: "::. Editar norma .::",
+        Accion: "U",
+        Datos: item
       }
     });
     dialogRef.afterClosed().subscribe((res) => {
       if (res) {
         this.onListado();
       }
-    });  
+    });
   }
 
-  onEliminar(item: any){
+  onEliminar(item: any) {
     Swal.fire({
       title: '¿Desea eliminar la norma?, Confirme',
       icon: 'question',
@@ -207,7 +207,7 @@ export class NormasComponent implements OnInit {
       cancelButtonColor: '#d33',
       confirmButtonText: 'Sí',
       cancelButtonText: 'No'
-    }).then((result) => {    
+    }).then((result) => {
       if (result.isConfirmed) {
         this.SpinnerService.show();
         const sUsu = GlobalVariable.vusu || (typeof localStorage !== 'undefined' ? localStorage.getItem('vusu') : null) || 'admin';
@@ -271,7 +271,7 @@ export class NormasComponent implements OnInit {
             if (typeof localStorage !== 'undefined') {
               localStorage.setItem('precotex:normas:listado', JSON.stringify(currentList));
             }
-          } catch (e) {}
+          } catch (e) { }
         };
 
         this.serviceNorma.postProcesoMntoNormas(data).subscribe({
@@ -287,7 +287,7 @@ export class NormasComponent implements OnInit {
           }
         });
       }
-    });      
+    });
   }
 
   private async getFromIndexedDB(key: string): Promise<string | null> {
@@ -344,7 +344,7 @@ export class NormasComponent implements OnInit {
     try {
       const rawMap = localStorage.getItem('precotex:normas:archivos_map');
       archivosMap = rawMap ? JSON.parse(rawMap) : {};
-    } catch(e) {}
+    } catch (e) { }
 
     const meta = (row.archivo && row.originalName) ? row : (archivosMap[nom] || archivosMap[cod] || null);
 
@@ -381,7 +381,7 @@ export class NormasComponent implements OnInit {
           link.click();
           document.body.removeChild(link);
           return;
-        } catch(err) {}
+        } catch (err) { }
       }
     }
 
@@ -390,12 +390,12 @@ export class NormasComponent implements OnInit {
     if (!dataUrl) {
       try {
         dataUrl = await this.getFromIndexedDB(`norma_file_${nom}`)
-               || await this.getFromIndexedDB(`norma_file_${cod}`)
-               || (serverFileName ? await this.getFromIndexedDB(`norma_file_${serverFileName}`) : null)
-               || (originalName ? await this.getFromIndexedDB(`norma_file_${originalName}`) : null)
-               || await this.getFromIndexedDB(`precotex_norma_file_${nom}`)
-               || await this.getFromIndexedDB(`precotex_norma_file_${cod}`);
-      } catch(e) {}
+          || await this.getFromIndexedDB(`norma_file_${cod}`)
+          || (serverFileName ? await this.getFromIndexedDB(`norma_file_${serverFileName}`) : null)
+          || (originalName ? await this.getFromIndexedDB(`norma_file_${originalName}`) : null)
+          || await this.getFromIndexedDB(`precotex_norma_file_${nom}`)
+          || await this.getFromIndexedDB(`precotex_norma_file_${cod}`);
+      } catch (e) { }
     }
 
     if (dataUrl && dataUrl.startsWith('data:')) {
@@ -409,29 +409,29 @@ export class NormasComponent implements OnInit {
     this.toastr.warning(`La norma '${normaNombre}' no tiene un documento adjunto subido. Edite la norma y suba el archivo para poder descargarlo.`, 'Sin archivo adjunto');
   }
 
-  onAgregar(){
+  onAgregar() {
     let dialogRef = this.dialog.open(NormasRegeditComponent, {
       width: '680px',
       maxWidth: '95vw',
       disableClose: true,
       panelClass: 'my-class',
       data: {
-         Title  : "::. Registra nueva norma .::",
-         Accion : "I",
-         Datos  : null
+        Title: "::. Registra nueva norma .::",
+        Accion: "I",
+        Datos: null
       }
     });
     dialogRef.afterClosed().subscribe((res) => {
       if (res) {
         this.onListado();
       }
-    });    
+    });
   }
 
   // ORG-02: Exportar lista de normas a Excel con Diseño Profesional y Columnas Alineadas
   onExportarExcel(): void {
-    const dataToExport = (this.dataSource.filteredData && this.dataSource.filteredData.length > 0) 
-      ? this.dataSource.filteredData 
+    const dataToExport = (this.dataSource.filteredData && this.dataSource.filteredData.length > 0)
+      ? this.dataSource.filteredData
       : this.dataSource.data;
 
     if (!dataToExport || dataToExport.length === 0) {
@@ -534,7 +534,7 @@ export class NormasComponent implements OnInit {
     link.click();
     document.body.removeChild(link);
 
-    this.toastr.success('Reporte de normas exportado a Excel correctamente.', 'ORG-02: Exportación Excel');
+    this.toastr.success('Reporte de normas exportado a Excel correctamente.', 'Exportación Excel');
   }
 
   // ORG-02: Exportar lista de normas a PDF
@@ -634,7 +634,7 @@ export class NormasComponent implements OnInit {
       </html>
     `);
     printWin.document.close();
-    this.toastr.success('Generando reporte PDF para impresión / descarga...', 'ORG-02: Exportación PDF');
+    this.toastr.success('Generando reporte PDF para impresión / descarga...', 'Exportación PDF');
   }
 
 }

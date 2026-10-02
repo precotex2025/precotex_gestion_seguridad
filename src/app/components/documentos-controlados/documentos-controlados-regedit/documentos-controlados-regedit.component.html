@@ -14,8 +14,11 @@
     <div class="form-row">
       <div class="form-group full-width">
         <label class="form-label">Nombre del documento (*)</label>
-        <input type="text" formControlName="nombre" class="form-input" placeholder="Ej. Procedimiento de Gestión de ACR" [style.borderColor]="(formulario.get('nombre')?.invalid && formulario.get('nombre')?.touched) ? '#ef4444' : ''">
-        <small *ngIf="formulario.get('nombre')?.hasError('duplicateName')" style="color: #ef4444; font-size: 11px; margin-top: 3px; display: block; font-weight: 600;">⚠️ Ya existe un documento registrado con este nombre.</small>
+        <input type="text" formControlName="nombre" class="form-input" placeholder="Ej. Procedimiento de Gestión de ACR"
+          [style.borderColor]="(formulario.get('nombre')?.invalid && formulario.get('nombre')?.touched) ? '#ef4444' : ''">
+        <small *ngIf="formulario.get('nombre')?.hasError('duplicateName')"
+          style="color: #ef4444; font-size: 11px; margin-top: 3px; display: block; font-weight: 600;">⚠️ Ya existe un
+          documento registrado con este nombre.</small>
       </div>
     </div>
 
@@ -23,14 +26,23 @@
     <div class="form-row two-cols">
       <div class="form-group">
         <label class="form-label">Código (*)</label>
-        <input type="text" formControlName="codigo" class="form-input" placeholder="Ej. PRO-OPM-COS-004-01" [disabled]="action === 'E'" [style.borderColor]="(formulario.get('codigo')?.invalid && formulario.get('codigo')?.touched) ? '#ef4444' : ''">
-        <small *ngIf="formulario.get('codigo')?.hasError('duplicateCode')" style="color: #ef4444; font-size: 11px; margin-top: 3px; display: block; font-weight: 600;">⚠️ Ya existe un documento registrado con este código.</small>
+        <input type="text" formControlName="codigo" class="form-input" placeholder="Ej. PRO-OPM-COS-004-01"
+          [disabled]="action === 'E'"
+          [style.borderColor]="(formulario.get('codigo')?.invalid && formulario.get('codigo')?.touched) ? '#ef4444' : ''">
+        <small *ngIf="formulario.get('codigo')?.hasError('duplicateCode')"
+          style="color: #ef4444; font-size: 11px; margin-top: 3px; display: block; font-weight: 600;">⚠️ Ya existe un
+          documento registrado con este código.</small>
       </div>
       <div class="form-group">
-        <label class="form-label">Versión (DOC-02) (*)</label>
-        <input type="text" formControlName="version" class="form-input" placeholder="Ej. v1" [style.borderColor]="(formulario.get('version')?.invalid && formulario.get('version')?.touched) ? '#ef4444' : ''">
-        <small *ngIf="formulario.get('version')?.hasError('required') && formulario.get('version')?.touched" style="color: #ef4444; font-size: 11px; margin-top: 3px; display: block; font-weight: 600;">⚠️ El código de versión es obligatorio.</small>
-        <small *ngIf="!formulario.get('version')?.invalid" style="color: #6366f1; font-size: 10px; margin-top: 3px; display: block; font-weight: 600;">⚡ Extraído del 5to segmento del Código o ingréselo manualmente (ej. v1).</small>
+        <label class="form-label">Versión (*)</label>
+        <input type="text" formControlName="version" class="form-input" placeholder="Ej. v1"
+          [style.borderColor]="(formulario.get('version')?.invalid && formulario.get('version')?.touched) ? '#ef4444' : ''">
+        <small *ngIf="formulario.get('version')?.hasError('required') && formulario.get('version')?.touched"
+          style="color: #ef4444; font-size: 11px; margin-top: 3px; display: block; font-weight: 600;">⚠️ El código de
+          versión es obligatorio.</small>
+        <small *ngIf="!formulario.get('version')?.invalid"
+          style="color: #6366f1; font-size: 10px; margin-top: 3px; display: block; font-weight: 600;">⚡ Extraído del 5to
+          segmento del Código o ingréselo manualmente (ej. v1).</small>
       </div>
     </div>
 
@@ -55,8 +67,9 @@
       <div class="form-group full-width doc15-container">
         <div class="doc15-header">
           <div class="doc15-title-group">
-            <span class="doc15-label">Proceso / Área Responsable y Procesos Autorizados (DOC-15) (*)</span>
-            <span class="doc15-subtext">Seleccione qué procesos son responsables o están autorizados para ver este documento (puede seleccionar 2 o más).</span>
+            <span class="doc15-label">Proceso / Área Responsable y Procesos Autorizados(*)</span>
+            <span class="doc15-subtext">Seleccione qué procesos son responsables o están autorizados para ver este
+              documento (puede seleccionar 2 o más).</span>
           </div>
           <span class="doc15-status-badge badge-all" *ngIf="modoVisibilidad === 'TODOS'">
             🌐 Visible para Todos
@@ -68,18 +81,14 @@
 
         <!-- Selector de Modo de Asignación / Visibilidad -->
         <div class="doc15-mode-pills">
-          <button type="button" 
-                  class="pill-btn" 
-                  [class.pill-active]="modoVisibilidad === 'TODOS'"
-                  (click)="setModoVisibilidad('TODOS')">
+          <button type="button" class="pill-btn" [class.pill-active]="modoVisibilidad === 'TODOS'"
+            (click)="setModoVisibilidad('TODOS')">
             <span class="pill-dot" [class.dot-active]="modoVisibilidad === 'TODOS'"></span>
             <span>🌐 Todos los procesos (Público general)</span>
           </button>
 
-          <button type="button" 
-                  class="pill-btn" 
-                  [class.pill-active]="modoVisibilidad === 'PERSONALIZADO'"
-                  (click)="setModoVisibilidad('PERSONALIZADO')">
+          <button type="button" class="pill-btn" [class.pill-active]="modoVisibilidad === 'PERSONALIZADO'"
+            (click)="setModoVisibilidad('PERSONALIZADO')">
             <span class="pill-dot" [class.dot-active]="modoVisibilidad === 'PERSONALIZADO'"></span>
             <span>👥 Seleccionar procesos específicos (2 o más)</span>
           </button>
@@ -87,20 +96,14 @@
 
         <!-- PANEL DE SELECCIÓN DE 2 O MÁS PROCESOS -->
         <div class="doc15-process-panel" *ngIf="modoVisibilidad === 'PERSONALIZADO'">
-          
+
           <!-- Barra de búsqueda y acciones rápidas -->
           <div class="panel-tools-row">
             <div class="search-input-wrapper">
               <span class="material-icons search-ico">search</span>
-              <input type="text" 
-                     [(ngModel)]="busquedaProceso" 
-                     [ngModelOptions]="{standalone: true}"
-                     placeholder="Filtrar proceso (ej. Costura, Calidad, SSOMA)..." 
-                     class="search-proc-input">
-              <button type="button" 
-                      *ngIf="busquedaProceso" 
-                      (click)="busquedaProceso = ''" 
-                      class="btn-clear-search">
+              <input type="text" [(ngModel)]="busquedaProceso" [ngModelOptions]="{standalone: true}"
+                placeholder="Filtrar proceso (ej. Costura, Calidad, SSOMA)..." class="search-proc-input">
+              <button type="button" *ngIf="busquedaProceso" (click)="busquedaProceso = ''" class="btn-clear-search">
                 <span class="material-icons" style="font-size: 14px;">close</span>
               </button>
             </div>
@@ -126,7 +129,7 @@
           <div class="process-scroll-container">
             <ng-container *ngFor="let macro of getMacroProcesses()">
               <div class="macro-category-box" *ngIf="getProcesosFiltradosPorMacro(macro).length > 0">
-                
+
                 <div class="macro-category-title">
                   <span class="material-icons macro-ico">folder</span>
                   <span class="macro-name">{{ macro }}</span>
@@ -136,12 +139,9 @@
                 </div>
 
                 <div class="process-checkbox-grid">
-                  <label *ngFor="let proc of getProcesosFiltradosPorMacro(macro)" 
-                         class="proc-checkbox-card" 
-                         [class.proc-checked]="isProcesoSeleccionado(proc)">
-                    <input type="checkbox" 
-                           [checked]="isProcesoSeleccionado(proc)" 
-                           (change)="toggleProceso(proc)">
+                  <label *ngFor="let proc of getProcesosFiltradosPorMacro(macro)" class="proc-checkbox-card"
+                    [class.proc-checked]="isProcesoSeleccionado(proc)">
+                    <input type="checkbox" [checked]="isProcesoSeleccionado(proc)" (change)="toggleProceso(proc)">
                     <span class="proc-name-text">{{ proc }}</span>
                   </label>
                 </div>
@@ -171,7 +171,8 @@
         <select formControlName="estado" class="form-input">
           <option *ngFor="let est of estados" [value]="est">{{ est }}</option>
         </select>
-        <small style="color: #6366f1; font-size: 10px; margin-top: 3px; display: block; font-weight: 600;">⚡ 'Por vencer' se auto-calcula a 1 mes (30 días) o menos.</small>
+        <small style="color: #6366f1; font-size: 10px; margin-top: 3px; display: block; font-weight: 600;">⚡ 'Por
+          vencer' se auto-calcula a 1 mes (30 días) o menos.</small>
       </div>
     </div>
 
@@ -179,25 +180,25 @@
     <div class="form-row">
       <div class="form-group full-width">
         <label class="form-label">Archivo del Documento (*)</label>
-        
+
         <!-- DROPZONE DRAG & DROP -->
-        <div class="dropzone-box" 
-             [class.drag-over]="isDragOver"
-             [class.has-file]="selectedFile || (fileName && fileName !== 'Ningún archivo cargado')"
-             (dragover)="onDragOverFile($event)" 
-             (dragleave)="onDragLeaveFile($event)" 
-             (drop)="onDropFile($event)">
-          
-          <input type="file" #fileInput (change)="onFileChange($event)" style="display: none;" accept=".pdf,.doc,.docx,.xls,.xlsx">
+        <div class="dropzone-box" [class.drag-over]="isDragOver"
+          [class.has-file]="selectedFile || (fileName && fileName !== 'Ningún archivo cargado')"
+          (dragover)="onDragOverFile($event)" (dragleave)="onDragLeaveFile($event)" (drop)="onDropFile($event)">
+
+          <input type="file" #fileInput (change)="onFileChange($event)" style="display: none;"
+            accept=".pdf,.doc,.docx,.xls,.xlsx">
 
           <!-- Estado 1: Sin archivo o listo para arrastrar -->
-          <div class="dropzone-idle" *ngIf="!selectedFile && (!fileName || fileName === 'Ningún archivo cargado')" (click)="fileInput.click()">
+          <div class="dropzone-idle" *ngIf="!selectedFile && (!fileName || fileName === 'Ningún archivo cargado')"
+            (click)="fileInput.click()">
             <div class="dropzone-icon-circle">
               <span class="material-icons drop-icon">cloud_upload</span>
             </div>
             <div class="dropzone-texts">
               <strong class="dropzone-main-text">Arrastra y suelta tu archivo aquí</strong>
-              <span class="dropzone-sub-text">o <span class="dropzone-browse-link">haz clic para examinar tu equipo</span></span>
+              <span class="dropzone-sub-text">o <span class="dropzone-browse-link">haz clic para examinar tu
+                  equipo</span></span>
               <span class="dropzone-formats-badge">Formatos soportados: PDF, Word (.docx), Excel (.xlsx)</span>
             </div>
           </div>
@@ -211,7 +212,8 @@
                 'is-excel': fileName.endsWith('.xls') || fileName.endsWith('.xlsx')
               }">
                 <span class="material-icons">
-                  {{ fileName.endsWith('.xls') || fileName.endsWith('.xlsx') ? 'grid_on' : (fileName.endsWith('.doc') || fileName.endsWith('.docx') ? 'description' : 'picture_as_pdf') }}
+                  {{ fileName.endsWith('.xls') || fileName.endsWith('.xlsx') ? 'grid_on' : (fileName.endsWith('.doc') ||
+                  fileName.endsWith('.docx') ? 'description' : 'picture_as_pdf') }}
                 </span>
               </div>
               <div class="file-info-group">

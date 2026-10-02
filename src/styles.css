@@ -77,7 +77,7 @@ html {
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 
@@ -1218,4 +1218,74 @@ input[type="date"]:focus {
   height: 24px !important;
   min-width: 24px !important;
   font-size: 15px !important;
-}
+}
+
+/* ===================================================================
+   GLOBAL FIXED ACTION BUTTONS (NO DESAPARECEN EN NINGÚN MÓDULO)
+   =================================================================== */
+.actions-wrapper,
+.actions-wrapper.hover-fade,
+div.actions-wrapper,
+div.actions-wrapper.hover-fade {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
+
+::ng-deep .mat-mdc-row .actions-wrapper,
+::ng-deep .mat-mdc-row:hover .actions-wrapper,
+::ng-deep .mat-mdc-row .actions-wrapper.hover-fade,
+::ng-deep .mat-mdc-row:hover .actions-wrapper.hover-fade,
+.fila .actions-wrapper,
+.fila:hover .actions-wrapper,
+.fila .actions-wrapper.hover-fade,
+.fila:hover .actions-wrapper.hover-fade,
+.fila-ejecucion .actions-wrapper,
+.fila-ejecucion:hover .actions-wrapper {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
+
+.btn-delete-manual,
+.btn-delete-manual.hover-fade {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+
+/* ===================================================================
+   REPORTE DE LECTURA SEMESTRAL - MAT-DIALOG OVERLAY FIX
+   =================================================================== */
+.reporte-dialog-backdrop {
+  background: rgba(15, 23, 42, 0.72) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+.reporte-dialog-panel .mat-mdc-dialog-container,
+.reporte-dialog-panel .mat-mdc-dialog-container .mdc-dialog__surface,
+.reporte-dialog-panel .mat-dialog-container {
+  padding: 0 !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.reporte-dialog-panel .mdc-dialog__container {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.reporte-dialog-panel {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}

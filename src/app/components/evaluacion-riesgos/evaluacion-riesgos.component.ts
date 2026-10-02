@@ -98,7 +98,7 @@ export class EvaluacionRiesgosComponent implements OnInit {
     const rev = new Date(fechaStr);
     rev.setHours(0, 0, 0, 0);
     const diffDays = Math.ceil((rev.getTime() - hoy.getTime()) / (1000 * 3600 * 24));
-    
+
     if (diffDays < 0) {
       return { key: 'venc', text: `Vencida hace ${Math.abs(diffDays)}d`, badgeClass: 'soft-badge-porvencer', days: diffDays };
     }
@@ -118,7 +118,7 @@ export class EvaluacionRiesgosComponent implements OnInit {
 
   onActualizarControl(item: RiesgoItem, event?: Event): void {
     if (event) event.stopPropagation();
-    
+
     const currUrg = this.getRiesgoUrgencia(item.revision);
     const currAvance = this.getAvanceControl(item);
 
@@ -294,7 +294,7 @@ export class EvaluacionRiesgosComponent implements OnInit {
 
         if (dropzone && fileInput && filenameSpan) {
           dropzone.addEventListener('click', () => fileInput.click());
-          
+
           fileInput.addEventListener('change', (e: any) => {
             if (e.target.files && e.target.files.length > 0) {
               const file = e.target.files[0];
@@ -326,14 +326,14 @@ export class EvaluacionRiesgosComponent implements OnInit {
           return false;
         }
 
-        return { 
-          estado, 
-          revision: fecha, 
-          avance, 
-          medidacontrol: medida, 
+        return {
+          estado,
+          revision: fecha,
+          avance,
+          medidacontrol: medida,
           planaccion: plan,
           evidencia: evidencia.includes('Adjuntar archivo') ? '' : evidencia,
-          responsable: resp 
+          responsable: resp
         };
       }
     }).then((res) => {
@@ -469,13 +469,13 @@ export class EvaluacionRiesgosComponent implements OnInit {
       return;
     }
 
-    const csvContent = "data:text/csv;charset=utf-8," 
+    const csvContent = "data:text/csv;charset=utf-8,"
       + [Object.keys(data[0]).join(","), ...data.map(e => Object.values(e).map(v => `"${v}"`).join(","))].join("\n");
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Matriz_IPERC_Precotex_${new Date().toISOString().substring(0,10)}.csv`);
+    link.setAttribute("download", `Matriz_IPERC_Precotex_${new Date().toISOString().substring(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -524,7 +524,7 @@ export class EvaluacionRiesgosComponent implements OnInit {
     `;
 
     Swal.fire({
-      title: '📈 Historial de Revaluaciones (RIE-06)',
+      title: '📈 Historial de Revaluaciones',
       html: htmlHistorial,
       width: '680px',
       confirmButtonText: 'Entendido',
@@ -576,7 +576,7 @@ export class EvaluacionRiesgosComponent implements OnInit {
     this.cantControlado = this.riesgos.filter(r => (r.estado || '').toLowerCase() === 'controlado').length;
     this.cantEnSeguimiento = this.riesgos.filter(r => (r.estado || '').toLowerCase().includes('seguimiento')).length;
     this.cantSinControl = this.riesgos.filter(r => (r.estado || '').toLowerCase().includes('sin control')).length;
-    
+
     // RIE-02: Nivel Alto (críticos) - Requieren acción inmediata
     this.cantNivelAlto = this.riesgos.filter(r => {
       const niv = (r.nivel || '').toLowerCase();
@@ -616,7 +616,7 @@ export class EvaluacionRiesgosComponent implements OnInit {
   getMatrixCellColor(prob: number, impacto: number): string {
     const score = prob * impacto;
     if (score >= 15) return 'rgba(240, 87, 107, 0.4)';
-    if (score >= 8)  return 'rgba(240, 180, 41, 0.4)';
+    if (score >= 8) return 'rgba(240, 180, 41, 0.4)';
     return 'rgba(62, 207, 142, 0.4)';
   }
 
@@ -673,7 +673,7 @@ export class EvaluacionRiesgosComponent implements OnInit {
   generarNuevoCodigo(): string {
     const year = new Date().getFullYear();
     let maxNum = 0;
-    
+
     (this.riesgos || []).forEach(r => {
       if (r.codigo) {
         const match = r.codigo.match(/\d+/g);

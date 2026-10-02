@@ -77,12 +77,12 @@
         </button>
       </div>
 
-      <div class="tree-node-item root-node" [class.active]="activeFilter === '__all__'" (click)="setFilter('__all__')">
+      <div class="tree-node-item root-node" [class.active]="isRootActiveForUser()" (click)="selectRootNode()">
         <div class="node-left">
           <mat-icon class="folder-icon root-icon">folder_shared</mat-icon>
-          <span class="node-name">Todos los procesos</span>
+          <span class="node-name">{{ getRootNodeLabel() }}</span>
         </div>
-        <span class="mini-count-pill" [class.has-docs]="docsList.length > 0">{{ docsList.length }}</span>
+        <span class="mini-count-pill" [class.has-docs]="getRootNodeCount() > 0">{{ getRootNodeCount() }}</span>
       </div>
 
       <div class="tree-groups-container">
@@ -153,10 +153,10 @@
           </span>
           <span class="active-folder-title">{{ getActiveFolderTitle() }}</span>
         </div>
-        <button type="button" class="btn-reset-folder" (click)="setFilter('__all__')"
-          title="Volver a todos los procesos">
+        <button type="button" class="btn-reset-folder" (click)="selectRootNode()"
+          [title]="isUserAdmin ? 'Volver a todos los procesos' : 'Volver a mi proceso'">
           <mat-icon style="font-size: 14px; width: 14px; height: 14px;">close</mat-icon>
-          <span>Mostrar todos</span>
+          <span>{{ isUserAdmin ? 'Mostrar todos' : 'Mi proceso' }}</span>
         </button>
       </div>
 
@@ -254,7 +254,7 @@
           </button>
 
           <!-- DOC-07: Reporte de Visto Bueno Semestral - Solo Admin -->
-          <button type="button" class="btn-ghost-action" (click)="onReporteVistoBueno()" *ngIf="isUserAdmin"
+          <button type="button" class="btn-ghost-action" (click)="onReporteVistoBueno()" *ngIf="isUserAdmin || canEdit"
             title="Reporte de Lectura Semestral por Jefaturas">
             <mat-icon style="color: #16a34a;">fact_check</mat-icon>
             <span>Reporte</span>
@@ -341,30 +341,30 @@
               <td style="min-width: 110px; width: 110px; text-align: center;">
                 <div class="actions-wrapper">
                   <button type="button" class="action-btn btn-view" (click)="onVistaPrevia(doc)"
-                    title="Visor Interno de Documento (DOC-10)">
+                    title="Visor Interno de Documento">
                     <mat-icon>visibility</mat-icon>
                   </button>
                   <button type="button" class="action-btn btn-visto-bueno" (click)="onDarVistoBueno(doc)"
-                    [title]="doc.vistoBuenoInfo ? 'Visto Bueno dado por ' + doc.vistoBuenoInfo.usuario : 'Dar Visto Bueno de Lectura Semestral (DOC-07)'"
+                    [title]="doc.vistoBuenoInfo ? 'Visto Bueno dado por ' + doc.vistoBuenoInfo.usuario : 'Dar Visto Bueno de Lectura Semestral'"
                     [class.visto-bueno-done]="doc.vistoBuenoInfo">
                     <mat-icon>check_circle</mat-icon>
                   </button>
                 </div>
               </td>
 
-              <!-- Highlighted Download Button (DOC-05) -->
+              <!-- Highlighted Download Button -->
               <td style="min-width: 70px; width: 70px; text-align: center;">
                 <button type="button" class="btn-download-highlight" (click)="onDescargar(doc)"
-                  title="Descargar archivo limpio (DOC-05)" *ngIf="canDownload">
+                  title="Descargar archivo limpio" *ngIf="canDownload">
                   <mat-icon>download</mat-icon>
                 </button>
               </td>
 
               <!-- Hover Fade-In Actions (DOC-09, Edit, Delete) -->
               <td style="min-width: 140px; width: 140px; text-align: center;" class="acciones-cell">
-                <div class="actions-wrapper hover-fade">
+                <div class="actions-wrapper">
                   <button class="action-btn btn-historial" (click)="onVerHistorial(doc)"
-                    title="Ver Historial de Versiones (DOC-09)">
+                    title="Ver Historial de Versiones">
                     <mat-icon>history</mat-icon>
                   </button>
                   <button class="action-btn btn-edit" (click)="onEditar(doc, i)" title="Editar registro"
@@ -381,14 +381,16 @@
 
             <tr *ngIf="filteredDocs.length === 0">
               <td colspan="11" class="empty-row" style="padding: 32px 24px; text-align: center;">
-                <mat-icon class="empty-icon" style="font-size: 38px; width: 38px; height: 38px; color: #94a3b8; margin-bottom: 8px;">folder_off</mat-icon>
+                <mat-icon class="empty-icon"
+                  style="font-size: 38px; width: 38px; height: 38px; color: #94a3b8; margin-bottom: 8px;">folder_off</mat-icon>
                 <p style="font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 4px;">
                   No hay documentos en <span style="color: #6366f1;">{{ getActiveFolderTitle() }}</span>
                 </p>
                 <p style="font-size: 12px; color: #64748b; margin-bottom: 14px;">
                   Sube o registra un documento directamente en esta carpeta
                 </p>
-                <button type="button" class="btn-primary-glow" (click)="onAgregar()" *ngIf="canCreate" style="margin: 0 auto; display: inline-flex; align-items: center; gap: 6px;">
+                <button type="button" class="btn-primary-glow" (click)="onAgregar()" *ngIf="canCreate"
+                  style="margin: 0 auto; display: inline-flex; align-items: center; gap: 6px;">
                   <mat-icon style="font-size: 16px; width: 16px; height: 16px;">add</mat-icon>
                   <span>Subir documento a {{ getActiveFolderTypeName() || 'esta carpeta' }}</span>
                 </button>
@@ -437,7 +439,7 @@
       <div class="doc-meta-grid">
 
         <div class="meta-card">
-          <span class="meta-label">Proceso / Áreas Autorizadas (DOC-15)</span>
+          <span class="meta-label">Proceso / Áreas Autorizadas</span>
           <span class="meta-value-text">{{ selectedDoc.proceso }}</span>
         </div>
 
@@ -597,4 +599,310 @@
     </div>
   </div>
 
+
+  <!-- ===================================================================
+       DOC-07: MODAL PREMIUM DE REPORTE DE LECTURA SEMESTRAL - JEFATURAS (MAT-DIALOG NATIVO)
+       =================================================================== -->
+  <ng-template #reporteModalDialog>
+    <div class="reporte-modal-dialog shadow-premium">
+      <!-- HEADER COMPACTO CON ACCIÓN DOC-14 INTEGRADA -->
+      <div class="reporte-modal-header">
+        <div class="reporte-header-left">
+          <div class="reporte-avatar">
+            <mat-icon>analytics</mat-icon>
+          </div>
+          <div>
+            <div class="reporte-title-row">
+              <h3 class="reporte-title">Reporte de Lectura Semestral — Jefaturas</h3>
+              <span class="reporte-badge-code"></span>
+              <span class="reporte-badge-status" [class.badge-success]="reportePorcentajeCumplimiento === 100"
+                [class.badge-warning]="reportePorcentajeCumplimiento < 100">
+                {{ reportePorcentajeCumplimiento }}% Cumplimiento
+              </span>
+            </div>
+            <p class="reporte-sub">
+              Control y auditoría de visto bueno de documentos normativos por Jefaturas de Proceso (dbo.SN_Puesto).
+            </p>
+          </div>
+        </div>
+
+        <div class="reporte-header-actions">
+          <button type="button" class="btn-header-doc14" (click)="onEnviarAlertaMasivaCorreoJefaturas()"
+            title="Enviar correos a Jefes de Área con lectura pendiente > 6 meses">
+            <mat-icon>send</mat-icon>
+            <span>Alerta Masiva</span>
+          </button>
+
+          <button type="button" class="drawer-close-btn" (click)="onCerrarReporte()" title="Cerrar Reporte">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- BODY FLEXBOX CON CONTENCIÓN -->
+      <div class="reporte-modal-body">
+
+        <!-- STRIP EJECUTIVO DE MÉTRICAS (COMPACTO Y CLICKEABLE) -->
+        <div class="reporte-metrics-strip">
+          <div class="metric-pill pill-total" [class.active-pill]="reporteFiltroEstado === 'TODOS'"
+            (click)="setReporteFiltroEstado('TODOS')" title="Ver todos">
+            <div class="pill-icon-box icon-blue">
+              <mat-icon>folder_special</mat-icon>
+            </div>
+            <div class="pill-info">
+              <span class="pill-num text-blue">{{ docsList.length }}</span>
+              <span class="pill-text">Total</span>
+            </div>
+          </div>
+
+          <div class="metric-pill pill-pendientes" [class.active-pill]="reporteFiltroEstado === 'PENDIENTES'"
+            (click)="setReporteFiltroEstado('PENDIENTES')" title="Ver pendientes">
+            <div class="pill-icon-box icon-rose">
+              <mat-icon>pending_actions</mat-icon>
+            </div>
+            <div class="pill-info">
+              <span class="pill-num text-rose">{{ reporteDocsSinVisto.length }}</span>
+              <span class="pill-text">Pendientes</span>
+            </div>
+          </div>
+
+          <div class="metric-pill pill-leidos" [class.active-pill]="reporteFiltroEstado === 'LEIDOS'"
+            (click)="setReporteFiltroEstado('LEIDOS')" title="Ver leídos">
+            <div class="pill-icon-box icon-emerald">
+              <mat-icon>check_circle</mat-icon>
+            </div>
+            <div class="pill-info">
+              <span class="pill-num text-emerald">{{ reporteDocsConVisto.length }}</span>
+              <span class="pill-text">Leídos</span>
+            </div>
+          </div>
+
+          <div class="metric-pill pill-areas" title="Áreas según SN_Puesto">
+            <div class="pill-icon-box icon-indigo">
+              <mat-icon>supervised_user_circle</mat-icon>
+            </div>
+            <div class="pill-info">
+              <span class="pill-num text-indigo">{{ reporteProcesosList.length }}</span>
+              <span class="pill-text">Áreas</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOOLBAR DE CONTROLES (COMPACTO) -->
+        <div class="reporte-toolbar">
+          <div class="reporte-status-tabs">
+            <button type="button" class="reporte-tab-btn" [class.active]="reporteFiltroEstado === 'TODOS'"
+              (click)="setReporteFiltroEstado('TODOS')">
+              <span>Todos</span>
+              <span class="tab-badge">{{ docsList.length }}</span>
+            </button>
+            <button type="button" class="reporte-tab-btn tab-btn-pendientes"
+              [class.active]="reporteFiltroEstado === 'PENDIENTES'" (click)="setReporteFiltroEstado('PENDIENTES')">
+              <mat-icon class="tab-icon">schedule</mat-icon>
+              <span>Pendientes</span>
+              <span class="tab-badge badge-rose">{{ reporteDocsSinVisto.length }}</span>
+            </button>
+            <button type="button" class="reporte-tab-btn tab-btn-leidos"
+              [class.active]="reporteFiltroEstado === 'LEIDOS'" (click)="setReporteFiltroEstado('LEIDOS')">
+              <mat-icon class="tab-icon">check_circle</mat-icon>
+              <span>Leídos</span>
+              <span class="tab-badge badge-emerald">{{ reporteDocsConVisto.length }}</span>
+            </button>
+          </div>
+
+          <div class="reporte-toolbar-right">
+            <div class="reporte-search-box">
+              <mat-icon class="search-icon">search</mat-icon>
+              <input type="text" [(ngModel)]="reporteSearchTerm" (input)="onReporteSearchChange()"
+                placeholder="Buscar código, documento, proceso, titular..." class="reporte-search-input" />
+              <button type="button" *ngIf="reporteSearchTerm" (click)="clearReporteSearch()" class="search-clear-btn"
+                title="Limpiar">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <div class="reporte-select-wrap">
+              <select [(ngModel)]="reporteFiltroProceso" (change)="onReporteProcesoChange($any($event.target).value)"
+                class="reporte-proc-select">
+                <option value="TODOS">Todos los procesos ({{ reporteProcesosList.length }})</option>
+                <option *ngFor="let proc of reporteProcesosList" [value]="proc">{{ proc }}</option>
+              </select>
+            </div>
+
+            <button type="button" class="btn-export-excel-reporte" (click)="exportarReporteExcel()"
+              title="Descargar en Excel">
+              <mat-icon>grid_on</mat-icon>
+              <span>Excel</span>
+            </button>
+
+            <button type="button" class="btn-reset-filtros-reporte"
+              *ngIf="reporteSearchTerm || reporteFiltroEstado !== 'TODOS' || reporteFiltroProceso !== 'TODOS'"
+              (click)="resetReporteFiltros()" title="Restablecer filtros">
+              <mat-icon>restart_alt</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- TABLA CON SCROLL INTERNO Y ANCHOS EQUILIBRADOS -->
+        <div class="reporte-table-container">
+          <table class="reporte-table" *ngIf="reporteFilteredDocs.length > 0">
+            <thead>
+              <tr>
+                <th style="width: 140px;">CÓDIGO</th>
+                <th style="min-width: 190px;">NOMBRE DEL DOCUMENTO</th>
+                <th style="width: 125px;">PROCESO</th>
+                <th style="width: 190px;">JEFATURA / TITULAR</th>
+                <th style="width: 95px; text-align: center;">ESTADO</th>
+                <th style="width: 95px; text-align: center;">FECHA V.B.</th>
+                <th style="width: 85px; text-align: center;">ACCIÓN</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let doc of reportePaginatedDocs" [class.row-pendiente]="!doc.vistoBuenoInfo"
+                [class.row-leido]="!!doc.vistoBuenoInfo">
+                <!-- CÓDIGO -->
+                <td class="cell-codigo">
+                  <span class="reporte-code-badge" [class.code-leido]="!!doc.vistoBuenoInfo"
+                    [class.code-pendiente]="!doc.vistoBuenoInfo">
+                    {{ doc.codigo }}
+                  </span>
+                </td>
+
+                <!-- DOCUMENTO -->
+                <td class="cell-nombre">
+                  <div class="doc-title-cell">
+                    <span class="doc-main-name" [title]="doc.nombre">{{ doc.nombre }}</span>
+                    <div class="doc-sub-badges">
+                      <span class="doc-type-tag">{{ doc.tipo || 'Procedimiento' }}</span>
+                      <span class="doc-ver-tag">{{ doc.version || 'v1.0' }}</span>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- PROCESO -->
+                <td class="cell-proceso">
+                  <span class="reporte-process-badge" [title]="doc.proceso">{{ doc.proceso || 'General' }}</span>
+                </td>
+
+                <!-- RESPONSABLE / JEFATURA -->
+                <td class="cell-responsable">
+                  <div class="responsable-box" *ngIf="doc.vistoBuenoInfo">
+                    <div class="resp-name text-emerald">
+                      <mat-icon class="icon-verified">verified</mat-icon>
+                      <span>{{ doc.vistoBuenoInfo.usuario }}</span>
+                    </div>
+                    <div class="resp-puesto">{{ doc.vistoBuenoInfo.puesto }}</div>
+                  </div>
+
+                  <div class="responsable-box" *ngIf="!doc.vistoBuenoInfo">
+                    <div class="resp-name text-slate">
+                      <mat-icon class="icon-person">person_outline</mat-icon>
+                      <span>{{ doc.responsableAsignado?.jefe || 'Jefatura de Área' }}</span>
+                    </div>
+                    <div class="resp-puesto">{{ doc.responsableAsignado?.puesto || ('Jefe de ' + doc.proceso) }}</div>
+                    <div class="resp-alert-tag">⏳ Pendiente de firma</div>
+                  </div>
+                </td>
+
+                <!-- ESTADO -->
+                <td style="text-align: center;">
+                  <span class="reporte-status-pill pill-leido" *ngIf="doc.vistoBuenoInfo">
+                    <mat-icon>check_circle</mat-icon>
+                    <span>LEÍDO</span>
+                  </span>
+                  <span class="reporte-status-pill pill-pendiente" *ngIf="!doc.vistoBuenoInfo">
+                    <mat-icon>schedule</mat-icon>
+                    <span>PENDIENTE</span>
+                  </span>
+                </td>
+
+                <!-- FECHA -->
+                <td style="text-align: center;">
+                  <span class="fecha-text" *ngIf="doc.vistoBuenoInfo">{{ doc.vistoBuenoInfo.fecha }}</span>
+                  <span class="fecha-muted" *ngIf="!doc.vistoBuenoInfo">— Sin registrar —</span>
+                </td>
+
+                <!-- ACCIÓN -->
+                <td style="text-align: center;">
+                  <button type="button" class="btn-dar-vb-table" *ngIf="!doc.vistoBuenoInfo"
+                    (click)="onDarVistoBuenoDesdeReporte(doc)" title="Confirmar visto bueno">
+                    <mat-icon>check_circle</mat-icon>
+                    <span>Dar V.B.</span>
+                  </button>
+                  <button type="button" class="btn-ver-vb-table" *ngIf="doc.vistoBuenoInfo"
+                    (click)="onDarVistoBuenoDesdeReporte(doc)" title="Ver constancia">
+                    <mat-icon>visibility</mat-icon>
+                    <span>Constancia</span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- ESTADO VACÍO -->
+          <div class="reporte-empty-state" *ngIf="reporteFilteredDocs.length === 0">
+            <mat-icon class="empty-icon">search_off</mat-icon>
+            <h4>No se encontraron documentos</h4>
+            <p>No hay registros con los criterios seleccionados.</p>
+            <button type="button" class="btn-clear-empty" (click)="resetReporteFiltros()">Limpiar Filtros</button>
+          </div>
+        </div>
+
+        <!-- PAGINACIÓN FIJA -->
+        <div class="reporte-pagination-bar" *ngIf="reporteFilteredDocs.length > 0">
+          <div class="pagination-info">
+            <span>{{ reportePaginationInfo }}</span>
+            <span class="page-size-selector">
+              <label>Mostrar:</label>
+              <select [(ngModel)]="reportePageSize" (change)="onPageSizeChange($any($event.target).value)">
+                <option [value]="10">10 filas</option>
+                <option [value]="20">20 filas</option>
+                <option [value]="50">50 filas</option>
+                <option [value]="-1">Todos</option>
+              </select>
+            </span>
+          </div>
+
+          <div class="pagination-controls" *ngIf="reportePageSize > 0 && reporteTotalPages > 1">
+            <button type="button" class="page-nav-btn" (click)="prevReportePage()" [disabled]="reporteCurrentPage === 1"
+              title="Anterior">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <div class="page-numbers">
+              <button type="button" class="page-num-btn" *ngFor="let p of reportePagesArray"
+                [class.active]="p === reporteCurrentPage" (click)="goToReportePage(p)">
+                {{ p }}
+              </button>
+            </div>
+            <button type="button" class="page-nav-btn" (click)="nextReportePage()"
+              [disabled]="reporteCurrentPage === reporteTotalPages" title="Siguiente">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER FIJO -->
+      <div class="reporte-modal-footer">
+        <div class="footer-left">
+          <span class="footer-stat"><strong>{{ reporteFilteredDocs.length }}</strong> documentos</span>
+          <span class="footer-divider">•</span>
+          <span class="footer-stat text-emerald"><strong>{{ reporteDocsConVisto.length }}</strong> confirmados</span>
+          <span class="footer-divider">•</span>
+          <span class="footer-stat text-rose"><strong>{{ reporteDocsSinVisto.length }}</strong> pendientes</span>
+        </div>
+
+        <div class="footer-right">
+          <button type="button" class="btn-footer-secondary" (click)="exportarReporteExcel()">
+            <mat-icon>grid_on</mat-icon>
+            <span>Descargar Excel</span>
+          </button>
+          <button type="button" class="btn-footer-close" (click)="onCerrarReporte()">
+            <span>Cerrar Reporte</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-template>
 </div>

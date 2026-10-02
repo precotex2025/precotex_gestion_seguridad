@@ -10,9 +10,9 @@ import { SedesService } from '../../../services/sedes.service';
 import { ProcesosService } from '../../../services/procesos.service';
 import { GlobalVariable } from '../../../VarGlobals';
 interface data {
-  Title       : string;
-  Accion      : string;
-  Datos       : any   ;
+  Title: string;
+  Accion: string;
+  Datos: any;
 }
 
 @Component({
@@ -48,13 +48,13 @@ export class OrganizacionRegeditComponent implements OnInit {
   };
 
   constructor(
-    private formBuilder       : FormBuilder           ,     
-    private matSnackBar       : MatSnackBar           ,
-    private SpinnerService    : NgxSpinnerService     ,
-    private toastr            : ToastrService         ,
-    private sedesService      : SedesService          ,
-    private procesosService   : ProcesosService       ,
-    @Inject(MAT_DIALOG_DATA) public data: data        ,
+    private formBuilder: FormBuilder,
+    private matSnackBar: MatSnackBar,
+    private SpinnerService: NgxSpinnerService,
+    private toastr: ToastrService,
+    private sedesService: SedesService,
+    private procesosService: ProcesosService,
+    @Inject(MAT_DIALOG_DATA) public data: data,
     public dialogRef: MatDialogRef<OrganizacionRegeditComponent>,
   ) {
 
@@ -62,16 +62,16 @@ export class OrganizacionRegeditComponent implements OnInit {
 
   ngOnInit(): void {
     this.formulario = this.formBuilder.group({
-        ctrol_nombre: ['', Validators.required],
-        ctrol_direccion: ['', Validators.required],
-        ctrol_estado: ['', Validators.required],
+      ctrol_nombre: ['', Validators.required],
+      ctrol_direccion: ['', Validators.required],
+      ctrol_estado: ['', Validators.required],
     });
 
     this.onCargarProcesos();
 
-    if (this.data.Accion === 'U'){
+    if (this.data.Accion === 'U') {
       this.onLoadInfo();
-    }    
+    }
   }
 
   DEFAULT_PROCESOS: any[] = [
@@ -191,14 +191,14 @@ export class OrganizacionRegeditComponent implements OnInit {
     }
   }
 
-  onLoadInfo(){
+  onLoadInfo() {
     this.formulario.get('ctrol_nombre')?.setValue(this.data.Datos.denominacion);
     this.formulario.get('ctrol_direccion')?.setValue(this.data.Datos.direccion);
     this.formulario.get('ctrol_estado')?.setValue(this.data.Datos.localidad);
   }
 
-  onSave(){
-    const sTitle = this.data.Accion === 'I'? 'Registrar': 'Actualizar'; 
+  onSave() {
+    const sTitle = this.data.Accion === 'I' ? 'Registrar' : 'Actualizar';
     const nombre = this.formulario.get('ctrol_nombre')?.value || '';
     const direccion = this.formulario.get('ctrol_direccion')?.value || '';
     const estado = this.formulario.get('ctrol_estado')?.value || '';
@@ -238,10 +238,10 @@ export class OrganizacionRegeditComponent implements OnInit {
       cancelButtonColor: '#d33',
       confirmButtonText: 'Sí',
       cancelButtonText: 'No'
-    }).then((result) => {    
+    }).then((result) => {
       if (result.isConfirmed) {
         this.SpinnerService.show();
-        
+
         let requestData: any = {};
         if (this.data.Accion === 'I') {
           requestData = {
@@ -381,8 +381,8 @@ export class OrganizacionRegeditComponent implements OnInit {
     });
   }
 
-  onClose(){
+  onClose() {
     this.dialogRef.close();
-  }  
+  }
 
 }

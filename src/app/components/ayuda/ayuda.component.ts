@@ -168,7 +168,7 @@ export class AyudaComponent implements OnInit {
   constructor(
     private toastr: ToastrService,
     private ayudaService: AyudaService
-  ) {}
+  ) { }
 
   formatFechaDMY(val: any): string {
     if (!val) return '—';
@@ -289,7 +289,7 @@ export class AyudaComponent implements OnInit {
     const dateVigenciaDefault = nextYear.toISOString().slice(0, 10);
 
     Swal.fire({
-      title: '📁 Subir Documento de Ayuda / Manual (CDA-01)',
+      title: '📁 Subir Documento de Ayuda / Manual',
       background: '#ffffff',
       color: '#1e2545',
       width: '580px',
@@ -308,7 +308,7 @@ export class AyudaComponent implements OnInit {
                    style="width: 100%; padding: 8px 12px; background: #f4f6fc; border: 1px solid #e2e7f1; border-radius: 8px; color: #1e2545; font-size: 12px;">
           </div>
 
-          <!-- Tipo de Documento (DESPLEGABLE CDA-01) -->
+          <!-- Tipo de Documento (DESPLEGABLE -->
           <div>
             <label style="font-weight: 700; color: #1e2545; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px;">
               2. Tipo de Documento (*)
@@ -330,7 +330,7 @@ export class AyudaComponent implements OnInit {
                    style="width: 100%; padding: 9px 12px; background: #ffffff; border: 1px solid #e2e7f1; border-radius: 8px; color: #1e2545; font-size: 13px;">
           </div>
 
-          <!-- Fecha de Vigencia (FECHA VIGENCIA CDA-01) -->
+          <!-- Fecha de Vigencia (FECHA VIGENCIA -->
           <div>
             <label style="font-weight: 700; color: #1e2545; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px;">
               4. Fecha de Vigencia (*)
@@ -434,7 +434,7 @@ export class AyudaComponent implements OnInit {
               this.ayudaService.postManualMnto(payload).subscribe({
                 next: (apiRes: any) => {
                   if (apiRes && apiRes.success) {
-                    this.toastr.success(`Documento "${titulo}" guardado con éxito (Tipo: ${tipo}, Vigencia: ${vigencia}).`, 'Guardado CDA-01');
+                    this.toastr.success(`Documento "${titulo}" guardado con éxito (Tipo: ${tipo}, Vigencia: ${vigencia}).`, 'Guardado');
                     this.onListadoManuales();
                   } else {
                     this.toastr.error(apiRes?.message || 'Error al guardar manual en la BD.', 'Error BD');
@@ -484,7 +484,7 @@ export class AyudaComponent implements OnInit {
     const email = 'privera@precotexperu.com';
     const subject = encodeURIComponent('Consulta Portal SIG Precotex');
     window.location.href = `mailto:${email}?subject=${subject}`;
-    
+
     if (navigator.clipboard) {
       navigator.clipboard.writeText(email).then(() => {
         this.toastr.success('Abriendo Outlook. Correo copiado al portapapeles: ' + email, 'Contacto O&M');
@@ -500,7 +500,7 @@ export class AyudaComponent implements OnInit {
     const email = 'fhuamani@precotexperu.com';
     const subject = encodeURIComponent('Reportar un problema');
     window.location.href = `mailto:${email}?subject=${subject}`;
-    
+
     if (navigator.clipboard) {
       navigator.clipboard.writeText(email).then(() => {
         this.toastr.success('Abriendo Outlook. Correo copiado al portapapeles: ' + email, 'Contacto Sitemas');
@@ -525,7 +525,7 @@ export class AyudaComponent implements OnInit {
     const htmlStats = `
       <div style="text-align: left; font-size: 13px; color: #1e2545; line-height: 1.6; font-family: var(--sn-font-family);">
         <div style="background: rgba(91, 75, 214, 0.08); border: 1px solid rgba(91, 75, 214, 0.2); padding: 12px 16px; border-radius: 10px; margin-bottom: 14px;">
-          <strong style="color: #5b4bd6; font-size: 14px;">📊 Reporte de Consultas Recurrentes & Capacitaciones Sugeridas (CDA-04)</strong>
+          <strong style="color: #5b4bd6; font-size: 14px;">📊 Reporte de Consultas Recurrentes & Capacitaciones Sugeridas </strong>
           <p style="margin: 4px 0 0 0; font-size: 12px; color: #5a6178;">Estadísticas consolidadas para planificar próximas capacitaciones del personal Precotex.</p>
         </div>
 
@@ -562,7 +562,7 @@ export class AyudaComponent implements OnInit {
       cancelButtonColor: '#94a3b8'
     }).then((res) => {
       if (res.isConfirmed) {
-        this.toastr.success('Plan de capacitación corporativa generado exitosamente.', 'Reporte CDA-04 Exportado');
+        this.toastr.success('Plan de capacitación corporativa generado exitosamente.', 'Reporte Exportado');
       }
     });
   }

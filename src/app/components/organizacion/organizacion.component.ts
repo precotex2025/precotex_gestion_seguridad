@@ -24,11 +24,11 @@ export class OrganizacionComponent implements OnInit {
     independencia: number;
     ate: number;
   } = {
-    total: 0,
-    huachipa: 0,
-    independencia: 0,
-    ate: 0
-  };
+      total: 0,
+      huachipa: 0,
+      independencia: 0,
+      ate: 0
+    };
 
   organigramaNombre: string | null = null;
   organigramaUrl: string | null = null;
@@ -48,13 +48,13 @@ export class OrganizacionComponent implements OnInit {
   sUsuario: string = GlobalVariable.vusu;
 
   constructor(
-    private dialog              : MatDialog             ,
-    private SpinnerService      : NgxSpinnerService     ,
-    private toastr              : ToastrService         ,
-    private sedesService        : SedesService          ,
-    private procesosService     : ProcesosService       ,
-    private sanitizer           : DomSanitizer
-  ) {}
+    private dialog: MatDialog,
+    private SpinnerService: NgxSpinnerService,
+    private toastr: ToastrService,
+    private sedesService: SedesService,
+    private procesosService: ProcesosService,
+    private sanitizer: DomSanitizer
+  ) { }
 
   displayedColumns: string[] = [
     'nombre',
@@ -63,10 +63,10 @@ export class OrganizacionComponent implements OnInit {
     'procesos',
     'estado',
     'acciones'
-  ];  
-  dataSource = new MatTableDataSource<any>();    
+  ];
+  dataSource = new MatTableDataSource<any>();
 
-  async ngOnInit(){
+  async ngOnInit() {
     this.onListado();
     await this.loadDocument('organigrama');
     await this.loadDocument('mapaprocesos');
@@ -200,8 +200,8 @@ export class OrganizacionComponent implements OnInit {
 
   // ORG-10: Exportar reporte de sedes a Excel con Título Oficial, Procesos completos y Diseño Premium
   onExportarSedes(): void {
-    const dataToExport = (this.dataSource.filteredData && this.dataSource.filteredData.length > 0) 
-      ? this.dataSource.filteredData 
+    const dataToExport = (this.dataSource.filteredData && this.dataSource.filteredData.length > 0)
+      ? this.dataSource.filteredData
       : this.dataSource.data;
 
     if (!dataToExport || dataToExport.length === 0) {
@@ -222,8 +222,8 @@ export class OrganizacionComponent implements OnInit {
       const distStr = row.distrito || row.localidad || 'Lima';
       const procsStr = (row.procesosNombres && row.procesosNombres.trim() !== '') ? row.procesosNombres : 'Sin procesos asignados';
       const isActivo = row.isActivo !== undefined ? row.isActivo : (row.estado === 'Activo');
-      const estadoBadge = isActivo 
-        ? '<span style="color: #166534; font-weight: bold;">🟢 Activo</span>' 
+      const estadoBadge = isActivo
+        ? '<span style="color: #166534; font-weight: bold;">🟢 Activo</span>'
         : '<span style="color: #991b1b; font-weight: bold;">🔴 Inactivo</span>';
 
       rowsHtml += `
@@ -297,7 +297,7 @@ export class OrganizacionComponent implements OnInit {
     link.click();
     document.body.removeChild(link);
 
-    this.toastr.success('Reporte de sedes con título oficial y procesos exportado a Excel.', 'ORG-10: Exportación');
+    this.toastr.success('Reporte de sedes con título oficial y procesos exportado a Excel.', 'Exportación');
   }
 
   triggerUpload(type: string) {
@@ -363,7 +363,7 @@ export class OrganizacionComponent implements OnInit {
     }
   }
 
-  onListado(){
+  onListado() {
     this.SpinnerService.show();
     this.sedesService.getListadoSedes('001', '1').subscribe({
       next: (response: any) => {
@@ -372,13 +372,13 @@ export class OrganizacionComponent implements OnInit {
           this.procesosService.getListadoProcesos('001', '1').subscribe({
             next: (procRes: any) => {
               const allProcs = (procRes && procRes.success && procRes.elements) ? procRes.elements : [];
-              
+
               const mappedData = sedes.map((sede: any) => {
                 const sedeCodeNorm = (sede.codigo_Sede || '').toString().trim();
                 const sProcs = allProcs.filter((p: any) => {
                   const pSedeCodeNorm = (p.codigo_Sede || '').toString().trim();
-                  return pSedeCodeNorm === sedeCodeNorm || 
-                         (pSedeCodeNorm !== '' && parseInt(pSedeCodeNorm, 10) === parseInt(sedeCodeNorm, 10));
+                  return pSedeCodeNorm === sedeCodeNorm ||
+                    (pSedeCodeNorm !== '' && parseInt(pSedeCodeNorm, 10) === parseInt(sedeCodeNorm, 10));
                 });
                 const procNames = sProcs.map((p: any) => p.proceso || p.nombre_Proceso || p.denominacion || '').filter((n: string) => n.trim().length > 0);
                 const isActivo = sede.flg_Activo === '1' || sede.flg_Activo === true || sede.flg_Activo === 1 || sede.flg_Activo === 'True';
@@ -434,9 +434,9 @@ export class OrganizacionComponent implements OnInit {
   calculateStats(sedes: any[]): void {
     const matchLocation = (s: any, keyword: string) => {
       const fullText = (
-        (s.distrito || '') + ' ' + 
-        (s.nombre || '') + ' ' + 
-        (s.direccion || '') + ' ' + 
+        (s.distrito || '') + ' ' +
+        (s.nombre || '') + ' ' +
+        (s.direccion || '') + ' ' +
         (s.localidad || '')
       ).toLowerCase();
       return fullText.includes(keyword.toLowerCase());
@@ -465,45 +465,45 @@ export class OrganizacionComponent implements OnInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
-  onAgregar(){
+  onAgregar() {
     let dialogRef = this.dialog.open(OrganizacionRegeditComponent, {
       width: '750px',
       maxHeight: '90vh',
       disableClose: true,
       panelClass: 'my-class',
       data: {
-         Title  : "::. Agregar sede .::",
-         Accion : "I",
-         Datos  : null
+        Title: "::. Agregar sede .::",
+        Accion: "I",
+        Datos: null
       }
     });
     dialogRef.afterClosed().subscribe((res) => {
       if (res) {
         this.onListado();
       }
-    });       
+    });
   }
 
-  onEditar(item: any){
+  onEditar(item: any) {
     let dialogRef = this.dialog.open(OrganizacionRegeditComponent, {
       width: '750px',
       maxHeight: '90vh',
       disableClose: true,
       panelClass: 'my-class',
       data: {
-         Title  : "::. Editar sede .::",
-         Accion : "U",
-         Datos  : item.raw
+        Title: "::. Editar sede .::",
+        Accion: "U",
+        Datos: item.raw
       }
     });
     dialogRef.afterClosed().subscribe((res) => {
       if (res) {
         this.onListado();
       }
-    });     
+    });
   }
 
-  onEliminar(item: any){
+  onEliminar(item: any) {
     Swal.fire({
       title: '¿Desea eliminar la sede?, Confirme',
       icon: 'question',
@@ -512,10 +512,10 @@ export class OrganizacionComponent implements OnInit {
       cancelButtonColor: '#d33',
       confirmButtonText: 'Sí',
       cancelButtonText: 'No'
-    }).then((result) => {    
+    }).then((result) => {
       if (result.isConfirmed) {
         this.SpinnerService.show();
-        
+
         item.raw.flg_Activo = '0'; // Soft delete
         item.raw.cod_Usuario = this.sUsuario;
 
@@ -547,6 +547,6 @@ export class OrganizacionComponent implements OnInit {
           }
         });
       }
-    });      
+    });
   }
 }

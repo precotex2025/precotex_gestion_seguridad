@@ -133,6 +133,7 @@ export class PortafolioMejoraComponent implements OnInit {
 
   mostrarArchivosSubidos: boolean = false;
   treeColapsado: boolean = false;
+  searchProcesoTree: string = '';
 
   toggleTree(): void {
     this.treeColapsado = !this.treeColapsado;
@@ -241,26 +242,99 @@ export class PortafolioMejoraComponent implements OnInit {
     return Object.keys(this.procesosGroups);
   }
 
+  getFilteredMacroProcesses(): string[] {
+    const allMacros = Object.keys(this.procesosGroups);
+    if (!this.searchProcesoTree || !this.searchProcesoTree.trim()) return allMacros;
+    const q = this.searchProcesoTree.toLowerCase().trim();
+    return allMacros.filter(macro => {
+      if (macro.toLowerCase().includes(q)) return true;
+      const procs = this.procesosGroups[macro] || [];
+      return procs.some(p => p.toLowerCase().includes(q) || this.getAbreviaturaProceso(p).toLowerCase().includes(q));
+    });
+  }
+
+  getFilteredProcesosByMacro(macro: string): string[] {
+    const rawList = this.procesosGroups[macro] || [];
+    let list = rawList.filter(p => {
+      const lower = p.toLowerCase();
+      if (lower === 'hilanderia' || lower === 'hilandería' || lower === 'capacitaciones y desarrollo') return false;
+      if (macro === 'Gerencia General (GG)' && lower.includes('comercial')) return false;
+      return true;
+    });
+
+    // Deduplicación estricta por nombre normalizado
+    const seen = new Set<string>();
+    list = list.filter(p => {
+      const norm = this.normalizarNombreProceso(p).toLowerCase();
+      if (seen.has(norm)) return false;
+      seen.add(norm);
+      return true;
+    });
+
+    if (!this.searchProcesoTree || !this.searchProcesoTree.trim()) return list;
+    const q = this.searchProcesoTree.toLowerCase().trim();
+    return list.filter(p => p.toLowerCase().includes(q) || this.getAbreviaturaProceso(p).toLowerCase().includes(q));
+  }
+
+  normalizarNombreProceso(nombre: string): string {
+    if (!nombre) return '';
+    const clean = nombre.trim();
+    const lower = clean.toLowerCase();
+    if (lower === 'costuras' || lower === 'costura') {
+      return 'Costura';
+    }
+    if (lower.includes('investiga') && lower.includes('innova')) {
+      return 'Investigación, Desarrollo e Innovación';
+    }
+    if (lower === 'capacitaciones y desarrollo' || lower === 'capacitacion' || lower === 'capacitación') {
+      return 'Capacitación';
+    }
+    if (lower === 'aseguramiento de calidad textil' || lower === 'aseguramiento de la calidad textil') {
+      return 'Aseguramiento de la Calidad Textil';
+    }
+    if (lower.includes('planeamiento') && (lower.includes('estampado') || lower.includes('e&b') || lower.includes('pceb'))) {
+      return 'Planeamiento y Programación de la Producción E&B';
+    }
+    return clean;
+  }
+
   getMacroCount(group: string): number {
-    const processes = this.procesosGroups[group] || [];
-    return this.mejoraList.filter(m => processes.includes(m.proceso)).length;
+    const processes = (this.procesosGroups[group] || []).map(p => this.normalizarNombreProceso(p).toLowerCase());
+    return this.mejoraList.filter(m => {
+      const norm = this.normalizarNombreProceso(m.proceso || '').toLowerCase();
+      return processes.includes(norm) || (this.procesosGroups[group] || []).includes(m.proceso);
+    }).length;
   }
 
   getProcessCount(proc: string): number {
-    return this.mejoraList.filter(m => m.proceso === proc).length;
+    const normTarget = this.normalizarNombreProceso(proc).toLowerCase();
+    return this.mejoraList.filter(m => {
+      const normM = this.normalizarNombreProceso(m.proceso || '').toLowerCase();
+      return normM === normTarget || m.proceso === proc;
+    }).length;
   }
 
-  toggleMacro(macro: string, event: MouseEvent): void {
-    event.stopPropagation();
+  toggleMacro(macro: string, event?: Event): void {
+    if (event) event.stopPropagation();
     this.expandedMacros[macro] = !this.isMacroExpanded(macro);
   }
 
   isMacroExpanded(macro: string): boolean {
-    return this.expandedMacros[macro] !== false; // Abierto por defecto
+    if (this.searchProcesoTree && this.searchProcesoTree.trim()) {
+      const q = this.searchProcesoTree.toLowerCase().trim();
+      if (macro.toLowerCase().includes(q)) return true;
+      const procs = this.procesosGroups[macro] || [];
+      return procs.some(p => p.toLowerCase().includes(q) || this.getAbreviaturaProceso(p).toLowerCase().includes(q));
+    }
+    return !!this.expandedMacros[macro];
   }
 
   setFilter(filterValue: string): void {
     this.selectedProceso = filterValue;
+    if (filterValue.startsWith('macro:')) {
+      const m = filterValue.substring(6);
+      this.expandedMacros[m] = true;
+    }
     this.applyFilter();
   }
 
@@ -602,7 +676,7 @@ export class PortafolioMejoraComponent implements OnInit {
         });
         ws.addImage(imgId, {
           tl: { col: 0.1, row: 0.1 } as any,
-          br: { col: 0.9, row: 2.9 } as any,
+          br: { col: 1.0, row: 2.9 } as any,
           editAs: 'twoCell'
         } as any);
       } catch (errImg) {
@@ -1232,7 +1306,7 @@ export class PortafolioMejoraComponent implements OnInit {
       ws.mergeCells('H70:I71');
       ws.mergeCells('J70:M71');
 
-            // Alturas por fila (pt). Las filas con texto largo en celdas combinadas llevan 2-3 líneas.
+      // Alturas por fila (pt). Las filas con texto largo en celdas combinadas llevan 2-3 líneas.
       const acrHeights: Record<number, number> = {
         // Encabezado
         1: 20, 2: 20, 3: 20,

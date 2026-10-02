@@ -590,3 +590,11 @@
   background: #ef4444;
   box-shadow: 0 0 6px #ef4444;
 }
+
+/* Acciones fijas */
+.actions-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}

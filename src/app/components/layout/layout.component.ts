@@ -153,7 +153,9 @@ export class LayoutComponent implements OnInit, OnDestroy {
     console.log('[updateHeaderConfig] moduloKey:', JSON.stringify(moduloKey), '| hasAccess:', moduloKey ? this.hasAccess(moduloKey) : 'N/A (no key)');
     console.log('[updateHeaderConfig] permisosUsuario:', JSON.stringify(this.permisosUsuario));
 
-    if (moduloKey && !this.hasAccess(moduloKey)) {
+    // Solo bloquear si los permisos ya se cargaron y hasAccess devuelve false
+    const permisosCargados = this.permisosUsuario && Object.keys(this.permisosUsuario).length > 0;
+    if (moduloKey && permisosCargados && !this.hasAccess(moduloKey)) {
       console.log('[updateHeaderConfig] >>> BLOQUEADO por hasAccess. moduloKey:', moduloKey);
       this.toastr.error('No tiene permisos para acceder a este módulo.', 'Acceso Denegado');
       this.router.navigate(['/principal']);
@@ -362,7 +364,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
   }
 
   loadUserPermissions(): void {
-    const userLogin = (GlobalVariable.vusu || '').toLowerCase().trim();
+    const userLogin = (GlobalVariable.vusu || (typeof localStorage !== 'undefined' ? localStorage.getItem('vusu') : '') || '').toLowerCase().trim();
     if (!userLogin) return;
 
     // 1. Intentar cargar desde cache local para acceso inmediato
@@ -384,10 +386,11 @@ export class LayoutComponent implements OnInit, OnDestroy {
       next: (res: any) => {
         if (res && res.success && res.elements) {
           const puestosList = res.elements.map((p: any) => ({
-            codigo_Puesto: p.codigo_Puesto,
-            puesto: p.denominacion,
-            usuario: p.puesto_Funciones || '—',
-            proceso: p.puesto_Descripcion || 'General'
+            codigo_Puesto: (p.codigo_Puesto || '').trim(),
+            puesto: (p.denominacion || '').trim(),
+            usuario: (p.puesto_Funciones || '—').trim(),
+            proceso: (p.puesto_Descripcion || 'General').trim(),
+            cod_Usuario: (p.cod_Usuario || '').trim().toLowerCase()
           }));
 
           localStorage.setItem('precotex:puestos:listado', JSON.stringify(puestosList));
@@ -396,6 +399,11 @@ export class LayoutComponent implements OnInit, OnDestroy {
             next: (permRes: any) => {
               if (permRes && permRes.success && permRes.elements) {
                 const accesosObj: any = {};
+                const isPositive = (n: string) => {
+                  const s = (n || '').toLowerCase().trim();
+                  return s === 'editar' || s === 'ver' || s === 'lectura' || s === 'modificar';
+                };
+
                 permRes.elements.forEach((row: any) => {
                   const puestoClave = (row.codigo_Puesto_Usuario || '').trim();
                   const moduloClave = (row.modulo_Clave || '').trim();
@@ -406,7 +414,17 @@ export class LayoutComponent implements OnInit, OnDestroy {
                       accesosObj[puestoClave] = {};
                     }
                     if (moduloClave) {
+                      const cleanKey = moduloClave.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+                      // Guardar clave exacta
                       accesosObj[puestoClave][moduloClave] = nivelAcceso;
+
+                      // Guardar clave normalizada sin tildes (auditorias, organizacion, etc.)
+                      // Si viene 'Sin acceso', se respeta estrictamente para evitar que 'Ver' residual prevalezca
+                      const prevClean = accesosObj[puestoClave][cleanKey];
+                      if (!prevClean || nivelAcceso.toLowerCase() === 'sin acceso' || prevClean.toLowerCase() !== 'sin acceso') {
+                        accesosObj[puestoClave][cleanKey] = nivelAcceso;
+                      }
                     }
                   }
                 });
@@ -447,32 +465,68 @@ export class LayoutComponent implements OnInit, OnDestroy {
   processPermissions(userLogin: string, puestosList: any[], accesosObj: any): void {
     console.log('[Permisos] --- Inicio processPermissions ---');
     console.log('[Permisos] userLogin:', JSON.stringify(userLogin));
-    console.log('[Permisos] puestosList:', JSON.stringify(puestosList.map(p => ({ puesto: p.puesto, usuario: p.usuario }))));
-    console.log('[Permisos] accesosObj claves:', JSON.stringify(Object.keys(accesosObj)));
 
-    const userPuesto = puestosList.find(p => this.matchesUser(userLogin, p.usuario));
+    // 1. Buscar puesto PRIMERO por coincidencia directa de cod_Usuario en la BD (100% exacto para todos los usuarios)
+    let userPuesto = puestosList.find(p => p.cod_Usuario && p.cod_Usuario === userLogin);
+
+    // 2. Si no se encontró por cod_Usuario, buscar por coincidencia heurística de usuario (nombre / login)
+    if (!userPuesto) {
+      userPuesto = puestosList.find(p => this.matchesUser(userLogin, p.usuario));
+    }
+
+    // 3. Si no se encontró, buscar por código de puesto guardado en sesión
+    if (!userPuesto) {
+      const storedCodPuesto = (localStorage.getItem('precotex:usuario:codigo_puesto') || '').trim();
+      if (storedCodPuesto) {
+        userPuesto = puestosList.find(p => p.codigo_Puesto === storedCodPuesto);
+      }
+    }
+
+    // 4. Si no se encontró, buscar por puesto (denominación) guardado en sesión
+    if (!userPuesto) {
+      const storedPuesto = (localStorage.getItem('precotex:usuario:puesto') || '').trim().toLowerCase();
+      if (storedPuesto) {
+        userPuesto = puestosList.find(p => (p.puesto || '').trim().toLowerCase() === storedPuesto);
+      }
+    }
+
+    // 5. Si no se encontró, buscar por nombre guardado en sesión
+    if (!userPuesto) {
+      const storedNombre = (localStorage.getItem('precotex:usuario:nombre') || '').trim();
+      if (storedNombre) {
+        userPuesto = puestosList.find(p => this.matchesUser(storedNombre, p.usuario));
+      }
+    }
+
     if (userPuesto) {
       this.puestoUsuario = userPuesto.puesto;
       const puestoName = (userPuesto.puesto || '').trim();
-      const puestoCode = userPuesto.codigo_Puesto;
+      const puestoCode = (userPuesto.codigo_Puesto || '').trim();
       const procesoPuesto = (userPuesto.proceso || 'General').trim();
 
-      // Guardar el proceso/área asignado al usuario
-      localStorage.setItem('precotex:usuario:proceso', procesoPuesto);
-      console.log('[Permisos] Proceso/Área asignado:', procesoPuesto);
+      // Guardar el puesto, proceso/área y código asignado al usuario
+      localStorage.setItem('precotex:usuario:puesto', puestoName);
+      if (procesoPuesto && procesoPuesto.toLowerCase() !== 'general') {
+        localStorage.setItem('precotex:usuario:proceso', procesoPuesto);
+      }
+      if (puestoCode) {
+        localStorage.setItem('precotex:usuario:codigo_puesto', puestoCode);
+      }
+      console.log('[Permisos] Puesto:', puestoName, '| Proceso/Área asignado:', procesoPuesto);
 
-      // Buscar permisos por nombre de puesto (con trim por CHAR padding de SQL Server)
-      // Primero intento directo, luego con trim en cada clave del objeto
-      let permisos = accesosObj[puestoName] || accesosObj[puestoCode];
+      // Buscar permisos por nombre de puesto o código de puesto
+      let permisos = accesosObj[puestoName] || (puestoCode ? accesosObj[puestoCode] : null);
 
       if (!permisos) {
-        // Buscar haciendo trim en todas las claves del objeto (SQL Server CHAR padding)
+        // Buscar haciendo trim y normalización case-insensitive
         const matchingKey = Object.keys(accesosObj).find(key =>
-          key.trim().toLowerCase() === puestoName.toLowerCase()
+          key.trim().toLowerCase() === puestoName.toLowerCase() ||
+          (puestoCode && key.trim().toLowerCase() === puestoCode.toLowerCase()) ||
+          key.trim().toLowerCase() === userLogin.toLowerCase()
         );
         if (matchingKey) {
           permisos = accesosObj[matchingKey];
-          console.log('[Permisos] Coincidencia encontrada con trim. Clave BD:', JSON.stringify(matchingKey), '| Puesto:', JSON.stringify(puestoName));
+          console.log('[Permisos] Coincidencia encontrada. Clave BD:', JSON.stringify(matchingKey), '| Puesto:', JSON.stringify(puestoName));
         }
       }
 
@@ -482,30 +536,61 @@ export class LayoutComponent implements OnInit, OnDestroy {
       this.permisosUsuario = {};
       this.puestoUsuario = '';
       console.log('[Permisos] No se encontró puesto para el usuario:', userLogin);
-      console.log('[Permisos] Usuarios disponibles en puestos:', puestosList.map(p => p.usuario));
+      console.log('[Permisos] Usuarios disponibles en puestos:', puestosList.map(p => ({ cod_Usuario: p.cod_Usuario, puesto: p.puesto })));
     }
   }
 
   matchesUser(login: string, fullName: string): boolean {
     if (!login || !fullName || fullName === '—') return false;
-    const cleanLogin = login.toLowerCase().trim();
-    const cleanName = fullName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    const cleanLogin = (login || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    const cleanName = (fullName || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
-    if (cleanName.replace(/\s+/g, '') === cleanLogin) return true;
+    if (cleanName === cleanLogin) return true;
+    if (cleanName.replace(/[^a-z0-9]/g, '') === cleanLogin.replace(/[^a-z0-9]/g, '')) return true;
 
-    const parts = cleanName.split(/\s+/);
+    // Si tiene formato 'APELLIDOS, NOMBRES' (estándar peruano de planillas / ERP)
+    if (cleanName.includes(',')) {
+      const [apellidosPart, nombresPart] = cleanName.split(',').map(s => s.trim());
+      const apellidos = apellidosPart.split(/\s+/).filter(Boolean);
+      const nombres = (nombresPart || '').split(/\s+/).filter(Boolean);
+
+      const primerApellido = apellidos[0] || '';
+      const segundoApellido = apellidos[1] || '';
+
+      // Probar combinaciones con cada uno de los nombres (ej. Jordan, Alexis, Mario)
+      for (const nom of nombres) {
+        if (!nom) continue;
+        const initial = nom.charAt(0);
+        // jpinedo (inicial + primer apellido)
+        if (cleanLogin === initial + primerApellido) return true;
+        // jordan.pinedo / jordan_pinedo / jordanpinedo
+        if (cleanLogin === nom + '.' + primerApellido || cleanLogin === nom + '_' + primerApellido || cleanLogin === nom + primerApellido) return true;
+        // jpinedot (inicial + primer apellido + inicial segundo apellido)
+        if (segundoApellido && cleanLogin === initial + primerApellido + segundoApellido.charAt(0)) return true;
+        // j.pinedo
+        if (cleanLogin === initial + '.' + primerApellido) return true;
+        // Login empieza con inicial del nombre y contiene el apellido
+        if (cleanLogin.startsWith(initial) && cleanLogin.includes(primerApellido)) return true;
+      }
+
+      // Coincidencia directa por primer apellido
+      if (cleanLogin === primerApellido) return true;
+    }
+
+    // Formato estándar 'NOMBRES APELLIDOS' o palabras sueltas
+    const parts = cleanName.replace(/,/g, '').split(/\s+/).filter(Boolean);
     if (parts.length >= 2) {
-      const firstName = parts[0];
-      const lastName = parts[1];
-      const initial = firstName.charAt(0);
+      const initial0 = parts[0].charAt(0);
+      const word1 = parts[1];
+      if (cleanLogin === initial0 + word1) return true;
+      if (cleanLogin === parts[0] + '.' + word1 || cleanLogin === parts[0] + word1) return true;
+      if (cleanLogin.startsWith(initial0) && cleanLogin.includes(word1)) return true;
 
-      if (cleanLogin === initial + lastName) {
-        return true;
-      }
-
-      if (cleanLogin.startsWith(initial) && cleanLogin.includes(lastName)) {
-        return true;
-      }
+      // Orden inverso (APELLIDO NOMBRE): pinedo jordan -> jpinedo
+      const lastWord = parts[parts.length - 1];
+      const initialLast = lastWord.charAt(0);
+      const firstWord = parts[0];
+      if (cleanLogin === initialLast + firstWord) return true;
     }
 
     return cleanName.includes(cleanLogin);
@@ -513,15 +598,55 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
   hasAccess(moduloKey: string): boolean {
     // Perfil Administrador: si el rol del usuario es 1 (admin), puede ver todo
-    const codRol = GlobalVariable.vCod_Rol;
+    const codRol = GlobalVariable.vCod_Rol || (typeof localStorage !== 'undefined' ? parseInt(localStorage.getItem('vCod_Rol') || '0') : 0) || 0;
     if (codRol === 1) {
       return true;
     }
 
-    // Si tiene permisos cargados y el módulo está marcado como "Sin acceso"
-    if (this.permisosUsuario[moduloKey] === 'Sin acceso') {
+    if (!moduloKey) return true;
+
+    // Si tiene permisos cargados
+    if (this.permisosUsuario && Object.keys(this.permisosUsuario).length > 0) {
+      const targetKey = moduloKey.toLowerCase().trim();
+      const cleanTarget = targetKey.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+      // Buscar si el módulo tiene nivel asignado
+      let nivel: string | undefined = undefined;
+
+      // 1. Coincidencia directa
+      if (this.permisosUsuario[moduloKey] !== undefined) {
+        nivel = this.permisosUsuario[moduloKey];
+      } else if (this.permisosUsuario[cleanTarget] !== undefined) {
+        nivel = this.permisosUsuario[cleanTarget];
+      } else if (this.permisosUsuario[targetKey] !== undefined) {
+        nivel = this.permisosUsuario[targetKey];
+      } else {
+        // Buscar por normalización de claves
+        for (const [k, v] of Object.entries(this.permisosUsuario)) {
+          const cleanK = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+          if (cleanK === cleanTarget || k.toLowerCase().trim() === targetKey) {
+            nivel = v;
+            if ((v || '').trim().toLowerCase() === 'sin acceso') {
+              break;
+            }
+          }
+        }
+      }
+
+      if (nivel !== undefined && nivel !== null) {
+        const cleanNivel = (nivel || '').trim().toLowerCase();
+        if (cleanNivel === 'sin acceso' || cleanNivel === 'sin permisos' || cleanNivel === 'bloqueado' || cleanNivel === '0') {
+          return false;
+        }
+        if (cleanNivel === 'editar' || cleanNivel === 'ver' || cleanNivel === 'lectura' || cleanNivel === 'modificar') {
+          return true;
+        }
+      }
+
+      // Si el usuario tiene permisos configurados pero no tiene este módulo otorgado, denegar por defecto para usuarios estándar
       return false;
     }
+
     return true;
   }
 
@@ -553,6 +678,9 @@ export class LayoutComponent implements OnInit, OnDestroy {
     }
     if (url.includes('/principal/reqLegal')) {
       return 'legal';
+    }
+    if (url.includes('/principal/normas') || url.includes('/principal/organizacion') || url.includes('/principal/mntoSedes') || url.includes('/principal/mntoProcesos')) {
+      return 'organizacion';
     }
     if (url.includes('/principal/proveedores')) {
       return 'proveedores';

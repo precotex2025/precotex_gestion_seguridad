@@ -142,10 +142,34 @@
 
   <!-- SECCIÓN 2: ACCESOS POR USUARIO (TABLA INTERACTIVA CON SELECTORES) -->
   <div class="panel-section shadow-premium" style="margin-top: 28px;">
-    <div class="panel-section-header">
-      <div>
+    <div class="panel-section-header flex-between">
+      <div class="header-titles-col">
         <h3 class="panel-section-title">ACCESOS POR USUARIO (POR MÓDULO)</h3>
         <p class="panel-section-subtitle">Cada usuario hereda los accesos de su nivel. Cambia el selector para ajustar el acceso general a un módulo — se guarda al instante.</p>
+      </div>
+
+      <div class="header-tools-col">
+        <!-- Buscador de personal -->
+        <div class="inline-search-box">
+          <mat-icon class="search-icon">search</mat-icon>
+          <input type="text"
+                 [value]="searchTerm"
+                 (input)="onSearchChange($any($event.target).value)"
+                 placeholder="Buscar colaborador, @usuario o puesto..."
+                 class="inline-search-input">
+          <button type="button" 
+                  class="btn-clear-inline-search" 
+                  *ngIf="searchTerm" 
+                  (click)="clearSearch()" 
+                  title="Limpiar búsqueda">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <div class="header-count-badge" *ngIf="puestosList.length > 0">
+          <span *ngIf="!searchTerm">{{ puestosList.length }} Colaboradores</span>
+          <span *ngIf="searchTerm">{{ filteredPuestosList.length }} de {{ puestosList.length }}</span>
+        </div>
       </div>
     </div>
 
@@ -158,7 +182,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let u of puestosList" class="fila">
+          <tr *ngFor="let u of paginatedPuestosList" class="fila">
             <!-- Info de usuario -->
             <td class="user-row-clickable" (click)="openDrawer(u)">
               <div class="user-avatar-cell">
@@ -167,7 +191,10 @@
                 </div>
                 <div class="user-cell-meta">
                   <span class="user-full-name">{{ u.puesto }}</span>
-                  <span class="user-login-sub">{{ u.usuario || '— Sin usuario asignado —' }}</span>
+                  <span class="user-login-sub">
+                    {{ u.usuario || '— Sin usuario asignado —' }}
+                    <span *ngIf="u.cod_Usuario" class="user-handle-tag">&#64;{{ u.cod_Usuario }}</span>
+                  </span>
                 </div>
               </div>
             </td>
@@ -183,24 +210,92 @@
               </select>
             </td>
           </tr>
+          <!-- Estado cuando no hay resultados de búsqueda -->
+          <tr *ngIf="filteredPuestosList.length === 0">
+            <td [attr.colspan]="pmodsList.length + 1" style="text-align: center; padding: 40px 16px;">
+              <div class="empty-filter-state">
+                <mat-icon class="empty-icon-large">person_search</mat-icon>
+                <div class="empty-text-title">No se encontró ningún colaborador</div>
+                <div class="empty-text-desc">No hay coincidencias para <strong>{{ searchTerm }}</strong>. Prueba con otro término.</div>
+                <button type="button" class="btn-clear-filter" (click)="clearSearch()">
+                  <mat-icon>refresh</mat-icon> Restablecer búsqueda
+                </button>
+              </div>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Leyenda de colores de celdas de usuario -->
-    <div class="legend-cell-status">
-      <span><i class="dot dot-green"></i>Editar</span>
-      <span><i class="dot dot-blue"></i>Ver</span>
-      <span><i class="dot dot-gray-faint"></i>Sin acceso</span>
+    <!-- Barra inferior con Leyenda y Paginación idéntica a imagen 4 -->
+    <div class="panel-bottom-bar">
+      <div class="legend-cell-status">
+        <span><i class="dot dot-green"></i>Editar</span>
+        <span><i class="dot dot-blue"></i>Ver</span>
+        <span><i class="dot dot-gray-faint"></i>Sin acceso</span>
+      </div>
+
+      <div class="pagination-footer-right" *ngIf="totalPages > 1">
+        <span class="pagination-info">{{ paginationInfo }}</span>
+        <div class="pagination-controls-wrapper">
+          <button type="button" 
+                  class="btn-pagination-nav" 
+                  (click)="prevPage()" 
+                  [disabled]="currentPage === 1"
+                  title="Página anterior">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+
+          <div class="pagination-pills-bar">
+            <button type="button" 
+                    *ngFor="let page of pagesArray" 
+                    class="pill-page-item" 
+                    [class.active]="currentPage === page"
+                    (click)="goToPage(page)">
+              {{ page }}
+            </button>
+          </div>
+
+          <button type="button" 
+                  class="btn-pagination-nav" 
+                  (click)="nextPage()" 
+                  [disabled]="currentPage === totalPages"
+                  title="Página siguiente">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- SECCIÓN 3: ACCESOS POR COLABORADOR (DETALLE Y AJUSTES SLIDE-OVER) -->
   <div class="panel-section shadow-premium" style="margin-top: 28px;">
-    <div class="panel-section-header">
-      <div>
+    <div class="panel-section-header flex-between">
+      <div class="header-titles-col">
         <h3 class="panel-section-title">ACCESOS POR COLABORADOR</h3>
         <p class="panel-section-subtitle">Haz clic en cualquier colaborador para desplegar el <strong>Panel Lateral Slide-Over</strong> y ajustar permisos finos en tiempo real con toggles interactivos.</p>
+      </div>
+
+      <div class="header-tools-col">
+        <div class="inline-search-box">
+          <mat-icon class="search-icon">search</mat-icon>
+          <input type="text"
+            [value]="searchTerm"
+            (input)="onSearchChange($any($event.target).value)"
+            placeholder="Buscar colaborador o puesto..."
+            class="inline-search-input">
+          <button type="button"
+            class="btn-clear-inline-search"
+            *ngIf="searchTerm"
+            (click)="clearSearch()"
+            title="Limpiar búsqueda">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="header-count-badge" *ngIf="puestosList.length > 0">
+          <span *ngIf="!searchTerm">{{ puestosList.length }} Colaboradores</span>
+          <span *ngIf="searchTerm">{{ filteredPuestosList.length }} de {{ puestosList.length }}</span>
+        </div>
       </div>
     </div>
 
@@ -215,7 +310,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let u of puestosList" class="fila user-row-clickable" (click)="openDrawer(u)">
+          <tr *ngFor="let u of paginatedColabList" class="fila user-row-clickable" (click)="openDrawer(u)">
             <td>
               <div class="user-avatar-cell">
                 <div class="avatar-circle-gradient">
@@ -223,7 +318,10 @@
                 </div>
                 <div class="user-cell-meta">
                   <span class="user-full-name">{{ u.puesto }}</span>
-                  <span class="user-login-sub">{{ u.usuario || '— Sin usuario asignado —' }}</span>
+                  <span class="user-login-sub">
+                    {{ u.usuario || '— Sin usuario asignado —' }}
+                    <span *ngIf="u.cod_Usuario" class="user-handle-tag">&#64;{{ u.cod_Usuario }}</span>
+                  </span>
                 </div>
               </div>
             </td>
@@ -244,8 +342,53 @@
               </button>
             </td>
           </tr>
+          <!-- Estado cuando no hay resultados de búsqueda -->
+          <tr *ngIf="filteredPuestosList.length === 0">
+            <td colspan="4" style="text-align: center; padding: 40px 16px;">
+              <div class="empty-filter-state">
+                <mat-icon class="empty-icon-large">person_search</mat-icon>
+                <div class="empty-text-title">No se encontró ningún colaborador</div>
+                <div class="empty-text-desc">No hay resultados para <strong>{{ searchTerm }}</strong>.</div>
+                <button type="button" class="btn-clear-filter" (click)="clearSearch()">
+                  <mat-icon>refresh</mat-icon> Restablecer búsqueda
+                </button>
+              </div>
+            </td>
+          </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Paginación estilo imagen 4 para colaboradores -->
+    <div class="panel-bottom-bar flex-end" *ngIf="totalPagesColab > 1">
+      <span class="pagination-info" style="margin-right: auto;">{{ paginationColabInfo }}</span>
+      <div class="pagination-controls-wrapper">
+        <button type="button" 
+                class="btn-pagination-nav" 
+                (click)="prevPageColab()" 
+                [disabled]="currentPageColab === 1"
+                title="Página anterior">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+
+        <div class="pagination-pills-bar">
+          <button type="button" 
+                  *ngFor="let page of pagesArrayColab" 
+                  class="pill-page-item" 
+                  [class.active]="currentPageColab === page"
+                  (click)="goToPageColab(page)">
+            {{ page }}
+          </button>
+        </div>
+
+        <button type="button" 
+                class="btn-pagination-nav" 
+                (click)="nextPageColab()" 
+                [disabled]="currentPageColab === totalPagesColab"
+                title="Página siguiente">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
     </div>
   </div>
 

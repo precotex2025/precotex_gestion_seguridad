@@ -770,3 +770,326 @@ input:checked + .switch-slider:before {
 .dot-gray-faint {
   background: var(--muted) !important;
 }
+
+
+/* ===================================================================
+   PAGINACIÓN PREMIUM IDÉNTICA A IMAGEN 4 & MEJORAS DE TABLA
+   =================================================================== */
+
+.panel-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 0 4px;
+}
+
+.panel-bottom-bar.flex-end {
+  justify-content: flex-end;
+}
+
+.pagination-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: auto;
+}
+
+.header-count-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #6366f1;
+  background: #eef2ff;
+  border: 1px solid #e0e7ff;
+  padding: 5px 14px;
+  border-radius: 20px;
+  letter-spacing: 0.2px;
+}
+
+.user-handle-tag {
+  color: #6366f1;
+  font-weight: 600;
+  font-size: 0.76rem;
+  margin-left: 6px;
+  background: rgba(99, 102, 241, 0.08);
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+
+.pagination-info {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+/* Pagination Control (Matching Image 4) */
+.pagination-controls-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-pagination-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  padding: 0;
+}
+
+.btn-pagination-nav mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+}
+
+.btn-pagination-nav:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #6366f1;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.15);
+  transform: translateY(-1px);
+}
+
+.btn-pagination-nav:hover:not(:disabled) mat-icon {
+  color: #6366f1;
+}
+
+.btn-pagination-nav:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+  background: #f8fafc;
+}
+
+.pagination-pills-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 4px 6px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+.pill-page-item {
+  border: none;
+  background: transparent;
+  color: #334155;
+  font-weight: 700;
+  font-size: 0.88rem;
+  min-width: 44px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pill-page-item:hover:not(.active) {
+  background: #f1f5f9;
+  color: #6366f1;
+}
+
+.pill-page-item.active {
+  background: #6c5ce7;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(108, 92, 231, 0.4);
+}
+
+
+/* Header Layout with Search & Count */
+.header-titles-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.header-tools-col {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.inline-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 320px;
+}
+
+.inline-search-input {
+  width: 100%;
+  height: 38px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 8px 36px 8px 36px;
+  color: #1e293b;
+  font-size: 0.82rem;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.inline-search-input:focus {
+  background: #ffffff;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.inline-search-input::placeholder {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.inline-search-box .search-icon {
+  position: absolute;
+  left: 10px;
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  color: #94a3b8;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-clear-inline-search {
+  position: absolute;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+}
+
+.btn-clear-inline-search mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.btn-clear-inline-search:hover {
+  color: #475569;
+  background: #f1f5f9;
+}
+
+/* Empty filter state in tables */
+.empty-filter-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #64748b;
+  padding: 12px;
+}
+
+.empty-icon-large {
+  font-size: 42px !important;
+  width: 42px !important;
+  height: 42px !important;
+  color: #94a3b8;
+  opacity: 0.6;
+}
+
+.empty-text-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.empty-text-desc {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.btn-clear-filter {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 7px 18px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.btn-clear-filter mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.btn-clear-filter:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
+@media (max-width: 900px) {
+  .header-tools-col {
+    width: 100%;
+    margin-top: 10px;
+  }
+  .inline-search-box {
+    min-width: 100%;
+    flex: 1;
+  }
+}
+
+
+/* Pills Selector for 10 Modules Table */
+.select-acceso-pill {
+  border-radius: 14px;
+  padding: 3px 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+  outline: none;
+  cursor: pointer;
+  background-color: transparent;
+  text-align: center;
+  transition: all 0.15s ease;
+  min-width: 82px;
+}
+
+.select-acceso-pill option {
+  background: #ffffff !important;
+  color: #1e293b !important;
+}

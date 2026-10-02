@@ -253,9 +253,10 @@
   align-items: center;
 }
 
+.btn-delete-manual,
 .btn-delete-manual.hover-fade {
-  opacity: 0;
-  transition: opacity 0.2s ease;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .manual-card:hover .btn-delete-manual.hover-fade {

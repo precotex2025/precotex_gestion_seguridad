@@ -10,7 +10,7 @@
       </div>
       <div class="header-text-group">
         <h2 class="header-title">{{ cleanTitle }}</h2>
-        <p class="header-subtitle">Selecciona el objetivo planificado para ingresar su medición periódica (OBJ-03)</p>
+        <p class="header-subtitle">Selecciona el objetivo planificado para ingresar su medición periódica</p>
       </div>
     </div>
 
@@ -35,9 +35,9 @@
 
   <!-- Formulario -->
   <form [formGroup]="formulario" (ngSubmit)="onGuardar()">
-    
+
     <div class="form-scroll-container custom-scrollbar">
-      
+
       <!-- ==================== SECCIÓN 1: BÚSQUEDA Y SELECCIÓN DE OBJETIVO ==================== -->
       <div class="form-section">
         <div class="section-header">
@@ -58,7 +58,8 @@
               Seleccionar Objetivo del Catálogo <span class="req">*</span>
             </label>
             <div class="input-wrapper select-wrapper">
-              <select formControlName="objetivo" (change)="onSelectObjetivoChange($event)" class="form-select font-medium select-highlight">
+              <select formControlName="objetivo" (change)="onSelectObjetivoChange($event)"
+                class="form-select font-medium select-highlight">
                 <option value="" disabled selected>-- Selecciona un objetivo registrado --</option>
                 <option *ngFor="let obj of objetivos" [value]="obj.objetivo || obj.nombre">
                   [{{ obj.codigo }}] {{ obj.objetivo || obj.nombre }} ({{ obj.proceso }} - Meta: {{ obj.meta }})
@@ -76,11 +77,8 @@
             </label>
             <div class="input-wrapper input-with-leading-icon">
               <mat-icon class="leading-icon">search</mat-icon>
-              <input type="text" 
-                     list="objetivosDatalist" 
-                     (input)="onSearchObjetivoChange($event)" 
-                     class="form-input pl-36" 
-                     placeholder="Ej. OBJ-2026-001, Tintorería, Accidentabilidad...">
+              <input type="text" list="objetivosDatalist" (input)="onSearchObjetivoChange($event)"
+                class="form-input pl-36" placeholder="Ej. OBJ-2026-001, Tintorería, Accidentabilidad...">
               <datalist id="objetivosDatalist">
                 <option *ngFor="let obj of objetivos" [value]="obj.codigo + ' - ' + (obj.objetivo || obj.nombre)">
                   {{ obj.proceso }} | Meta: {{ obj.meta }}
@@ -141,11 +139,8 @@
               <span class="auto-badge"><mat-icon class="lock-icon">lock</mat-icon> Automático</span>
             </label>
             <div class="input-wrapper">
-              <input type="text" 
-                     formControlName="proceso" 
-                     class="form-input readonly-input" 
-                     readonly 
-                     placeholder="Se autocompleta con el objetivo">
+              <input type="text" formControlName="proceso" class="form-input readonly-input" readonly
+                placeholder="Se autocompleta con el objetivo">
             </div>
           </div>
 
@@ -155,11 +150,8 @@
               <span class="auto-badge"><mat-icon class="lock-icon">lock</mat-icon> Automática</span>
             </label>
             <div class="input-wrapper">
-              <input type="text" 
-                     formControlName="frecuencia" 
-                     class="form-input readonly-input" 
-                     readonly 
-                     placeholder="Se autocompleta con el objetivo">
+              <input type="text" formControlName="frecuencia" class="form-input readonly-input" readonly
+                placeholder="Se autocompleta con el objetivo">
             </div>
           </div>
 
@@ -169,11 +161,8 @@
               <span class="auto-badge"><mat-icon class="lock-icon">lock</mat-icon> Automática</span>
             </label>
             <div class="input-wrapper">
-              <input type="text" 
-                     formControlName="meta" 
-                     class="form-input readonly-input font-bold text-emerald" 
-                     readonly 
-                     placeholder="Se autocompleta con el objetivo">
+              <input type="text" formControlName="meta" class="form-input readonly-input font-bold text-emerald"
+                readonly placeholder="Se autocompleta con el objetivo">
             </div>
           </div>
         </div>
@@ -186,10 +175,8 @@
               Valor Obtenido / Real <span class="req">*</span>
             </label>
             <div class="input-wrapper">
-              <input type="text" 
-                     formControlName="valor" 
-                     class="form-input font-bold highlight-value-input" 
-                     placeholder="Ej. 96.5% o 1.2">
+              <input type="text" formControlName="valor" class="form-input font-bold highlight-value-input"
+                placeholder="Ej. 96.5% o 1.2">
             </div>
           </div>
 
@@ -199,10 +186,8 @@
               Período de Medición <span class="req">*</span>
             </label>
             <div class="input-wrapper">
-              <input type="text" 
-                     formControlName="periodo" 
-                     class="form-input font-medium" 
-                     placeholder="Ej. 2026-Q1 / Marzo 2026">
+              <input type="text" formControlName="periodo" class="form-input font-medium"
+                placeholder="Ej. 2026-Q1 / Marzo 2026">
             </div>
           </div>
 
@@ -212,9 +197,8 @@
               Estado / Semáforo <span class="req">*</span>
             </label>
             <div class="input-wrapper select-wrapper">
-              <select formControlName="semaforo" 
-                      class="form-select font-bold semaforo-select" 
-                      [ngClass]="getSemaforoClass(formulario.get('semaforo')?.value)">
+              <select formControlName="semaforo" class="form-select font-bold semaforo-select"
+                [ngClass]="getSemaforoClass(formulario.get('semaforo')?.value)">
                 <option *ngFor="let opt of semaforosOptions" [value]="opt">{{ opt }}</option>
               </select>
               <mat-icon class="select-chevron">expand_more</mat-icon>
@@ -242,17 +226,14 @@
             Evidencia de Medición (PDF / Excel / Imagen / Word)
           </label>
           <div class="file-upload-wrapper">
-            <input type="file" 
-                   #fileEvidenciaInput 
-                   (change)="onFileEvidenciaSelected($event)" 
-                   accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.doc,.docx" 
-                   style="display: none;">
-            
+            <input type="file" #fileEvidenciaInput (change)="onFileEvidenciaSelected($event)"
+              accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.doc,.docx" style="display: none;">
+
             <div class="file-drop-card" [class.has-file]="nombreArchivoEvidencia" (click)="fileEvidenciaInput.click()">
               <div class="file-drop-icon">
                 <mat-icon>{{ nombreArchivoEvidencia ? 'verified' : 'cloud_upload' }}</mat-icon>
               </div>
-              
+
               <div class="file-drop-info">
                 <span class="file-drop-main-text" *ngIf="!nombreArchivoEvidencia">
                   <strong>Haz clic aquí</strong> para adjuntar evidencia de medición
@@ -265,11 +246,9 @@
                 </span>
               </div>
 
-              <button type="button" 
-                      *ngIf="nombreArchivoEvidencia" 
-                      class="btn-clear-file" 
-                      (click)="$event.stopPropagation(); onRemoveEvidencia(fileEvidenciaInput)" 
-                      title="Quitar archivo adjunto">
+              <button type="button" *ngIf="nombreArchivoEvidencia" class="btn-clear-file"
+                (click)="$event.stopPropagation(); onRemoveEvidencia(fileEvidenciaInput)"
+                title="Quitar archivo adjunto">
                 <mat-icon>close</mat-icon>
               </button>
             </div>
@@ -283,10 +262,8 @@
             Observaciones / Comentario de Seguimiento
           </label>
           <div class="input-wrapper">
-            <textarea formControlName="obs" 
-                      rows="2" 
-                      class="form-input form-textarea" 
-                      placeholder="Comentarios del análisis del resultado, desviaciones o justificación de la medición..."></textarea>
+            <textarea formControlName="obs" rows="2" class="form-input form-textarea"
+              placeholder="Comentarios del análisis del resultado, desviaciones o justificación de la medición..."></textarea>
           </div>
         </div>
       </div>
@@ -305,6 +282,6 @@
         <span>Guardar Medición</span>
       </button>
     </div>
-    
+
   </form>
 </div>

@@ -368,40 +368,86 @@
   font-weight: 500;
 }
 
-/* Action Buttons */
+/* ===================================================================
+   ACCIONES EN FORMATO PILL PREMIUM
+   =================================================================== */
+.acciones-cell,
 .actions-cell {
+  position: relative;
+  text-align: center;
   white-space: nowrap;
 }
 
+.actions-wrapper {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
+
+.action-btn,
 .btn-action-icon {
-  background: transparent;
-  border: none;
-  color: var(--muted);
   width: 32px;
   height: 32px;
   border-radius: 8px;
+  border: 1px solid transparent;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  margin-right: 4px;
+  background: transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  outline: none;
 }
 
+.action-btn mat-icon,
 .btn-action-icon mat-icon {
   font-size: 18px !important;
   width: 18px !important;
   height: 18px !important;
+  line-height: 18px !important;
 }
 
-.btn-action-icon:hover {
-  color: var(--violet);
-  background: rgba(91, 75, 214, 0.1);
+.action-btn.btn-view,
+.btn-action-icon.view,
+.btn-action-icon:first-child {
+  color: #3b82f6 !important;
+  background: rgba(59, 130, 246, 0.1) !important;
+  border-color: rgba(59, 130, 246, 0.2) !important;
+}
+.action-btn.btn-view:hover,
+.btn-action-icon.view:hover,
+.btn-action-icon:first-child:hover {
+  background: rgba(59, 130, 246, 0.22) !important;
+  transform: translateY(-1px);
 }
 
+.action-btn.btn-edit,
+.btn-action-icon.edit {
+  color: #d97706 !important;
+  background: rgba(217, 119, 6, 0.1) !important;
+  border-color: rgba(217, 119, 6, 0.2) !important;
+}
+.action-btn.btn-edit:hover,
+.btn-action-icon.edit:hover {
+  background: rgba(217, 119, 6, 0.22) !important;
+  transform: translateY(-1px);
+}
+
+.action-btn.btn-delete,
+.btn-action-icon.delete {
+  color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+.action-btn.btn-delete:hover,
 .btn-action-icon.delete:hover {
-  color: #ef4444;
-  background: #fee2e2;
+  background: rgba(239, 68, 68, 0.22) !important;
+  transform: translateY(-1px);
 }
 
 .empty-table {

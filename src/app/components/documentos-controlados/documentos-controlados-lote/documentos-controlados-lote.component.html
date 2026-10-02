@@ -5,8 +5,9 @@
       <span class="material-icons text-purple">cloud_upload</span>
     </div>
     <div class="dialog-header-text">
-      <h2 class="dialog-title">Carga Masiva de Documentos en Lote (DOC-11)</h2>
-      <p class="dialog-subtitle">Visualización completa y edición de todos los campos del documento (idénticos a la carga individual)</p>
+      <h2 class="dialog-title">Carga Masiva de Documentos en Lote</h2>
+      <p class="dialog-subtitle">Visualización completa y edición de todos los campos del documento (idénticos a la
+        carga individual)</p>
     </div>
   </div>
 
@@ -39,18 +40,15 @@
       <!-- ZONA DE CARGA DE ARCHIVOS CON DRAG & DROP -->
       <div class="form-group">
         <label class="form-label font-bold text-white">Archivos del Lote (*)</label>
-        <div class="file-uploader-dropzone-lote" 
-             [class.drag-over]="isDragOver"
-             (dragover)="onDragOver($event)" 
-             (dragleave)="onDragLeave($event)" 
-             (drop)="onDrop($event)"
-             (click)="fileInputLote.click()">
+        <div class="file-uploader-dropzone-lote" [class.drag-over]="isDragOver" (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)" (drop)="onDrop($event)" (click)="fileInputLote.click()">
           <span class="material-icons drop-icon-lote">cloud_upload</span>
           <div class="drop-texts-lote">
             <strong>Arrastra y suelta múltiples archivos aquí</strong>
             <span>o haz clic para examinar desde tu equipo</span>
           </div>
-          <input type="file" #fileInputLote multiple (change)="onFilesSelected($event)" style="display: none;" accept=".pdf,.doc,.docx,.xls,.xlsx">
+          <input type="file" #fileInputLote multiple (change)="onFilesSelected($event)" style="display: none;"
+            accept=".pdf,.doc,.docx,.xls,.xlsx">
         </div>
       </div>
     </div>
@@ -63,16 +61,20 @@
           <span class="text-white font-bold">Documentos en cola de carga ({{ filesList.length }})</span>
         </div>
         <div class="quick-actions-right" *ngIf="!isUploading">
-          <button type="button" class="btn-quick-action" (click)="aplicarVersionV1Pendientes()" title="Asignar versión 'v1' a documentos que no tengan versión">
+          <button type="button" class="btn-quick-action" (click)="aplicarVersionV1Pendientes()"
+            title="Asignar versión 'v1' a documentos que no tengan versión">
             <span class="material-icons">numbers</span> Asignar v1 a pendientes
           </button>
-          <button type="button" class="btn-quick-action" (click)="aplicarTipoGlobalTodos()" *ngIf="selectedTipoGlobal" title="Asignar el tipo global seleccionado a todos los archivos">
+          <button type="button" class="btn-quick-action" (click)="aplicarTipoGlobalTodos()" *ngIf="selectedTipoGlobal"
+            title="Asignar el tipo global seleccionado a todos los archivos">
             <span class="material-icons">category</span> Aplicar Tipo a Todos
           </button>
-          <button type="button" class="btn-quick-action" (click)="aplicarProcesoGlobalTodos()" *ngIf="selectedProceso" title="Asignar el proceso global seleccionado a todos los archivos">
+          <button type="button" class="btn-quick-action" (click)="aplicarProcesoGlobalTodos()" *ngIf="selectedProceso"
+            title="Asignar el proceso global seleccionado a todos los archivos">
             <span class="material-icons">sync</span> Aplicar Proceso a Todos
           </button>
-          <button type="button" class="btn-quick-action" (click)="aplicarVigencia3AniosTodos()" title="Asignar 3 años de vigencia a todos los documentos (DOC-01)">
+          <button type="button" class="btn-quick-action" (click)="aplicarVigencia3AniosTodos()"
+            title="Asignar 3 años de vigencia a todos los documentos">
             <span class="material-icons">event</span> Vigencia 3 Años a Todos
           </button>
         </div>
@@ -80,15 +82,12 @@
 
       <!-- CONTENEDOR DE TARJETAS COMPLETAS PARA CADA DOCUMENTO -->
       <div class="files-cards-container">
-        <div *ngFor="let item of filesList; let i = index" 
-             class="file-card-item" 
-             [class.uploaded-card]="item.isUploaded" 
-             [class.error-card]="item.isError">
-          
+        <div *ngFor="let item of filesList; let i = index" class="file-card-item"
+          [class.uploaded-card]="item.isUploaded" [class.error-card]="item.isError">
+
           <!-- LADO IZQUIERDO: PREVISUALIZACIÓN / FORMATO DE ARCHIVO (DOC-11) -->
-          <div class="file-format-preview" 
-               [class.excel-preview]="item.formato === 'Excel'"
-               [class.word-preview]="item.formato === 'Word'">
+          <div class="file-format-preview" [class.excel-preview]="item.formato === 'Excel'"
+            [class.word-preview]="item.formato === 'Word'">
             <span class="material-icons format-icon">
               {{ item.formato === 'Excel' ? 'grid_on' : item.formato === 'Word' ? 'description' : 'picture_as_pdf' }}
             </span>
@@ -98,16 +97,18 @@
 
           <!-- CENTRO: TODOS LOS CAMPOS IDÉNTICOS A REGISTRAR UN DOCUMENTO (DOC-11) -->
           <div class="file-fields-grid">
-            
+
             <!-- FILA 1: Código, Nombre, Proceso Responsable -->
             <div class="fields-row-3">
               <div class="field-col">
                 <label class="field-label">Código (*)</label>
-                <input type="text" [(ngModel)]="item.codigo" (ngModelChange)="onItemCodeChange(item)" class="form-control-sm code-font" placeholder="Ej. PER-IMC-ACT-012" [disabled]="isUploading">
+                <input type="text" [(ngModel)]="item.codigo" (ngModelChange)="onItemCodeChange(item)"
+                  class="form-control-sm code-font" placeholder="Ej. PER-IMC-ACT-012" [disabled]="isUploading">
               </div>
               <div class="field-col flex-2">
                 <label class="field-label">Nombre del Documento (*)</label>
-                <input type="text" [(ngModel)]="item.nombre" (ngModelChange)="onItemNombreChange(item)" class="form-control-sm" placeholder="Nombre completo del documento" [disabled]="isUploading">
+                <input type="text" [(ngModel)]="item.nombre" (ngModelChange)="onItemNombreChange(item)"
+                  class="form-control-sm" placeholder="Nombre completo del documento" [disabled]="isUploading">
               </div>
               <div class="field-col flex-2">
                 <label class="field-label">Proceso / Área Responsable</label>
@@ -127,17 +128,18 @@
                   <option *ngFor="let t of tipos" [value]="t">{{ t }}</option>
                 </select>
               </div>
-              
+
               <div class="field-col">
                 <label class="field-label" style="display: flex; align-items: center; justify-content: space-between;">
                   <span>Versión (*)</span>
-                  <span *ngIf="!item.version || !item.version.trim()" style="color: #ef4444; font-size: 9px; font-weight: bold;">Requerido</span>
+                  <span *ngIf="!item.version || !item.version.trim()"
+                    style="color: #ef4444; font-size: 9px; font-weight: bold;">Requerido</span>
                 </label>
-                <input type="text" [(ngModel)]="item.version" (ngModelChange)="onItemVersionChange(item)" 
-                       class="form-control-sm text-center font-bold" 
-                       [style.borderColor]="(!item.version || !item.version.trim()) ? '#ef4444' : ''"
-                       [style.backgroundColor]="(!item.version || !item.version.trim()) ? '#fef2f2' : ''"
-                       placeholder="Obligatorio (ej. v1)" [disabled]="isUploading">
+                <input type="text" [(ngModel)]="item.version" (ngModelChange)="onItemVersionChange(item)"
+                  class="form-control-sm text-center font-bold"
+                  [style.borderColor]="(!item.version || !item.version.trim()) ? '#ef4444' : ''"
+                  [style.backgroundColor]="(!item.version || !item.version.trim()) ? '#fef2f2' : ''"
+                  placeholder="Obligatorio (ej. v1)" [disabled]="isUploading">
               </div>
 
               <div class="field-col">
@@ -149,22 +151,24 @@
 
               <div class="field-col">
                 <label class="field-label">Vigencia (Vencimiento)</label>
-                <input type="date" [(ngModel)]="item.vig" (ngModelChange)="onItemVigChange(item)" class="form-control-sm text-center" [disabled]="isUploading">
+                <input type="date" [(ngModel)]="item.vig" (ngModelChange)="onItemVigChange(item)"
+                  class="form-control-sm text-center" [disabled]="isUploading">
               </div>
 
               <div class="field-col">
                 <label class="field-label">Estado</label>
-                <select [(ngModel)]="item.estado" class="form-control-sm font-bold" 
-                        [ngClass]="item.estado === 'Vigente' ? 'text-green' : (item.estado === 'Por vencer' ? 'text-yellow' : 'text-red')"
-                        [disabled]="isUploading">
+                <select [(ngModel)]="item.estado" class="form-control-sm font-bold"
+                  [ngClass]="item.estado === 'Vigente' ? 'text-green' : (item.estado === 'Por vencer' ? 'text-yellow' : 'text-red')"
+                  [disabled]="isUploading">
                   <option *ngFor="let est of estados" [value]="est">{{ est }}</option>
                 </select>
               </div>
 
               <!-- DOC-15: Visibilidad y Permisos de lectura en Carga Masiva -->
               <div class="field-col flex-2">
-                <label class="field-label">Visibilidad (DOC-15)</label>
-                <select [(ngModel)]="item.visibilidad" class="form-control-sm font-bold text-green" [disabled]="isUploading">
+                <label class="field-label">Visibilidad</label>
+                <select [(ngModel)]="item.visibilidad" class="form-control-sm font-bold text-green"
+                  [disabled]="isUploading">
                   <option value="Todos los procesos">🌐 Todos los procesos</option>
                   <option value="Solo mi proceso">🔒 Solo {{ item.proceso || 'mi proceso' }}</option>
                 </select>
@@ -175,12 +179,12 @@
 
           <!-- LADO DERECHO: ACCIÓN / ESTADO DE CARGA -->
           <div class="file-action-col">
-            <span class="status-badge-inline" 
-                  [class.status-uploaded]="item.isUploaded" 
-                  [class.status-error]="item.isError">
+            <span class="status-badge-inline" [class.status-uploaded]="item.isUploaded"
+              [class.status-error]="item.isError">
               {{ item.progressMessage }}
             </span>
-            <button type="button" class="btn-remove-item" (click)="removeFile(i)" *ngIf="!isUploading" title="Quitar este documento">
+            <button type="button" class="btn-remove-item" (click)="removeFile(i)" *ngIf="!isUploading"
+              title="Quitar este documento">
               <span class="material-icons">close</span>
             </button>
           </div>
@@ -193,7 +197,8 @@
   <!-- PIE CON ACCIONES PRINCIPALES -->
   <div class="dialog-actions">
     <button type="button" class="btn-ghost" (click)="onClose()" [disabled]="isUploading">Cancelar</button>
-    <button type="button" class="btn-primary" (click)="onUploadLote()" [disabled]="isUploading || filesList.length === 0">
+    <button type="button" class="btn-primary" (click)="onUploadLote()"
+      [disabled]="isUploading || filesList.length === 0">
       <span class="material-icons" *ngIf="!isUploading">cloud_upload</span>
       <span class="spinner" *ngIf="isUploading"></span>
       {{ isUploading ? 'Subiendo lote de documentos...' : 'Iniciar carga masiva (' + filesList.length + ')' }}

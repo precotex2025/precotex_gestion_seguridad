@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, TemplateRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { DocumentosControladosRegeditComponent } from './documentos-controlados-regedit/documentos-controlados-regedit.component';
@@ -89,7 +89,19 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   }
 
   getFilteredMacroProcesses(): string[] {
-    const allMacros = Object.keys(this.PROCESOS_GROUPS);
+    let allMacros = Object.keys(this.PROCESOS_GROUPS);
+
+    // Restricción por proceso: usuarios no administradores solo ven el macroproceso de su proceso asignado
+    if (!this.isUserAdmin) {
+      const userProc = this.getUserProcesoActual();
+      if (userProc && userProc.toLowerCase() !== 'general') {
+        const userMacro = this.getMacroGroupForProcess(userProc);
+        if (userMacro && allMacros.includes(userMacro)) {
+          allMacros = [userMacro];
+        }
+      }
+    }
+
     if (!this.searchProcesoTree || !this.searchProcesoTree.trim()) return allMacros;
     const q = this.searchProcesoTree.toLowerCase().trim();
     return allMacros.filter(macro => {
@@ -116,6 +128,15 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       seen.add(norm);
       return true;
     });
+
+    // Restricción por proceso: usuarios no administradores solo ven su propio proceso
+    if (!this.isUserAdmin) {
+      const userProc = this.getUserProcesoActual();
+      if (userProc && userProc.toLowerCase() !== 'general') {
+        const normUser = this.normalizarNombreProceso(userProc).toLowerCase();
+        list = list.filter(p => this.normalizarNombreProceso(p).toLowerCase() === normUser || this.matchesProcess(p, userProc));
+      }
+    }
 
     if (!this.searchProcesoTree || !this.searchProcesoTree.trim()) return list;
     const q = this.searchProcesoTree.toLowerCase().trim();
@@ -154,7 +175,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     this.selectedDoc = null;
   }
 
-    PROCESOS_GROUPS: { [key: string]: string[] } = {
+  PROCESOS_GROUPS: { [key: string]: string[] } = {
     'Soporte (SOP)': ['Sistemas', 'Mantenimiento General', 'Seguridad Patrimonial', 'SSOMA'],
     'Auditoría Interna (AIO)': ['Auditoría Interna'],
     'Control Patrimonial (CPT)': ['Control Patrimonial'],
@@ -192,7 +213,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     private http: HttpClient
   ) { }
 
-    procesosMap: { [name: string]: string } = {
+  procesosMap: { [name: string]: string } = {
     'acabados': '031',
     'acabados textil': '038',
     'administración': '014',
@@ -364,31 +385,59 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     let proc = (localStorage.getItem('precotex:usuario:proceso') || '').trim();
     if (proc && proc.toLowerCase() !== 'general') return proc;
 
-    const puesto = (localStorage.getItem('precotex:usuario:puesto') || '').trim();
-    if (puesto) {
-      if (puesto.toLowerCase().includes('costura')) return 'Costura';
-      if (puesto.toLowerCase().includes('estampado')) return 'Estampado';
-      if (puesto.toLowerCase().includes('ssoma')) return 'SSOMA';
-      if (puesto.toLowerCase().includes('calidad')) return 'Calidad';
-      if (puesto.toLowerCase().includes('sistemas')) return 'Sistemas';
-      if (puesto.toLowerCase().includes('auditor')) return 'Auditoría Interna';
-      if (puesto.toLowerCase().includes('patrimonial')) return 'Control Patrimonial';
-    }
-
     const puestosRaw = localStorage.getItem('precotex_puestos_usuarios') || localStorage.getItem('precotex:puestos:listado');
+    const userLogin = (GlobalVariable.vusu || (typeof localStorage !== 'undefined' ? localStorage.getItem('vusu') : '') || '').trim().toLowerCase();
+    const userNom = (localStorage.getItem('precotex:usuario:nombre') || '').trim().toLowerCase();
+    const puesto = (localStorage.getItem('precotex:usuario:puesto') || '').trim();
+
     if (puestosRaw) {
       try {
-        const userNom = (localStorage.getItem('precotex:usuario:nombre') || GlobalVariable.vusu || '').trim().toLowerCase();
         const pList = JSON.parse(puestosRaw);
-        const matchP = pList.find((p: any) =>
-          (p.usuario || '').toLowerCase().includes(userNom) ||
-          (p.puesto || '').toLowerCase() === puesto.toLowerCase()
-        );
-        if (matchP && matchP.proceso) return matchP.proceso;
+        const matchP = pList.find((p: any) => {
+          const cod = (p.cod_Usuario || '').toLowerCase().trim();
+          const u = (p.usuario || '').toLowerCase().trim();
+          const pst = (p.puesto || '').toLowerCase().trim();
+          return (userLogin && cod === userLogin) ||
+            (userLogin && u.includes(userLogin)) ||
+            (puesto && pst === puesto.toLowerCase()) ||
+            (userNom && u.includes(userNom));
+        });
+        if (matchP && matchP.proceso && matchP.proceso.toLowerCase() !== 'general') {
+          return matchP.proceso;
+        }
       } catch (e) { }
     }
 
+    if (puesto) {
+      const pLower = puesto.toLowerCase();
+      if (pLower.includes('certifica')) return 'Certificaciones';
+      if (pLower.includes('o&m') || pLower.includes('metodo') || pLower.includes('m&o') || pLower.includes('organizaci')) return 'Organización y Métodos';
+      if (pLower.includes('costura')) return 'Costura';
+      if (pLower.includes('estampado')) return 'Estampado';
+      if (pLower.includes('ssoma')) return 'SSOMA';
+      if (pLower.includes('calidad')) return 'Aseguramiento de la Calidad Manufactura';
+      if (pLower.includes('sistemas')) return 'Sistemas';
+      if (pLower.includes('auditor')) return 'Auditoría Interna';
+      if (pLower.includes('patrimonial')) return 'Control Patrimonial';
+      if (pLower.includes('corte')) return 'Corte';
+      if (pLower.includes('tejed')) return 'Tejeduría';
+      if (pLower.includes('tintor')) return 'Tintorería';
+      if (pLower.includes('acabad')) return 'Acabados';
+      if (pLower.includes('inspecc')) return 'Inspección';
+    }
+
     return '';
+  }
+
+  getMacroGroupForProcess(procName: string): string | null {
+    if (!procName) return null;
+    const norm = procName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    for (const [macro, procs] of Object.entries(this.PROCESOS_GROUPS)) {
+      if (procs.some(p => p.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === norm || this.matchesProcess(p, procName))) {
+        return macro;
+      }
+    }
+    return null;
   }
 
   ngOnInit(): void {
@@ -456,11 +505,22 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       localStorage.removeItem('precotex:docs_tree_pinned');
     }
 
-    // Restaurar filtro guardado en LocalStorage Presets
-    if (typeof localStorage !== 'undefined') {
-      const savedFilter = localStorage.getItem('precotex:pref:docs_activeFilter');
-      if (savedFilter) {
-        this.activeFilter = savedFilter;
+    // Inicialización del filtro por proceso de usuario
+    const userProcInit = this.getUserProcesoActual();
+    if (!this.isUserAdmin && userProcInit && userProcInit.toLowerCase() !== 'general') {
+      // Para usuarios no administradores, fijar directamente en su proceso asignado
+      this.activeFilter = userProcInit;
+      const userMacro = this.getMacroGroupForProcess(userProcInit);
+      if (userMacro) {
+        this.expandedMacrosState[userMacro] = true;
+      }
+    } else {
+      // Restaurar filtro guardado en LocalStorage Presets para administradores
+      if (typeof localStorage !== 'undefined') {
+        const savedFilter = localStorage.getItem('precotex:pref:docs_activeFilter');
+        if (savedFilter) {
+          this.activeFilter = savedFilter;
+        }
       }
     }
 
@@ -473,7 +533,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     }
   }
 
-    getProcessCodeByName(procName: string): string {
+  getProcessCodeByName(procName: string): string {
     if (!procName) return '011';
     const key = procName.trim().toLowerCase();
     const cleanNoAccents = key.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -501,10 +561,10 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   getProcessNameByCode(code: any): string {
     if (!code) return 'Organización y Métodos';
     const strCode = code.toString().trim();
-    return this.codeToProcessMap[strCode] || 
-           this.codeToProcessMap[strCode.padStart(3, '0')] || 
-           (parseInt(strCode, 10) ? this.codeToProcessMap[parseInt(strCode, 10).toString()] : '') || 
-           'Organización y Métodos';
+    return this.codeToProcessMap[strCode] ||
+      this.codeToProcessMap[strCode.padStart(3, '0')] ||
+      (parseInt(strCode, 10) ? this.codeToProcessMap[parseInt(strCode, 10).toString()] : '') ||
+      'Organización y Métodos';
   }
 
   /**
@@ -592,8 +652,12 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
     // 1. Alias específicos unívocos por proceso
-    if (s === 'o&m' || s === 'oym' || s === 'om' || s === 'organizacion y metodos') return 'organizacion y metodos';
-    if (s === 'sst' || s === 'ssoma' || s === 'seguridad y salud en el trabajo') return 'ssoma';
+    if (s === 'o&m' || s === 'oym' || s === 'om' || s === 'organizacion y metodos' || s.includes('organizacion y metodos') || s.includes('o&m')) return 'organizacion y metodos';
+    if (s === 'sst' || s === 'ssoma' || s.startsWith('ssoma') || s.includes('seguridad y salud') || s.includes('medio ambiente')) return 'ssoma';
+    if (s.startsWith('certifica') || s === 'cert') return 'certificaciones';
+    if (s.startsWith('auditor') || s === 'aio') return 'auditoria interna';
+    if (s === 'sistemas' || s === 'ti' || s === 'sist' || s.includes('tecnologia de la informacion') || s.includes('sistemas')) return 'sistemas';
+    if (s.includes('patrimonial') || s === 'cpt') return 'control patrimonial';
     if (s === 'costuras' || s === 'costura' || s === 'cos' || s === 'cost') return 'costura';
     if (s === 'inspeccion' || s === 'inspecciones' || s === 'insp') return 'inspeccion';
     if (s === 'acabados' || s === 'acabado' || s === 'acab') return 'acabados';
@@ -741,7 +805,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         const rCode = (r.codigo || r.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
         const rNom = (r.nombre || r.denominacion || '').toString().trim().toLowerCase();
         return (codeClean !== '' && rCode !== '' && rCode === codeClean) ||
-               (nomClean !== '' && rNom !== '' && rNom === nomClean);
+          (nomClean !== '' && rNom !== '' && rNom === nomClean);
       });
       if (matchIdx >= 0) {
         rawList[matchIdx] = {
@@ -789,6 +853,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     this.docsList = this.deduplicarDocumentos(rawList);
     this.aplicarReglaObsoletosPorVersion(this.docsList);
     this.restaurarHistorialVersiones(this.docsList);
+    this.restaurarVistosBuenos(this.docsList);
     this.saveDocs();
   }
 
@@ -857,9 +922,21 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       if (puestosRaw) {
         const puestosList = JSON.parse(puestosRaw);
         const userPuesto = puestosList.find((p: any) => {
+          const cod = (p.cod_Usuario || '').toLowerCase().trim();
+          if (userLogin && cod === userLogin) return true;
           const fullName = (p.usuario || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
           if (!fullName || fullName === '—') return false;
-          const parts = fullName.split(/\s+/);
+          if (fullName.includes(',')) {
+            const [apellidosPart, nombresPart] = fullName.split(',').map((s: string) => s.trim());
+            const apellidos = apellidosPart.split(/\s+/).filter(Boolean);
+            const nombres = (nombresPart || '').split(/\s+/).filter(Boolean);
+            const primerApellido = apellidos[0] || '';
+            for (const nom of nombres) {
+              if (userLogin === nom.charAt(0) + primerApellido || userLogin === nom + '.' + primerApellido || userLogin === nom + primerApellido) return true;
+              if (userLogin.startsWith(nom.charAt(0)) && userLogin.includes(primerApellido)) return true;
+            }
+          }
+          const parts = fullName.replace(/,/g, '').split(/\s+/).filter(Boolean);
           if (parts.length >= 2) {
             const initial = parts[0].charAt(0);
             const lastName = parts[1];
@@ -945,17 +1022,68 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       const procs = this.getDocProcesosList(d);
       const docP = d.proceso || '';
       return procs.some(p => this.matchesProcess(p, proc)) ||
-             this.matchesProcess(docP, proc) ||
-             procs.includes('Todos los procesos');
+        this.matchesProcess(docP, proc) ||
+        procs.includes('Todos los procesos');
     }).length;
   }
 
   setFilter(filterValue: string) {
+    if (!this.isUserAdmin) {
+      const userProc = this.getUserProcesoActual();
+      if (userProc && userProc.toLowerCase() !== 'general') {
+        if (filterValue === '__all__') {
+          filterValue = userProc;
+        } else if (filterValue.startsWith('macro:')) {
+          const macro = filterValue.substring(6);
+          const userMacro = this.getMacroGroupForProcess(userProc);
+          if (macro !== userMacro) {
+            filterValue = userProc;
+          }
+        } else if (!filterValue.startsWith('folder:')) {
+          if (!this.matchesProcess(filterValue, userProc)) {
+            filterValue = userProc;
+          }
+        }
+      }
+    }
+
     this.activeFilter = filterValue;
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('precotex:pref:docs_activeFilter', filterValue);
     }
     this.updateHeaderTitle();
+  }
+
+  getRootNodeLabel(): string {
+    if (this.isUserAdmin) return 'Todos los procesos';
+    const proc = this.getUserProcesoActual();
+    return proc ? `Mi Proceso: ${proc}` : 'Mi Proceso';
+  }
+
+  getRootNodeCount(): number {
+    if (this.isUserAdmin) return this.docsList.length;
+    const userProc = this.getUserProcesoActual();
+    if (!userProc || userProc.toLowerCase() === 'general') return this.docsList.length;
+    return this.docsList.filter(d => {
+      const procs = this.getDocProcesosList(d);
+      const docP = d.proceso || '';
+      return procs.some(p => this.matchesProcess(p, userProc)) || this.matchesProcess(docP, userProc);
+    }).length;
+  }
+
+  selectRootNode(): void {
+    if (this.isUserAdmin) {
+      this.setFilter('__all__');
+    } else {
+      const userProc = this.getUserProcesoActual();
+      this.setFilter(userProc || '__all__');
+    }
+  }
+
+  isRootActiveForUser(): boolean {
+    if (this.isUserAdmin) return this.activeFilter === '__all__';
+    const userProc = this.getUserProcesoActual();
+    return this.activeFilter === userProc || this.activeFilter === '__all__';
   }
 
   updateHeaderTitle(): void {
@@ -1026,8 +1154,8 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       const docP = d.proceso || '';
 
       const matchesProc = procs.some(p => this.matchesProcess(p, procName)) ||
-                          this.matchesProcess(docP, procName) ||
-                          procs.includes('Todos los procesos');
+        this.matchesProcess(docP, procName) ||
+        procs.includes('Todos los procesos');
 
       if (!matchesProc) return false;
 
@@ -1060,22 +1188,22 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   // DOC-03: Modificables solo por Administradores
   onEditarCarpetasAdmin(): void {
     if (!this.isUserAdmin) {
-      this.toastr.warning('La edición de carpetas está restringida únicamente para Administradores.', 'Restricción DOC-03');
+      this.toastr.warning('La edición de carpetas está restringida únicamente para Administradores.', 'Restricción');
       return;
     }
 
     Swal.fire({
       title: '📁 Nombres de Carpetas por Proceso',
       html: '<div style="text-align: left; font-size: 13px; color: #334155; line-height: 1.6;">' +
-            '<p>Los nombres de carpetas están estandarizados por proceso:</p>' +
-            '<div style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 8px;">' +
-            '<div>📂 <strong>Procedimientos</strong> (Direccionamiento automático de código PRO-)</div>' +
-            '<div>📂 <strong>Instructivos</strong> (Direccionamiento automático de código INS-)</div>' +
-            '<div>📂 <strong>Formatos</strong> (Direccionamiento automático de código FOR-)</div>' +
-            '<div>📂 <strong>Politica</strong> (Direccionamiento automático de código POL-)</div>' +
-            '<div>📂 <strong>Manual</strong> (Direccionamiento automático de código MAN-)</div>' +
-            '<div>📂 <strong>Descripción del Puesto</strong> (Para C&D / Otros para demás procesos)</div>' +
-            '</div></div>',
+        '<p>Los nombres de carpetas están estandarizados por proceso:</p>' +
+        '<div style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 8px;">' +
+        '<div>📂 <strong>Procedimientos</strong> (Direccionamiento automático de código PRO-)</div>' +
+        '<div>📂 <strong>Instructivos</strong> (Direccionamiento automático de código INS-)</div>' +
+        '<div>📂 <strong>Formatos</strong> (Direccionamiento automático de código FOR-)</div>' +
+        '<div>📂 <strong>Politica</strong> (Direccionamiento automático de código POL-)</div>' +
+        '<div>📂 <strong>Manual</strong> (Direccionamiento automático de código MAN-)</div>' +
+        '<div>📂 <strong>Descripción del Puesto</strong> (Para C&D / Otros para demás procesos)</div>' +
+        '</div></div>',
       icon: 'info',
       confirmButtonText: 'Aceptar',
       confirmButtonColor: '#3085d6'
@@ -1084,6 +1212,19 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
 
   get filteredDocs() {
     let list = this.docsList;
+
+    // Restricción estricta por proceso para usuarios no administradores
+    if (!this.isUserAdmin) {
+      const userProc = this.getUserProcesoActual();
+      if (userProc && userProc.toLowerCase() !== 'general') {
+        list = list.filter(d => {
+          const procs = this.getDocProcesosList(d);
+          const docP = d.proceso || '';
+          return procs.some(p => this.matchesProcess(p, userProc)) || this.matchesProcess(docP, userProc);
+        });
+      }
+    }
+
     if (this.activeFilter !== '__all__') {
       if (this.activeFilter.startsWith('macro:')) {
         const macro = this.activeFilter.substring(6);
@@ -1103,8 +1244,8 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
           const docP = d.proceso || '';
 
           const matchesProc = procs.some(p => this.matchesProcess(p, proc)) ||
-                              this.matchesProcess(docP, proc) ||
-                              procs.includes('Todos los procesos');
+            this.matchesProcess(docP, proc) ||
+            procs.includes('Todos los procesos');
 
           if (!matchesProc) return false;
 
@@ -1140,8 +1281,8 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
           const procs = this.getDocProcesosList(d);
           const docP = d.proceso || '';
           return procs.some(p => this.matchesProcess(p, filterP)) ||
-                 this.matchesProcess(docP, filterP) ||
-                 procs.includes('Todos los procesos');
+            this.matchesProcess(docP, filterP) ||
+            procs.includes('Todos los procesos');
         });
       }
     }
@@ -1327,7 +1468,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
             </div>
           </div>
           <div style="background: #fffbeb; border: 1px solid #fbbf24; border-radius: 6px; padding: 10px; font-size: 12px; color: #92400e;">
-            <strong>⚠️ Importante:</strong> Esta acción queda registrada como constancia de lectura obligatoria semestral (DOC-07). 
+            <strong>⚠️ Importante:</strong> Esta acción queda registrada como constancia de lectura obligatoria semestral. 
             Solo los administradores pueden ver este reporte.
           </div>
           <div style="margin-top: 12px; font-size: 12px; color: #64748b;">
@@ -1354,13 +1495,13 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         doc.vistoBuenoInfo = { usuario, puesto, fecha: fechaStr };
 
         // Registrar también en el audit log de revisiones
-        this.registrarRevisionLectura(doc, 'Visto Bueno Semestral (DOC-07)');
+        this.registrarRevisionLectura(doc, 'Visto Bueno Semestral');
 
         // Guardar en localStorage para persistencia
         this.guardarVistoBuenoLocal(doc);
         this.saveDocs();
 
-        this.toastr.success(`Visto Bueno registrado por ${usuario}`, 'Lectura Confirmada (DOC-07)');
+        this.toastr.success(`Visto Bueno registrado por ${usuario}`, 'Lectura Confirmada');
 
         Swal.fire({
           icon: 'success',
@@ -1396,122 +1537,435 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     }
   }
 
-  // DOC-07: Reporte de Jefaturas - Solo Admin: quién leyó y quién NO leyó sus documentos
+  // =========================================================================
+  // DOC-07: REPORTE DE LECTURA SEMESTRAL - JEFATURAS (MODAL NATIVO INTERACTIVO)
+  // =========================================================================
+  @ViewChild('reporteModalDialog') reporteModalDialog!: TemplateRef<any>;
+  private reporteDialogRef?: MatDialogRef<any>;
+  reporteModalOpen: boolean = false;
+  reporteSearchTerm: string = '';
+  reporteFiltroEstado: 'TODOS' | 'PENDIENTES' | 'LEIDOS' = 'TODOS';
+  reporteFiltroProceso: string = 'TODOS';
+  reporteCurrentPage: number = 1;
+  reportePageSize: number = 10;
+
+  // Propiedades cacheadas para el reporte (evitan bucles de change detection en Angular)
+  reporteFilteredDocs: any[] = [];
+  reportePaginatedDocs: any[] = [];
+  reportePagesArray: number[] = [];
+  reporteProcesosList: string[] = [];
+  reporteDocsConVisto: any[] = [];
+  reporteDocsSinVisto: any[] = [];
+  reportePorcentajeCumplimiento: number = 0;
+  reportePaginationInfo: string = '';
+  reporteTotalPages: number = 1;
+
+  // Restaurar vistos buenos guardados en localStorage
+  restaurarVistosBuenos(list: any[]): void {
+    if (!list || list.length === 0) return;
+    try {
+      const vistos: any[] = JSON.parse(localStorage.getItem('precotex_vistos_buenos') || '[]');
+      if (vistos && vistos.length > 0) {
+        list.forEach(d => {
+          const c = (d.codigo || '').toLowerCase().trim();
+          const v = vistos.find((r: any) => (r.codigo || '').toLowerCase().trim() === c);
+          if (v && !d.vistoBuenoInfo) {
+            d.vistoBuenoInfo = {
+              usuario: v.usuario,
+              puesto: v.puesto,
+              fecha: v.fecha
+            };
+          }
+        });
+      }
+    } catch (e) { }
+  }
+
+  // Abrir y Cerrar Reporte (vía MatDialog para anclaje nativo al viewport del navegador)
+  onAbrirReporte(): void {
+    this.reporteSearchTerm = '';
+    this.reporteFiltroEstado = 'TODOS';
+    this.reporteFiltroProceso = 'TODOS';
+    this.reporteCurrentPage = 1;
+    this.reportePageSize = 10;
+    this.restaurarVistosBuenos(this.docsList);
+    this.actualizarReporteData();
+
+    if (this.reporteDialogRef) {
+      this.reporteDialogRef.close();
+      this.reporteDialogRef = undefined;
+    }
+
+    if (this.reporteModalDialog) {
+      this.reporteDialogRef = this.dialog.open(this.reporteModalDialog, {
+        panelClass: 'reporte-dialog-panel',
+        backdropClass: 'reporte-dialog-backdrop',
+        width: '1060px',
+        maxWidth: '96vw',
+        height: '84vh',
+        maxHeight: '88vh',
+        autoFocus: false,
+        disableClose: false
+      });
+
+      this.reporteDialogRef.afterClosed().subscribe(() => {
+        this.reporteModalOpen = false;
+        this.reporteDialogRef = undefined;
+      });
+    }
+    this.reporteModalOpen = true;
+  }
+
+  onCerrarReporte(): void {
+    if (this.reporteDialogRef) {
+      this.reporteDialogRef.close();
+      this.reporteDialogRef = undefined;
+    }
+    this.reporteModalOpen = false;
+  }
+
   onReporteVistoBueno(): void {
-    const registros: any[] = (() => {
-      try { return JSON.parse(localStorage.getItem('precotex_vistos_buenos') || '[]'); } catch { return []; }
-    })();
+    this.onAbrirReporte();
+  }
 
-    // Construir filas de documentos con y sin visto bueno
-    const docsConVisto = this.docsList.filter(d => d.vistoBuenoInfo);
-    const docsSinVisto = this.docsList.filter(d => !d.vistoBuenoInfo);
+  // Recalcular datos del reporte de manera reactiva y atómica (sin bucles)
+  actualizarReporteData(): void {
+    const list = this.docsList || [];
 
-    const filasConVisto = docsConVisto.length > 0 ? docsConVisto.map(d => `
-      <tr style="border-bottom: 1px solid #e2e8f0;">
-        <td style="padding: 6px 10px; font-family: monospace; font-weight: 600; color: #2563eb;">${d.codigo}</td>
-        <td style="padding: 6px 10px; color: #0f172a; font-weight: 600;">${d.nombre}</td>
-        <td style="padding: 6px 10px; color: #475569;">${d.proceso || 'General'}</td>
-        <td style="padding: 6px 10px; color: #15803d; font-weight: 700;">${d.vistoBuenoInfo.usuario}</td>
-        <td style="padding: 6px 10px; color: #475569;">${d.vistoBuenoInfo.puesto}</td>
-        <td style="padding: 6px 10px; font-family: monospace; color: #475569; font-size: 11px;">${d.vistoBuenoInfo.fecha}</td>
-        <td style="padding: 6px 10px; text-align: center;"><span style="background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 10px;">✅ LEÍDO</span></td>
-      </tr>
-    `).join('') : `<tr><td colspan="7" style="padding: 14px; text-align: center; color: #64748b; font-style: italic;">Ningún documento tiene Visto Bueno registrado aún.</td></tr>`;
-
-    const filasSinVisto = docsSinVisto.length > 0 ? docsSinVisto.map(d => `
-      <tr style="border-bottom: 1px solid #e2e8f0; background: #fef2f2;">
-        <td style="padding: 6px 10px; font-family: monospace; font-weight: 600; color: #dc2626;">${d.codigo}</td>
-        <td style="padding: 6px 10px; color: #0f172a; font-weight: 600;">${d.nombre}</td>
-        <td style="padding: 6px 10px; color: #475569;">${d.proceso || 'General'}</td>
-        <td colspan="3" style="padding: 6px 10px; color: #dc2626; font-weight: 600; text-align: center;">— Pendiente de lectura —</td>
-        <td style="padding: 6px 10px; text-align: center;"><span style="background: #fee2e2; color: #dc2626; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 10px;">⏳ PENDIENTE</span></td>
-      </tr>
-    `).join('') : '';
-
-    (window as any).triggerCorreoMasivoDOC14 = () => this.onEnviarAlertaMasivaCorreoJefaturas();
-
-    const reporteHtml = `
-      <div style="text-align: left; font-size: 13px; line-height: 1.5; color: #1e293b; max-height: 70vh; overflow-y: auto;">
-        
-        <!-- ACCIÓN RÁPIDA: ENVIAR CORREO MASIVO A JEFATURAS (DOC-14) -->
-        <div style="background: linear-gradient(135deg, #1e1b4b, #312e81); border: 1px solid #6366f1; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; color: #ffffff; display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <div style="font-weight: 800; font-size: 13px; color: #a5b4fc;">📧 Notificación Masiva a Jefaturas de Proceso (DOC-14)</div>
-            <div style="font-size: 11px; color: #cbd5e1; margin-top: 2px;">Envía un correo de alerta automático a los Jefes y Gerentes (según <code>dbo.SN_Puesto</code>) para documentos no leídos > 6 meses.</div>
-          </div>
-          <button type="button" onclick="window.triggerCorreoMasivoDOC14()" style="background: #ef4444; color: #ffffff; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; box-shadow: 0 4px 12px rgba(239,68,68,0.3);">
-            <span>🚀 Enviar Correos Masivos (DOC-14)</span>
-          </button>
-        </div>
-
-        <!-- RESUMEN EJECUTIVO -->
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;">
-          <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 12px; text-align: center;">
-            <div style="font-size: 24px; font-weight: 800; color: #15803d;">${docsConVisto.length}</div>
-            <div style="font-size: 11px; color: #166534; font-weight: 600;">Documentos Leídos</div>
-          </div>
-          <div style="background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 12px; text-align: center;">
-            <div style="font-size: 24px; font-weight: 800; color: #dc2626;">${docsSinVisto.length}</div>
-            <div style="font-size: 11px; color: #991b1b; font-weight: 600;">Pendientes de Lectura</div>
-          </div>
-          <div style="background: #eff6ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 12px; text-align: center;">
-            <div style="font-size: 24px; font-weight: 800; color: #2563eb;">${this.docsList.length}</div>
-            <div style="font-size: 11px; color: #1e40af; font-weight: 600;">Total Documentos</div>
-          </div>
-        </div>
-
-        <!-- TABLA DE DOCUMENTOS LEÍDOS -->
-        <h4 style="font-size: 13px; font-weight: 700; color: #15803d; margin: 0 0 8px 0;">
-          ✅ Documentos con Visto Bueno Confirmado
-        </h4>
-        <div style="overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 16px;">
-          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-            <thead>
-              <tr style="background: #166534; color: #ffffff;">
-                <th style="padding: 6px 10px; text-align: left;">Código</th>
-                <th style="padding: 6px 10px; text-align: left;">Documento</th>
-                <th style="padding: 6px 10px; text-align: left;">Proceso</th>
-                <th style="padding: 6px 10px; text-align: left;">Jefe / Usuario</th>
-                <th style="padding: 6px 10px; text-align: left;">Puesto</th>
-                <th style="padding: 6px 10px; text-align: left;">Fecha</th>
-                <th style="padding: 6px 10px; text-align: center;">Estado</th>
-              </tr>
-            </thead>
-            <tbody>${filasConVisto}</tbody>
-          </table>
-        </div>
-
-        <!-- TABLA DE DOCUMENTOS PENDIENTES -->
-        ${docsSinVisto.length > 0 ? `
-          <h4 style="font-size: 13px; font-weight: 700; color: #dc2626; margin: 0 0 8px 0;">
-            ⏳ Documentos Pendientes de Lectura
-          </h4>
-          <div style="overflow-x: auto; border-radius: 8px; border: 1px solid #fca5a5; margin-bottom: 10px;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-              <thead>
-                <tr style="background: #991b1b; color: #ffffff;">
-                  <th style="padding: 6px 10px; text-align: left;">Código</th>
-                  <th style="padding: 6px 10px; text-align: left;">Documento</th>
-                  <th style="padding: 6px 10px; text-align: left;">Proceso</th>
-                  <th colspan="3" style="padding: 6px 10px; text-align: center;">Responsable</th>
-                  <th style="padding: 6px 10px; text-align: center;">Estado</th>
-                </tr>
-              </thead>
-              <tbody>${filasSinVisto}</tbody>
-            </table>
-          </div>
-        ` : ''}
-
-      </div>
-    `;
-
-    Swal.fire({
-      title: '📊 Reporte de Lectura Semestral - Jefaturas (DOC-07)',
-      html: reporteHtml,
-      width: '900px',
-      confirmButtonText: 'Cerrar Reporte',
-      confirmButtonColor: '#2563eb'
+    // Pre-asignar responsable info para cada doc
+    list.forEach(d => {
+      if (!d.responsableAsignado) {
+        d.responsableAsignado = this.getResponsableParaProceso(d.proceso);
+      }
     });
+
+    // 1. Contadores y métricas globales
+    this.reporteDocsConVisto = list.filter(d => !!d.vistoBuenoInfo);
+    this.reporteDocsSinVisto = list.filter(d => !d.vistoBuenoInfo);
+    this.reportePorcentajeCumplimiento = list.length > 0 ? Math.round((this.reporteDocsConVisto.length / list.length) * 100) : 0;
+
+    // 2. Lista de procesos únicos
+    const procs = new Set<string>();
+    list.forEach(d => {
+      const proc = (d.proceso || '').trim();
+      if (proc && proc.toLowerCase() !== 'general') {
+        procs.add(proc);
+      }
+    });
+    this.reporteProcesosList = Array.from(procs).sort((a, b) => a.localeCompare(b));
+
+    // 3. Filtrado por Estado
+    let filtered = [...list];
+    if (this.reporteFiltroEstado === 'LEIDOS') {
+      filtered = filtered.filter(d => !!d.vistoBuenoInfo);
+    } else if (this.reporteFiltroEstado === 'PENDIENTES') {
+      filtered = filtered.filter(d => !d.vistoBuenoInfo);
+    }
+
+    // 4. Filtrado por Proceso
+    if (this.reporteFiltroProceso && this.reporteFiltroProceso !== 'TODOS') {
+      filtered = filtered.filter(d => this.matchesProcess(d.proceso, this.reporteFiltroProceso));
+    }
+
+    // 5. Filtrado por Búsqueda rápida
+    if (this.reporteSearchTerm && this.reporteSearchTerm.trim() !== '') {
+      const q = this.reporteSearchTerm.toLowerCase().trim();
+      filtered = filtered.filter(d => {
+        const cod = (d.codigo || '').toLowerCase();
+        const nom = (d.nombre || '').toLowerCase();
+        const proc = (d.proceso || '').toLowerCase();
+        const titular = (d.responsableAsignado?.jefe || '').toLowerCase();
+        const cargo = (d.responsableAsignado?.puesto || '').toLowerCase();
+        const usuarioVB = (d.vistoBuenoInfo?.usuario || '').toLowerCase();
+        return cod.includes(q) || nom.includes(q) || proc.includes(q) || titular.includes(q) || cargo.includes(q) || usuarioVB.includes(q);
+      });
+    }
+
+    this.reporteFilteredDocs = filtered;
+
+    // 6. Paginación
+    const total = filtered.length;
+    if (this.reportePageSize <= 0) {
+      this.reporteTotalPages = 1;
+      this.reportePaginatedDocs = filtered;
+      this.reportePagesArray = [1];
+      this.reportePaginationInfo = `Mostrando todos los ${total} documentos`;
+    } else {
+      this.reporteTotalPages = Math.ceil(total / this.reportePageSize) || 1;
+      if (this.reporteCurrentPage > this.reporteTotalPages) {
+        this.reporteCurrentPage = this.reporteTotalPages;
+      }
+      if (this.reporteCurrentPage < 1) {
+        this.reporteCurrentPage = 1;
+      }
+
+      const start = (this.reporteCurrentPage - 1) * this.reportePageSize;
+      const end = Math.min(start + this.reportePageSize, total);
+      this.reportePaginatedDocs = filtered.slice(start, end);
+
+      const pages: number[] = [];
+      for (let i = 1; i <= this.reporteTotalPages; i++) {
+        pages.push(i);
+      }
+      this.reportePagesArray = pages;
+
+      if (total === 0) {
+        this.reportePaginationInfo = '0 documentos';
+      } else {
+        this.reportePaginationInfo = `Mostrando ${start + 1} - ${end} de ${total} documentos`;
+      }
+    }
+  }
+
+  // Controladores de interfaz de usuario
+  setReporteFiltroEstado(estado: 'TODOS' | 'PENDIENTES' | 'LEIDOS'): void {
+    this.reporteFiltroEstado = estado;
+    this.reporteCurrentPage = 1;
+    this.actualizarReporteData();
+  }
+
+  onReporteProcesoChange(proc: string): void {
+    this.reporteFiltroProceso = proc;
+    this.reporteCurrentPage = 1;
+    this.actualizarReporteData();
+  }
+
+  onReporteSearchChange(): void {
+    this.reporteCurrentPage = 1;
+    this.actualizarReporteData();
+  }
+
+  clearReporteSearch(): void {
+    this.reporteSearchTerm = '';
+    this.reporteCurrentPage = 1;
+    this.actualizarReporteData();
+  }
+
+  resetReporteFiltros(): void {
+    this.reporteSearchTerm = '';
+    this.reporteFiltroEstado = 'TODOS';
+    this.reporteFiltroProceso = 'TODOS';
+    this.reporteCurrentPage = 1;
+    this.actualizarReporteData();
+  }
+
+  goToReportePage(page: number): void {
+    if (page >= 1 && page <= this.reporteTotalPages) {
+      this.reporteCurrentPage = page;
+      this.actualizarReporteData();
+    }
+  }
+
+  prevReportePage(): void {
+    if (this.reporteCurrentPage > 1) {
+      this.reporteCurrentPage--;
+      this.actualizarReporteData();
+    }
+  }
+
+  nextReportePage(): void {
+    if (this.reporteCurrentPage < this.reporteTotalPages) {
+      this.reporteCurrentPage++;
+      this.actualizarReporteData();
+    }
+  }
+
+  onPageSizeChange(size: any): void {
+    this.reportePageSize = Number(size);
+    this.reporteCurrentPage = 1;
+    this.actualizarReporteData();
+  }
+
+  // Resolución segura de Jefatura y Responsable según catálogo oficial dbo.SN_Puesto y directorios Precotex
+  getResponsableParaProceso(proceso: any): { puesto: string; jefe: string; email: string } {
+    const defaultResp = { puesto: 'Jefe de Proceso', jefe: 'Jefatura de Área', email: 'jefatura@precotexperu.com' };
+    if (!proceso) return defaultResp;
+    const procStr = typeof proceso === 'string' ? proceso : (proceso.nombre || proceso.proceso || '');
+    if (!procStr) return defaultResp;
+    const procLower = procStr.toLowerCase().trim();
+
+    try {
+      // 1. Revisar si existe en almacenamiento local de dbo.SN_Puesto
+      let tablaPuestos: any[] = [];
+      const puestosRaw = (typeof localStorage !== 'undefined') ? (localStorage.getItem('precotex_puestos_usuarios') || localStorage.getItem('precotex:puestos:listado')) : null;
+      if (puestosRaw) {
+        try { tablaPuestos = JSON.parse(puestosRaw); } catch { tablaPuestos = []; }
+      }
+
+      if (tablaPuestos && tablaPuestos.length > 0) {
+        const match = tablaPuestos.find((p: any) => {
+          const pProc = (p.proceso || p.Puesto_Descripcion || '').toLowerCase().trim();
+          const pPst = (p.puesto || p.Denominacion || '').toLowerCase().trim();
+          return pProc === procLower || (procLower.length > 3 && pProc.includes(procLower)) || (procLower.length > 3 && pPst.includes(procLower));
+        });
+        if (match) {
+          return {
+            puesto: match.puesto || match.Denominacion || `Jefe de ${procStr}`,
+            jefe: match.usuario || match.Puesto_Funciones || `Jefatura ${procStr}`,
+            email: match.email || match.Email || `${procLower.replace(/\s+/g, '.')}@precotexperu.com`
+          };
+        }
+      }
+    } catch (e) { }
+
+    // 2. Mapeo oficial y completo para todas las áreas corporativas de Precotex
+    const map: { [key: string]: { puesto: string; jefe: string; email: string } } = {
+      'bienestar social': { puesto: 'Jefe de Bienestar Social', jefe: 'Lic. Mary Guevara', email: 'mguevara@precotexperu.com' },
+      'comunicaciones': { puesto: 'Coordinador de Comunicaciones', jefe: 'Comunicaciones Internas', email: 'comunicaciones@precotexperu.com' },
+      'administracion de personal': { puesto: 'Jefe de Administración de Personal', jefe: 'Lic. Mary Guevara', email: 'mguevara@precotexperu.com' },
+      'seleccion de personal': { puesto: 'Jefe de Selección y Reclutamiento', jefe: 'Lic. Mary Guevara', email: 'mguevara@precotexperu.com' },
+      'capacitacion': { puesto: 'Coordinador de Capacitación y Desarrollo', jefe: 'Gestión del Talento', email: 'capacitacion@precotexperu.com' },
+      'desarrollo organizacional': { puesto: 'Jefe de Desarrollo Organizacional', jefe: 'Lic. Mary Guevara', email: 'mguevara@precotexperu.com' },
+      'gestion humana': { puesto: 'Gerente de Gestión Humana', jefe: 'Lic. Mary Guevara', email: 'mguevara@precotexperu.com' },
+      'gestion humana (gghh)': { puesto: 'Gerente de Gestión Humana', jefe: 'Lic. Mary Guevara', email: 'mguevara@precotexperu.com' },
+
+      'comercial exportacion de prendas': { puesto: 'Gerente Comercial Exportación', jefe: 'Gerencia Comercial', email: 'comercial@precotexperu.com' },
+      'comercial exportacion de telas': { puesto: 'Gerente Comercial Telas', jefe: 'Gerencia Comercial Textil', email: 'comercial.textil@precotexperu.com' },
+      'comercial venta local textil': { puesto: 'Jefe de Ventas Locales', jefe: 'Venta Local Precotex', email: 'ventalocal@precotexperu.com' },
+      'gestion comercial (gcom)': { puesto: 'Gerente de Gestión Comercial', jefe: 'Gerencia Comercial', email: 'gcomercial@precotexperu.com' },
+      'comercial': { puesto: 'Gerente de Gestión Comercial', jefe: 'Gerencia Comercial', email: 'comercial@precotexperu.com' },
+
+      'organizacion y metodos': { puesto: 'Jefe de Organización y Métodos', jefe: 'Keith Vega', email: 'keith.vega@precotexperu.com' },
+      'ingenieria y mejora continua (imc)': { puesto: 'Jefe de Ingeniería y Mejora Continua', jefe: 'Ing. Daniel Meléndez', email: 'dmelendez@precotexperu.com' },
+      'ingenieria': { puesto: 'Jefe de Ingeniería de Planta', jefe: 'Ing. Daniel Meléndez', email: 'ingenieria@precotexperu.com' },
+
+      'costura': { puesto: 'Jefe de Planta Costura', jefe: 'Carlos Mendoza', email: 'carlos.mendoza@precotexperu.com' },
+      'operaciones manufactura (opm)': { puesto: 'Gerente de Operaciones Manufactura', jefe: 'Gerencia de Manufactura', email: 'manufactura@precotexperu.com' },
+      'operaciones textil (opt)': { puesto: 'Gerente de Operaciones Textil', jefe: 'Gerencia Textil', email: 'textil@precotexperu.com' },
+      'tintoreria': { puesto: 'Jefe de Tintorería & Acabados', jefe: 'Félix Huamani', email: 'fhuamani@precotexperu.com' },
+      'estampado': { puesto: 'Jefe de Estampado', jefe: 'Félix Huamani', email: 'fhuamani@precotexperu.com' },
+      'servicio de estampado y bordado (seb)': { puesto: 'Jefe de Servicio Estampado & Bordado', jefe: 'Jefatura SEB', email: 'seb@precotexperu.com' },
+      'tejeduria': { puesto: 'Jefe de Planta Tejeduría', jefe: 'Jefatura Tejeduría', email: 'tejeduria@precotexperu.com' },
+      'hilanderia': { puesto: 'Jefe de Planta Hilandería', jefe: 'Jefatura Hilandería', email: 'hilanderia@precotexperu.com' },
+      'corte': { puesto: 'Jefe de Corte', jefe: 'Jefatura de Corte', email: 'corte@precotexperu.com' },
+      'acabados': { puesto: 'Jefe de Acabados', jefe: 'Jefatura Acabados', email: 'acabados@precotexperu.com' },
+
+      'auditoria interna (aio)': { puesto: 'Jefe de Auditoría Interna', jefe: 'Mia Zegarra', email: 'mia.zegarra@precotexperu.com' },
+      'auditoria interna': { puesto: 'Jefe de Auditoría Interna', jefe: 'Mia Zegarra', email: 'mia.zegarra@precotexperu.com' },
+
+      'control patrimonial (cpt)': { puesto: 'Jefe de Control Patrimonial', jefe: 'Jefatura Patrimonial', email: 'patrimonial@precotexperu.com' },
+      'control patrimonial': { puesto: 'Jefe de Control Patrimonial', jefe: 'Jefatura Patrimonial', email: 'patrimonial@precotexperu.com' },
+
+      'ssoma': { puesto: 'Coordinador SSOMA', jefe: 'Ing. Cynthia Aldana', email: 'ssoma@precotexperu.com' },
+      'seguridad y salud': { puesto: 'Coordinador SSOMA', jefe: 'Ing. Cynthia Aldana', email: 'ssoma@precotexperu.com' },
+
+      'soporte (sop)': { puesto: 'Jefe de TI y Soporte Técnico', jefe: 'Jefatura de Sistemas', email: 'sistemas@precotexperu.com' },
+      'sistemas': { puesto: 'Jefe de Sistemas e Informática', jefe: 'Jefatura de Sistemas', email: 'sistemas@precotexperu.com' },
+
+      'administracion y finanzas (afc)': { puesto: 'Gerente de Administración y Finanzas', jefe: 'Gerencia Finanzas', email: 'finanzas@precotexperu.com' },
+      'logistica (log)': { puesto: 'Jefe de Logística y Compras', jefe: 'Jefatura Logística', email: 'logistica@precotexperu.com' },
+      'planeamiento y control de la produccion (pcp)': { puesto: 'Jefe de PCP', jefe: 'Jefatura PCP', email: 'pcp@precotexperu.com' },
+      'planeamiento y control de la produccion': { puesto: 'Jefe de PCP', jefe: 'Jefatura PCP', email: 'pcp@precotexperu.com' },
+      'balance de materia (bm)': { puesto: 'Jefe de Balance de Materia', jefe: 'Jefatura Balance', email: 'balancemateria@precotexperu.com' },
+      'gerencia general (gg)': { puesto: 'Gerente General', jefe: 'Gerencia General', email: 'gerenciageneral@precotexperu.com' },
+      'calidad': { puesto: 'Jefe de Aseguramiento de la Calidad', jefe: 'Ing. Elizabeth Rivera', email: 'calidad@precotexperu.com' },
+      'aseguramiento de la calidad manufactura': { puesto: 'Jefe de Aseguramiento de la Calidad', jefe: 'Ing. Elizabeth Rivera', email: 'calidad@precotexperu.com' }
+    };
+
+    for (const k in map) {
+      if (procLower.includes(k) || k.includes(procLower)) {
+        return map[k];
+      }
+    }
+
+    return {
+      puesto: `Jefe de ${procStr}`,
+      jefe: `Jefatura de ${procStr}`,
+      email: `jefe.${procLower.replace(/[^a-z0-9]/g, '.')}@precotexperu.com`
+    };
+  }
+
+  // Acción rápida para registrar Visto Bueno desde el reporte
+  onDarVistoBuenoDesdeReporte(doc: any): void {
+    this.onDarVistoBueno(doc);
+    setTimeout(() => {
+      this.restaurarVistosBuenos(this.docsList);
+      this.actualizarReporteData();
+    }, 500);
+  }
+
+  // Exportar el reporte completo o filtrado a Excel con formato ejecutivo
+  exportarReporteExcel(): void {
+    const docs = this.reporteFilteredDocs;
+    if (!docs || docs.length === 0) {
+      this.toastr.warning('No hay documentos para exportar con los filtros actuales.', 'Exportar Excel');
+      return;
+    }
+
+    let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Reporte Jefaturas</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+      <style>
+        th { background-color: #1e1b4b; color: #ffffff; font-weight: bold; font-family: Arial, sans-serif; font-size: 11pt; text-align: center; border: 1px solid #cbd5e1; padding: 8px; }
+        td { font-family: Arial, sans-serif; font-size: 10pt; border: 1px solid #cbd5e1; padding: 6px; }
+        .title-cell { font-size: 15pt; font-weight: bold; color: #1e1b4b; text-align: center; }
+        .sub-cell { font-size: 10pt; color: #475569; text-align: center; }
+        .badge-leido { background-color: #dcfce7; color: #15803d; font-weight: bold; text-align: center; }
+        .badge-pendiente { background-color: #fee2e2; color: #dc2626; font-weight: bold; text-align: center; }
+        .code-cell { font-family: Consolas, monospace; font-weight: bold; color: #2563eb; }
+      </style>
+    </head>
+    <body>
+      <table>
+        <tr><td colspan="9" class="title-cell">PRECOTEX S.A.C. - SISTEMA INTEGRADO DE GESTIÓN</td></tr>
+        <tr><td colspan="9" class="title-cell">REPORTE DE LECTURA SEMESTRAL POR JEFATURAS</td></tr>
+        <tr><td colspan="9" class="sub-cell">Generado: ${new Date().toLocaleString()} | Módulo de Documentación Controlada</td></tr>
+        <tr><td colspan="9"></td></tr>
+        <tr style="background-color: #f1f5f9; font-weight: bold;">
+          <td colspan="2">Total Documentos: ${this.docsList.length}</td>
+          <td colspan="2">Documentos Leídos: ${this.reporteDocsConVisto.length}</td>
+          <td colspan="2">Pendientes de Lectura: ${this.reporteDocsSinVisto.length}</td>
+          <td colspan="3">Índice de Cumplimiento: ${this.reportePorcentajeCumplimiento}%</td>
+        </tr>
+        <tr><td colspan="9"></td></tr>
+        <thead>
+          <tr>
+            <th>N°</th>
+            <th>CÓDIGO</th>
+            <th>NOMBRE DEL DOCUMENTO</th>
+            <th>PROCESO</th>
+            <th>TIPO / VERSIÓN</th>
+            <th>ESTADO DE LECTURA</th>
+            <th>TITULAR ASIGNADO (dbo.SN_Puesto)</th>
+            <th>CARGO / PUESTO</th>
+            <th>FECHA VISTO BUENO</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    docs.forEach((d: any, index: number) => {
+      const isLeido = !!d.vistoBuenoInfo;
+      const resp = d.responsableAsignado || this.getResponsableParaProceso(d.proceso);
+      const titular = isLeido ? d.vistoBuenoInfo.usuario : resp.jefe;
+      const puesto = isLeido ? d.vistoBuenoInfo.puesto : resp.puesto;
+      const fecha = isLeido ? d.vistoBuenoInfo.fecha : 'Pendiente';
+      const estadoClass = isLeido ? 'badge-leido' : 'badge-pendiente';
+      const estadoText = isLeido ? 'LEÍDO' : 'PENDIENTE';
+
+      html += `<tr>
+        <td style="text-align: center;">${index + 1}</td>
+        <td class="code-cell">${d.codigo || ''}</td>
+        <td>${d.nombre || ''}</td>
+        <td>${d.proceso || ''}</td>
+        <td style="text-align: center;">${d.tipo || 'Procedimiento'} (${d.version || 'v1.0'})</td>
+        <td class="${estadoClass}">${estadoText}</td>
+        <td>${titular}</td>
+        <td>${puesto}</td>
+        <td style="text-align: center;">${fecha}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></body></html>`;
+
+    const blob = new Blob(['\ufeff' + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `Reporte_Lectura_Semestral_DOC07_${new Date().toISOString().slice(0, 10)}.xls`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    this.toastr.success('Reporte exportado exitosamente a Excel.', 'Descarga Exitosa');
   }
 
   // DOC-14: Envío masivo de correos a Jefaturas y Gerencias de Proceso por falta de lectura (> 6 meses / 180 días)
@@ -1529,7 +1983,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     });
 
     if (!docsVencidosLectura || docsVencidosLectura.length === 0) {
-      this.toastr.info('Todos los documentos tienen visto bueno de lectura al día (dentro de los 6 meses).', 'DOC-14: Lectura al Día');
+      this.toastr.info('Todos los documentos tienen visto bueno de lectura al día (dentro de los 6 meses).', 'Lectura al Día');
       return;
     }
 
@@ -1618,7 +2072,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     const modalHtml = `
       <div style="text-align: left; font-size: 13px; line-height: 1.6; color: #1e293b; max-height: 65vh; overflow-y: auto;">
         <div style="background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 12px; margin-bottom: 14px; color: #991b1b;">
-          <strong>⚠️ NOTIFICACIÓN MASIVA DOC-14 (Documentación sin lectura > 6 meses):</strong><br>
+          <strong>⚠️ NOTIFICACIÓN MASIVA (Documentación sin lectura > 6 meses):</strong><br>
           Se han identificado <strong>${docsVencidosLectura.length} documentos</strong> en total sin visto bueno de lectura semestral. 
           Se enviará una alerta automática por correo electrónico a las <strong>${totalJefaturas} Jefaturas / Gerencias de Proceso</strong> según el catálogo <code>dbo.SN_Puesto</code>.
         </div>
@@ -1627,7 +2081,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     `;
 
     Swal.fire({
-      title: '📧 Enviar Correo Masivo a Jefaturas de Proceso (DOC-14)',
+      title: '📧 Enviar Correo Masivo a Jefaturas de Proceso',
       html: modalHtml,
       width: '850px',
       icon: 'warning',
@@ -1639,7 +2093,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       reverseButtons: true
     }).then((result) => {
       if (result.isConfirmed) {
-        this.toastr.info('Procesando envío masivo de correos a Jefaturas de Proceso...', 'DOC-14');
+        this.toastr.info('Procesando envío masivo de correos a Jefaturas de Proceso...');
 
         let enviados = 0;
         let errores = 0;
@@ -1656,7 +2110,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
             Destinatario: emailDestino,
             Usuario: jefeNombre,
             Puesto: puestoNombre,
-            Contrasena: `ALERTA DE LECTURA SEMESTRAL (DOC-14):\n\nEstimado(a) ${jefeNombre} (${puestoNombre}),\n\nSe le notifica que los siguientes documentos controlados del proceso '${proc}' no han sido leídos en los últimos 6 meses:\n\n${listaDocsStr}\n\nPor favor ingrese al sistema Precotex SOMA para dar su visto bueno.`
+            Contrasena: `ALERTA DE LECTURA SEMESTRAL:\n\nEstimado(a) ${jefeNombre} (${puestoNombre}),\n\nSe le notifica que los siguientes documentos controlados del proceso '${proc}' no han sido leídos en los últimos 6 meses:\n\n${listaDocsStr}\n\nPor favor ingrese al sistema Precotex SOMA para dar su visto bueno.`
           };
 
           const isLocal = ((GlobalVariable.baseUrlBackEnd || '').toLowerCase().includes('localhost') || (GlobalVariable.baseUrlBackEnd || '').toLowerCase().includes('127.0.0.1')) && !(GlobalVariable.baseUrlBackEnd || '').includes(':5252');
@@ -1694,11 +2148,11 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       });
       localStorage.setItem(logKey, JSON.stringify(logs));
 
-      this.toastr.success(`Correos masivos de notificación (DOC-14) enviados a ${total} Jefaturas de Proceso.`, 'DOC-14: Correos Enviados', { timeOut: 5000 });
+      this.toastr.success(`Correos masivos de notificación enviados a ${total} Jefaturas de Proceso.`, 'Correos Enviados', { timeOut: 5000 });
 
       Swal.fire({
         icon: 'success',
-        title: '✅ Correos Masivos Enviados a Jefaturas (DOC-14)',
+        title: '✅ Correos Masivos Enviados a Jefaturas',
         html: `Se ha notificado exitosamente por correo electrónico a <strong>${total} Jefaturas / Gerencias de Proceso</strong> según la tabla <code>dbo.SN_Puesto</code>.<br><small>Notificación de ${totalDocs} documentos sin lectura > 6 meses.</small>`,
         confirmButtonText: 'Entendido',
         confirmButtonColor: '#16a34a'
@@ -1706,7 +2160,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Helper para registrar cada ingreso o revisión real de un usuario sobre el documento (DOC-09)
+  // Helper para registrar cada ingreso o revisión real de un usuario sobre el documento
   private registrarRevisionLectura(doc: any, accionStr: string = 'Lectura / Vista Previa'): void {
     if (!doc.auditRevisiones) {
       doc.auditRevisiones = [];
@@ -1740,7 +2194,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
 
   // DOC-09: Historial de versiones y auditoría real de usuarios que ingresaron a revisar
   onVerHistorial(doc: any): void {
-    this.registrarRevisionLectura(doc, 'Consulta de Histórico (DOC-09)');
+    this.registrarRevisionLectura(doc, 'Consulta de Histórico');
 
     // Observación a: Hooks globales para descargar o visualizar versiones pasadas desde el modal
     (window as any).downloadVersionDoc = (archivo: string) => {
@@ -1885,7 +2339,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     `;
 
     Swal.fire({
-      title: '📜 Histórico de Versiones y Revisiones (DOC-09)',
+      title: '📜 Histórico de Versiones y Revisiones',
       html: versionesHtml,
       width: '740px',
       confirmButtonText: 'Entendido',
@@ -2094,7 +2548,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     }
 
     const downloadUrl = this.documentosControladosService.getDownloadUrl(doc.archivo || doc.codigo);
-    this.toastr.info(`Preparando descarga limpia: ${nombreLimpio}`, 'Descarga de Documento (DOC-05)');
+    this.toastr.info(`Preparando descarga limpia: ${nombreLimpio}`, 'Descarga de Documento');
 
     // 3. Descargar vía Blob de JavaScript para forzar que el navegador aplique el Nombre del Documento
     const tryDownloadBlob = async (): Promise<Blob> => {

@@ -36,7 +36,7 @@
       <span class="nav-section-label">GESTIÓN DOCUMENTARIA & SIG</span>
 
       <!-- ORGANIZACION -->
-      <a *ngIf="matchesSidebar('Organización')" mat-list-item routerLink="/principal/normas"
+      <a *ngIf="hasAccess('organizacion') && matchesSidebar('Organización')" mat-list-item routerLink="/principal/normas"
         [class.active-link]="currentModule === 'Organización'" class="nav-item">
         <div class="active-indicator-bar"></div>
         <mat-icon class="nav-module-icon">corporate_fare</mat-icon>

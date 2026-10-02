@@ -23,6 +23,7 @@ export class MapaPermisosComponent implements OnInit {
     'Riesgos': { ger: ['Ver', 'Aprobar'], jef: ['Ver', 'Registrar', 'Editar'], ope: ['Ver', 'Registrar'] },
     'Portafolio de Mejora': { ger: ['Ver'], jef: ['Ver', 'Registrar', 'Editar'], ope: ['Ver', 'Registrar'] },
     'Gestión Legal': { ger: ['Ver', 'Aprobar'], jef: ['Ver', 'Registrar'], ope: ['Ver'] },
+    'Proveedores': { ger: ['Ver', 'Aprobar'], jef: ['Ver', 'Registrar', 'Editar'], ope: ['Ver'] },
     'Ayuda': { ger: ['Ver'], jef: ['Ver'], ope: ['Ver'] }
   };
 
@@ -40,6 +41,7 @@ export class MapaPermisosComponent implements OnInit {
     'Riesgos': ['Ver', 'Registrar', 'Editar', 'Aprobar'],
     'Portafolio de Mejora': ['Ver', 'Registrar', 'Editar', 'Aprobar'],
     'Gestión Legal': ['Ver', 'Registrar', 'Editar', 'Aprobar'],
+    'Proveedores': ['Ver', 'Registrar', 'Editar', 'Aprobar', 'Exportar'],
     'Ayuda': ['Ver']
   };
 
@@ -132,6 +134,15 @@ export class MapaPermisosComponent implements OnInit {
       ['Matriz legal', 'Aprobar', 1, 0, 0],
       ['Alertas', 'Ver', 1, 1, 1]
     ],
+    'Proveedores': [
+      ['Catálogo de proveedores', 'Ver', 1, 1, 1],
+      ['Catálogo de proveedores', 'Registrar', 1, 1, 0],
+      ['Catálogo de proveedores', 'Editar', 1, 1, 0],
+      ['Homologación y contratos', 'Ver', 1, 1, 1],
+      ['Homologación y contratos', 'Aprobar', 1, 0, 0],
+      ['Evaluación de desempeño', 'Registrar', 1, 1, 0],
+      ['Evaluación de desempeño', 'Ver', 1, 1, 1]
+    ],
     'Ayuda': [
       ['Guías y FAQ', 'Ver', 1, 1, 1]
     ]
@@ -141,6 +152,7 @@ export class MapaPermisosComponent implements OnInit {
   selectedUserId: string = '';
   selectedModule: string = 'Organización';
   pmodsList = [
+    { k: 'organizacion', l: 'ORGANIZ.' },
     { k: 'documentacion', l: 'DOCS' },
     { k: 'auditorias', l: 'AUDITORÍAS' },
     { k: 'noconf', l: 'NC' },
@@ -148,10 +160,12 @@ export class MapaPermisosComponent implements OnInit {
     { k: 'objetivos', l: 'OBJET.' },
     { k: 'riesgos', l: 'RIESGOS' },
     { k: 'mejora', l: 'MEJORA' },
-    { k: 'legal', l: 'LEGAL' }
+    { k: 'legal', l: 'LEGAL' },
+    { k: 'proveedores', l: 'PROVEED.' }
   ];
 
   opeDef: any = {
+    organizacion: 'Ver',
     documentacion: 'Ver',
     auditorias: 'Ver',
     noconf: 'Editar',
@@ -159,11 +173,131 @@ export class MapaPermisosComponent implements OnInit {
     objetivos: 'Ver',
     riesgos: 'Editar',
     mejora: 'Editar',
-    legal: 'Ver'
+    legal: 'Ver',
+    proveedores: 'Ver'
   };
 
   accObj: any = {};
   accFine: any = {};
+  // Búsqueda y Paginación (Sección 2 y Sección 3)
+  searchTerm: string = '';
+  currentPage: number = 1;
+  pageSize: number = 8;
+  currentPageColab: number = 1;
+  pageSizeColab: number = 5;
+
+  get filteredPuestosList(): any[] {
+    if (!this.searchTerm || !this.searchTerm.trim()) {
+      return this.puestosList || [];
+    }
+    const term = this.searchTerm.trim().toLowerCase();
+    return (this.puestosList || []).filter(u => {
+      const p = (u.puesto || '').toLowerCase();
+      const nom = (u.usuario || '').toLowerCase();
+      const usr = (u.cod_Usuario || '').toLowerCase();
+      const niv = (u.nivel || '').toLowerCase();
+      return p.includes(term) || nom.includes(term) || usr.includes(term) || niv.includes(term);
+    });
+  }
+
+  get paginatedPuestosList(): any[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredPuestosList.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredPuestosList.length / this.pageSize) || 1;
+  }
+
+  get pagesArray(): number[] {
+    const arr: number[] = [];
+    for (let i = 1; i <= this.totalPages; i++) {
+      arr.push(i);
+    }
+    return arr;
+  }
+
+  get paginationInfo(): string {
+    const total = this.filteredPuestosList.length;
+    if (total === 0) return '0 colaboradores';
+    const start = (this.currentPage - 1) * this.pageSize + 1;
+    const end = Math.min(this.currentPage * this.pageSize, total);
+    return `Mostrando ${start} - ${end} de ${total} colaboradores`;
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+
+  get paginatedColabList(): any[] {
+    const start = (this.currentPageColab - 1) * this.pageSizeColab;
+    return this.filteredPuestosList.slice(start, start + this.pageSizeColab);
+  }
+
+  get totalPagesColab(): number {
+    return Math.ceil(this.filteredPuestosList.length / this.pageSizeColab) || 1;
+  }
+
+  get pagesArrayColab(): number[] {
+    const arr: number[] = [];
+    for (let i = 1; i <= this.totalPagesColab; i++) {
+      arr.push(i);
+    }
+    return arr;
+  }
+
+  get paginationColabInfo(): string {
+    const total = this.filteredPuestosList.length;
+    if (total === 0) return '0 colaboradores';
+    const start = (this.currentPageColab - 1) * this.pageSizeColab + 1;
+    const end = Math.min(this.currentPageColab * this.pageSizeColab, total);
+    return `Mostrando ${start} - ${end} de ${total} colaboradores`;
+  }
+
+  goToPageColab(page: number): void {
+    if (page >= 1 && page <= this.totalPagesColab) {
+      this.currentPageColab = page;
+    }
+  }
+
+  prevPageColab(): void {
+    if (this.currentPageColab > 1) {
+      this.currentPageColab--;
+    }
+  }
+
+  nextPageColab(): void {
+    if (this.currentPageColab < this.totalPagesColab) {
+      this.currentPageColab++;
+    }
+  }
+
+  onSearchChange(val: string): void {
+    this.searchTerm = val || '';
+    this.currentPage = 1;
+    this.currentPageColab = 1;
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.currentPage = 1;
+    this.currentPageColab = 1;
+  }
+
 
   // Slide-over Drawer & Hover Highlighting States
   drawerOpen: boolean = false;
@@ -294,10 +428,15 @@ export class MapaPermisosComponent implements OnInit {
       next: (res: any) => {
         if (res && res.success && res.elements && res.elements.length > 0) {
           res.elements.forEach((row: any) => {
-            if (!this.accObj[row.codigo_Puesto_Usuario]) {
-              this.accObj[row.codigo_Puesto_Usuario] = {};
+            const rawCode = (row.codigo_Puesto_Usuario || '').trim();
+            const mod = (row.modulo_Clave || '').trim();
+            if (rawCode && mod) {
+              if (!this.accObj[rawCode]) {
+                this.accObj[rawCode] = {};
+              }
+              this.accObj[rawCode][mod] = row.nivel_Acceso;
+              this.accObj[rawCode][mod.toLowerCase()] = row.nivel_Acceso;
             }
-            this.accObj[row.codigo_Puesto_Usuario][row.modulo_Clave] = row.nivel_Acceso;
           });
           this.saveGeneralAcc();
         } else {
@@ -334,46 +473,87 @@ export class MapaPermisosComponent implements OnInit {
   }
 
   accDefault(nivel: string, mk: string): string {
-    if (nivel === 'Gerencial' || nivel === 'Jefatura') {
+    const cleanNivel = (nivel || '').trim().toLowerCase();
+    if (cleanNivel.includes('geren') || cleanNivel.includes('jefa')) {
       return 'Editar';
     }
-    return this.opeDef[mk] || 'Ver';
+    const cleanKey = mk.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    return this.opeDef[mk] || this.opeDef[cleanKey] || 'Ver';
   }
 
   accGet(uid: string, nivel: string, mk: string): string {
-    const puestoNombre = this.getSelectedPuestoName(uid);
-    if (this.accObj[uid] && this.accObj[uid][mk]) {
-      return this.accObj[uid][mk];
-    }
-    if (this.accObj[puestoNombre] && this.accObj[puestoNombre][mk]) {
-      return this.accObj[puestoNombre][mk];
-    }
+    const item = (this.puestosList || []).find(p => p.id === uid || p.codigo_Puesto === uid || p.cod_Usuario === uid || p.puesto === uid);
+    const puestoNombre = (item?.puesto || this.getSelectedPuestoName(uid) || '').trim();
+    const puestoCode = (item?.codigo_Puesto || '').trim();
+    const userCode = (item?.cod_Usuario || '').trim().toLowerCase();
+    const cleanKey = mk.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+    const checkObj = (obj: any): string | null => {
+      if (!obj) return null;
+      if (obj[mk]) return obj[mk];
+      if (obj[cleanKey]) return obj[cleanKey];
+      for (const k of Object.keys(obj)) {
+        if (k.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim() === cleanKey) {
+          return obj[k];
+        }
+      }
+      return null;
+    };
+
+    const val = (puestoCode ? checkObj(this.accObj[puestoCode]) : null) ||
+                (userCode ? checkObj(this.accObj[userCode]) : null) ||
+                checkObj(this.accObj[uid]) ||
+                (puestoNombre ? checkObj(this.accObj[puestoNombre]) : null);
+    if (val) return val;
+
     return this.accDefault(nivel, mk);
   }
 
   setAcceso(uid: string, mk: string, val: string) {
-    const puestoNombre = this.getSelectedPuestoName(uid);
+    const item = (this.puestosList || []).find(p => p.id === uid || p.codigo_Puesto === uid || p.cod_Usuario === uid || p.puesto === uid);
+    const puestoNombre = (item?.puesto || this.getSelectedPuestoName(uid) || '').trim();
+    const puestoCode = (item?.codigo_Puesto || '').trim();
+    const userCode = (item?.cod_Usuario || '').trim().toLowerCase();
 
-    if (!this.accObj[uid]) {
-      this.accObj[uid] = {};
-    }
-    this.accObj[uid][mk] = val;
+    // Normalizar y obtener variantes con y sin tildes para asegurar guardado completo
+    const cleanKey = mk.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    const moduleVariants: { [k: string]: string[] } = {
+      'organizacion': ['organizacion', 'organización'],
+      'documentacion': ['documentacion', 'documentación'],
+      'auditorias': ['auditorias', 'auditorías'],
+      'noconf': ['noconf'],
+      'indicadores': ['indicadores'],
+      'objetivos': ['objetivos'],
+      'riesgos': ['riesgos'],
+      'mejora': ['mejora'],
+      'legal': ['legal'],
+      'proveedores': ['proveedores']
+    };
+    const keysToSave = moduleVariants[cleanKey] || [mk, cleanKey];
 
-    if (!this.accObj[puestoNombre]) {
-      this.accObj[puestoNombre] = {};
-    }
-    this.accObj[puestoNombre][mk] = val;
+    const targets = Array.from(new Set([uid, puestoNombre, puestoCode, userCode].filter(Boolean)));
+    targets.forEach(t => {
+      if (!this.accObj[t]) {
+        this.accObj[t] = {};
+      }
+      keysToSave.forEach(k => {
+        this.accObj[t][k] = val;
+      });
+    });
 
     this.saveGeneralAcc();
 
-    this.permisosService.postGuardarUsuarioModulo({
-      Codigo_Puesto_Usuario: puestoNombre,
-      Modulo_Clave: mk,
-      Nivel_Acceso: val
-    }).subscribe({
-      next: () => this.toastr.success('Se guardo con Exito.', '', { timeOut: 1500 }),
-      error: () => this.toastr.success('Acceso general actualizado.', '', { timeOut: 1500 })
+    // Guardar en la base de datos para todas las variantes clave
+    const identifier = puestoNombre || puestoCode || uid;
+    keysToSave.forEach(modK => {
+      this.permisosService.postGuardarUsuarioModulo({
+        Codigo_Puesto_Usuario: identifier,
+        Modulo_Clave: modK,
+        Nivel_Acceso: val
+      }).subscribe();
     });
+
+    this.toastr.success('Se guardó con éxito.', '', { timeOut: 1500 });
   }
 
   accColor(v: string): string {
@@ -530,25 +710,37 @@ export class MapaPermisosComponent implements OnInit {
 
   finoGet(uid: string, level: string, mod: string, cont: string, acc: string, def: number): number {
     const k = this.finoKey(mod, cont, acc);
-    if (this.accFine[uid] && k in this.accFine[uid]) {
-      return this.accFine[uid][k];
+    if (!this.accFine) return def;
+
+    const item = (this.puestosList || []).find(p => p.id === uid || p.codigo_Puesto === uid || p.cod_Usuario === uid || p.puesto === uid) || this.drawerUser;
+    const puestoNombre = (item?.puesto || this.getSelectedPuestoName(uid) || "").trim();
+    const puestoCode = (item?.codigo_Puesto || "").trim();
+    const userCode = (item?.cod_Usuario || "").trim().toLowerCase();
+
+    const targets = Array.from(new Set([uid, puestoNombre, puestoCode, userCode].filter(Boolean)));
+    for (const t of targets) {
+      if (this.accFine[t] && k in this.accFine[t]) {
+        return this.accFine[t][k];
+      }
     }
     return def;
   }
 
   toggleFinoCheckbox(uid: string, mod: string, cont: string, acc: string, checked: boolean) {
-    const puestoNombre = this.getSelectedPuestoName(uid);
+    const item = (this.puestosList || []).find(p => p.id === uid || p.codigo_Puesto === uid || p.cod_Usuario === uid || p.puesto === uid) || this.drawerUser;
+    const puestoNombre = (item?.puesto || this.getSelectedPuestoName(uid) || "").trim();
+    const puestoCode = (item?.codigo_Puesto || "").trim();
+    const userCode = (item?.cod_Usuario || "").trim().toLowerCase();
     const key = this.finoKey(mod, cont, acc);
+    const val = checked ? 1 : 0;
 
-    if (!this.accFine[uid]) {
-      this.accFine[uid] = {};
-    }
-    this.accFine[uid][key] = checked ? 1 : 0;
-
-    if (!this.accFine[puestoNombre]) {
-      this.accFine[puestoNombre] = {};
-    }
-    this.accFine[puestoNombre][key] = checked ? 1 : 0;
+    const targets = Array.from(new Set([uid, puestoNombre, puestoCode, userCode].filter(Boolean)));
+    targets.forEach(t => {
+      if (!this.accFine[t]) {
+        this.accFine[t] = {};
+      }
+      this.accFine[t][key] = val;
+    });
 
     this.saveFineAcc();
 
@@ -559,32 +751,43 @@ export class MapaPermisosComponent implements OnInit {
       Accion: acc,
       Flg_Permitido: checked
     }).subscribe({
-      next: () => this.toastr.success('Permiso específico guardado en la BD.', '', { timeOut: 1500 }),
-      error: () => this.toastr.success('Permiso específico actualizado.', '', { timeOut: 1500 })
+      next: () => this.toastr.success("Permiso específico guardado en la BD.", "", { timeOut: 1500 }),
+      error: () => this.toastr.success("Permiso específico actualizado.", "", { timeOut: 1500 })
     });
   }
 
   resetFino() {
     const uid = this.selectedUserId;
+    const item = (this.puestosList || []).find(p => p.id === uid || p.codigo_Puesto === uid || p.cod_Usuario === uid || p.puesto === uid) || this.drawerUser;
+    const puestoNombre = (item?.puesto || this.getSelectedPuestoName(uid) || "").trim();
+    const puestoCode = (item?.codigo_Puesto || "").trim();
+    const userCode = (item?.cod_Usuario || "").trim().toLowerCase();
     const mod = this.selectedModule;
-    if (this.accFine[uid]) {
-      Object.keys(this.accFine[uid]).forEach(k => {
-        if (k.startsWith(mod + '||')) {
-          delete this.accFine[uid][k];
-        }
-      });
-      this.saveFineAcc();
-      this.toastr.success('Acceso restablecido al nivel correspondiente.', '', { timeOut: 2000 });
-    }
+
+    const targets = Array.from(new Set([uid, puestoNombre, puestoCode, userCode].filter(Boolean)));
+    targets.forEach(t => {
+      if (this.accFine && this.accFine[t]) {
+        Object.keys(this.accFine[t]).forEach(k => {
+          if (k.startsWith(mod + "||")) {
+            delete this.accFine[t][k];
+          }
+        });
+      }
+    });
+
+    this.saveFineAcc();
+    this.toastr.success("Acceso restablecido al nivel correspondiente.", "", { timeOut: 2000 });
   }
 
   nivelIdx(n: string): number {
-    if (n === 'Gerencial') return 0;
-    if (n === 'Jefatura') return 1;
+    const clean = (n || "").trim().toLowerCase();
+    if (clean.includes("geren")) return 0;
+    if (clean.includes("jefa") || clean.includes("admin")) return 1;
     return 2;
   }
 
   getSelectedUser() {
+    if (this.drawerUser) return this.drawerUser;
     return this.puestosList.find(u => u.id === this.selectedUserId || u.puesto === this.selectedUserId) || this.puestosList[0];
   }
 

@@ -89,129 +89,135 @@ export class PuestosComponent implements OnInit {
       }
     } catch (e) { }
 
-    this.puestosService.getListadoUsuarios().subscribe({
-      next: (res: any) => {
-        const rawElements = res?.elements || res?.data || (Array.isArray(res) ? res : []);
-        if (Array.isArray(rawElements) && rawElements.length > 0) {
-          let userList = rawElements
-            .filter((u: any) => {
-              if (u.flg_Activo === -1 || u.flg_Activo === '-1') return false;
-              const estado = (u.puesto_Caracteristicas || u.estado || '').toString().toLowerCase();
-              if (estado === 'inactivo' || estado.includes('inactiv')) return false;
-              const code = (u.cod_Usuario || u.userCode || (u.email ? u.email.split('@')[0] : '')).toLowerCase().trim();
-              const name = (u.usuario || u.puesto_Funciones || u.nom_Usuario || '').toLowerCase().trim();
-              const pCode = (u.codigo_Puesto || u.id || '').toString().replace(/\D/g, '').trim();
-              if (code && this.deletedPuestosSet.has(code)) return false;
-              if (name && this.deletedPuestosSet.has(name)) return false;
-              if (pCode && this.deletedPuestosSet.has(pCode)) return false;
-              return true;
-            })
-            .map((u: any) => {
-              let puestoName = (u.puesto || u.denominacion || '').trim();
-              let userName = (u.usuario || u.puesto_Funciones || u.nom_Usuario || '').trim();
+    this.puestosService.getListadoPuesto('001', '', '').subscribe({
+      next: (puestoRes: any) => {
+        const puestosDb = puestoRes?.elements || [];
+        this.puestosService.getListadoUsuarios().subscribe({
+          next: (res: any) => {
+            const rawElements = res?.elements || res?.data || (Array.isArray(res) ? res : []);
+            if (Array.isArray(rawElements) && rawElements.length > 0) {
+              let userList = rawElements
+                .filter((u: any) => {
+                  if (u.flg_Activo === -1 || u.flg_Activo === '-1') return false;
+                  const estado = (u.puesto_Caracteristicas || u.estado || '').toString().toLowerCase();
+                  if (estado === 'inactivo' || estado.includes('inactiv')) return false;
+                  const code = (u.cod_Usuario || u.userCode || (u.email ? u.email.split('@')[0] : '')).toLowerCase().trim();
+                  const name = (u.usuario || u.puesto_Funciones || u.nom_Usuario || '').toLowerCase().trim();
+                  const pCode = (u.codigo_Puesto || u.id || '').toString().replace(/\D/g, '').trim();
+                  if (code && this.deletedPuestosSet.has(code)) return false;
+                  if (name && this.deletedPuestosSet.has(name)) return false;
+                  if (pCode && this.deletedPuestosSet.has(pCode)) return false;
+                  return true;
+                })
+                .map((u: any) => {
+                  const uCode = (u.cod_Usuario || u.userCode || (u.email ? u.email.split('@')[0] : '')).toLowerCase().trim();
+                  const pCode = (u.codigo_Puesto || u.id || '').toString().replace(/\D/g, '').trim();
 
-              if (puestoName.includes(',') && (!userName || !userName.includes(','))) {
-                const temp = puestoName;
-                puestoName = userName || 'General';
-                userName = temp;
-              }
+                  // Buscar datos reales y directos de SNPuesto
+                  const dbPuesto = puestosDb.find((p: any) => {
+                    const pUser = (p.cod_Usuario || '').toLowerCase().trim();
+                    const pCod = (p.codigo_Puesto || '').toString().replace(/\D/g, '').trim();
+                    return (uCode && pUser === uCode) || (pCode && pCod === pCode);
+                  });
 
-              const uCode = (u.cod_Usuario || u.userCode || (u.email ? u.email.split('@')[0] : '')).toLowerCase().trim();
-              if (puestoName === 'Puesto General' || !puestoName) {
-                if (uCode === 'admin') { puestoName = 'Administrador General'; }
-                else if (uCode === 'atoro') { puestoName = 'Analista de Sistemas'; }
-                else if (uCode === 'caldana') { puestoName = 'Coordinadora de Seguridad'; }
-                else if (uCode === 'clingan') { puestoName = 'Supervisor de Planta'; }
-                else if (uCode === 'erivera') { puestoName = 'Analista de Control'; }
-                else if (uCode === 'jpinedo') { puestoName = 'Auditor de Seguridad'; }
-                else if (uCode === 'kvega') { puestoName = 'Auditor Interno SIG'; }
-                else if (uCode === 'laldana') { puestoName = 'Jefe SSOMA'; }
-                else if (uCode === 'mguevara') { puestoName = 'Coordinadora de Desarrollo y Capacitaciones'; }
-                else if (uCode === 'mzegarra') { puestoName = 'Auditor Líder'; }
-                else if (uCode === 'shuaranga') { puestoName = 'Supervisora SST'; }
-              }
+                  let puestoName = (dbPuesto?.denominacion || u.puesto || u.denominacion || '').trim();
+                  let userName = (dbPuesto?.puesto_Funciones || u.usuario || u.puesto_Funciones || u.nom_Usuario || '').trim();
+                  let procName = (dbPuesto?.puesto_Descripcion || u.proceso || u.puesto_Descripcion || u.proceso_Nombre || '').trim();
 
-              let procName = (u.proceso || u.puesto_Descripcion || u.proceso_Nombre || '').trim();
-              if (procName === 'General' || !procName || procName === 'Sistemas') {
-                if (uCode === 'caldana' || uCode === 'laldana' || uCode === 'shuaranga') { procName = 'SSOMA'; }
-                else if (uCode === 'kvega' || uCode === 'mzegarra' || uCode === 'jpinedo') { procName = 'Auditoría Interna'; }
-                else if (uCode === 'mguevara') { procName = 'Gestión Humana'; }
-                else if (uCode === 'clingan') { procName = 'Tejeduría'; }
-                else if (uCode === 'erivera') { procName = 'Tintorería'; }
-                else { procName = 'Sistemas'; }
-              }
+                  if (puestoName.includes(',') && (!userName || !userName.includes(','))) {
+                    const temp = puestoName;
+                    puestoName = userName || 'General';
+                    userName = temp;
+                  }
 
-              const rawNivel = (u.nivel || u.nivelRiesgo || u.codigo_Nivel_Riesgo || u.nivel_Descripcion || 'Operativo').toString().trim();
-              const nivelClean = rawNivel.toLowerCase().includes('mando') ? 'Jefatura'
-                : (rawNivel.toLowerCase().includes('geren') ? 'Gerencial'
-                  : (rawNivel.toLowerCase().includes('jef') ? 'Jefatura' : 'Operativo'));
+                  if (!puestoName || puestoName === 'Puesto General') {
+                    if (uCode === 'admin') { puestoName = 'Administrador General'; }
+                    else { puestoName = 'Puesto General'; }
+                  }
 
-              let permisosVal = (u.permisos || u.puesto_Requisitos || '').trim();
-              if (!permisosVal) {
-                permisosVal = nivelClean === 'Operativo' ? 'Lectura + descarga' : 'Lectura + descarga + modificar';
-              }
+                  if (!procName || procName === 'General') {
+                    if (uCode === 'admin') { procName = 'Sistemas'; }
+                    else { procName = 'General'; }
+                  }
 
-              const charVal = (u.puesto_Caracteristicas || u.estado || 'Activo').toString().trim();
-              let emailVal = (u.email || '').trim();
-              let estadoVal = charVal;
-              if (charVal.includes('|')) {
-                const parts = charVal.split('|');
-                estadoVal = parts[0];
-                if (!emailVal) emailVal = parts[1];
-              } else if (charVal.includes('@')) {
-                if (!emailVal) emailVal = charVal;
-                estadoVal = 'Activo';
-              }
+                  const rawNivel = (u.nivel || u.nivelRiesgo || u.codigo_Nivel_Riesgo || u.nivel_Descripcion || 'Operativo').toString().trim();
+                  const nivelClean = rawNivel.toLowerCase().includes('mando') ? 'Jefatura'
+                    : (rawNivel.toLowerCase().includes('geren') ? 'Gerencial'
+                      : (rawNivel.toLowerCase().includes('jef') ? 'Jefatura' : 'Operativo'));
 
-              if (
-                estadoVal.toLowerCase().includes('pendiente') ||
-                estadoVal.toLowerCase().includes('activac') ||
-                u.primer_Ingreso === true ||
-                u.primer_Ingreso === 1 ||
-                u.primer_Ingreso === '1' ||
-                u.primer_Ingreso === 'True' ||
-                u.flg_Activo === false ||
-                u.flg_Activo === 0 ||
-                u.flg_Activo === '0' ||
-                u.flg_Activo === 'False'
-              ) {
-                estadoVal = 'Pendiente de activación';
-              } else if (estadoVal.toLowerCase().includes('inactiv')) {
-                estadoVal = 'Inactivo';
-              } else {
-                estadoVal = 'Activo';
-              }
+                  let permisosVal = (u.permisos || u.puesto_Requisitos || '').trim();
+                  if (!permisosVal) {
+                    permisosVal = nivelClean === 'Operativo' ? 'Lectura + descarga' : 'Lectura + descarga + modificar';
+                  }
 
-              const codPuesto = (u.codigo_Puesto || u.id || '').toString().trim();
-              const fechaReg = this.formatFecha(u.fecha_Registro || u.fec_Registro || u.fecha_Creacion || u.fec_Creacion || '—');
+                  const charVal = (u.puesto_Caracteristicas || u.estado || 'Activo').toString().trim();
+                  let emailVal = (u.email || '').trim();
+                  let estadoVal = charVal;
+                  if (charVal.includes('|')) {
+                    const parts = charVal.split('|');
+                    estadoVal = parts[0];
+                    if (!emailVal) emailVal = parts[1];
+                  } else if (charVal.includes('@')) {
+                    if (!emailVal) emailVal = charVal;
+                    estadoVal = 'Activo';
+                  }
 
-              return {
-                id: u.id || ('u-' + (u.id_Usuario || codPuesto || userName)),
-                codigo_Puesto: codPuesto,
-                id_Usuario: u.id_Usuario,
-                puesto: puestoName || 'Puesto General',
-                proceso: procName,
-                usuario: userName || '—',
-                userCode: uCode || (userName && !userName.includes(' ') ? userName : ''),
-                email: emailVal,
-                fecha_Registro: fechaReg,
-                nivel: nivelClean,
-                permisos: permisosVal,
-                estado: estadoVal,
-                flg_Activo: estadoVal === 'Activo' ? 1 : 0,
-                tip_Trabajador: (u.tip_Trabajador || 'E').trim(),
-                cod_Trabajador: (u.cod_Trabajador || '').trim()
-              };
-            });
+                  if (
+                    estadoVal.toLowerCase().includes('pendiente') ||
+                    estadoVal.toLowerCase().includes('activac') ||
+                    u.primer_Ingreso === true ||
+                    u.primer_Ingreso === 1 ||
+                    u.primer_Ingreso === '1' ||
+                    u.primer_Ingreso === 'True' ||
+                    u.flg_Activo === false ||
+                    u.flg_Activo === 0 ||
+                    u.flg_Activo === '0' ||
+                    u.flg_Activo === 'False'
+                  ) {
+                    estadoVal = 'Pendiente de activación';
+                  } else if (estadoVal.toLowerCase().includes('inactiv')) {
+                    estadoVal = 'Inactivo';
+                  } else {
+                    estadoVal = 'Activo';
+                  }
 
-          this.puestosList = userList;
-          this.dataSource.data = [...this.puestosList];
-          this.calculateStats();
-        } else {
-          this.puestosList = [];
-          this.dataSource.data = [];
-          this.calculateStats();
-        }
+                  const codPuesto = (u.codigo_Puesto || u.id || '').toString().trim();
+                  const fechaReg = this.formatFecha(u.fecha_Registro || u.fec_Registro || u.fecha_Creacion || u.fec_Creacion || '—');
+
+                  return {
+                    id: u.id || ('u-' + (u.id_Usuario || codPuesto || userName)),
+                    codigo_Puesto: codPuesto,
+                    id_Usuario: u.id_Usuario,
+                    puesto: puestoName || 'Puesto General',
+                    proceso: procName,
+                    usuario: userName || '—',
+                    userCode: uCode || (userName && !userName.includes(' ') ? userName : ''),
+                    email: emailVal,
+                    fecha_Registro: fechaReg,
+                    nivel: nivelClean,
+                    permisos: permisosVal,
+                    estado: estadoVal,
+                    flg_Activo: estadoVal === 'Activo' ? 1 : 0,
+                    tip_Trabajador: (u.tip_Trabajador || 'E').trim(),
+                    cod_Trabajador: (u.cod_Trabajador || '').trim()
+                  };
+                });
+
+              this.puestosList = userList;
+              this.dataSource.data = [...this.puestosList];
+              this.calculateStats();
+            } else {
+              this.puestosList = [];
+              this.dataSource.data = [];
+              this.calculateStats();
+            }
+          },
+          error: () => {
+            this.puestosList = [];
+            this.dataSource.data = [];
+            this.calculateStats();
+          }
+        });
       },
       error: () => {
         this.puestosList = [];
@@ -1267,7 +1273,7 @@ export class PuestosComponent implements OnInit {
       // Fila 1: Título Principal
       dataRows.push(['PRECOTEX S.A.C. - SISTEMA DE GESTIÓN DE SEGURIDAD']);
       // Fila 2: Subtítulo
-      dataRows.push(['REPORTE GENERAL DE PUESTOS Y USUARIOS ASIGNADOS (PUE-04)']);
+      dataRows.push(['REPORTE GENERAL DE PUESTOS Y USUARIOS ASIGNADOS']);
       // Fila 3: Metadatos
       const fechaActual = new Date().toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
       const horaActual = new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });

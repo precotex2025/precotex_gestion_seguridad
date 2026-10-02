@@ -39,7 +39,7 @@ export class MedicionIndicadoresComponent implements OnInit {
     private dialog: MatDialog,
     private toastr: ToastrService,
     private indicadoresService: IndicadoresService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.onListado();
@@ -185,7 +185,7 @@ export class MedicionIndicadoresComponent implements OnInit {
 
     // Para cada indicador en el catálogo, si no tiene medición registrada, crear fila inicial (IND-10)
     catalogo.forEach((ind: any) => {
-      const exists = listFinal.some((m: any) => 
+      const exists = listFinal.some((m: any) =>
         (m.codigoIndicador && ind.codigo && m.codigoIndicador.toLowerCase() === ind.codigo.toLowerCase()) ||
         (m.indicador && ind.nombre && m.indicador.toLowerCase() === ind.nombre.toLowerCase())
       );
@@ -412,7 +412,7 @@ export class MedicionIndicadoresComponent implements OnInit {
   exportarFichaTecnica(row: any): void {
     const fichaHtml = `
       <div style="text-align: left; font-size: 13px; line-height: 1.6; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; color: #1e293b;">
-        <h4 style="color: #0f172a; margin: 0 0 10px 0; border-bottom: 2px solid #6366f1; padding-bottom: 6px; font-size: 14px;">FICHA TÉCNICA DE INDICADOR DEL SIG (IND-04)</h4>
+        <h4 style="color: #0f172a; margin: 0 0 10px 0; border-bottom: 2px solid #6366f1; padding-bottom: 6px; font-size: 14px;">FICHA TÉCNICA DE INDICADOR DEL SIG</h4>
         <p style="margin: 6px 0;"><strong style="color: #0f172a;">Código / Indicador:</strong> ${row.codigoIndicador || row.id} - ${row.indicador}</p>
         <p style="margin: 6px 0;"><strong style="color: #0f172a;">Proceso Asociado:</strong> ${row.proceso} | <strong style="color: #0f172a;">Sede:</strong> ${row.sede}</p>
         <p style="margin: 6px 0;"><strong style="color: #0f172a;">Frecuencia de Medición:</strong> <span style="color: #6366f1; font-weight: 700; background: #e0e7ff; padding: 2px 8px; border-radius: 6px;">${row.frecuencia || 'Mensual'}</span></p>
@@ -553,7 +553,7 @@ export class MedicionIndicadoresComponent implements OnInit {
         try {
           const localMeds = JSON.parse(localStorage.getItem('precotex_mediciones') || '[]');
           localStorage.setItem('precotex_mediciones', JSON.stringify([newItem, ...localMeds.filter((m: any) => m.codigoIndicador !== newItem.codigoIndicador || m.periodo !== newItem.periodo)]));
-        } catch (e) {}
+        } catch (e) { }
 
         const updatedList = [newItem, ...this.allRawData.filter(d => d.codigoIndicador !== newItem.codigoIndicador || d.periodo !== newItem.periodo)];
         this.allRawData = updatedList;
@@ -672,7 +672,7 @@ export class MedicionIndicadoresComponent implements OnInit {
             localMeds.unshift(updatedItem);
           }
           localStorage.setItem('precotex_mediciones', JSON.stringify(localMeds));
-        } catch (e) {}
+        } catch (e) { }
 
         const listCopy = this.allRawData.map(d => (d.id === item.id || d.idMedicion === item.idMedicion) ? updatedItem : d);
         this.allRawData = listCopy;
@@ -686,7 +686,7 @@ export class MedicionIndicadoresComponent implements OnInit {
               this.onListado();
             }
           },
-          error: () => {}
+          error: () => { }
         });
       }
     });

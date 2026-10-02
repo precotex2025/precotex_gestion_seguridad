@@ -59,7 +59,7 @@ export class PlanificacionObjetivosComponent implements OnInit {
     private dialog: MatDialog,
     private toastr: ToastrService,
     private objetivosService: ObjetivosService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.onListado();
@@ -128,7 +128,7 @@ export class PlanificacionObjetivosComponent implements OnInit {
             const fechaIni = item.fechaInicio || item.fecha_Inicio || (fechaCreacion ? fechaCreacion.split('T')[0] : '') || new Date().toISOString().split('T')[0];
 
             // Buscar mediciones para este objetivo
-            const objMediciones = mediciones.filter((m: any) => 
+            const objMediciones = mediciones.filter((m: any) =>
               (m.id_Objetivo && item.id_Objetivo && Number(m.id_Objetivo) === Number(item.id_Objetivo)) ||
               (m.codigo_Objetivo && item.codigo && String(m.codigo_Objetivo).trim().toLowerCase() === String(item.codigo).trim().toLowerCase())
             );
@@ -146,7 +146,7 @@ export class PlanificacionObjetivosComponent implements OnInit {
                 if (hist[curM] !== undefined) {
                   avanceValor = Number(hist[curM]) || 0;
                 }
-              } catch {}
+              } catch { }
             }
 
             const metaNum = parseFloat(String(item.meta || '100').replace(/[^0-9.]/g, '')) || 100;
@@ -273,7 +273,7 @@ export class PlanificacionObjetivosComponent implements OnInit {
     let historialMap: { [mesIdx: number]: number } = {};
     try {
       historialMap = JSON.parse(localStorage.getItem(storageKey) || '{}');
-    } catch {}
+    } catch { }
 
     if (item.mediciones && Array.isArray(item.mediciones)) {
       item.mediciones.forEach((m: any) => {
@@ -405,36 +405,36 @@ export class PlanificacionObjetivosComponent implements OnInit {
             <thead>
               <tr style="background: #0f172a; color: #ffffff;">
                 ${meses.map((m, idx) => {
-                  const isCurrent = idx === currentMonthIdx;
-                  return `<th style="padding: 9px 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; white-space: nowrap; width: 8.33%; min-width: 54px; background: ${isCurrent ? '#2563eb' : 'transparent'}; border-right: 1px solid rgba(255,255,255,0.08);">${m}${isCurrent ? '<br><span style="font-size: 9px; opacity: 0.9;">(Hoy)</span>' : ''}</th>`;
-                }).join('')}
+      const isCurrent = idx === currentMonthIdx;
+      return `<th style="padding: 9px 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; white-space: nowrap; width: 8.33%; min-width: 54px; background: ${isCurrent ? '#2563eb' : 'transparent'}; border-right: 1px solid rgba(255,255,255,0.08);">${m}${isCurrent ? '<br><span style="font-size: 9px; opacity: 0.9;">(Hoy)</span>' : ''}</th>`;
+    }).join('')}
               </tr>
             </thead>
             <tbody>
               <tr>
                 ${valoresMeses.map((v) => {
-                  if (v.noIniciado) {
-                    return `<td style="padding: 12px 4px; font-weight: 600; color: #cbd5e1; background: #f8fafc; border-right: 1px solid #f1f5f9; font-size: 12px;">—</td>`;
-                  }
-                  if (v.esFuturo) {
-                    return `<td style="padding: 12px 4px; font-weight: 600; color: #94a3b8; background: #f8fafc; border-right: 1px solid #f1f5f9; font-size: 12px;">—</td>`;
-                  }
-                  const bgColor = v.esActual ? (v.cumple ? '#dcfce7' : '#fef3c7') : (v.cumple ? '#f0fdf4' : '#fffbeb');
-                  const textColor = v.cumple ? '#15803d' : '#b45309';
-                  const borderStyle = v.esActual ? '2px solid #2563eb' : '1px solid #f1f5f9';
-                  return `<td style="padding: 12px 4px; font-weight: 800; color: ${textColor}; background: ${bgColor}; border: ${borderStyle}; font-size: 13px;">${v.texto}</td>`;
-                }).join('')}
+      if (v.noIniciado) {
+        return `<td style="padding: 12px 4px; font-weight: 600; color: #cbd5e1; background: #f8fafc; border-right: 1px solid #f1f5f9; font-size: 12px;">—</td>`;
+      }
+      if (v.esFuturo) {
+        return `<td style="padding: 12px 4px; font-weight: 600; color: #94a3b8; background: #f8fafc; border-right: 1px solid #f1f5f9; font-size: 12px;">—</td>`;
+      }
+      const bgColor = v.esActual ? (v.cumple ? '#dcfce7' : '#fef3c7') : (v.cumple ? '#f0fdf4' : '#fffbeb');
+      const textColor = v.cumple ? '#15803d' : '#b45309';
+      const borderStyle = v.esActual ? '2px solid #2563eb' : '1px solid #f1f5f9';
+      return `<td style="padding: 12px 4px; font-weight: 800; color: ${textColor}; background: ${bgColor}; border: ${borderStyle}; font-size: 13px;">${v.texto}</td>`;
+    }).join('')}
               </tr>
               <tr style="background: #fafafa; font-size: 10px;">
                 ${valoresMeses.map((v) => {
-                  if (v.noIniciado) {
-                    return `<td style="padding: 5px 2px; color: #94a3b8; border-right: 1px solid #f1f5f9; white-space: nowrap;">No creado</td>`;
-                  }
-                  if (v.esFuturo) {
-                    return `<td style="padding: 5px 2px; color: #94a3b8; border-right: 1px solid #f1f5f9; white-space: nowrap;">Pend.</td>`;
-                  }
-                  return `<td style="padding: 5px 2px; font-weight: 700; color: ${v.cumple ? '#16a34a' : '#d97706'}; border-right: 1px solid #f1f5f9; white-space: nowrap;">${v.estadoTexto}</td>`;
-                }).join('')}
+      if (v.noIniciado) {
+        return `<td style="padding: 5px 2px; color: #94a3b8; border-right: 1px solid #f1f5f9; white-space: nowrap;">No creado</td>`;
+      }
+      if (v.esFuturo) {
+        return `<td style="padding: 5px 2px; color: #94a3b8; border-right: 1px solid #f1f5f9; white-space: nowrap;">Pend.</td>`;
+      }
+      return `<td style="padding: 5px 2px; font-weight: 700; color: ${v.cumple ? '#16a34a' : '#d97706'}; border-right: 1px solid #f1f5f9; white-space: nowrap;">${v.estadoTexto}</td>`;
+    }).join('')}
               </tr>
             </tbody>
           </table>
@@ -453,7 +453,7 @@ export class PlanificacionObjetivosComponent implements OnInit {
     `;
 
     Swal.fire({
-      title: '📊 Seguimiento Mensual de Cumplimiento (OBJ-04)',
+      title: '📊 Seguimiento Mensual de Cumplimiento',
       html: htmlTabla,
       width: '840px',
       confirmButtonText: 'Entendido',
@@ -479,17 +479,17 @@ export class PlanificacionObjetivosComponent implements OnInit {
       return;
     }
 
-    const csvContent = "data:text/csv;charset=utf-8," 
+    const csvContent = "data:text/csv;charset=utf-8,"
       + [Object.keys(data[0]).join(","), ...data.map(e => Object.values(e).map(v => `"${v}"`).join(","))].join("\n");
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Objetivos_PrecoSIG_${new Date().toISOString().substring(0,10)}.csv`);
+    link.setAttribute("download", `Objetivos_PrecoSIG_${new Date().toISOString().substring(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    this.toastr.success('Exportación de Objetivos completada (OBJ-05)', 'Exportar');
+    this.toastr.success('Exportación de Objetivos completada', 'Exportar');
   }
 
   onAgregar(): void {
@@ -579,7 +579,7 @@ export class PlanificacionObjetivosComponent implements OnInit {
               }
             }
           },
-          error: () => {}
+          error: () => { }
         });
       }
     });
@@ -634,7 +634,7 @@ export class PlanificacionObjetivosComponent implements OnInit {
           const hist = JSON.parse(localStorage.getItem(storageKey) || '{}');
           hist[curM] = numericAvance;
           localStorage.setItem(storageKey, JSON.stringify(hist));
-        } catch {}
+        } catch { }
 
         // 2. Actualizar visualmente la tabla de inmediato
         const list = this.allRawData.map(d => d.codigo === item.codigo ? updatedItem : d);

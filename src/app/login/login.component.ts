@@ -104,12 +104,52 @@ export class LoginComponent implements OnInit {
           // Verificar contraseña
           const dbPassword = (userObj.password || '').trim();
           if (dbPassword === password) {
-            const userMeta = this.resolveUserMeta(username, userObj.nom_Usuario || userObj.nombres, userObj.puesto || userObj.denominacion);
-            const userNombre = userMeta.nombre;
-            const userPuesto = userMeta.puesto;
             const tokenReceived = res.token || (res.elements[0] && res.elements[0].token);
 
-            this.verificarPrimerIngresoYProceder(userObj, username, userNombre, userPuesto, tokenReceived);
+            // Cargar y resolver puesto y proceso real desde SNPuesto para TODOS los usuarios de forma dinámica
+            this.http.get(`${GlobalVariable.baseUrlBackEnd}SNPuesto/getListadoPuesto?Cod_Empresa=001`).subscribe({
+              next: (puestosRes: any) => {
+                const rawList = (puestosRes && puestosRes.elements) ? puestosRes.elements : [];
+                const uClean = username.toLowerCase().trim();
+
+                const puestosList = rawList.map((p: any) => ({
+                  codigo_Puesto: (p.codigo_Puesto || '').trim(),
+                  puesto: (p.denominacion || '').trim(),
+                  usuario: (p.puesto_Funciones || '—').trim(),
+                  proceso: (p.puesto_Descripcion || 'General').trim(),
+                  cod_Usuario: (p.cod_Usuario || '').trim().toLowerCase()
+                }));
+                localStorage.setItem('precotex:puestos:listado', JSON.stringify(puestosList));
+
+                const match = rawList.find((p: any) =>
+                  (p.cod_Usuario && p.cod_Usuario.trim().toLowerCase() === uClean) ||
+                  this.matchesUserLogin(uClean, p.puesto_Funciones) ||
+                  (p.puesto_Caracteristicas && p.puesto_Caracteristicas.toLowerCase().includes(uClean))
+                );
+
+                let userNombre = '';
+                let userPuesto = '';
+                let userProceso = 'General';
+                let userCodPuesto = '';
+
+                if (match) {
+                  userNombre = (match.puesto_Funciones || userObj.nom_Usuario || username).trim();
+                  userPuesto = (match.denominacion || userObj.puesto || 'Usuario SOMA').trim();
+                  userProceso = (match.puesto_Descripcion || 'General').trim();
+                  userCodPuesto = (match.codigo_Puesto || '').trim();
+                } else {
+                  const userMeta = this.resolveUserMeta(username, userObj.nom_Usuario || userObj.nombres, userObj.puesto || userObj.denominacion);
+                  userNombre = userMeta.nombre;
+                  userPuesto = userMeta.puesto;
+                }
+
+                this.verificarPrimerIngresoYProceder(userObj, username, userNombre, userPuesto, tokenReceived, userProceso, userCodPuesto);
+              },
+              error: () => {
+                const userMeta = this.resolveUserMeta(username, userObj.nom_Usuario || userObj.nombres, userObj.puesto || userObj.denominacion);
+                this.verificarPrimerIngresoYProceder(userObj, username, userMeta.nombre, userMeta.puesto, tokenReceived);
+              }
+            });
           } else {
             this.toastr.error('La contraseña ingresada es incorrecta.', 'Error de Acceso');
           }
@@ -130,12 +170,12 @@ export class LoginComponent implements OnInit {
   }
 
   // Verifica si el usuario se encuentra en Pendiente de activación o es su primer inicio de sesión
-  verificarPrimerIngresoYProceder(userObj: any, username: string, userNombre: string, userPuesto: string, tokenReceived?: string): void {
+  verificarPrimerIngresoYProceder(userObj: any, username: string, userNombre: string, userPuesto: string, tokenReceived?: string, userProceso?: string, userCodPuesto?: string): void {
     const userClean = (username || '').toLowerCase().trim();
 
     // 1. La cuenta del Administrador no requiere cambio forzoso de primer ingreso
     if (userClean === 'admin' || userClean === 'super administrador' || userClean.includes('administrador')) {
-      this.completarLogin(userObj, username, userNombre, userPuesto, tokenReceived);
+      this.completarLogin(userObj, username, userNombre, userPuesto, tokenReceived, userProceso, userCodPuesto);
       return;
     }
 
@@ -200,11 +240,11 @@ export class LoginComponent implements OnInit {
         if (requiereCambio) {
           this.abrirModalPrimerIngreso(userObj, username, userNombre, userPuesto, tokenReceived);
         } else {
-          this.completarLogin(userObj, username, userNombre, userPuesto, tokenReceived);
+          this.completarLogin(userObj, username, userNombre, userPuesto, tokenReceived, userProceso, userCodPuesto);
         }
       },
       error: () => {
-        this.completarLogin(userObj, username, userNombre, userPuesto, tokenReceived);
+        this.completarLogin(userObj, username, userNombre, userPuesto, tokenReceived, userProceso, userCodPuesto);
       }
     });
   }
@@ -368,7 +408,7 @@ export class LoginComponent implements OnInit {
     }, 3000);
   }
 
-  completarLogin(userObj: any, username: string, userNombre: string, userPuesto: string, tokenReceived?: string): void {
+  completarLogin(userObj: any, username: string, userNombre: string, userPuesto: string, tokenReceived?: string, userProceso?: string, userCodPuesto?: string): void {
     GlobalVariable.vusu = (userObj?.cod_Usuario || username).trim();
     GlobalVariable.vcodtra = (userObj?.cod_Trabajador || '001').trim();
     GlobalVariable.vtiptra = (userObj?.tip_Trabajador || 'EMP').trim();
@@ -380,6 +420,12 @@ export class LoginComponent implements OnInit {
     localStorage.setItem('vCod_Rol', GlobalVariable.vCod_Rol.toString());
     localStorage.setItem('precotex:usuario:nombre', userNombre);
     localStorage.setItem('precotex:usuario:puesto', userPuesto);
+    if (userProceso && userProceso.toLowerCase() !== 'general') {
+      localStorage.setItem('precotex:usuario:proceso', userProceso);
+    }
+    if (userCodPuesto) {
+      localStorage.setItem('precotex:usuario:codigo_puesto', userCodPuesto);
+    }
 
     if (this.loginForm.get('recordarme')?.value) {
       localStorage.setItem('remembered_user', username);
@@ -388,9 +434,7 @@ export class LoginComponent implements OnInit {
     }
 
     localStorage.removeItem('precotex:puestos:accesos');
-    localStorage.removeItem('precotex:puestos:listado');
     localStorage.removeItem('precotex:puestos:accesos_fino');
-    localStorage.removeItem('precotex:usuario:proceso');
 
     this.registrarLogAccesoHistorial(
       GlobalVariable.vusu,
@@ -416,6 +460,29 @@ export class LoginComponent implements OnInit {
     this.router.navigate(['/principal']);
   }
 
+    matchesUserLogin(login: string, fullName: string): boolean {
+    if (!login || !fullName || fullName === '—') return false;
+    const cleanLogin = (login || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    const cleanName = (fullName || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    if (cleanName === cleanLogin) return true;
+    if (cleanName.replace(/[^a-z0-9]/g, '') === cleanLogin.replace(/[^a-z0-9]/g, '')) return true;
+    if (cleanName.includes(',')) {
+      const [apellidosPart, nombresPart] = cleanName.split(',').map((s: string) => s.trim());
+      const apellidos = apellidosPart.split(/\s+/).filter(Boolean);
+      const nombres = (nombresPart || '').split(/\s+/).filter(Boolean);
+      const primerApellido = apellidos[0] || '';
+      for (const nom of nombres) {
+        if (!nom) continue;
+        const initial = nom.charAt(0);
+        if (cleanLogin === initial + primerApellido) return true;
+        if (cleanLogin === nom + '.' + primerApellido || cleanLogin === nom + '_' + primerApellido || cleanLogin === nom + primerApellido) return true;
+        if (cleanLogin.startsWith(initial) && cleanLogin.includes(primerApellido)) return true;
+      }
+      if (cleanLogin === primerApellido) return true;
+    }
+    return cleanName.includes(cleanLogin);
+  }
+
   private resolveUserMeta(username: string, rawNom?: string, rawPuesto?: string): { nombre: string; puesto: string } {
     const userMap: { [key: string]: { nombre: string; puesto: string } } = {
       'admin': { nombre: 'Super Administrador', puesto: 'Administrador General' },
@@ -424,8 +491,8 @@ export class LoginComponent implements OnInit {
       'mia.zegarra': { nombre: 'Mia Zegarra', puesto: 'Analista de Auditoría Interna' },
       'kvega': { nombre: 'Keith Vega', puesto: 'Asistente de Auditoría Interna' },
       'keith.vega': { nombre: 'Keith Vega', puesto: 'Asistente de Auditoría Interna' },
-      'jpinedo': { nombre: 'Jordan Pinedo', puesto: 'Analista OYM' },
-      'jordan.pinedo': { nombre: 'Jordan Pinedo', puesto: 'Analista OYM' },
+      'jpinedo': { nombre: 'Jordan Pinedo', puesto: 'ANALISTA DE O&M MANUFACTURA' },
+      'jordan.pinedo': { nombre: 'Jordan Pinedo', puesto: 'ANALISTA DE O&M MANUFACTURA' },
       'caldana': { nombre: 'Cynthia Aldana', puesto: 'Coordinador de SSOMA' },
       'cynthia.aldana': { nombre: 'Cynthia Aldana', puesto: 'Coordinador de SSOMA' },
       'msoria': { nombre: 'Max Soria', puesto: 'Analista de Sistemas' },
@@ -457,14 +524,19 @@ export class LoginComponent implements OnInit {
     };
 
     const key = (username || '').toLowerCase().trim();
+    const dbPuesto = (rawPuesto || '').trim();
+    const dbNom = (rawNom || '').trim();
+
     if (userMap[key]) {
-      return userMap[key];
+      return {
+        nombre: dbNom && dbNom.toLowerCase() !== key ? dbNom : userMap[key].nombre,
+        puesto: dbPuesto || userMap[key].puesto
+      };
     }
-    const cleanNom = (rawNom || '').trim();
-    const finalNom = cleanNom && cleanNom.toLowerCase() !== key ? cleanNom : (key.charAt(0).toUpperCase() + key.slice(1));
+    const finalNom = dbNom && dbNom.toLowerCase() !== key ? dbNom : (key.charAt(0).toUpperCase() + key.slice(1));
     return {
       nombre: finalNom,
-      puesto: (rawPuesto || 'Analista SIG').trim()
+      puesto: (dbPuesto || 'Analista SIG').trim()
     };
   }
 

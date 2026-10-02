@@ -209,29 +209,45 @@
       </button>
     </div>
 
-    <!-- PANEL IZQUIERDO: ESTRUCTURA DOCUMENTAL ESTILO FILE MANAGER -->
+    <!-- PANEL IZQUIERDO: ESTRUCTURA DOCUMENTAL ESTILO FILE MANAGER (Idéntico a Documentación) -->
     <div class="tree-panel-filemanager" *ngIf="!treeColapsado">
+
       <div class="tree-header-row">
-        <mat-icon class="tree-header-icon">snippet_folder</mat-icon>
-        <span class="tree-header-title">ESTRUCTURA DOCUMENTAL</span>
+        <div class="tree-header-icon-badge">
+          <mat-icon>snippet_folder</mat-icon>
+        </div>
+        <div class="tree-header-text-group">
+          <span class="tree-header-title">Estructura Documental</span>
+        </div>
         <span class="flex-spacer"></span>
+        <!-- Botón Ocultar -->
         <button type="button" class="btn-toggle-carpetas" (click)="toggleTree()" title="Ocultar Estructura Documental">
-          <mat-icon style="font-size: 18px; width: 18px; height: 18px;">keyboard_double_arrow_left</mat-icon>
+          Ocultar
         </button>
       </div>
 
-      <!-- Root Node (Todos los procesos) -->
-      <div class="tree-node-item root-node" [class.active]="selectedProceso === 'Todos'" (click)="setFilter('Todos')">
+      <div class="tree-search-bar">
+        <mat-icon class="tree-search-icon">search</mat-icon>
+        <input type="text" [(ngModel)]="searchProcesoTree" placeholder="Buscar proceso o área..."
+          class="tree-search-input">
+        <button type="button" *ngIf="searchProcesoTree" (click)="searchProcesoTree = ''" class="tree-search-clear"
+          title="Limpiar búsqueda">
+          <mat-icon style="font-size: 14px; width: 14px; height: 14px;">close</mat-icon>
+        </button>
+      </div>
+
+      <div class="tree-node-item root-node"
+        [class.active]="selectedProceso === 'Todos' || selectedProceso === '__all__'" (click)="setFilter('Todos')">
         <div class="node-left">
           <mat-icon class="folder-icon root-icon">folder_shared</mat-icon>
           <span class="node-name">Todos los procesos</span>
         </div>
-        <span class="mini-count-pill">{{ mejoraList.length }}</span>
+        <span class="mini-count-pill" [class.has-docs]="mejoraList.length > 0">{{ mejoraList.length }}</span>
       </div>
 
-      <!-- Macroprocesses & Subprocesses Accordion List -->
       <div class="tree-groups-container">
-        <div *ngFor="let macro of getMacroProcesses()" class="macro-group-wrapper">
+        <!-- Listado con filtrado y contraído por defecto -->
+        <div *ngFor="let macro of getFilteredMacroProcesses()" class="macro-group-wrapper">
 
           <!-- Macroprocess Accordion Node -->
           <div class="tree-node-item macro-node" [class.active]="selectedProceso === 'macro:' + macro"
@@ -243,22 +259,33 @@
               <mat-icon class="folder-icon macro-folder">folder</mat-icon>
               <span class="node-name">{{ macro }}</span>
             </div>
-            <span class="mini-count-pill">{{ getMacroCount(macro) }}</span>
+            <span class="mini-count-pill" [class.has-docs]="getMacroCount(macro) > 0">{{ getMacroCount(macro) }}</span>
           </div>
 
-          <!-- Subprocesses Animated Container -->
+          <!-- Subprocesses Animated Container (contraído por defecto, abre si está expandido) -->
           <div class="sub-nodes-container" [class.collapsed]="!isMacroExpanded(macro)">
-            <div *ngFor="let proc of procesosGroups[macro]" class="tree-node-item process-node"
-              [class.active]="selectedProceso === proc" (click)="setFilter(proc)">
-              <div class="node-left">
-                <mat-icon class="folder-icon process-folder">folder_open</mat-icon>
-                <span class="node-abbr">[{{ getAbreviaturaProceso(proc) }}]</span>
-                <span class="node-name" [title]="proc">{{ proc }}</span>
+            <div *ngFor="let proc of getFilteredProcesosByMacro(macro)" class="process-wrapper-folder">
+
+              <!-- Nodo de Proceso Principal -->
+              <div class="tree-node-item process-node" [class.active]="selectedProceso === proc"
+                (click)="setFilter(proc)">
+                <div class="node-left">
+                  <mat-icon class="folder-icon process-folder">folder_open</mat-icon>
+                  <span class="node-abbr">[{{ getAbreviaturaProceso(proc) }}]</span>
+                  <span class="node-name" [title]="proc">{{ proc }}</span>
+                </div>
+                <span class="mini-count-pill" [class.has-docs]="getProcessCount(proc) > 0">{{ getProcessCount(proc)
+                  }}</span>
               </div>
-              <span class="mini-count-pill">{{ getProcessCount(proc) }}</span>
+
             </div>
           </div>
 
+        </div>
+
+        <div class="tree-empty-search" *ngIf="getFilteredMacroProcesses().length === 0">
+          <mat-icon>search_off</mat-icon>
+          <span>No se encontraron procesos para "{{ searchProcesoTree }}"</span>
         </div>
       </div>
     </div>
@@ -266,50 +293,133 @@
     <!-- PANEL DERECHO: LISTADO Y ACCIONES (POR-01 A POR-05) -->
     <div class="table-panel">
 
-      <!-- DETALLE DEL PORTAFOLIO Y FILTROS (PDM-12) -->
+      <!-- DETALLE DEL PORTAFOLIO Y FILTROS PREMIUM (PDM-12) -->
       <div class="seccion-header-pdm margin-bottom-14">
-        <h2 class="seccion-titulo-pdm">DETALLE DEL PORTAFOLIO</h2>
+        <div class="header-pdm-left">
+          <div class="header-icon-badge">
+            <mat-icon>tune</mat-icon>
+          </div>
+          <div class="header-pdm-titles">
+            <div class="title-with-pill">
+              <h2 class="seccion-titulo-pdm">Detalle del Portafolio</h2>
+              <span class="count-badge-pdm" *ngIf="dataSource && dataSource.data">
+                {{ dataSource.data.length }} {{ dataSource.data.length === 1 ? 'iniciativa' : 'iniciativas' }}
+                <ng-container *ngIf="mejoraList && mejoraList.length !== dataSource.data.length">
+                  de {{ mejoraList.length }}
+                </ng-container>
+              </span>
+            </div>
+            <span class="seccion-sub-pdm">Filtra y explora las iniciativas registradas</span>
+          </div>
+        </div>
 
-        <!-- FILTROS PDM-09 (IMAGEN 2) -->
+        <!-- FILTROS MODERNOS PDM-09 -->
         <div class="pdm-filters-row">
-          <div class="filter-chip-box">
-            <span class="chip-label chip-purple">SEDE:</span>
-            <select [(ngModel)]="filterSede" (change)="applyFilter()" class="chip-select">
-              <option value="TODAS">TODAS LAS SEDES</option>
-              <option *ngFor="let s of sedesDisponibles" [value]="s">{{ s }}</option>
-            </select>
+          <!-- SEDE -->
+          <div class="filter-pill-control" [class.is-active]="filterSede !== 'TODAS'">
+            <div class="filter-pill-icon-box icon-purple">
+              <mat-icon>apartment</mat-icon>
+            </div>
+            <div class="filter-pill-content">
+              <span class="filter-pill-label">SEDE</span>
+              <div class="filter-select-wrapper">
+                <select [(ngModel)]="filterSede" (change)="applyFilter()" class="filter-pill-select"
+                  title="Filtrar por sede">
+                  <option value="TODAS">Todas las sedes</option>
+                  <option *ngFor="let s of sedesDisponibles" [value]="s">{{ s }}</option>
+                </select>
+                <mat-icon class="select-chevron">expand_more</mat-icon>
+              </div>
+            </div>
+            <button *ngIf="filterSede !== 'TODAS'" type="button" class="btn-clear-single-filter"
+              (click)="filterSede = 'TODAS'; applyFilter()" title="Quitar filtro de sede">
+              <mat-icon>close</mat-icon>
+            </button>
           </div>
 
-          <div class="filter-chip-box">
-            <span class="chip-label chip-cyan">HERRAMIENTA:</span>
-            <select [(ngModel)]="filterHerramienta" (change)="applyFilter()" class="chip-select">
-              <option value="TODAS">TODAS</option>
-              <option value="5W-2H">5W-2H</option>
-              <option value="ACR">ACR</option>
-              <option value="Iniciativa">Iniciativa</option>
-            </select>
+          <!-- HERRAMIENTA -->
+          <div class="filter-pill-control" [class.is-active]="filterHerramienta !== 'TODAS'">
+            <div class="filter-pill-icon-box icon-cyan">
+              <mat-icon>handyman</mat-icon>
+            </div>
+            <div class="filter-pill-content">
+              <span class="filter-pill-label">HERRAMIENTA</span>
+              <div class="filter-select-wrapper">
+                <select [(ngModel)]="filterHerramienta" (change)="applyFilter()" class="filter-pill-select"
+                  title="Filtrar por herramienta">
+                  <option value="TODAS">Todas</option>
+                  <option value="5W-2H">5W-2H</option>
+                  <option value="ACR">ACR</option>
+                  <option value="Iniciativa">Iniciativa</option>
+                </select>
+                <mat-icon class="select-chevron">expand_more</mat-icon>
+              </div>
+            </div>
+            <button *ngIf="filterHerramienta !== 'TODAS'" type="button" class="btn-clear-single-filter"
+              (click)="filterHerramienta = 'TODAS'; applyFilter()" title="Quitar filtro de herramienta">
+              <mat-icon>close</mat-icon>
+            </button>
           </div>
 
-          <div class="filter-chip-box">
-            <span class="chip-label chip-green">ESTADO:</span>
-            <select [(ngModel)]="filterEstado" (change)="applyFilter()" class="chip-select">
-              <option value="TODOS">TODOS</option>
-              <option value="Iniciado">Iniciado</option>
-              <option value="Análisis completado">Análisis completado</option>
-              <option value="Acciones en ejecución">Acciones en ejecución</option>
-              <option value="Finalizado">Finalizado</option>
-            </select>
+          <!-- ESTADO -->
+          <div class="filter-pill-control" [class.is-active]="filterEstado !== 'TODOS'">
+            <div class="filter-pill-icon-box icon-green">
+              <mat-icon>donut_large</mat-icon>
+            </div>
+            <div class="filter-pill-content">
+              <span class="filter-pill-label">ESTADO</span>
+              <div class="filter-select-wrapper">
+                <select [(ngModel)]="filterEstado" (change)="applyFilter()" class="filter-pill-select"
+                  title="Filtrar por estado">
+                  <option value="TODOS">Todos</option>
+                  <option value="Iniciado">Iniciado</option>
+                  <option value="Análisis completado">Análisis completado</option>
+                  <option value="Acciones en ejecución">Acciones en ejecución</option>
+                  <option value="Finalizado">Finalizado</option>
+                </select>
+                <mat-icon class="select-chevron">expand_more</mat-icon>
+              </div>
+            </div>
+            <button *ngIf="filterEstado !== 'TODOS'" type="button" class="btn-clear-single-filter"
+              (click)="filterEstado = 'TODOS'; applyFilter()" title="Quitar filtro de estado">
+              <mat-icon>close</mat-icon>
+            </button>
           </div>
 
+          <!-- BOTÓN LIMPIAR TODOS LOS FILTROS -->
           <button
             *ngIf="filterSede !== 'TODAS' || filterHerramienta !== 'TODAS' || filterEstado !== 'TODOS' || searchText"
-            type="button" class="btn-reset-filters"
+            type="button" class="btn-reset-filters shadow-sm sn-animate-in"
             (click)="filterSede='TODAS'; filterHerramienta='TODAS'; filterEstado='TODOS'; limpiarBusqueda();"
             title="Restablecer todos los filtros y búsqueda">
-            <mat-icon
-              style="font-size: 15px; width: 15px; height: 15px; vertical-align: middle;">filter_alt_off</mat-icon>
+            <mat-icon class="icon-reset">filter_alt_off</mat-icon>
             <span>Limpiar filtros</span>
           </button>
+        </div>
+
+        <!-- CHIPS RESUMEN DE FILTROS ACTIVOS (CUANDO HAY AL MENOS 1 ACTIVO) -->
+        <div class="active-filters-chips-bar"
+          *ngIf="filterSede !== 'TODAS' || filterHerramienta !== 'TODAS' || filterEstado !== 'TODOS' || searchText">
+          <span class="active-filters-intro">
+            <mat-icon style="font-size: 13px; width: 13px; height: 13px; vertical-align: middle;">filter_list</mat-icon>
+            Filtros activos:
+          </span>
+          <span class="active-tag-chip chip-tag-sede" *ngIf="filterSede !== 'TODAS'">
+            <span>Sede: <strong>{{ filterSede }}</strong></span>
+            <button type="button" class="btn-tag-remove" (click)="filterSede='TODAS'; applyFilter()">×</button>
+          </span>
+          <span class="active-tag-chip chip-tag-herr" *ngIf="filterHerramienta !== 'TODAS'">
+            <span>Herramienta: <strong>{{ filterHerramienta }}</strong></span>
+            <button type="button" class="btn-tag-remove" (click)="filterHerramienta='TODAS'; applyFilter()">×</button>
+          </span>
+          <span class="active-tag-chip chip-tag-est" *ngIf="filterEstado !== 'TODOS'">
+            <span>Estado: <strong>{{ filterEstado }}</strong></span>
+            <button type="button" class="btn-tag-remove" (click)="filterEstado='TODOS'; applyFilter()">×</button>
+          </span>
+          <span class="active-tag-chip chip-tag-search" *ngIf="searchText">
+            <span>Búsqueda: <strong>"{{ searchText }}"</strong></span>
+            <button type="button" class="btn-tag-remove" (click)="limpiarBusqueda()">×</button>
+          </span>
         </div>
       </div>
 
@@ -407,7 +517,7 @@
           <ng-container matColumnDef="acciones">
             <th mat-header-cell *matHeaderCellDef style="width: 160px; text-align: center;">Acciones</th>
             <td mat-cell *matCellDef="let e" class="acciones-cell">
-              <div class="actions-wrapper hover-fade" style="display: flex; gap: 6px; justify-content: center;">
+              <div class="actions-wrapper" style="display: flex; gap: 6px; justify-content: center;">
                 <!-- EDITAR -->
                 <button type="button" class="action-btn btn-edit" (click)="onEditar(e)" title="Editar registro"
                   style="color: #818cf8; background: rgba(99,102,241,0.15);">

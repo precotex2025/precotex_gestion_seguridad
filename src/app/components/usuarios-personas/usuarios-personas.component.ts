@@ -31,17 +31,17 @@ export class UsuariosPersonasComponent implements OnInit {
   lstNivelRiesgo: combo[] = [];
 
   displayedColumns: string[] = [
-    'activo'                ,
-    'nombre'                ,
-    'apellidos'             ,
-    'email'                 ,
-    'teléfono'              ,
-    'sede'                  ,
-    'puesto'                ,
-    'proxima'               ,
-    'estado_evaluacion'     ,
-    'prox-evalución-plant'  ,
-    'acc-evaluación-act' ,
+    'activo',
+    'nombre',
+    'apellidos',
+    'email',
+    'teléfono',
+    'sede',
+    'puesto',
+    'proxima',
+    'estado_evaluacion',
+    'prox-evalución-plant',
+    'acc-evaluación-act',
     'acciones'
   ];
   dataSource = new MatTableDataSource<any>();
@@ -235,7 +235,7 @@ export class UsuariosPersonasComponent implements OnInit {
     private serviceMaeTab: MaeTabService,
     private toastr: ToastrService,
     private dialog: MatDialog
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.formulario = this.formBuilder.group({
@@ -316,7 +316,7 @@ export class UsuariosPersonasComponent implements OnInit {
   onComboSedes(sCodOrganizacion: string) {
     this.lstSedes = [];
     if (!sCodOrganizacion) return;
-    
+
     this.SpinnerService.show();
     this.serviceSede.getComboSedes(sCodOrganizacion).subscribe({
       next: (response: any) => {
@@ -404,7 +404,7 @@ export class UsuariosPersonasComponent implements OnInit {
           confirmButtonText: 'Aceptar'
         });
 
-        this.toastr.success(`Credenciales enviadas a ${userEmail}`, 'Notificación de Credenciales (PUE-02)');
+        this.toastr.success(`Credenciales enviadas a ${userEmail}`, 'Notificación de Credenciales');
       }
     });
   }

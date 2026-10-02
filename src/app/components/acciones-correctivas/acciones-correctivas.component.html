@@ -176,7 +176,7 @@
           <ng-container matColumnDef="acciones">
             <th mat-header-cell *matHeaderCellDef style="width: 140px; text-align: center;">Acciones</th>
             <td mat-cell *matCellDef="let row" class="acciones-cell">
-              <div class="actions-wrapper hover-fade">
+              <div class="actions-wrapper">
                 <button class="action-btn btn-view" (click)="onVerNcDeclarada(row)" title="Ver detalle de NC">
                   <mat-icon>visibility</mat-icon>
                 </button>
@@ -571,7 +571,7 @@
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef style="width: 120px; text-align: center;">Acciones</th>
         <td mat-cell *matCellDef="let e" class="acciones-cell">
-          <div class="actions-wrapper hover-fade">
+          <div class="actions-wrapper">
             <button class="action-btn btn-download" (click)="onDescargarAccion(e)" title="Descargar ficha de acción">
               <mat-icon>file_download</mat-icon>
             </button>

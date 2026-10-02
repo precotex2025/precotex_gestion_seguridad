@@ -4,7 +4,8 @@
   <div class="banner-aviso-collapsible" *ngIf="mostrarBanner">
     <div class="banner-info-left">
       <mat-icon class="banner-info-icon">security</mat-icon>
-      <span>Matriz IPERC de evaluación de riesgos. Haz clic en cualquier fila para desplegar los <strong>detalles de evaluación 5x5 y medidas de control</strong>.</span>
+      <span>Matriz IPERC de evaluación de riesgos. Haz clic en cualquier fila para desplegar los <strong>detalles de
+          evaluación 5x5 y medidas de control</strong>.</span>
     </div>
     <button type="button" class="btn-close-banner" (click)="cerrarBanner()" title="Cerrar aviso">
       <mat-icon>close</mat-icon>
@@ -13,7 +14,7 @@
 
   <!-- ESTADÍSTICAS CARDS CON TOP GLOW (5 KPIS RIE-02) -->
   <div class="stats-grid-5">
-    
+
     <div class="stat-card-compact glow-border-total">
       <div class="stat-watermark"><mat-icon>shield</mat-icon></div>
       <div class="stat-card-content">
@@ -71,7 +72,8 @@
       <div class="matrix-header">
         <div>
           <h3 class="seccion-titulo-sm">Matriz de Evaluación (Probabilidad × Impacto)</h3>
-          <span class="matrix-subtitle">Metodología ISO 31000 · Haz clic en cualquier celda para filtrar los riesgos</span>
+          <span class="matrix-subtitle">Metodología ISO 31000 · Haz clic en cualquier celda para filtrar los
+            riesgos</span>
         </div>
         <button *ngIf="cellFilter" type="button" class="btn-clear-cell" (click)="clearCellFilter()">
           ✖ Limpiar filtro celda ({{ cellFilter }})
@@ -94,14 +96,13 @@
             <tbody>
               <tr *ngFor="let imp of [5, 4, 3, 2, 1]">
                 <td class="impact-label">
-                  {{ imp === 5 ? '5 - Catastrófico' : (imp === 4 ? '4 - Mayor' : (imp === 3 ? '3 - Moderado' : (imp === 2 ? '2 - Menor' : '1 - Insignificante'))) }}
+                  {{ imp === 5 ? '5 - Catastrófico' : (imp === 4 ? '4 - Mayor' : (imp === 3 ? '3 - Moderado' : (imp ===
+                  2 ? '2 - Menor' : '1 - Insignificante'))) }}
                 </td>
-                <td *ngFor="let prob of [1, 2, 3, 4, 5]" 
-                    class="matrix-cell"
-                    [class.cell-active]="cellFilter === prob + '-' + imp"
-                    [style.background]="getMatrixCellColor(prob, imp)"
-                    (click)="toggleMatrixCellFilter(prob, imp)"
-                    title="Probabilidad {{prob}} x Impacto {{imp}} = Score {{prob*imp}}">
+                <td *ngFor="let prob of [1, 2, 3, 4, 5]" class="matrix-cell"
+                  [class.cell-active]="cellFilter === prob + '-' + imp"
+                  [style.background]="getMatrixCellColor(prob, imp)" (click)="toggleMatrixCellFilter(prob, imp)"
+                  title="Probabilidad {{prob}} x Impacto {{imp}} = Score {{prob*imp}}">
                   <span class="score-num">{{ prob * imp }}</span>
                   <span class="count-badge" *ngIf="getMatrixCount(prob, imp) > 0">
                     {{ getMatrixCount(prob, imp) }}
@@ -137,7 +138,8 @@
           </div>
 
           <div class="legend-footer-note">
-            💡 <strong>Tip:</strong> Haz clic en cualquier celda de la matriz 5x5 para filtrar automáticamente la tabla IPERC por ese nivel específico.
+            💡 <strong>Tip:</strong> Haz clic en cualquier celda de la matriz 5x5 para filtrar automáticamente la tabla
+            IPERC por ese nivel específico.
           </div>
         </div>
       </div>
@@ -152,7 +154,8 @@
 
       <div class="toolbar-actions-section">
         <!-- Exportar Matriz IPERC a Excel (RIE-05) -->
-        <button type="button" class="btn-ghost-action" (click)="exportarExcelIPERC()" title="Exportar Matriz IPERC a Excel (RIE-05)">
+        <button type="button" class="btn-ghost-action" (click)="exportarExcelIPERC()"
+          title="Exportar Matriz IPERC a Excel (RIE-05)">
           <mat-icon style="color: #10b981;">grid_on</mat-icon>
           <span>Exportar IPERC</span>
         </button>
@@ -160,11 +163,8 @@
         <!-- Buscador Inline (RIE-04: Código, Peligro/Descripción, Responsable) -->
         <div class="inline-search-box">
           <mat-icon class="search-icon">search</mat-icon>
-          <input type="text" 
-                 [formControl]="$any(formularioBusqueda.get('termino'))" 
-                 (input)="onBuscar()" 
-                 placeholder="Buscar por código, descripción o responsable..." 
-                 class="inline-search-input">
+          <input type="text" [formControl]="$any(formularioBusqueda.get('termino'))" (input)="onBuscar()"
+            placeholder="Buscar por código, descripción o responsable..." class="inline-search-input">
         </div>
 
         <button type="button" class="btn-primary-glow" (click)="onAgregar()">
@@ -208,7 +208,8 @@
         </select>
       </div>
 
-      <button type="button" class="btn-reset-filters" (click)="limpiarFiltros()" title="Limpiar todos los filtros de búsqueda">
+      <button type="button" class="btn-reset-filters" (click)="limpiarFiltros()"
+        title="Limpiar todos los filtros de búsqueda">
         <mat-icon>filter_alt_off</mat-icon>
         <span>Limpiar filtros</span>
       </button>
@@ -236,9 +237,11 @@
         <tbody>
           <ng-container *ngFor="let item of riesgosFiltrados">
             <!-- Main Row -->
-            <tr class="fila row-expandable" [class.expanded]="isRowExpanded(item.codigo)" (click)="toggleRow(item.codigo)">
+            <tr class="fila row-expandable" [class.expanded]="isRowExpanded(item.codigo)"
+              (click)="toggleRow(item.codigo)">
               <td style="text-align: center; color: #64748b;">
-                <mat-icon class="chevron-icon" [class.rotated]="isRowExpanded(item.codigo)">keyboard_arrow_right</mat-icon>
+                <mat-icon class="chevron-icon"
+                  [class.rotated]="isRowExpanded(item.codigo)">keyboard_arrow_right</mat-icon>
               </td>
 
               <td class="code-cell font-mono text-purple">{{ item.codigo }}</td>
@@ -249,15 +252,16 @@
 
               <!-- HEATMAP BADGE FOR NIVEL (RIE-01, RIE-02) -->
               <td style="text-align: center;">
-                <span class="heatmap-badge" [ngClass]="getNivelHeatmapClass(item.nivel)" title="Cálculo Matriz 5x5: Probabilidad x Impacto">
+                <span class="heatmap-badge" [ngClass]="getNivelHeatmapClass(item.nivel)"
+                  title="Cálculo Matriz 5x5: Probabilidad x Impacto">
                   {{ item.nivel }} (5x5)
                 </span>
               </td>
 
               <!-- Soft Badge for State -->
               <td style="text-align: center;">
-                <span class="soft-badge" 
-                      [ngClass]="getEstadoClass(item.estado) === 'status-green' ? 'soft-badge-vigente' : (getEstadoClass(item.estado) === 'status-amber' ? 'soft-badge-revision' : 'soft-badge-porvencer')">
+                <span class="soft-badge"
+                  [ngClass]="getEstadoClass(item.estado) === 'status-green' ? 'soft-badge-vigente' : (getEstadoClass(item.estado) === 'status-amber' ? 'soft-badge-revision' : 'soft-badge-porvencer')">
                   <span class="glowing-dot"></span>
                   <span>{{ item.estado }}</span>
                 </span>
@@ -269,8 +273,8 @@
 
               <!-- Hover Fade Actions (RIE-07: Botón Ver jala datos de Declarar Riesgo) -->
               <td style="text-align: center;" (click)="$event.stopPropagation()">
-                <div class="actions-wrapper hover-fade">
-                  <button class="action-btn btn-view" (click)="onVer(item)" title="Ver detalle del riesgo (RIE-07)">
+                <div class="actions-wrapper">
+                  <button class="action-btn btn-view" (click)="onVer(item)" title="Ver detalle del riesgo">
                     <mat-icon>visibility</mat-icon>
                   </button>
                   <button class="action-btn btn-edit" (click)="onEdit(item)" title="Editar">
@@ -288,14 +292,15 @@
               <td colspan="12">
                 <div class="risk-detail-card shadow-premium">
                   <div class="risk-detail-grid">
-                    
+
                     <div class="detail-box">
-                      <span class="detail-label">Plan de Acción & Medida de Control (RIE-03)</span>
-                      <p class="detail-text">{{ item.medidacontrol || 'Inspección de barreras físicas, EPP obligatorio y capacitación semestral.' }}</p>
+                      <span class="detail-label">Plan de Acción & Medida de Control</span>
+                      <p class="detail-text">{{ item.medidacontrol || 'Inspección de barreras físicas, EPP obligatorio y
+                        capacitación semestral.' }}</p>
                     </div>
 
                     <div class="detail-box">
-                      <span class="detail-label">Responsable & Fecha Límite (RIE-03)</span>
+                      <span class="detail-label">Responsable & Fecha Límite</span>
                       <div class="iperc-mini-summary">
                         <span class="iperc-tag">Responsable: {{ item.responsable }}</span>
                         <span class="iperc-tag">Límite: {{ item.revision || '2026-12-31' }}</span>
@@ -327,7 +332,7 @@
   </ng-container>
 
   <!-- ===================================================================
-       PESTAÑA 2: SEGUIMIENTO DE CONTROLES Y PLAN DE ACCIÓN (RIE-01)
+       PESTAÑA 2: SEGUIMIENTO DE CONTROLES Y PLAN DE ACCIÓN
        =================================================================== -->
   <ng-container *ngIf="activeSubTab === 'seguimiento'">
 
@@ -335,19 +340,23 @@
     <div class="integrated-toolbar">
       <div class="toolbar-left-group">
         <h2 class="seccion-titulo">SEGUIMIENTO DE CONTROLES</h2>
-        
+
         <!-- Segment Chips for Urgency -->
         <div class="view-segment-control">
-          <button type="button" class="segment-btn" [class.active]="segUrgFilter === 'all'" (click)="setSegUrgFilter('all')">
+          <button type="button" class="segment-btn" [class.active]="segUrgFilter === 'all'"
+            (click)="setSegUrgFilter('all')">
             <span>Todos ({{ riesgosFiltrados.length }})</span>
           </button>
-          <button type="button" class="segment-btn" [class.active]="segUrgFilter === 'venc'" (click)="setSegUrgFilter('venc')">
+          <button type="button" class="segment-btn" [class.active]="segUrgFilter === 'venc'"
+            (click)="setSegUrgFilter('venc')">
             <span [style.color]="segUrgFilter === 'venc' ? '#ffffff' : '#f87171'">🔴 Vencidos</span>
           </button>
-          <button type="button" class="segment-btn" [class.active]="segUrgFilter === 'prox'" (click)="setSegUrgFilter('prox')">
+          <button type="button" class="segment-btn" [class.active]="segUrgFilter === 'prox'"
+            (click)="setSegUrgFilter('prox')">
             <span [style.color]="segUrgFilter === 'prox' ? '#ffffff' : '#fbbf24'">🟡 Por vencer</span>
           </button>
-          <button type="button" class="segment-btn" [class.active]="segUrgFilter === 'ald'" (click)="setSegUrgFilter('ald')">
+          <button type="button" class="segment-btn" [class.active]="segUrgFilter === 'ald'"
+            (click)="setSegUrgFilter('ald')">
             <span [style.color]="segUrgFilter === 'ald' ? '#ffffff' : '#34d399'">🟢 Al día</span>
           </button>
         </div>
@@ -356,11 +365,8 @@
       <div class="toolbar-actions-section">
         <div class="inline-search-box">
           <mat-icon class="search-icon">search</mat-icon>
-          <input type="text" 
-                 [formControl]="$any(formularioBusqueda.get('termino'))" 
-                 (input)="onBuscar()" 
-                 placeholder="Buscar por código, descripción o responsable..." 
-                 class="inline-search-input">
+          <input type="text" [formControl]="$any(formularioBusqueda.get('termino'))" (input)="onBuscar()"
+            placeholder="Buscar por código, descripción o responsable..." class="inline-search-input">
         </div>
       </div>
     </div>
@@ -391,7 +397,8 @@
         </select>
       </div>
 
-      <button type="button" class="btn-reset-filters" (click)="limpiarFiltros()" title="Limpiar todos los filtros de búsqueda">
+      <button type="button" class="btn-reset-filters" (click)="limpiarFiltros()"
+        title="Limpiar todos los filtros de búsqueda">
         <mat-icon>filter_alt_off</mat-icon>
         <span>Limpiar filtros</span>
       </button>
@@ -414,10 +421,11 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of getSeguimientoList()" class="fila" (click)="onActualizarControl(item)" style="cursor: pointer;">
-            
+          <tr *ngFor="let item of getSeguimientoList()" class="fila" (click)="onActualizarControl(item)"
+            style="cursor: pointer;">
+
             <td class="code-cell font-mono text-purple">{{ item.codigo }}</td>
-            
+
             <td class="norma-cell-title">
               {{ item.descbrief }}
               <div style="color: #64748b; font-size: 11px; margin-top: 2px;">
@@ -432,8 +440,8 @@
             </td>
 
             <td>
-              <span class="soft-badge" 
-                    [ngClass]="getEstadoClass(item.estado) === 'status-green' ? 'soft-badge-vigente' : (getEstadoClass(item.estado) === 'status-amber' ? 'soft-badge-blue' : 'soft-badge-porvencer')">
+              <span class="soft-badge"
+                [ngClass]="getEstadoClass(item.estado) === 'status-green' ? 'soft-badge-vigente' : (getEstadoClass(item.estado) === 'status-amber' ? 'soft-badge-blue' : 'soft-badge-porvencer')">
                 <span class="glowing-dot"></span>
                 <span>{{ item.estado }}</span>
               </span>
@@ -442,9 +450,9 @@
             <!-- Avance (%) Progress bar -->
             <td>
               <div style="background: rgba(255,255,255,0.08); border-radius: 6px; height: 8px; overflow: hidden;">
-                <div [style.width.%]="getAvanceControl(item)" 
-                     [style.background]="getAvanceControl(item) === 100 ? '#10b981' : (getAvanceControl(item) >= 50 ? '#3b82f6' : '#ef4444')"
-                     style="height: 100%; transition: width 0.3s ease;">
+                <div [style.width.%]="getAvanceControl(item)"
+                  [style.background]="getAvanceControl(item) === 100 ? '#10b981' : (getAvanceControl(item) >= 50 ? '#3b82f6' : '#ef4444')"
+                  style="height: 100%; transition: width 0.3s ease;">
                 </div>
               </div>
               <div style="font-size: 10px; color: #94a3b8; margin-top: 3px; font-weight: 600;">
@@ -454,7 +462,9 @@
 
             <!-- RIE-21: Evidencia IPERC / Informe -->
             <td>
-              <span *ngIf="item.evidencia" class="soft-badge soft-badge-blue" style="font-size: 11px; padding: 3px 8px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;" [title]="item.evidencia">
+              <span *ngIf="item.evidencia" class="soft-badge soft-badge-blue"
+                style="font-size: 11px; padding: 3px 8px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;"
+                [title]="item.evidencia">
                 📄 {{ item.evidencia }}
               </span>
               <span *ngIf="!item.evidencia" style="color: #64748b; font-size: 11px; font-style: italic;">
@@ -473,8 +483,9 @@
 
             <!-- Action: Update control -->
             <td style="text-align: center;" (click)="$event.stopPropagation()">
-              <div class="actions-wrapper hover-fade">
-                <button class="action-btn btn-edit" (click)="onActualizarControl(item, $event)" title="Actualizar seguimiento de control">
+              <div class="actions-wrapper">
+                <button class="action-btn btn-edit" (click)="onActualizarControl(item, $event)"
+                  title="Actualizar seguimiento de control">
                   <mat-icon>edit_note</mat-icon>
                 </button>
               </div>
@@ -496,4 +507,3 @@
   </ng-container>
 
 </div>
-
