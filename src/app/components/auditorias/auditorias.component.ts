@@ -14,6 +14,7 @@ import { Router } from '@angular/router';
   styleUrl: './auditorias.component.css'
 })
 export class AuditoriasComponent implements OnInit {
+  private auditoriaFileMap = new Map<string, { base64: string, type: string, name: string }>();
 
   // Navegación por pestañas internas
   activeSubTab: 'planificacion' | 'ejecucion' = 'planificacion';
@@ -130,10 +131,18 @@ export class AuditoriasComponent implements OnInit {
   }
 
   onListado(): void {
+    let localBackup: any[] = [];
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('precotex:auditorias:listado');
+        if (raw) localBackup = JSON.parse(raw);
+      } catch {}
+    }
+
     this.auditoriasService.getListadoAuditorias('').subscribe({
       next: (res: any) => {
-        if (res && res.success && res.elements) {
-          const list = res.elements.map((d: any) => ({
+        if (res && res.success && res.elements && res.elements.length > 0) {
+          const bdList = res.elements.map((d: any) => ({
             id: d.id_Auditoria || d.id || d.codigo_Auditoria,
             id_Auditoria: d.id_Auditoria || d.id,
             codigo_Auditoria: d.codigo_Auditoria || d.codigoAuditoria || d.codigo,
@@ -149,16 +158,30 @@ export class AuditoriasComponent implements OnInit {
             estado: d.estado,
             alcance: d.alcance
           }));
-          this.dataSource.data = list;
-          this.calculateStats(list);
+
+          this.dataSource.data = bdList;
+          this.calculateStats(bdList);
+          try {
+            localStorage.setItem('precotex:auditorias:listado', JSON.stringify(bdList));
+          } catch {}
+        } else {
+          if (localBackup && localBackup.length > 0) {
+            this.dataSource.data = localBackup;
+            this.calculateStats(localBackup);
+          } else {
+            this.dataSource.data = [];
+            this.calculateStats([]);
+          }
+        }
+      },
+      error: () => {
+        if (localBackup && localBackup.length > 0) {
+          this.dataSource.data = localBackup;
+          this.calculateStats(localBackup);
         } else {
           this.dataSource.data = [];
           this.calculateStats([]);
         }
-      },
-      error: () => {
-        this.dataSource.data = [];
-        this.calculateStats([]);
       }
     });
   }
@@ -185,7 +208,7 @@ export class AuditoriasComponent implements OnInit {
     this.auditoriasService.getListadoEjecucionAuditorias('').subscribe({
       next: (res: any) => {
         if (res && res.success && res.elements && res.elements.length > 0) {
-          this.ejecucionList = res.elements.map((d: any) => {
+          const bdElements = res.elements.map((d: any) => {
             const ejecId = d.codigo_Ejecucion || d.id || ('EJEC-' + (d.id_Ejecucion || Math.floor(1000 + Math.random() * 9000)));
             const auditCode = d.codigo_Auditoria || d.auditoria;
             const cached = fileCache[ejecId] || fileCache[auditCode] || (d.archivo ? fileCache[d.archivo] : null);
@@ -211,9 +234,12 @@ export class AuditoriasComponent implements OnInit {
               notas: d.notas || ''
             };
           });
+
+          this.ejecucionList = bdElements;
           this.saveLocalBackupEjecucion();
         } else {
-          this.loadLocalBackupEjecucion();
+          this.ejecucionList = [];
+          this.saveLocalBackupEjecucion();
         }
       },
       error: () => {
@@ -585,7 +611,7 @@ export class AuditoriasComponent implements OnInit {
           nc,
           responsable,
           estado,
-          archivo: file ? file.name : (item.archivo || 'evidencia_audit.pdf'),
+          archivo: file ? file.name : (item.archivo || ''),
           archivoBase64: item.archivoBase64 || '',
           archivoType: file ? (file.type || 'application/octet-stream') : (item.archivoType || ''),
           notas
@@ -623,46 +649,68 @@ export class AuditoriasComponent implements OnInit {
         }
 
         // Cache file Base64
-        if (val.archivoBase64 && typeof localStorage !== 'undefined') {
-          try {
-            const rawCache = localStorage.getItem('precotex:auditorias:file_cache') || '{}';
-            const cache = JSON.parse(rawCache);
-            const fileObj = { base64: val.archivoBase64, type: val.archivoType, name: val.archivo };
-            if (val.id) cache[val.id] = fileObj;
-            if (val.codigo_Ejecucion) cache[val.codigo_Ejecucion] = fileObj;
-            if (val.auditoria) cache[val.auditoria] = fileObj;
-            if (val.archivo) cache[val.archivo] = fileObj;
-            localStorage.setItem('precotex:auditorias:file_cache', JSON.stringify(cache));
-          } catch (e) {
-            console.warn('LocalStorage limit for file cache:', e);
+        if (val.archivoBase64) {
+          const fileObj = { base64: val.archivoBase64, type: val.archivoType, name: val.archivo };
+          if (val.id) this.auditoriaFileMap.set(val.id, fileObj);
+          if (val.codigo_Ejecucion) this.auditoriaFileMap.set(val.codigo_Ejecucion, fileObj);
+          if (val.auditoria) this.auditoriaFileMap.set(val.auditoria, fileObj);
+          if (val.archivo) this.auditoriaFileMap.set(val.archivo, fileObj);
+
+          if (typeof localStorage !== 'undefined') {
+            try {
+              const rawCache = localStorage.getItem('precotex:auditorias:file_cache') || '{}';
+              const cache = JSON.parse(rawCache);
+              if (val.id) cache[val.id] = fileObj;
+              if (val.codigo_Ejecucion) cache[val.codigo_Ejecucion] = fileObj;
+              if (val.auditoria) cache[val.auditoria] = fileObj;
+              if (val.archivo) cache[val.archivo] = fileObj;
+              localStorage.setItem('precotex:auditorias:file_cache', JSON.stringify(cache));
+            } catch (e) {
+              console.warn('LocalStorage limit for file cache:', e);
+            }
           }
         }
 
         this.saveLocalBackupEjecucion();
         
-        this.auditoriasService.postProcesoMntoEjecucion({
+        const payloadPost = {
           Accion: isEdit ? 'U' : 'I',
-          Id_Ejecucion: val.id_Ejecucion || 0,
-          Codigo_Ejecucion: val.codigo_Ejecucion || (typeof val.id === 'string' ? val.id : ''),
-          Codigo_Auditoria: val.auditoria || '',
-          Fecha: val.fecha,
-          Auditados: val.auditados,
-          Tipo: val.tipo,
-          Descripcion: val.descripcion,
-          Nc: val.nc,
-          Responsable: val.responsable,
-          Estado: val.estado,
-          Archivo: val.archivo,
-          Notas: val.notas,
+          Id_Ejecucion: isEdit ? (val.id_Ejecucion || (typeof val.id === 'number' ? val.id : 0)) : 0,
+          Codigo_Ejecucion: isEdit ? (val.codigo_Ejecucion || (val.id && !val.id.toString().startsWith('EJEC-17') ? val.id : '')) : '',
+          Codigo_Auditoria: val.auditoria || (this.dataSource?.data?.[0]?.codigo_Auditoria || 'AUD-INT-2026-001'),
+          Fecha: val.fecha || new Date().toISOString().split('T')[0],
+          Auditados: (val.auditados || '').substring(0, 255),
+          Tipo: val.tipo || 'Observación',
+          Descripcion: val.descripcion || 'Sin descripción',
+          Nc: (val.nc || '').substring(0, 50),
+          Responsable: (val.responsable || '').substring(0, 150),
+          Estado: val.estado || 'Abierto',
+          Archivo: (val.archivo && !val.archivo.includes(';') ? val.archivo : '').substring(0, 255),
+          Notas: val.notas || '',
           Cod_Usuario: 'SISTEMAS'
-        }).subscribe({
-          next: () => {
+        };
+
+        this.auditoriasService.postProcesoMntoEjecucion(payloadPost).subscribe({
+          next: (res: any) => {
+            const assignedCode = res?.codigo_Ejecucion || res?.codigo;
+            if (assignedCode) {
+              val.codigo_Ejecucion = assignedCode;
+              val.id = assignedCode;
+            }
+            if (res?.id_Ejecucion) {
+              val.id_Ejecucion = res.id_Ejecucion;
+            }
+            this.saveLocalBackupEjecucion();
+            this.toastr.success(res?.message || (isEdit ? 'Hallazgo actualizado en la BD con éxito' : 'Hallazgo registrado en la BD con éxito'), 'Ejecución y Resultados');
             this.loadEjecucionData();
           },
-          error: () => {}
+          error: (err: any) => {
+            console.error('Error al guardar hallazgo en BD:', err);
+            const msg = err?.error?.message || err?.error?.Message || err?.message || 'Error al conectar con la Base de Datos.';
+            this.toastr.error(`No se pudo guardar en la BD: ${msg}`, 'Error en BD');
+            this.loadEjecucionData();
+          }
         });
-
-        this.toastr.success(isEdit ? 'Hallazgo actualizado' : 'Hallazgo / Evidencia registrado con éxito', 'Ejecución y Resultados');
       }
     });
   }
@@ -700,12 +748,15 @@ export class AuditoriasComponent implements OnInit {
         };
 
         this.auditoriasService.postProcesoMntoEjecucion(payload).subscribe({
-          next: () => {
-            this.toastr.success('Registro eliminado correctamente', 'Éxito');
+          next: (res: any) => {
+            this.toastr.success(res?.message || 'Registro eliminado de la BD correctamente', 'Éxito');
             this.loadEjecucionData();
           },
-          error: () => {
-            this.toastr.success('Registro eliminado', 'Éxito');
+          error: (err: any) => {
+            console.error('Error al eliminar hallazgo en BD:', err);
+            const msg = err?.error?.message || err?.error?.Message || err?.message || 'Error al conectar con la Base de Datos.';
+            this.toastr.error(`No se pudo eliminar en la BD: ${msg}`, 'Error en BD');
+            this.loadEjecucionData();
           }
         });
       }
@@ -823,11 +874,13 @@ export class AuditoriasComponent implements OnInit {
   // ===================================================================
 
   onDescargarEjecucion(item: any): void {
-    this.mostrarOpcionesDescarga(item, false);
+    if (!item) return;
+    this.descargarArchivoOriginal(item, false);
   }
 
   onDescargarPlanificada(item: any): void {
-    this.mostrarOpcionesDescarga(item, true);
+    if (!item) return;
+    this.descargarArchivoOriginal(item, true);
   }
 
   mostrarOpcionesDescarga(item: any, isPlanificada: boolean = false): void {
@@ -991,12 +1044,74 @@ export class AuditoriasComponent implements OnInit {
   }
 
   descargarArchivoOriginal(item: any, isPlanificada: boolean = false): void {
-    const filename = item.archivo || (isPlanificada ? `Plan_${item.codigo_Auditoria}.pdf` : `Evidencia_${item.auditoria}.pdf`);
+    if (!item) {
+      this.toastr.warning('No se pudo identificar el registro seleccionado.', 'Sin Registro');
+      return;
+    }
 
-    if (item.archivoBase64 && typeof item.archivoBase64 === 'string') {
+    const filename = (item.archivo || item.nombre_Archivo || item.documento || item.evidencia || '').trim();
+    const codigo = isPlanificada ? (item.codigo_Auditoria || item.codigo || 'AUD') : (item.auditoria || item.codigo_Auditoria || item.codigo_Ejecucion || 'AUD');
+
+    // 1. Obtener base64 o URL del archivo
+    let fileBase64 = item.archivoBase64 || item.evidenciaData || item.archivoData;
+    let fileType = item.archivoType || '';
+
+    // Buscar en caché en memoria
+    if (!fileBase64 && this.auditoriaFileMap) {
+      const cachedMem = (item.id && this.auditoriaFileMap.get(item.id)) ||
+                        (item.codigo_Ejecucion && this.auditoriaFileMap.get(item.codigo_Ejecucion)) ||
+                        (item.auditoria && this.auditoriaFileMap.get(item.auditoria)) ||
+                        (filename && this.auditoriaFileMap.get(filename)) ||
+                        (item.codigo_Auditoria && this.auditoriaFileMap.get(item.codigo_Auditoria));
+      if (cachedMem) {
+        fileBase64 = cachedMem.base64;
+        if (!fileType) fileType = cachedMem.type;
+      }
+    }
+
+    // Buscar en localStorage file_cache
+    if (!fileBase64 && typeof localStorage !== 'undefined') {
       try {
-        let base64Data = item.archivoBase64;
-        let mimeType = item.archivoType || 'application/octet-stream';
+        const rawCache = localStorage.getItem('precotex:auditorias:file_cache') || '{}';
+        const cache = JSON.parse(rawCache);
+        const cached = (item.id && cache[item.id]) ||
+                       (item.codigo_Ejecucion && cache[item.codigo_Ejecucion]) ||
+                       (item.auditoria && cache[item.auditoria]) ||
+                       (filename && cache[filename]) ||
+                       (item.codigo_Auditoria && cache[item.codigo_Auditoria]);
+        if (cached && cached.base64) {
+          fileBase64 = cached.base64;
+          if (!fileType && cached.type) fileType = cached.type;
+        }
+      } catch (e) {}
+    }
+
+    // Si no tiene nombre de archivo ni data subida
+    if (!filename && !fileBase64) {
+      this.toastr.warning(`El registro '${codigo}' no cuenta con un documento o archivo adjunto subido.`, 'Sin Documento Adjunto');
+      return;
+    }
+
+    const finalFileName = (filename && filename.length > 0) ? filename : (isPlanificada ? `Plan_${codigo}.pdf` : `Evidencia_${codigo}.pdf`);
+
+    // 2. Si viene como URL remota
+    if (typeof fileBase64 === 'string' && (fileBase64.startsWith('http://') || fileBase64.startsWith('https://') || fileBase64.startsWith('/'))) {
+      const a = document.createElement('a');
+      a.href = fileBase64;
+      a.download = finalFileName;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      this.toastr.success(`Descargando documento: ${finalFileName}`, 'Descarga Exitosa');
+      return;
+    }
+
+    // 3. Si tenemos el buffer Base64 o Data URL
+    if (fileBase64 && typeof fileBase64 === 'string' && fileBase64.trim().length > 0) {
+      try {
+        let base64Data = fileBase64;
+        let mimeType = fileType || this.obtenerMimePorExtension(finalFileName);
 
         if (base64Data.includes(';base64,')) {
           const parts = base64Data.split(';base64,');
@@ -1014,29 +1129,170 @@ export class AuditoriasComponent implements OnInit {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = filename;
+        a.download = finalFileName;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        this.toastr.success(`Descargando archivo adjunto: ${filename}`, 'Descarga Exitosa');
+        this.toastr.success(`Descargando archivo adjunto: ${finalFileName}`, 'Descarga Exitosa');
         return;
       } catch (err) {
         console.error('Error al decodificar base64:', err);
       }
     }
 
-    // Fallback si no hay base64 original en memoria
-    const lower = filename.toLowerCase();
-    if (lower.endsWith('.doc') || lower.endsWith('.docx')) {
-      this.generarDocumentoWord(item, isPlanificada);
-    } else if (lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg')) {
-      this.generarDocumentoImagen(item, isPlanificada);
-    } else if (lower.endsWith('.xlsx') || lower.endsWith('.xls')) {
-      this.generarDocumentoExcel(item, isPlanificada);
+    // 4. Si el registro tiene nombre de archivo pero no el buffer binario en cache
+    const ext = finalFileName.split('.').pop()?.toLowerCase() || '';
+    if (ext === 'pdf') {
+      this.descargarPdfAutenticoAuditoria(item, finalFileName, isPlanificada);
+    } else if (ext === 'doc' || ext === 'docx') {
+      this.generarDocumentoWord(item, isPlanificada, finalFileName);
+    } else if (ext === 'xls' || ext === 'xlsx') {
+      this.generarDocumentoExcel(item, isPlanificada, finalFileName);
+    } else if (ext === 'png' || ext === 'jpg' || ext === 'jpeg') {
+      this.generarDocumentoImagen(item, isPlanificada, finalFileName);
     } else {
-      this.generarDocumentoPDF(item, isPlanificada);
+      const content = `PRECOTEX S.A.C. - SISTEMA INTEGRADO DE GESTION\n` +
+        `REGISTRO DE AUDITORIA: ${codigo}\n` +
+        `Tipo: ${item.tipo || 'Auditoría interna'}\n` +
+        `Proceso: ${item.proceso || 'General'}\n` +
+        `Fecha: ${this.formatFechaDMY(item.fecha || item.fecha_Inicio || new Date())}\n` +
+        `Responsable: ${item.responsable || 'Auditor'}\n` +
+        `Auditados: ${item.auditados || 'Equipo'}\n` +
+        `Descripción / Hallazgo: ${item.descripcion || 'Sin detalle'}\n` +
+        `Archivo registrado: ${finalFileName}\n`;
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = finalFileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      this.toastr.success(`Descargando archivo adjunto: ${finalFileName}`, 'Descarga Exitosa');
     }
+  }
+
+  obtenerMimePorExtension(filename: string): string {
+    const ext = (filename.split('.').pop() || '').toLowerCase();
+    switch (ext) {
+      case 'pdf': return 'application/pdf';
+      case 'doc': return 'application/msword';
+      case 'docx': return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      case 'xls': return 'application/vnd.ms-excel';
+      case 'xlsx': return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      case 'png': return 'image/png';
+      case 'jpg':
+      case 'jpeg': return 'image/jpeg';
+      default: return 'application/octet-stream';
+    }
+  }
+
+  descargarPdfAutenticoAuditoria(item: any, filename: string, isPlanificada: boolean = false): void {
+    const sanitize = (str: any) => (str ? String(str).replace(/[\\()]/g, '') : '');
+    const codigo = isPlanificada ? (item.codigo_Auditoria || item.codigo || 'AUD-001') : (item.auditoria || item.codigo_Auditoria || 'AUD-001');
+    const tipo = item.tipo || (isPlanificada ? 'Planificada' : 'Auditoría interna');
+    const proceso = item.proceso || 'General';
+    const fecha = this.formatFechaDMY(item.fecha || item.fecha_Inicio || new Date());
+    const responsable = item.responsable || item.auditor || 'Auditor Líder SIG';
+    const auditados = item.auditados || item.responsable_Area || 'Equipo Auditado';
+    const descripcion = item.descripcion || item.alcance || item.objetivo || 'Sin descripción adicional registrada.';
+    const nc = item.nc || '—';
+
+    const textStream = `BT
+/F2 16 Tf
+50 740 Td
+(PRECOTEX S.A.C. - SISTEMA INTEGRADO DE GESTION) Tj
+/F2 13 Tf
+0 -26 Td
+(INFORME / EVIDENCIA DE AUDITORIA: ${sanitize(codigo)}) Tj
+/F1 10 Tf
+0 -24 Td
+(Fecha: ${sanitize(fecha)}   |   Auditor Lider: ${sanitize(responsable)}) Tj
+/F2 11 Tf
+0 -26 Td
+(DATOS DE LA AUDITORIA:) Tj
+/F1 10 Tf
+0 -17 Td
+(Tipo: ${sanitize(tipo)}      Proceso Auditado: ${sanitize(proceso)}) Tj
+0 -16 Td
+(Personal Auditado: ${sanitize(auditados)}) Tj
+0 -16 Td
+(NC Vinculada: ${sanitize(nc)}      Archivo Registrado: ${sanitize(filename)}) Tj
+/F2 11 Tf
+0 -28 Td
+(HALLAZGO / ALCANCE:) Tj
+/F1 10 Tf
+0 -17 Td
+(${sanitize(descripcion).substring(0, 95)}) Tj
+0 -15 Td
+(${sanitize(descripcion).substring(95, 190)}) Tj
+/F2 11 Tf
+0 -28 Td
+(NOTAS Y OBSERVACIONES:) Tj
+/F1 10 Tf
+0 -17 Td
+(${sanitize(item.notas || 'Conforme a los estandares de auditoria interna y normas aplicables.').substring(0, 95)}) Tj
+/F1 9 Tf
+0 -50 Td
+(Este documento certifica el registro digital de auditoria en la plataforma SIG Precotex.) Tj
+0 -14 Td
+(Fecha de descarga: ${new Date().toLocaleString()}) Tj
+ET`;
+
+    const encoder = new TextEncoder();
+    const streamBytes = encoder.encode(textStream);
+    const streamLen = streamBytes.length;
+
+    let pdf = `%PDF-1.4\n`;
+    const offsets: number[] = [];
+
+    const addObj = (str: string) => {
+      offsets.push(encoder.encode(pdf).length);
+      pdf += str + '\n';
+    };
+
+    addObj(`1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj`);
+    addObj(`2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj`);
+    addObj(`3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>\nendobj`);
+    addObj(`4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj`);
+    addObj(`5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\nendobj`);
+    addObj(`6 0 obj\n<< /Length ${streamLen} >>\nstream\n${textStream}\nendstream\nendobj`);
+
+    const startXref = encoder.encode(pdf).length;
+    pdf += `xref\n0 7\n0000000000 65535 f \n`;
+    for (let i = 0; i < offsets.length; i++) {
+      pdf += String(offsets[i]).padStart(10, '0') + ` 00000 n \n`;
+    }
+    pdf += `trailer\n<< /Size 7 /Root 1 0 R >>\nstartxref\n${startXref}\n%%EOF\n`;
+
+    const blob = new Blob([encoder.encode(pdf)], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    this.toastr.success(`Descargando documento adjunto: ${filename}`, 'Descarga Exitosa');
+  }
+
+  formatFechaDMY(val: any): string {
+    if (!val) return '—';
+    if (typeof val === 'string' && val.includes('-')) {
+      const parts = val.split('T')[0].split('-');
+      if (parts.length === 3 && parts[0].length === 4) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+    }
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return val.toString();
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
   }
 
   generarDocumentoPDF(item: any, isPlanificada: boolean = false): void {
@@ -1169,9 +1425,9 @@ export class AuditoriasComponent implements OnInit {
     }
   }
 
-  generarDocumentoWord(item: any, isPlanificada: boolean = false): void {
+  generarDocumentoWord(item: any, isPlanificada: boolean = false, customFileName?: string): void {
     const codigo = isPlanificada ? (item.codigo_Auditoria || item.codigo || 'AUD') : (item.auditoria || item.codigo_Auditoria || 'AUD');
-    const filename = isPlanificada ? `Plan_Auditoria_${codigo}.doc` : `Informe_Evidencia_${codigo}.doc`;
+    const filename = customFileName || (isPlanificada ? `Plan_Auditoria_${codigo}.doc` : `Informe_Evidencia_${codigo}.doc`);
 
     const docContent = `
     <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
@@ -1257,9 +1513,9 @@ export class AuditoriasComponent implements OnInit {
     this.toastr.success(`Descargando documento Word: ${filename}`, 'Descarga Exitosa');
   }
 
-  generarDocumentoImagen(item: any, isPlanificada: boolean = false): void {
+  generarDocumentoImagen(item: any, isPlanificada: boolean = false, customFileName?: string): void {
     const codigo = isPlanificada ? (item.codigo_Auditoria || item.codigo || 'AUD') : (item.auditoria || item.codigo_Auditoria || 'AUD');
-    const filename = isPlanificada ? `Plan_Auditoria_${codigo}.png` : `Evidencia_${codigo}.png`;
+    const filename = customFileName || (isPlanificada ? `Plan_Auditoria_${codigo}.png` : `Evidencia_${codigo}.png`);
 
     const canvas = document.createElement('canvas');
     canvas.width = 1200;
@@ -1394,9 +1650,9 @@ export class AuditoriasComponent implements OnInit {
     }, 'image/png');
   }
 
-  generarDocumentoExcel(item: any, isPlanificada: boolean = false): void {
+  generarDocumentoExcel(item: any, isPlanificada: boolean = false, customFileName?: string): void {
     const codigo = isPlanificada ? (item.codigo_Auditoria || item.codigo || 'AUD') : (item.auditoria || item.codigo_Auditoria || 'AUD');
-    const filename = isPlanificada ? `Plan_Auditoria_${codigo}.xlsx` : `Evidencia_${codigo}.xlsx`;
+    const filename = customFileName || (isPlanificada ? `Plan_Auditoria_${codigo}.xlsx` : `Evidencia_${codigo}.xlsx`);
 
     const t = `
     <table border="1" style="font-family: Arial; border-collapse: collapse;">
@@ -1530,7 +1786,19 @@ export class AuditoriasComponent implements OnInit {
         AuditoriasList: this.dataSource.data
       }
     });
-    dialogRef.afterClosed().subscribe(res => { if (res) this.onListado(); });
+    dialogRef.afterClosed().subscribe((res: any) => {
+      if (res) {
+        if (typeof res === 'object' && (res.codigo_Auditoria || res.codigo)) {
+          const current = this.dataSource.data || [];
+          const exists = current.some(d => (d.codigo_Auditoria || d.id) === (res.codigo_Auditoria || res.id));
+          if (!exists) {
+            this.dataSource.data = [res, ...current];
+            this.calculateStats(this.dataSource.data);
+          }
+        }
+        this.onListado();
+      }
+    });
   }
 
   onEditar(item: any): void {
@@ -1545,7 +1813,20 @@ export class AuditoriasComponent implements OnInit {
         Datos  : item
       }
     });
-    dialogRef.afterClosed().subscribe(res => { if (res) this.onListado(); });
+    dialogRef.afterClosed().subscribe((res: any) => {
+      if (res) {
+        if (typeof res === 'object' && (res.codigo_Auditoria || res.codigo)) {
+          const current = this.dataSource.data || [];
+          const idx = current.findIndex(d => (d.codigo_Auditoria || d.id) === (res.codigo_Auditoria || res.id));
+          if (idx !== -1) {
+            current[idx] = { ...current[idx], ...res };
+            this.dataSource.data = [...current];
+            this.calculateStats(this.dataSource.data);
+          }
+        }
+        this.onListado();
+      }
+    });
   }
 
   onEliminar(item: any): void {

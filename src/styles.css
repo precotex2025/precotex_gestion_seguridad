@@ -231,6 +231,15 @@ tr.mat-mdc-row:nth-child(even), tr.mat-row:nth-child(even), tr.fila:nth-child(ev
   transform: translateY(-1px);
 }
 
+.btn-download, .btn-action-download {
+  color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.1) !important;
+}
+.btn-download:hover, .btn-action-download:hover {
+  background: rgba(16, 185, 129, 0.22) !important;
+  transform: translateY(-1px);
+}
+
 .btn-edit, .btn-action-edit, .btn-action-editar {
   color: var(--amber) !important;
   background: rgba(184, 121, 10, 0.1) !important;

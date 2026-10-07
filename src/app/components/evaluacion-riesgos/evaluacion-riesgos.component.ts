@@ -19,7 +19,11 @@ export interface RiesgoItem {
   revision: string; // YYYY-MM-DD
   medidacontrol?: string;
   planaccion?: string; // RIE-21: Plan de acción / acción correctiva
-  evidencia?: string;   // RIE-21: Evidencia de sustento (matriz IPERC, informe de verificación)
+  evidencia?: string;
+  archivoEvidencia?: string;
+  serverFileName?: string;
+  archivoBase64?: string;
+  archivoTipo?: string;
   avance?: number;
   probabilidad?: number;
   impacto?: number;
@@ -533,27 +537,65 @@ export class EvaluacionRiesgosComponent implements OnInit {
   }
 
   cargarDatos(): void {
+    let archivosMap: Record<string, any> = {};
+    try {
+      const rawMap = localStorage.getItem('precotex:riesgos:archivos_map');
+      if (rawMap) archivosMap = JSON.parse(rawMap);
+    } catch (e) { }
+
     this.riesgosService.getListadoRiesgos().subscribe({
       next: (res: any) => {
         if (res && res.success && res.elements) {
-          this.riesgos = res.elements.map((item: any) => ({
-            id: item.id_Riesgo,
-            codigo: item.codigo,
-            tipo: item.tipo,
-            descbrief: item.descripcion_Breve,
-            proceso: item.proceso,
-            nivel: item.nivel,
-            estado: item.estado,
-            responsable: item.responsable,
-            revision: item.fecha_Revision ? item.fecha_Revision.split('T')[0] : '',
-            medidacontrol: item.medida_Control || '',
-            sede: item.sede || 'Santa Maria',
-            fcierre: item.fecha_Cierre ? item.fecha_Cierre.split('T')[0] : (item.estado === 'Controlado' ? '2025-12-15' : '--'),
-            periodo: item.periodo || '2026',
-            clausula: item.clausula || '6.1.2 Identificación de peligros y evaluación de los riesgos (IPERC)',
-            causaprobable: item.causa_Probable || item.causaProbable || '',
-            consecuenciapotencial: item.consecuencia_Potencial || item.consecuenciaPotencial || ''
-          }));
+          this.riesgos = res.elements.map((item: any) => {
+            const cod = (item.codigo || '').trim();
+            const fileInfo = archivosMap[cod] || 
+                             archivosMap[cod.toUpperCase()] || 
+                             (item.id_Riesgo ? archivosMap[String(item.id_Riesgo)] : null);
+            // Extraer referencia del archivo codificada en Medida_Control (persistida en BD)
+            let rawMedida = item.medida_Control || '';
+            let dbServerFileName = '';
+            let dbOriginalName = '';
+            const fileTagIdx = rawMedida.indexOf('|||FILE:');
+            if (fileTagIdx !== -1) {
+              const fileTag = rawMedida.substring(fileTagIdx + 8);
+              const parts = fileTag.split('|');
+              dbServerFileName = parts[0] || '';
+              dbOriginalName = parts[1] || '';
+              rawMedida = rawMedida.substring(0, fileTagIdx); // texto limpio sin tag
+            }
+
+            const nomArchivo = fileInfo?.nombre || dbOriginalName || item.archivo_Evidencia || item.evidencia || '';
+            const sName = fileInfo?.serverFileName || dbServerFileName || fileInfo?.nombre || item.archivo_Evidencia || item.evidencia || '';
+            const b64 = fileInfo?.base64 || '';
+
+            // Actualizar localStorage si encontramos datos desde BD que no estaban en el mapa
+            if (dbServerFileName && cod && !archivosMap[cod]) {
+              archivosMap[cod] = { nombre: dbOriginalName, serverFileName: dbServerFileName, base64: '', fecha: '' };
+              try { localStorage.setItem('precotex:riesgos:archivos_map', JSON.stringify(archivosMap)); } catch(e) {}
+            }
+
+            return {
+              id: item.id_Riesgo,
+              codigo: item.codigo,
+              tipo: item.tipo,
+              descbrief: item.descripcion_Breve,
+              proceso: item.proceso,
+              nivel: item.nivel,
+              estado: item.estado,
+              responsable: item.responsable,
+              revision: item.fecha_Revision ? item.fecha_Revision.split('T')[0] : '',
+              medidacontrol: rawMedida,
+              sede: item.sede || 'Santa Maria',
+              fcierre: item.fecha_Cierre ? item.fecha_Cierre.split('T')[0] : (item.estado === 'Controlado' ? '2025-12-15' : '--'),
+              periodo: item.periodo || '2026',
+              clausula: item.clausula || '6.1.2 Identificación de peligros y evaluación de los riesgos (IPERC)',
+              causaprobable: item.causa_Probable || item.causaProbable || '',
+              consecuenciapotencial: item.consecuencia_Potencial || item.consecuenciaPotencial || '',
+              archivoEvidencia: nomArchivo,
+              serverFileName: sName,
+              archivoBase64: b64
+            };
+          });
           this.actualizarContadores();
           this.onBuscar();
         } else {
@@ -707,6 +749,28 @@ export class EvaluacionRiesgosComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        const codigoFinal = (result.codigo || nextCod).trim();
+        if (result.archivoEvidencia) {
+          try {
+            const rawMap = localStorage.getItem('precotex:riesgos:archivos_map');
+            const map = rawMap ? JSON.parse(rawMap) : {};
+            map[codigoFinal] = {
+              nombre: result.archivoEvidencia,
+              serverFileName: result.serverFileName || result.archivoEvidencia,
+              base64: result.archivoBase64 || '',
+              fecha: new Date().toISOString()
+            };
+            localStorage.setItem('precotex:riesgos:archivos_map', JSON.stringify(map));
+            console.log('[Riesgos onAgregar] Archivo guardado en mapa local:', map[codigoFinal]);
+          } catch(e) {}
+        }
+        // Codificar la referencia del archivo dentro de Medida_Control para persistencia en BD
+        let medidaControlFinal = result.medidacontrol || '';
+        if (result.serverFileName && result.archivoEvidencia) {
+          medidaControlFinal = medidaControlFinal.replace(/\|\|\|FILE:[^]*$/, '');
+          medidaControlFinal += '|||FILE:' + (result.serverFileName || '') + '|' + (result.archivoEvidencia || '');
+        }
+
         const payload = {
           Accion: 'I',
           Codigo: result.codigo || nextCod,
@@ -722,7 +786,7 @@ export class EvaluacionRiesgosComponent implements OnInit {
           Estado: result.estado,
           Responsable: result.responsable,
           Fecha_Revision: result.revision,
-          Medida_Control: result.medidacontrol,
+          Medida_Control: medidaControlFinal,
           Usuario_Registro: 'SISTEMAS'
         };
 
@@ -761,6 +825,30 @@ export class EvaluacionRiesgosComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        const codigoFinal = (item.codigo || '').trim();
+        if (result.archivoEvidencia) {
+          try {
+            const rawMap = localStorage.getItem('precotex:riesgos:archivos_map');
+            const map = rawMap ? JSON.parse(rawMap) : {};
+            map[codigoFinal] = {
+              nombre: result.archivoEvidencia,
+              serverFileName: result.serverFileName || item.serverFileName || result.archivoEvidencia,
+              base64: result.archivoBase64 || item.archivoBase64 || '',
+              fecha: new Date().toISOString()
+            };
+            localStorage.setItem('precotex:riesgos:archivos_map', JSON.stringify(map));
+            console.log('[Riesgos onEdit] Archivo guardado en mapa local:', map[codigoFinal]);
+          } catch(e) {}
+        }
+        // Codificar la referencia del archivo dentro de Medida_Control para persistencia en BD
+        let medidaControlEditFinal = result.medidacontrol || '';
+        const srvFile = result.serverFileName || item.serverFileName || '';
+        const archFile = result.archivoEvidencia || item.archivoEvidencia || '';
+        if (srvFile && archFile) {
+          medidaControlEditFinal = medidaControlEditFinal.replace(/\|\|\|FILE:[^]*$/, '');
+          medidaControlEditFinal += '|||FILE:' + srvFile + '|' + archFile;
+        }
+
         const payload = {
           Accion: 'U',
           Codigo: item.codigo,
@@ -776,7 +864,7 @@ export class EvaluacionRiesgosComponent implements OnInit {
           Estado: result.estado,
           Responsable: result.responsable,
           Fecha_Revision: result.revision,
-          Medida_Control: result.medidacontrol,
+          Medida_Control: medidaControlEditFinal,
           Usuario_Registro: 'SISTEMAS'
         };
 
@@ -848,6 +936,137 @@ export class EvaluacionRiesgosComponent implements OnInit {
         return 'status-amber';
       default:
         return 'status-red';
+    }
+  }
+  async onDescargarEvidencia(item: RiesgoItem, event?: Event): Promise<void> {
+    if (event) event.stopPropagation();
+
+    if (!item) {
+      this.toastr.warning('No se pudo identificar el registro de riesgo seleccionado.', 'Sin Registro');
+      return;
+    }
+
+    const codigo = item.codigo || 'RSG';
+
+    // Obtener metadatos desde el registro o desde el mapa de archivos
+    let archivosMap: any = {};
+    try {
+      const rawMap = localStorage.getItem('precotex:riesgos:archivos_map');
+      if (rawMap) archivosMap = JSON.parse(rawMap);
+    } catch (e) { }
+
+    const fileInfo = archivosMap[codigo] || (item.id ? archivosMap[String(item.id)] : null);
+    const originalName = (fileInfo?.nombre || item.archivoEvidencia || item.evidencia || '').trim();
+    const serverFileName = (fileInfo?.serverFileName || item.serverFileName || fileInfo?.nombre || item.archivoEvidencia || item.evidencia || '').trim();
+    let fileBase64 = fileInfo?.base64 || item.archivoBase64 || '';
+
+    // Si el registro NO tiene ningún archivo físico enlazado aún:
+    if (!originalName && !serverFileName && !fileBase64) {
+      Swal.fire({
+        title: `Adjuntar documento (${codigo})`,
+        html: `<div style="text-align: left; font-size: 13.5px; color: #334155; line-height: 1.6;">
+                 <p style="margin-bottom: 8px;">El riesgo <strong>${codigo}</strong> fue declarado antes de habilitar la carga de archivos en el servidor o no tiene un documento físico guardado.</p>
+                 <div style="background: #eef2ff; border-left: 4px solid #6366f1; border-radius: 6px; padding: 10px 14px; margin: 12px 0; color: #3730a3; font-size: 13px;">
+                   💡 <strong>¿Deseas adjuntarlo ahora?</strong><br>
+                   Se abrirá la ventana de edición para que selecciones tu archivo (PDF, Excel, Word, etc.) y se guardará directamente en el servidor.
+                 </div>
+               </div>`,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: '📎 Sí, adjuntar documento',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#4f46e5',
+        cancelButtonColor: '#94a3b8'
+      }).then((res) => {
+        if (res.isConfirmed) {
+          this.onEdit(item);
+        }
+      });
+      return;
+    }
+
+    const downloadName = originalName || serverFileName || `Documento_Sustento_${codigo}.pdf`;
+
+    // 1. Descarga desde el servidor Backend (donde se subió físicamente el archivo original)
+    if (serverFileName && !serverFileName.startsWith('data:')) {
+      try {
+        this.toastr.info(`Iniciando descarga de ${downloadName}...`, 'Descargando Archivo');
+        const downloadUrl = this.riesgosService.getDownloadUrl(serverFileName);
+        const res = await fetch(downloadUrl);
+        if (res.ok) {
+          const blob = await res.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          a.download = downloadName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(blobUrl);
+          this.toastr.success(`Archivo descargado correctamente: ${downloadName}`, 'Descarga Exitosa');
+          return;
+        }
+      } catch (err) {
+        console.warn('[Riesgos] Descarga fetch desde el servidor falló, intentando respaldo base64:', err);
+      }
+    }
+
+    // 2. Respaldo: Descarga desde el contenido Base64 original almacenado
+    if (fileBase64 && typeof fileBase64 === 'string' && fileBase64.length > 50) {
+      try {
+        let downloadHref = fileBase64;
+        if (!downloadHref.startsWith('data:')) {
+          const mime = this.obtenerMimePorExtension(downloadName);
+          downloadHref = `data:${mime};base64,${downloadHref}`;
+        }
+        const a = document.createElement('a');
+        a.href = downloadHref;
+        a.download = downloadName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        this.toastr.success(`Archivo original descargado correctamente: ${downloadName}`, 'Descarga Exitosa');
+        return;
+      } catch (err) {
+        console.error('[Riesgos] Error en descarga base64:', err);
+      }
+    }
+
+    // 3. Si el registro tiene el nombre en texto pero el archivo físico no fue subido al servidor
+    Swal.fire({
+      title: 'Archivo no encontrado en el servidor',
+      html: `<div style="text-align: left; font-size: 13.5px; color: #334155; line-height: 1.6;">
+               <p>El registro <strong>${codigo}</strong> tiene registrado el nombre <strong>${downloadName}</strong>, pero el archivo físico no está disponible en el servidor.</p>
+               <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px 14px; margin: 12px 0; color: #991b1b; font-size: 13px;">
+                 💡 <strong>¿Deseas volver a adjuntarlo?</strong><br>
+                 Haz clic en el botón de abajo para seleccionarlo y guardarlo en el servidor de archivos.
+               </div>
+             </div>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '📎 Adjuntar nuevamente',
+      cancelButtonText: 'Cerrar',
+      confirmButtonColor: '#4f46e5',
+      cancelButtonColor: '#94a3b8'
+    }).then((res) => {
+      if (res.isConfirmed) {
+        this.onEdit(item);
+      }
+    });
+  }
+
+  obtenerMimePorExtension(filename: string): string {
+    const ext = filename.split('.').pop()?.toLowerCase() || '';
+    switch (ext) {
+      case 'pdf': return 'application/pdf';
+      case 'xlsx': return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      case 'xls': return 'application/vnd.ms-excel';
+      case 'docx': return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      case 'doc': return 'application/msword';
+      case 'png': return 'image/png';
+      case 'jpg':
+      case 'jpeg': return 'image/jpeg';
+      default: return 'application/octet-stream';
     }
   }
 }

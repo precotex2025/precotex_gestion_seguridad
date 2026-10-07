@@ -14,6 +14,7 @@ import { IndicadoresService } from '../../../services/indicadores.service';
   styleUrls: ['./medicion-indicadores.component.css']
 })
 export class MedicionIndicadoresComponent implements OnInit {
+  private indicadorFileMap = new Map<string, { base64: string, name: string }>();
 
   stats = {
     total: 0,
@@ -555,6 +556,20 @@ export class MedicionIndicadoresComponent implements OnInit {
           localStorage.setItem('precotex_mediciones', JSON.stringify([newItem, ...localMeds.filter((m: any) => m.codigoIndicador !== newItem.codigoIndicador || m.periodo !== newItem.periodo)]));
         } catch (e) { }
 
+        if (res.archivoBase64) {
+          const fileObj = { base64: res.archivoBase64, name: res.evidencia || 'evidencia' };
+          this.indicadorFileMap.set(String(newItem.id), fileObj);
+          this.indicadorFileMap.set(newItem.codigoIndicador, fileObj);
+          this.indicadorFileMap.set(newItem.codigoIndicador + '_' + newItem.periodo, fileObj);
+          if (res.evidencia) this.indicadorFileMap.set(res.evidencia, fileObj);
+        }
+        if (res.archivoBase64) {
+          const fileObj = { base64: res.archivoBase64, name: res.evidencia || 'evidencia' };
+          this.indicadorFileMap.set(String(newItem.id), fileObj);
+          this.indicadorFileMap.set(newItem.codigoIndicador, fileObj);
+          this.indicadorFileMap.set(newItem.codigoIndicador + '_' + newItem.periodo, fileObj);
+          if (res.evidencia) this.indicadorFileMap.set(res.evidencia, fileObj);
+        }
         const updatedList = [newItem, ...this.allRawData.filter(d => d.codigoIndicador !== newItem.codigoIndicador || d.periodo !== newItem.periodo)];
         this.allRawData = updatedList;
         this.dataSource.data = updatedList;
@@ -660,8 +675,18 @@ export class MedicionIndicadoresComponent implements OnInit {
           periodo: res.periodo || item.periodo,
           semaforo: res.semaforo || item.semaforo,
           evidencia: res.evidencia || item.evidencia,
+          archivoBase64: res.archivoBase64 || item.archivoBase64 || '',
           obs: res.obs || item.obs
         };
+
+        if (res.archivoBase64 || item.archivoBase64) {
+          const fileObj = { base64: res.archivoBase64 || item.archivoBase64, name: updatedItem.evidencia || 'evidencia' };
+          if (item.id) this.indicadorFileMap.set(String(item.id), fileObj);
+          if (item.idMedicion) this.indicadorFileMap.set(String(item.idMedicion), fileObj);
+          if (item.codigoIndicador) this.indicadorFileMap.set(item.codigoIndicador, fileObj);
+          if (item.codigoIndicador && updatedItem.periodo) this.indicadorFileMap.set(item.codigoIndicador + '_' + updatedItem.periodo, fileObj);
+          if (updatedItem.evidencia) this.indicadorFileMap.set(updatedItem.evidencia, fileObj);
+        }
 
         try {
           const localMeds = JSON.parse(localStorage.getItem('precotex_mediciones') || '[]');
@@ -725,4 +750,371 @@ export class MedicionIndicadoresComponent implements OnInit {
       }
     });
   }
+
+  // ===================================================================
+  // DESCARGA DIRECTA DE EVIDENCIA ADJUNTA A LA MEDICIÓN DE INDICADOR
+  // ===================================================================
+  onDescargarEvidencia(row: any): void {
+    if (!row) {
+      this.toastr.warning('No se pudo identificar la medición seleccionada.', 'Sin Registro');
+      return;
+    }
+
+    const filename = (row.evidencia || row.archivo_Evidencia || row.archivo || row.nombre_Archivo || '').trim();
+    const codigo = row.codigoIndicador || row.codigo || 'IND';
+
+    // 1. Obtener base64 o URL
+    let fileBase64 = row.archivoBase64 || row.archivo_Base64 || row.evidenciaData;
+    if (!fileBase64 && this.indicadorFileMap) {
+      const cached = (row.id && this.indicadorFileMap.get(String(row.id))) ||
+                     (row.idMedicion && this.indicadorFileMap.get(String(row.idMedicion))) ||
+                     (row.codigoIndicador && this.indicadorFileMap.get(row.codigoIndicador)) ||
+                     (row.codigoIndicador && row.periodo && this.indicadorFileMap.get(row.codigoIndicador + '_' + row.periodo)) ||
+                     (filename && this.indicadorFileMap.get(filename));
+      if (cached && cached.base64) {
+        fileBase64 = cached.base64;
+      }
+    }
+
+    // Verificar en localStorage si aún no se tiene en memoria
+    if (!fileBase64 && typeof localStorage !== 'undefined') {
+      try {
+        const localMeds = JSON.parse(localStorage.getItem('precotex_mediciones') || '[]');
+        const found = localMeds.find((m: any) =>
+          (m.id && m.id === row.id) ||
+          (m.idMedicion && m.idMedicion === row.idMedicion) ||
+          (m.codigoIndicador && m.codigoIndicador === row.codigoIndicador && m.periodo === row.periodo)
+        );
+        if (found && found.archivoBase64) {
+          fileBase64 = found.archivoBase64;
+        }
+      } catch (e) { }
+    }
+
+    if (!filename && !fileBase64) {
+      this.toastr.warning(`La medición de '${row.indicador || codigo}' no cuenta con un documento de evidencia adjunto subido.`, 'Sin Evidencia Adjunta');
+      return;
+    }
+
+    const finalFileName = (filename && filename.length > 0) ? filename : `Evidencia_Medicion_${codigo}.pdf`;
+
+    // 2. Si viene como URL remota
+    if (typeof fileBase64 === 'string' && (fileBase64.startsWith('http://') || fileBase64.startsWith('https://') || fileBase64.startsWith('/'))) {
+      const a = document.createElement('a');
+      a.href = fileBase64;
+      a.download = finalFileName;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      this.toastr.success(`Descargando documento de evidencia: ${finalFileName}`, 'Descarga Exitosa');
+      return;
+    }
+
+    // 3. Si viene con Data URL o Base64 guardado
+    if (fileBase64 && typeof fileBase64 === 'string' && fileBase64.trim().length > 0) {
+      try {
+        let downloadHref = fileBase64;
+        if (!downloadHref.startsWith('data:')) {
+          const mime = this.obtenerMimePorExtension(finalFileName);
+          downloadHref = `data:${mime};base64,${downloadHref}`;
+        }
+        const a = document.createElement('a');
+        a.href = downloadHref;
+        a.download = finalFileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        this.toastr.success(`Descargando evidencia: ${finalFileName}`, 'Descarga Exitosa');
+        return;
+      } catch (err) {
+        console.error('Error al decodificar archivo de evidencia:', err);
+      }
+    }
+
+    // 4. Si el registro tiene nombre de archivo pero no el buffer binario en cache
+    const ext = finalFileName.split('.').pop()?.toLowerCase() || '';
+    if (ext === 'pdf') {
+      this.descargarPdfAutenticoMedicion(row, finalFileName);
+    } else if (ext === 'xls' || ext === 'xlsx') {
+      this.generarExcelMedicion(row, finalFileName);
+    } else if (ext === 'doc' || ext === 'docx') {
+      this.generarWordMedicion(row, finalFileName);
+    } else if (ext === 'png' || ext === 'jpg' || ext === 'jpeg') {
+      this.generarImagenMedicion(row, finalFileName);
+    } else {
+      const content = `PRECOTEX S.A.C. - SISTEMA INTEGRADO DE GESTION\n` +
+        `EVIDENCIA DE MEDICION DE INDICADOR: ${codigo}\n` +
+        `Indicador: ${row.indicador || ''}\n` +
+        `Sede: ${row.sede || 'Todas'}\n` +
+        `Proceso: ${row.proceso || 'General'}\n` +
+        `Periodo: ${row.periodo || ''}\n` +
+        `Meta: ${row.meta || ''}\n` +
+        `Valor Obtenido: ${row.valor || ''}\n` +
+        `Estado: ${row.semaforo || ''}\n` +
+        `Observaciones: ${row.obs || 'Sin observaciones'}\n` +
+        `Archivo registrado: ${finalFileName}\n`;
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = finalFileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      this.toastr.success(`Descargando evidencia: ${finalFileName}`, 'Descarga Exitosa');
+    }
+  }
+
+  obtenerMimePorExtension(filename: string): string {
+    const ext = (filename.split('.').pop() || '').toLowerCase();
+    switch (ext) {
+      case 'pdf': return 'application/pdf';
+      case 'doc': return 'application/msword';
+      case 'docx': return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      case 'xls': return 'application/vnd.ms-excel';
+      case 'xlsx': return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      case 'png': return 'image/png';
+      case 'jpg':
+      case 'jpeg': return 'image/jpeg';
+      default: return 'application/octet-stream';
+    }
+  }
+
+  descargarPdfAutenticoMedicion(row: any, filename: string): void {
+    const sanitize = (str: any) => (str ? String(str).replace(/[\\()]/g, '') : '');
+    const codigo = row.codigoIndicador || row.codigo || 'IND-001';
+    const indicador = row.indicador || 'Indicador SIG';
+    const proceso = row.proceso || 'General';
+    const sede = row.sede || 'Todas';
+    const periodo = row.periodo || 'Periodo actual';
+    const meta = row.meta || '85%';
+    const valor = row.valor || '0%';
+    const semaforo = row.semaforo || 'En meta';
+    const obs = row.obs || 'Sin observaciones adicionales especificadas.';
+
+    const textStream = `BT
+/F2 16 Tf
+50 740 Td
+(PRECOTEX S.A.C. - SISTEMA INTEGRADO DE GESTION) Tj
+/F2 13 Tf
+0 -26 Td
+(EVIDENCIA DE MEDICION DE INDICADOR: ${sanitize(codigo)}) Tj
+/F1 10 Tf
+0 -24 Td
+(Periodo: ${sanitize(periodo)}   |   Sede: ${sanitize(sede)}) Tj
+/F2 11 Tf
+0 -26 Td
+(DATOS DEL INDICADOR:) Tj
+/F1 10 Tf
+0 -17 Td
+(Indicador: ${sanitize(indicador).substring(0, 75)}) Tj
+0 -16 Td
+(Proceso: ${sanitize(proceso)}      Frecuencia: ${sanitize(row.frecuencia || 'Mensual')}) Tj
+0 -16 Td
+(Meta: ${sanitize(meta)}      Valor Obtenido: ${sanitize(valor)}      Estado: ${sanitize(semaforo)}) Tj
+0 -16 Td
+(Archivo de Evidencia: ${sanitize(filename)}) Tj
+/F2 11 Tf
+0 -28 Td
+(OBSERVACIONES Y ANALISIS DE RESULTADOS:) Tj
+/F1 10 Tf
+0 -17 Td
+(${sanitize(obs).substring(0, 95)}) Tj
+0 -15 Td
+(${sanitize(obs).substring(95, 190)}) Tj
+/F1 9 Tf
+0 -60 Td
+(Este documento certifica el registro digital de medicion y evidencia en Precotex SIG.) Tj
+0 -14 Td
+(Fecha de descarga: ${new Date().toLocaleString()}) Tj
+ET`;
+
+    const encoder = new TextEncoder();
+    const streamBytes = encoder.encode(textStream);
+    const streamLen = streamBytes.length;
+
+    let pdf = `%PDF-1.4\n`;
+    const offsets: number[] = [];
+
+    const addObj = (str: string) => {
+      offsets.push(encoder.encode(pdf).length);
+      pdf += str + '\n';
+    };
+
+    addObj(`1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj`);
+    addObj(`2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj`);
+    addObj(`3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>\nendobj`);
+    addObj(`4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj`);
+    addObj(`5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\nendobj`);
+    addObj(`6 0 obj\n<< /Length ${streamLen} >>\nstream\n${textStream}\nendstream\nendobj`);
+
+    const startXref = encoder.encode(pdf).length;
+    pdf += `xref\n0 7\n0000000000 65535 f \n`;
+    for (let i = 0; i < offsets.length; i++) {
+      pdf += String(offsets[i]).padStart(10, '0') + ` 00000 n \n`;
+    }
+    pdf += `trailer\n<< /Size 7 /Root 1 0 R >>\nstartxref\n${startXref}\n%%EOF\n`;
+
+    const blob = new Blob([encoder.encode(pdf)], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    this.toastr.success(`Descargando documento de evidencia: ${filename}`, 'Descarga Exitosa');
+  }
+
+  generarExcelMedicion(row: any, filename: string): void {
+    const codigo = row.codigoIndicador || row.codigo || 'IND-001';
+    const t = `
+    <table border="1" style="font-family: Arial; border-collapse: collapse;">
+      <tr style="background-color: #6366f1; color: #ffffff; font-weight: bold; text-align: center;">
+        <th colspan="4" style="height: 35px; font-size: 14px;">PRECOTEX S.A.C. - EVIDENCIA DE MEDICIÓN DE INDICADOR</th>
+      </tr>
+      <tr>
+        <td style="background-color: #f1f5f9; font-weight: bold; width: 180px;">Código Indicador:</td>
+        <td style="font-weight: bold; color: #4338ca;">${codigo}</td>
+        <td style="background-color: #f1f5f9; font-weight: bold; width: 180px;">Tipo:</td>
+        <td>${row.tipo || 'Eficacia'}</td>
+      </tr>
+      <tr>
+        <td style="background-color: #f1f5f9; font-weight: bold;">Nombre Indicador:</td>
+        <td colspan="3" style="font-weight: bold;">${row.indicador || ''}</td>
+      </tr>
+      <tr>
+        <td style="background-color: #f1f5f9; font-weight: bold;">Sede:</td>
+        <td>${row.sede || 'Todas'}</td>
+        <td style="background-color: #f1f5f9; font-weight: bold;">Proceso:</td>
+        <td>${row.proceso || 'General'}</td>
+      </tr>
+      <tr>
+        <td style="background-color: #f1f5f9; font-weight: bold;">Período Evaluado:</td>
+        <td>${row.periodo || ''}</td>
+        <td style="background-color: #f1f5f9; font-weight: bold;">Frecuencia:</td>
+        <td>${row.frecuencia || 'Mensual'}</td>
+      </tr>
+      <tr>
+        <td style="background-color: #f1f5f9; font-weight: bold;">Meta Planificada:</td>
+        <td style="font-weight: bold;">${row.meta || ''}</td>
+        <td style="background-color: #f1f5f9; font-weight: bold;">Valor Obtenido:</td>
+        <td style="font-weight: bold; color: #10b981;">${row.valor || ''}</td>
+      </tr>
+      <tr>
+        <td style="background-color: #f1f5f9; font-weight: bold;">Estado Semáforo:</td>
+        <td colspan="3">${row.semaforo || 'En meta'}</td>
+      </tr>
+      <tr>
+        <td style="background-color: #f1f5f9; font-weight: bold;">Observaciones / Detalle:</td>
+        <td colspan="3" style="height: 50px;">${row.obs || 'Sin observaciones adicionales.'}</td>
+      </tr>
+    </table>
+    `;
+
+    const blob = new Blob(['\ufeff' + t], { type: 'application/vnd.ms-excel;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    this.toastr.success(`Descargando documento de evidencia: ${filename}`, 'Descarga Exitosa');
+  }
+
+  generarWordMedicion(row: any, filename: string): void {
+    const codigo = row.codigoIndicador || row.codigo || 'IND-001';
+    const docContent = `
+    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+    <head>
+      <meta charset="utf-8">
+      <title>Evidencia de Medición - ${codigo}</title>
+      <style>
+        body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #1e293b; margin: 24px; }
+        .header { border-bottom: 2.5pt solid #6366f1; padding-bottom: 12px; margin-bottom: 20px; }
+        .title { font-size: 18pt; font-weight: bold; color: #1e1b4b; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 15px; }
+        th, td { border: 1pt solid #cbd5e1; padding: 8px 10px; font-size: 10pt; }
+        th { background-color: #f1f5f9; text-align: left; font-weight: bold; color: #334155; }
+        .desc-box { border-left: 3.5pt solid #6366f1; background-color: #f8fafc; padding: 12px; margin-top: 10px; line-height: 1.5; }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div class="title">PRECOTEX S.A.C.</div>
+        <div>SISTEMA INTEGRADO DE GESTIÓN (SIG) — REPORTE DE MEDICIÓN DE INDICADOR</div>
+      </div>
+      <h2>REPORTE DE MEDICIÓN: ${codigo} - ${row.indicador || ''}</h2>
+      <table>
+        <tr><th>Código:</th><td>${codigo}</td><th>Tipo:</th><td>${row.tipo || 'Eficacia'}</td></tr>
+        <tr><th>Sede:</th><td>${row.sede || 'Todas'}</td><th>Proceso:</th><td>${row.proceso || 'General'}</td></tr>
+        <tr><th>Período Evaluado:</th><td>${row.periodo || ''}</td><th>Frecuencia:</th><td>${row.frecuencia || 'Mensual'}</td></tr>
+        <tr><th>Meta Planificada:</th><td>${row.meta || ''}</td><th>Valor Obtenido:</th><td>${row.valor || ''}</td></tr>
+        <tr><th>Estado Semáforo:</th><td colspan="3">${row.semaforo || 'En meta'}</td></tr>
+      </table>
+      <h3>Observaciones de la Medición:</h3>
+      <div class="desc-box">${row.obs || 'Sin observaciones registradas.'}</div>
+    </body>
+    </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + docContent], { type: 'application/msword;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    this.toastr.success(`Descargando documento Word: ${filename}`, 'Descarga Exitosa');
+  }
+
+  generarImagenMedicion(row: any, filename: string): void {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1200;
+    canvas.height = 760;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, 1200, 760);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.fillText('PRECOTEX S.A.C. - MEDICIÓN DE INDICADOR', 60, 80);
+
+    ctx.fillStyle = '#818cf8';
+    ctx.font = 'bold 22px monospace';
+    ctx.fillText(row.codigoIndicador || 'IND-001', 60, 130);
+
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = '20px sans-serif';
+    ctx.fillText(row.indicador || '', 60, 175);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '16px sans-serif';
+    ctx.fillText(`Período: ${row.periodo || ''}   |   Sede: ${row.sede || 'Todas'}   |   Proceso: ${row.proceso || 'General'}`, 60, 230);
+    ctx.fillText(`Meta: ${row.meta || ''}   |   Valor Obtenido: ${row.valor || ''}   |   Estado: ${row.semaforo || ''}`, 60, 270);
+
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        this.toastr.success(`Descargando imagen: ${filename}`, 'Descarga Exitosa');
+      }
+    }, 'image/png');
+  }
+
 }

@@ -27,4 +27,14 @@ export class RiesgosService {
     }
     return this.http.get(this.baseUrl + 'SNRiesgo/getListadoRiesgos', { headers, params });
   }
+
+  uploadArchivo(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    return this.http.post(this.baseUrl + 'SNDocumentosControlados/uploadArchivo', formData);
+  }
+
+  getDownloadUrl(fileName: string): string {
+    return this.baseUrl + 'SNDocumentosControlados/downloadArchivo?fileName=' + encodeURIComponent(fileName);
+  }
 }

@@ -84,7 +84,7 @@ export class AuditoriasRegeditComponent implements OnInit {
       ctrol_responsable : [''],
       ctrol_sedes       : [[]],
       ctrol_areas       : [[]],
-      ctrol_inicio      : [''],
+      ctrol_inicio      : [new Date().toISOString().split('T')[0]],
       ctrol_fin         : [''],
       ctrol_frecuencia  : ['Anual'],
       ctrol_estado      : ['Programada'],
@@ -119,19 +119,17 @@ export class AuditoriasRegeditComponent implements OnInit {
     const year = new Date().getFullYear();
     const tipoCode = sTipo === 'Externa' ? 'EXT' : (sTipo === 'Cliente' ? 'CLI' : 'INT');
 
-    if (this.data.AuditoriasList && Array.isArray(this.data.AuditoriasList) && this.data.AuditoriasList.length > 0) {
-      this.procesarCodigoConLista(this.data.AuditoriasList, tipoCode, year);
-    } else {
-      this.auditoriasService.getListadoAuditorias('').subscribe({
-        next: (res: any) => {
-          const list = res?.elements || res?.data || (Array.isArray(res) ? res : []);
-          this.procesarCodigoConLista(list, tipoCode, year);
-        },
-        error: () => {
-          this.formulario.get('ctrol_codigo')?.setValue(`AUD-${tipoCode}-${year}-001`);
-        }
-      });
-    }
+    this.auditoriasService.getListadoAuditorias('').subscribe({
+      next: (res: any) => {
+        const list = res?.elements || res?.data || (Array.isArray(res) ? res : []);
+        const combined = [...(this.data.AuditoriasList || []), ...list];
+        this.procesarCodigoConLista(combined, tipoCode, year);
+      },
+      error: () => {
+        const fallbackList = this.data.AuditoriasList || [];
+        this.procesarCodigoConLista(fallbackList, tipoCode, year);
+      }
+    });
   }
 
   private procesarCodigoConLista(list: any[], tipoCode: string, year: number): void {
@@ -230,7 +228,10 @@ export class AuditoriasRegeditComponent implements OnInit {
     const rawAreas     = this.formulario.get('ctrol_areas')?.value;
     const sAreas       = Array.isArray(rawAreas) ? rawAreas.join(', ') : String(rawAreas || '').trim();
 
-    const sInicio      = String(this.formulario.get('ctrol_inicio')?.value      || '').trim();
+    let sInicio        = String(this.formulario.get('ctrol_inicio')?.value      || '').trim();
+    if (!sInicio) {
+      sInicio = new Date().toISOString().split('T')[0];
+    }
     const sFin         = String(this.formulario.get('ctrol_fin')?.value         || '').trim();
     const sFrecuencia  = String(this.formulario.get('ctrol_frecuencia')?.value  || 'Anual').trim();
     const sEstado      = String(this.formulario.get('ctrol_estado')?.value      || 'Programada').trim();
@@ -263,59 +264,91 @@ export class AuditoriasRegeditComponent implements OnInit {
       return;
     }
 
-    const sTitle = this.data.Accion === 'I' ? 'Registrar' : 'Actualizar';
+    let sCodigo = String(this.formulario.getRawValue().ctrol_codigo || '').trim();
+    if (this.data.Accion === 'I' && !sCodigo) {
+      const year = new Date().getFullYear();
+      const tipoCode = sTipo === 'Externa' ? 'EXT' : (sTipo === 'Cliente' ? 'CLI' : 'INT');
+      sCodigo = `AUD-${tipoCode}-${year}-001`;
+    }
 
-    Swal.fire({
-      title: '¿Desea ' + sTitle.toLowerCase() + ' la auditoría?, Confirme',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí',
-      cancelButtonText: 'No'
-    }).then(result => {
-      if (result.isConfirmed) {
-        let sCodigo = String(this.formulario.getRawValue().ctrol_codigo || '').trim();
-        if (this.data.Accion === 'I' && !sCodigo) {
-          const year = new Date().getFullYear();
-          const tipoCode = sTipo === 'Externa' ? 'EXT' : (sTipo === 'Cliente' ? 'CLI' : 'INT');
-          sCodigo = `AUD-${tipoCode}-${year}-001`;
+    const requestData = {
+      Accion: this.data.Accion,
+      Id_Auditoria: this.data.Datos?.id_Auditoria || this.data.Datos?.id || null,
+      Id: this.data.Datos?.id_Auditoria || this.data.Datos?.id || null,
+      Codigo_Auditoria: sCodigo,
+      Tipo: sTipo.substring(0, 10),
+      Norma: sNorma.substring(0, 50),
+      Responsable: sResponsable.substring(0, 100),
+      Sede: sSedes.substring(0, 300),
+      Sedes: sSedes.substring(0, 300),
+      Sede_Auditoria: sSedes.substring(0, 300),
+      Sedes_Participantes: sSedes.substring(0, 300),
+      Area: sAreas.substring(0, 200),
+      Areas: sAreas.substring(0, 200),
+      Proceso: sAreas.substring(0, 200),
+      Procesos: sAreas.substring(0, 200),
+      Fecha_Inicio: sInicio ? sInicio : new Date().toISOString().split('T')[0],
+      Fecha_Fin: (sFin && sFin.trim() !== '') ? sFin.trim() : null,
+      Frecuencia: sFrecuencia.substring(0, 20),
+      Alcance: sAlcance,
+      Estado: sEstado.substring(0, 20),
+      Cod_Usuario: 'SISTEMAS'
+    };
+
+    const itemObj = {
+      id: this.data.Datos?.id || sCodigo,
+      id_Auditoria: this.data.Datos?.id_Auditoria || sCodigo,
+      codigo_Auditoria: sCodigo,
+      codigo: sCodigo,
+      tipo: sTipo,
+      norma: sNorma,
+      responsable: sResponsable,
+      sedes: sSedes,
+      sede: sSedes,
+      areas: sAreas,
+      inicio: sInicio,
+      fin: sFin,
+      frecuencia: sFrecuencia,
+      estado: sEstado,
+      alcance: sAlcance
+    };
+
+    this.SpinnerService.show();
+
+    this.auditoriasService.postProcesoMntoAuditoria(requestData).subscribe({
+      next: (res: any) => {
+        this.SpinnerService.hide();
+        let finalCode = sCodigo;
+        if (res && (res.codigo_Auditoria || res.codigo)) finalCode = res.codigo_Auditoria || res.codigo;
+        itemObj.codigo_Auditoria = finalCode;
+        itemObj.codigo = finalCode;
+
+        try {
+          const raw = localStorage.getItem('precotex:auditorias:listado');
+          let list: any[] = raw ? JSON.parse(raw) : [];
+          if (this.data.Accion === 'I') {
+            list = [itemObj, ...list.filter((x: any) => (x.codigo_Auditoria || x.id) !== finalCode)];
+          } else {
+            const idx = list.findIndex((x: any) => (x.codigo_Auditoria || x.id) === finalCode || (this.data.Datos?.id && x.id === this.data.Datos.id));
+            if (idx !== -1) {
+              list[idx] = { ...list[idx], ...itemObj };
+            } else {
+              list.unshift(itemObj);
+            }
+          }
+          localStorage.setItem('precotex:auditorias:listado', JSON.stringify(list));
+        } catch (e) {
+          console.warn('Error al persistir auditoría en localStorage:', e);
         }
 
-        const requestData = {
-          Accion: this.data.Accion,
-          Id_Auditoria: this.data.Datos?.id_Auditoria || this.data.Datos?.id || null,
-          Id: this.data.Datos?.id_Auditoria || this.data.Datos?.id || null,
-          Codigo_Auditoria: sCodigo,
-          Tipo: sTipo,
-          Norma: sNorma,
-          Responsable: sResponsable,
-          Sede: sSedes,
-          Sedes: sSedes,
-          Sede_Auditoria: sSedes,
-          Sedes_Participantes: sSedes,
-          Area: sAreas,
-          Areas: sAreas,
-          Proceso: sAreas,
-          Procesos: sAreas,
-          Fecha_Inicio: sInicio || null,
-          Fecha_Fin: sFin || null,
-          Frecuencia: sFrecuencia,
-          Alcance: sAlcance,
-          Estado: sEstado,
-          Cod_Usuario: 'SISTEMAS'
-        };
-
-        this.auditoriasService.postProcesoMntoAuditoria(requestData).subscribe({
-          next: (res: any) => {
-            this.toastr.success(res.message || 'Auditoría guardada en la BD con éxito.', '', { timeOut: 2500 });
-            this.dialogRef.close(true);
-          },
-          error: (err: any) => {
-            const msg = err?.error?.message || err?.error?.Message || 'Error al guardar auditoría en la BD';
-            this.toastr.error(msg, '', { timeOut: 3000 });
-          }
-        });
+        this.toastr.success(res?.message || 'Auditoría guardada en la Base de Datos con éxito.', 'Operación Exitosa', { timeOut: 3000 });
+        this.dialogRef.close(itemObj);
+      },
+      error: (err: any) => {
+        this.SpinnerService.hide();
+        const msg = err?.error?.message || err?.error?.Message || err?.message || 'Error al guardar la auditoría en la Base de Datos.';
+        console.error('Error al guardar auditoría:', err);
+        this.toastr.error(msg, 'Error en BD', { timeOut: 4500 });
       }
     });
   }

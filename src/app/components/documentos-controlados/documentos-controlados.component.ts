@@ -1,3 +1,4 @@
+import { PermisosService } from '../../services/permisos.service';
 import { Component, OnInit, OnDestroy, ViewChild, TemplateRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
@@ -210,6 +211,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     private procesosService: ProcesosService,
     private documentosControladosService: DocumentosControladosService,
     private headerTitleService: HeaderTitleService,
+    private permisosService: PermisosService,
     private http: HttpClient
   ) { }
 
@@ -897,7 +899,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     const rolVal = localStorage.getItem('vCod_Rol') || GlobalVariable.vCod_Rol?.toString() || '0';
     this.isUserAdmin = rolVal === '1';
 
-    // Administradores tienen todos los permisos
+    // Administradores tienen acceso total irrestricto
     if (this.isUserAdmin) {
       this.canCreate = true;
       this.canEdit = true;
@@ -907,88 +909,63 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Leer permisos finos del localStorage (guardados por mapa-permisos)
-    const fineRaw = localStorage.getItem('precotex:puestos:accesos_fino');
-    if (!fineRaw) return;
+    // 1. Determinar el nivel de acceso general del módulo Documentación en la Matriz ('Sin acceso' | 'Ver' | 'Editar')
+    let nivelGeneral = 'Sin acceso';
+    const userLogin = (GlobalVariable.vusu || (typeof localStorage !== 'undefined' ? localStorage.getItem('vusu') : '') || '').toLowerCase().trim();
+    const puestoSaved = ((typeof localStorage !== 'undefined' ? localStorage.getItem('precotex:usuario:puesto') : '') || '').trim();
+    const codPuestoSaved = ((typeof localStorage !== 'undefined' ? localStorage.getItem('precotex:usuario:codigo_puesto') : '') || '').trim();
 
-    try {
-      const accFine = JSON.parse(fineRaw);
+    const rawAccesos = typeof localStorage !== 'undefined' ? localStorage.getItem('precotex:puestos:accesos') : null;
+    if (rawAccesos) {
+      try {
+        const accObj = JSON.parse(rawAccesos);
+        const identifiers = [userLogin, puestoSaved, codPuestoSaved].filter(Boolean);
 
-      // Buscar el puesto del usuario actual en la lista de puestos
-      const puestosRaw = localStorage.getItem('precotex:puestos:listado');
-      const userLogin = (GlobalVariable.vusu || '').toLowerCase().trim();
-      let puestoName = '';
-
-      if (puestosRaw) {
-        const puestosList = JSON.parse(puestosRaw);
-        const userPuesto = puestosList.find((p: any) => {
-          const cod = (p.cod_Usuario || '').toLowerCase().trim();
-          if (userLogin && cod === userLogin) return true;
-          const fullName = (p.usuario || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-          if (!fullName || fullName === '—') return false;
-          if (fullName.includes(',')) {
-            const [apellidosPart, nombresPart] = fullName.split(',').map((s: string) => s.trim());
-            const apellidos = apellidosPart.split(/\s+/).filter(Boolean);
-            const nombres = (nombresPart || '').split(/\s+/).filter(Boolean);
-            const primerApellido = apellidos[0] || '';
-            for (const nom of nombres) {
-              if (userLogin === nom.charAt(0) + primerApellido || userLogin === nom + '.' + primerApellido || userLogin === nom + primerApellido) return true;
-              if (userLogin.startsWith(nom.charAt(0)) && userLogin.includes(primerApellido)) return true;
+        for (const id of identifiers) {
+          let userPerm = accObj[id];
+          if (!userPerm) {
+            const matchedKey = Object.keys(accObj).find(k => k.trim().toLowerCase() === id.toLowerCase());
+            if (matchedKey) userPerm = accObj[matchedKey];
+          }
+          if (userPerm) {
+            const docAcc = userPerm['documentacion'] || userPerm['Documentación'] || userPerm['documentos'] || '';
+            if (docAcc) {
+              nivelGeneral = docAcc;
+              break;
             }
           }
-          const parts = fullName.replace(/,/g, '').split(/\s+/).filter(Boolean);
-          if (parts.length >= 2) {
-            const initial = parts[0].charAt(0);
-            const lastName = parts[1];
-            if (userLogin === initial + lastName) return true;
-          }
-          return fullName.includes(userLogin);
-        });
-        if (userPuesto) {
-          puestoName = (userPuesto.puesto || '').trim();
         }
-      }
-
-      if (!puestoName) return;
-
-      // Buscar permisos finos para este puesto (buscar con trim)
-      let userFine = accFine[puestoName];
-      if (!userFine) {
-        const matchKey = Object.keys(accFine).find(k => k.trim().toLowerCase() === puestoName.toLowerCase());
-        if (matchKey) userFine = accFine[matchKey];
-      }
-
-      if (!userFine) return;
-
-      // Claves del formato: "Documentación||Documentos||Accion"
-      // Verificar cada acción
-      const checkFine = (contenido: string, accion: string): boolean | null => {
-        const key = 'Documentación||' + contenido + '||' + accion;
-        if (key in userFine) {
-          return userFine[key] === 1;
-        }
-        return null; // No definido = heredar default
-      };
-
-      const crear = checkFine('Documentos', 'Crear');
-      if (crear !== null) this.canCreate = crear;
-
-      const editar = checkFine('Documentos', 'Editar');
-      if (editar !== null) this.canEdit = editar;
-
-      const eliminar = checkFine('Documentos', 'Eliminar / Obsoletar');
-      if (eliminar !== null) this.canDelete = eliminar;
-
-      const descargar = checkFine('Documentos', 'Descargar');
-      if (descargar !== null) this.canDownload = descargar;
-
-      const aprobar = checkFine('Documentos', 'Aprobar');
-      if (aprobar !== null) this.canApprove = aprobar;
-
-      console.log('[Docs Permisos] Puesto:', puestoName, '| Crear:', this.canCreate, '| Editar:', this.canEdit, '| Eliminar:', this.canDelete, '| Descargar:', this.canDownload);
-    } catch (e) {
-      console.error('[Docs Permisos] Error al cargar permisos finos:', e);
+      } catch (e) { }
     }
+
+    const isGeneralEdit = nivelGeneral.toLowerCase() === 'editar' || nivelGeneral.toLowerCase() === 'total' || nivelGeneral.toLowerCase() === 'modificar';
+    const isGeneralVer = isGeneralEdit || nivelGeneral.toLowerCase() === 'ver' || nivelGeneral.toLowerCase() === 'lectura';
+
+    // Nivel base por defecto según la matriz general
+    const defaultCrear = isGeneralEdit;
+    const defaultEditar = isGeneralEdit;
+    const defaultEliminar = isGeneralEdit;
+    const defaultDescargar = isGeneralVer;
+    const defaultAprobar = false;
+
+    // 2. Consultar Ajuste Fino interactivo (SN_Permiso_Usuario_Detalle / precotex:puestos:accesos_fino)
+    // Si el switch específico fue apagado en la vista de permisos, prevalece de manera estricta
+    this.canCreate = this.permisosService.hasFinePermission('Documentación', 'Documentos', 'Crear', defaultCrear);
+    this.canEdit = this.permisosService.hasFinePermission('Documentación', 'Documentos', 'Editar', defaultEditar);
+    this.canDelete = this.permisosService.hasFinePermission('Documentación', 'Documentos', 'Eliminar / Obsoletar', defaultEliminar);
+    this.canDownload = this.permisosService.hasFinePermission('Documentación', 'Documentos', 'Descargar', defaultDescargar);
+    this.canApprove = this.permisosService.hasFinePermission('Documentación', 'Documentos', 'Aprobar', defaultAprobar);
+
+    console.log('[Docs Permisos Finales]', {
+      usuario: userLogin,
+      puesto: puestoSaved,
+      nivelGeneral,
+      canCreate: this.canCreate,
+      canEdit: this.canEdit,
+      canDelete: this.canDelete,
+      canDownload: this.canDownload,
+      canApprove: this.canApprove
+    });
   }
 
   getDocProcesosList(d: any): string[] {
@@ -2520,6 +2497,10 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
 
   // DOC-05: Descarga limpia con el nombre exacto de "Nombre del Documento" (sin prefijos hash)
   onDescargar(doc: any): void {
+    if (!this.canDownload) {
+      this.toastr.warning('No cuentas con permisos para descargar este documento.', 'Acceso Restringido');
+      return;
+    }
     if (!doc || (!doc.archivo && !doc.codigo)) {
       this.toastr.warning('Este registro aún no cuenta con un archivo adjunto en el servidor.', 'Archivo No Disponible');
       return;
@@ -2660,6 +2641,10 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   }
 
   onAgregar(initialFile?: File) {
+    if (!this.canCreate) {
+      this.toastr.warning('No cuentas con permisos para registrar nuevos documentos.', 'Acceso Restringido');
+      return;
+    }
     const activeProc = this.getActiveProcessName();
     const activeFolder = this.getActiveFolderTypeName();
     const activeTipo = this.getActiveFolderDocTipo();
@@ -2767,6 +2752,10 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   }
 
   onEditar(doc: any, index: number) {
+    if (!this.canEdit) {
+      this.toastr.warning('No cuentas con permisos para editar documentos.', 'Acceso Restringido');
+      return;
+    }
     const mainIdx = this.docsList.findIndex(d => d.codigo === doc.codigo);
 
     let dialogRef = this.dialog.open(DocumentosControladosRegeditComponent, {
@@ -3005,6 +2994,10 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   }
 
   onEliminar(doc: any) {
+    if (!this.canDelete) {
+      this.toastr.warning('No cuentas con permisos para eliminar documentos.', 'Acceso Restringido');
+      return;
+    }
     Swal.fire({
       title: '¿Desea enviar el documento a la papelera?, Confirme',
       html: `<div style="font-size: 13px; color: #475569; line-height: 1.6;">

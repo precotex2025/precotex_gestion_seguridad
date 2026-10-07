@@ -471,9 +471,13 @@
   filter: drop-shadow(0 0 3px currentColor);
 }
 
-/* Row Hover Action Buttons */
+/* ===================================================================
+   ACCIONES EN FORMATO PILL PREMIUM
+   =================================================================== */
 .acciones-cell {
   position: relative;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .actions-wrapper,
@@ -487,9 +491,70 @@
   transform: none !important;
 }
 
-::ng-deep .mat-mdc-row:hover .actions-wrapper.hover-fade {
-  opacity: 1;
-  transform: scale(1);
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  outline: none;
+}
+
+.action-btn mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  line-height: 18px !important;
+}
+
+/* 1. Ver Detalle (Azul Suave) */
+.action-btn.btn-view {
+  color: #3b82f6 !important;
+  background: rgba(59, 130, 246, 0.1) !important;
+  border-color: rgba(59, 130, 246, 0.2) !important;
+}
+.action-btn.btn-view:hover {
+  background: rgba(59, 130, 246, 0.22) !important;
+  transform: translateY(-1px);
+}
+
+/* 2. Descargar Evidencia (Verde Esmeralda Suave) */
+.action-btn.btn-download {
+  color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.1) !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+.action-btn.btn-download:hover {
+  background: rgba(16, 185, 129, 0.22) !important;
+  transform: translateY(-1px);
+}
+
+/* 3. Ficha Técnica (Violeta / Indigo Suave) */
+.action-btn.btn-doc {
+  color: #6366f1 !important;
+  background: rgba(99, 102, 241, 0.1) !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+}
+.action-btn.btn-doc:hover {
+  background: rgba(99, 102, 241, 0.22) !important;
+  transform: translateY(-1px);
+}
+
+/* 4. Editar (Ámbar / Naranja Suave) */
+.action-btn.btn-edit {
+  color: #d97706 !important;
+  background: rgba(217, 119, 6, 0.1) !important;
+  border-color: rgba(217, 119, 6, 0.2) !important;
+}
+.action-btn.btn-edit:hover {
+  background: rgba(217, 119, 6, 0.22) !important;
+  transform: translateY(-1px);
 }
 
 /* -------------------------------------------------------------------

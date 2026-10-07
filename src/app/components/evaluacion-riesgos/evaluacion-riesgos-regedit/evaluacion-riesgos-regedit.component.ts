@@ -1,3 +1,5 @@
+import { RiesgosService } from '../../../services/riesgos.service';
+import { firstValueFrom } from 'rxjs';
 import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -152,7 +154,8 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
     private toastr: ToastrService,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     public dialogRef: MatDialogRef<EvaluacionRiesgosRegeditComponent>,
-    private procesosService: ProcesosService
+    private procesosService: ProcesosService,
+    private riesgosService: RiesgosService
   ) { }
 
   ngOnInit(): void {
@@ -206,8 +209,20 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
       const autoCod = this.data.NextCodigo || 'RSG-2026-001';
       this.formulario.patchValue({ codigo: autoCod });
     } else if ((this.data.Accion === 'U' || this.data.Accion === 'V') && this.data.Datos) {
-      const nomArch = this.data.Datos.archivoEvidencia || this.data.Datos.evidencia || '';
+      let fileInfo = null;
+      try {
+        const rawMap = localStorage.getItem('precotex:riesgos:archivos_map');
+        if (rawMap) {
+          const map = JSON.parse(rawMap);
+          fileInfo = map[this.data.Datos.codigo] || (this.data.Datos.id ? map[String(this.data.Datos.id)] : null);
+        }
+      } catch(e) {}
+
+      const nomArch = this.data.Datos.archivoEvidencia || this.data.Datos.evidencia || fileInfo?.nombre || '';
       this.nombreArchivoEvidencia = nomArch;
+      this.serverFileName = this.data.Datos.serverFileName || fileInfo?.serverFileName || '';
+      this.archivoBase64 = this.data.Datos.archivoBase64 || fileInfo?.base64 || '';
+
       this.formulario.patchValue({
         codigo: this.data.Datos.codigo,
         periodo: this.data.Datos.periodo || new Date().getFullYear().toString(),
@@ -224,7 +239,7 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
         responsable: this.data.Datos.responsable,
         revision: this.data.Datos.revision,
         estado: this.data.Datos.estado,
-        medidacontrol: this.data.Datos.medidacontrol || '',
+        medidacontrol: (this.data.Datos.medidacontrol || '').replace(/\|\|\|FILE:[^]*$/, ''),
         archivoEvidencia: nomArch
       });
       if (this.data.Accion === 'V') {
@@ -233,7 +248,10 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
     }
   }
 
+  selectedFile: File | null = null;
+  serverFileName: string = '';
   nombreArchivoEvidencia: string = '';
+  archivoBase64: string = '';
   isDragging: boolean = false;
 
   onFileSelected(event: any): void {
@@ -270,15 +288,65 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
       this.toastr.warning('El archivo supera el límite permitido de 10 MB.', 'Archivo muy pesado');
       return;
     }
+    this.selectedFile = file;
     this.nombreArchivoEvidencia = file.name;
     this.formulario.patchValue({ archivoEvidencia: file.name });
-    this.toastr.success(`Documento "${file.name}" adjuntado correctamente`, 'Archivo cargado', { timeOut: 2500 });
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.archivoBase64 = reader.result as string;
+      this.toastr.success(`Documento "${file.name}" listo para guardar`, 'Archivo adjunto', { timeOut: 2500 });
+    };
+    reader.readAsDataURL(file);
   }
 
   onRemoveFile(event?: Event): void {
     if (event) event.stopPropagation();
     this.nombreArchivoEvidencia = '';
+    this.archivoBase64 = '';
     this.formulario.patchValue({ archivoEvidencia: '' });
+  }
+
+  async onDescargarArchivoModal(event?: Event): Promise<void> {
+    if (event) event.stopPropagation();
+    if (!this.nombreArchivoEvidencia) {
+      this.toastr.warning('No hay ningún documento adjunto para descargar.', 'Sin Archivo');
+      return;
+    }
+
+    if (this.serverFileName && !this.serverFileName.startsWith('data:')) {
+      try {
+        const downloadUrl = this.riesgosService.getDownloadUrl(this.serverFileName);
+        const res = await fetch(downloadUrl);
+        if (res.ok) {
+          const blob = await res.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          a.download = this.nombreArchivoEvidencia || 'documento_sustento';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(blobUrl);
+          this.toastr.success(`Descargando documento "${this.nombreArchivoEvidencia}"`, 'Descarga Exitosa');
+          return;
+        }
+      } catch (err) {
+        console.warn('Descarga por servidor falló, intentando base64:', err);
+      }
+    }
+
+    if (this.archivoBase64) {
+      const a = document.createElement('a');
+      a.href = this.archivoBase64;
+      a.download = this.nombreArchivoEvidencia;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      this.toastr.success(`Descargando documento "${this.nombreArchivoEvidencia}"`, 'Descarga');
+    } else {
+      this.toastr.info(`Documento registrado: ${this.nombreArchivoEvidencia}`, 'Información');
+    }
   }
 
   readonly probRows = [5, 4, 3, 2, 1]; // Filas de 5 a 1
@@ -331,12 +399,39 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
     return '#4ade80';
   }
 
-  onGuardar(): void {
+  isUploading: boolean = false;
+
+  async onGuardar(): Promise<void> {
     if (this.formulario.invalid) {
       this.toastr.warning('Por favor, rellene todos los campos obligatorios.', 'Formulario Inválido');
       return;
     }
-    this.dialogRef.close(this.formulario.getRawValue());
+
+    if (this.isUploading) return;
+
+    let serverName = this.serverFileName;
+
+    // Si se seleccionó un archivo nuevo, subirlo físicamente al servidor en este mismo momento del registro
+    if (this.selectedFile) {
+      this.isUploading = true;
+      try {
+        const uploadRes: any = await firstValueFrom(this.riesgosService.uploadArchivo(this.selectedFile));
+        if (uploadRes && uploadRes.success && uploadRes.fileName) {
+          serverName = uploadRes.fileName;
+          console.log('[Riesgos Regedit] Archivo subido exitosamente al servidor:', serverName);
+        }
+      } catch (err) {
+        console.warn('[Riesgos Regedit] Subida al servidor falló, se mantendrá en almacenamiento local:', err);
+      } finally {
+        this.isUploading = false;
+      }
+    }
+
+    const val = this.formulario.getRawValue();
+    val.archivoBase64 = this.archivoBase64;
+    val.archivoEvidencia = this.nombreArchivoEvidencia;
+    val.serverFileName = serverName || this.nombreArchivoEvidencia;
+    this.dialogRef.close(val);
   }
 
   onCancelar(): void {

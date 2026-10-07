@@ -1,3 +1,4 @@
+import { PermisosService } from '../../services/permisos.service';
 import { Component, OnInit } from '@angular/core';
 import { NormasService } from '../../services/normas.service';
 import { NgxSpinnerService } from 'ngx-spinner';
@@ -24,6 +25,20 @@ interface data_det {
 })
 export class NormasComponent implements OnInit {
 
+  // Permisos finos por acción (Organización)
+  canVerNormas: boolean = true;
+  canCrearNorma: boolean = true;
+  canEditarNorma: boolean = true;
+  canEliminarNorma: boolean = true;
+  canDescargarArchivo: boolean = true;
+  canVerPolitica: boolean = true;
+  canEditarPolitica: boolean = false;
+  canAprobarPolitica: boolean = false;
+  politicaTexto: string = 'En Precotex S.A. nos comprometemos a satisfacer los requisitos de nuestros clientes, garantizando la seguridad y salud en el trabajo de nuestros colaboradores, protegiendo el medio ambiente y asegurando la mejora continua de nuestros procesos textiles bajo los estándares internacionales ISO 9001, ISO 14001 e ISO 45001.';
+  politicaVersion: string = 'v3.2 - Aprobada por Gerencia General';
+  politicaFecha: string = '15/01/2026';
+
+
   stats = {
     total: 0,
     vigente: 0,
@@ -42,6 +57,7 @@ export class NormasComponent implements OnInit {
     private serviceNorma: NormasService,
     private SpinnerService: NgxSpinnerService,
     private toastr: ToastrService,
+    private permisosService: PermisosService,
   ) { }
 
   displayedColumns: string[] = [
@@ -56,6 +72,89 @@ export class NormasComponent implements OnInit {
     'acciones'
   ];
   dataSource = new MatTableDataSource<any>();
+
+  
+  cargarPermisos(): void {
+    const isUserAdmin = GlobalVariable.vCod_Rol === 1 || (typeof localStorage !== 'undefined' && localStorage.getItem('vCod_Rol') === '1');
+    if (isUserAdmin) {
+      this.canVerNormas = true;
+      this.canCrearNorma = true;
+      this.canEditarNorma = true;
+      this.canEliminarNorma = true;
+      this.canDescargarArchivo = true;
+      this.canVerPolitica = true;
+      this.canEditarPolitica = true;
+      this.canAprobarPolitica = true;
+      return;
+    }
+
+    this.canVerNormas = this.permisosService.hasFinePermission('Organización', 'Gestión de Normas y certificaciones', 'Ver', false);
+    this.canCrearNorma = this.permisosService.hasFinePermission('Organización', 'Gestión de Normas y certificaciones', 'Crear', false);
+    this.canEditarNorma = this.permisosService.hasFinePermission('Organización', 'Gestión de Normas y certificaciones', 'Editar', false);
+    this.canEliminarNorma = this.permisosService.hasFinePermission('Organización', 'Gestión de Normas y certificaciones', 'Eliminar', false);
+    this.canDescargarArchivo = this.permisosService.hasFinePermission('Organización', 'Certificados (archivo)', 'Descargar', false);
+    this.canVerPolitica = this.permisosService.hasFinePermission('Organización', 'Política del SIG', 'Ver', true);
+    this.canEditarPolitica = this.permisosService.hasFinePermission('Organización', 'Política del SIG', 'Editar', false);
+    this.canAprobarPolitica = this.permisosService.hasFinePermission('Organización', 'Política del SIG', 'Aprobar', false);
+
+    console.log('[Normas Permisos]', {
+      canVerNormas: this.canVerNormas,
+      canCrearNorma: this.canCrearNorma,
+      canEditarNorma: this.canEditarNorma,
+      canEliminarNorma: this.canEliminarNorma,
+      canDescargarArchivo: this.canDescargarArchivo,
+      canVerPolitica: this.canVerPolitica,
+      canEditarPolitica: this.canEditarPolitica,
+      canAprobarPolitica: this.canAprobarPolitica
+    });
+  }
+
+  onEditarPolitica(): void {
+    if (!this.canEditarPolitica) {
+      this.toastr.warning('No cuentas con permisos para editar la Política del SIG.', 'Acceso Restringido');
+      return;
+    }
+    Swal.fire({
+      title: 'Editar Política del SIG',
+      input: 'textarea',
+      inputValue: this.politicaTexto,
+      inputAttributes: {
+        'aria-label': 'Texto de la política',
+        style: 'height: 120px; font-size: 13px;'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Guardar cambios',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#4f46e5'
+    }).then((res) => {
+      if (res.isConfirmed && res.value) {
+        this.politicaTexto = res.value;
+        this.politicaVersion = 'v3.3 - En revisión';
+        this.toastr.success('Política del SIG actualizada correctamente.', 'Guardado');
+      }
+    });
+  }
+
+  onAprobarPolitica(): void {
+    if (!this.canAprobarPolitica) {
+      this.toastr.warning('No cuentas con permisos para aprobar la Política del SIG.', 'Acceso Restringido');
+      return;
+    }
+    Swal.fire({
+      title: '¿Aprobar Política del SIG?',
+      text: 'Esta acción validará formalmente la versión activa ante auditorías de certificación.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, aprobar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#10b981'
+    }).then((res) => {
+      if (res.isConfirmed) {
+        this.politicaVersion = 'v4.0 - Oficial Aprobada';
+        this.toastr.success('La Política del SIG ha sido aprobada oficialmente.', 'Aprobación exitosa');
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.onListado();
@@ -180,6 +279,10 @@ export class NormasComponent implements OnInit {
   }
 
   onEditar(item: any) {
+    if (!this.canEditarNorma) {
+      this.toastr.warning('No cuentas con permisos para editar normas.', 'Acceso Restringido');
+      return;
+    }
     let dialogRef = this.dialog.open(NormasRegeditComponent, {
       width: '680px',
       maxWidth: '95vw',
@@ -199,6 +302,10 @@ export class NormasComponent implements OnInit {
   }
 
   onEliminar(item: any) {
+    if (!this.canEliminarNorma) {
+      this.toastr.warning('No cuentas con permisos para eliminar normas.', 'Acceso Restringido');
+      return;
+    }
     Swal.fire({
       title: '¿Desea eliminar la norma?, Confirme',
       icon: 'question',
@@ -335,6 +442,10 @@ export class NormasComponent implements OnInit {
   }
 
   async onDescargarArchivo(row: any): Promise<void> {
+    if (!this.canDescargarArchivo) {
+      this.toastr.warning('No cuentas con permisos para descargar este certificado o archivo adjunto.', 'Acceso Restringido');
+      return;
+    }
     const normaNombre = row.norma || 'Norma';
     const cod = (row.codigo_Norma || row.codigo || '').toLowerCase().trim();
     const nom = (row.norma || '').toLowerCase().trim();
@@ -410,6 +521,10 @@ export class NormasComponent implements OnInit {
   }
 
   onAgregar() {
+    if (!this.canCrearNorma) {
+      this.toastr.warning('No cuentas con permisos para registrar nuevas normas.', 'Acceso Restringido');
+      return;
+    }
     let dialogRef = this.dialog.open(NormasRegeditComponent, {
       width: '680px',
       maxWidth: '95vw',
@@ -430,6 +545,10 @@ export class NormasComponent implements OnInit {
 
   // ORG-02: Exportar lista de normas a Excel con Diseño Profesional y Columnas Alineadas
   onExportarExcel(): void {
+    if (!this.canDescargarArchivo) {
+      this.toastr.warning('No cuentas con permisos para descargar o exportar este reporte.', 'Acceso Restringido');
+      return;
+    }
     const dataToExport = (this.dataSource.filteredData && this.dataSource.filteredData.length > 0)
       ? this.dataSource.filteredData
       : this.dataSource.data;
@@ -539,6 +658,10 @@ export class NormasComponent implements OnInit {
 
   // ORG-02: Exportar lista de normas a PDF
   onExportarPDF(): void {
+    if (!this.canDescargarArchivo) {
+      this.toastr.warning('No cuentas con permisos para descargar o exportar este reporte.', 'Acceso Restringido');
+      return;
+    }
     const dataToExport = (this.dataSource.filteredData && this.dataSource.filteredData.length > 0)
       ? this.dataSource.filteredData
       : this.dataSource.data;

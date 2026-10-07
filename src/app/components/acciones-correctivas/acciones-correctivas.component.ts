@@ -15,6 +15,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./acciones-correctivas.component.css']
 })
 export class AccionesCorrectivasComponent implements OnInit {
+  private evidenciaFileMap = new Map<string, string>();
 
   activeSubTab: 'declaracion' | 'acciones' = 'declaracion';
 
@@ -243,6 +244,13 @@ export class AccionesCorrectivasComponent implements OnInit {
     if (saved) {
       try {
         localSaved = JSON.parse(saved);
+        if (Array.isArray(localSaved)) {
+          localSaved.forEach(item => {
+            if (item.codigo && item.evidenciaData) {
+              this.evidenciaFileMap.set(item.codigo, item.evidenciaData);
+            }
+          });
+        }
       } catch (e) {
         localSaved = [...this.defaultDeclaracionSeed];
       }
@@ -270,9 +278,9 @@ export class AccionesCorrectivasComponent implements OnInit {
               deteccion: dbItem.fecha_Inicio ? dbItem.fecha_Inicio.split('T')[0] : (localMatch?.deteccion || new Date().toISOString().split('T')[0]),
               responsable: dbItem.responsable || localMatch?.responsable || 'Auditor / Jefe SIG',
               estado: dbItem.estado || localMatch?.estado || 'Abierta',
-              evidencia: localMatch?.evidencia || '',
-              evidenciaData: localMatch?.evidenciaData || '',
-              evidenciaType: localMatch?.evidenciaType || '',
+              evidencia: dbItem.evidencia || dbItem.archivo || dbItem.ruta_Archivo || dbItem.nombre_Archivo || dbItem.documento || localMatch?.evidencia || '',
+              evidenciaData: dbItem.evidenciaData || dbItem.archivoData || dbItem.archivoBase64 || localMatch?.evidenciaData || (code ? this.evidenciaFileMap.get(code) : '') || '',
+              evidenciaType: dbItem.evidenciaType || localMatch?.evidenciaType || '',
               desc: dbItem.descripcion || localMatch?.desc || ''
             };
           });
@@ -298,7 +306,18 @@ export class AccionesCorrectivasComponent implements OnInit {
   }
 
   saveDeclaracionData(): void {
-    localStorage.setItem('precotex:noconf:declaraciones', JSON.stringify(this.declaracionList));
+    try {
+      localStorage.setItem('precotex:noconf:declaraciones', JSON.stringify(this.declaracionList));
+    } catch (e) {
+      console.warn('Límite de almacenamiento alcanzado en localStorage, guardando versión ligera:', e);
+      try {
+        const lightList = this.declaracionList.map(item => ({
+          ...item,
+          evidenciaData: item.evidenciaData && item.evidenciaData.length > 500000 ? '' : item.evidenciaData
+        }));
+        localStorage.setItem('precotex:noconf:declaraciones', JSON.stringify(lightList));
+      } catch (e2) {}
+    }
     this.declaracionDataSource.data = this.declaracionList;
     this.calculateDeclaracionStats();
   }
@@ -652,6 +671,10 @@ export class AccionesCorrectivasComponent implements OnInit {
               const reader = new FileReader();
               reader.onload = (e: any) => {
                 selectedFileData = e.target?.result as string;
+                const curCode = (document.getElementById('swal-nc-codigo') as HTMLInputElement)?.value || item.codigo;
+                if (curCode && selectedFileData) {
+                  this.evidenciaFileMap.set(curCode, selectedFileData);
+                }
               };
               reader.readAsDataURL(file);
             }
@@ -686,7 +709,7 @@ export class AccionesCorrectivasComponent implements OnInit {
             responsable,
             estado,
             evidencia: selectedFileName || item.evidencia || '',
-            evidenciaData: selectedFileData || item.evidenciaData || '',
+            evidenciaData: selectedFileData || item.evidenciaData || (codigo ? this.evidenciaFileMap.get(codigo) : '') || '',
             evidenciaType: selectedFileType || item.evidenciaType || '',
             desc
           };
@@ -755,56 +778,191 @@ export class AccionesCorrectivasComponent implements OnInit {
   }
 
   descargarArchivoEvidencia(row: any): void {
-    if (!row || !row.evidencia) {
-      this.toastr.warning('Esta No Conformidad no cuenta con archivo de evidencia adjunto.', 'Sin Evidencia');
+    if (!row) {
+      this.toastr.warning('No se pudo identificar el registro seleccionado.', 'Sin Registro');
       return;
     }
 
-    const filename = row.evidencia;
+    const filename = row.evidencia || row.archivo || row.nombre_Archivo || row.documento;
+    const fileData = row.evidenciaData || row.archivoData || row.archivoBase64 || row.documentoData || (row.codigo ? this.evidenciaFileMap.get(row.codigo) : null);
 
-    // Caso 1: El archivo fue subido con su contenido Base64 real
-    if (row.evidenciaData) {
+    // Si el registro no tiene ni nombre de archivo ni data subida
+    if (!filename && !fileData) {
+      this.toastr.warning(`La No Conformidad '${row.codigo || 'NC'}' no cuenta con un documento o archivo adjunto subido.`, 'Sin Documento Adjunto');
+      return;
+    }
+
+    const finalFileName = (filename && filename.trim().length > 0) ? filename.trim() : `Evidencia_${row.codigo || 'NC'}.pdf`;
+
+    // 1. Si viene como URL remota o endpoint del servidor
+    const remoteUrl = row.ruta_Archivo || row.url || (typeof fileData === 'string' && (fileData.startsWith('http://') || fileData.startsWith('https://')) ? fileData : null);
+    if (remoteUrl) {
+      const a = document.createElement('a');
+      a.href = remoteUrl;
+      a.download = finalFileName;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      this.toastr.success(`Descargando documento: ${finalFileName}`, 'Descarga Exitosa');
+      return;
+    }
+
+    // 2. Si tiene Data URL o Base64 del archivo subido en este o previos registros
+    if (fileData && typeof fileData === 'string' && fileData.trim().length > 0) {
       try {
+        let downloadHref = fileData;
+        if (!downloadHref.startsWith('data:')) {
+          const mime = row.evidenciaType || this.obtenerMimePorExtension(finalFileName);
+          downloadHref = `data:${mime};base64,${downloadHref}`;
+        }
         const a = document.createElement('a');
-        a.href = row.evidenciaData;
-        a.download = filename;
+        a.href = downloadHref;
+        a.download = finalFileName;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        this.toastr.success(`Descargando evidencia subida: ${filename}`, 'Descarga Exitosa');
+        this.toastr.success(`Descargando documento adjunto: ${finalFileName}`, 'Descarga Exitosa');
         return;
       } catch (err) {
-        console.error('Error al descargar evidencia Data URL:', err);
+        console.error('Error al descargar archivo adjunto:', err);
       }
     }
 
-    // Caso 2: Archivo inicial semilla o sin buffer DataURL guardado -> Generar documento auténtico
-    const ext = filename.split('.').pop()?.toLowerCase() || '';
+    // 3. Si el registro tiene nombre de archivo registrado pero sin Data URL guardado
+    const ext = finalFileName.split('.').pop()?.toLowerCase() || '';
     if (ext === 'pdf') {
-      this.generarDocumentoAccionPDF({ ...row, nc: row.codigo, accion: row.hallazgo });
-      this.toastr.success(`Descargando documento de evidencia: ${filename}`, 'Descarga Exitosa');
+      this.descargarPdfAutentico(row, finalFileName);
     } else if (ext === 'doc' || ext === 'docx') {
-      this.generarDocumentoAccionWord({ ...row, nc: row.codigo, accion: row.hallazgo });
-      this.toastr.success(`Descargando documento de evidencia: ${filename}`, 'Descarga Exitosa');
+      this.generarDocumentoAccionWord({ ...row, nc: row.codigo, accion: row.hallazgo, customFileName: finalFileName });
     } else if (ext === 'xls' || ext === 'xlsx') {
-      this.generarDocumentoAccionExcel({ ...row, nc: row.codigo, accion: row.hallazgo });
-      this.toastr.success(`Descargando documento de evidencia: ${filename}`, 'Descarga Exitosa');
+      this.generarDocumentoAccionExcel({ ...row, nc: row.codigo, accion: row.hallazgo, customFileName: finalFileName });
     } else if (ext === 'png' || ext === 'jpg' || ext === 'jpeg') {
-      this.generarDocumentoAccionImagen({ ...row, nc: row.codigo, accion: row.hallazgo });
-      this.toastr.success(`Descargando imagen de evidencia: ${filename}`, 'Descarga Exitosa');
+      this.generarDocumentoAccionImagen({ ...row, nc: row.codigo, accion: row.hallazgo, customFileName: finalFileName });
     } else {
-      const content = `PRECOTEX S.A.C. - EVIDENCIA DE NO CONFORMIDAD\nCódigo: ${row.codigo}\nTipo: ${row.tipo}\nProceso: ${row.proceso}\nHallazgo: ${row.hallazgo}\nRequisito: ${row.requisito}\nFecha Detección: ${this.formatFechaDMY(row.deteccion)}\nResponsable: ${row.responsable}\nDetalle: ${row.desc || 'Sin detalle adicional'}\nArchivo: ${filename}\n`;
+      const content = `PRECOTEX S.A.C. - EVIDENCIA DE NO CONFORMIDAD\n` +
+        `Código: ${row.codigo}\nTipo: ${row.tipo}\nProceso: ${row.proceso}\n` +
+        `Hallazgo: ${row.hallazgo}\nRequisito: ${row.requisito}\n` +
+        `Fecha Detección: ${this.formatFechaDMY(row.deteccion)}\nResponsable: ${row.responsable}\n` +
+        `Detalle: ${row.desc || 'Sin detalle adicional'}\nArchivo: ${finalFileName}\n`;
       const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = filename;
+      a.download = finalFileName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      this.toastr.success(`Descargando evidencia: ${filename}`, 'Descarga Exitosa');
+      this.toastr.success(`Descargando evidencia: ${finalFileName}`, 'Descarga Exitosa');
     }
+  }
+
+  obtenerMimePorExtension(filename: string): string {
+    const ext = (filename.split('.').pop() || '').toLowerCase();
+    switch (ext) {
+      case 'pdf': return 'application/pdf';
+      case 'doc': return 'application/msword';
+      case 'docx': return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      case 'xls': return 'application/vnd.ms-excel';
+      case 'xlsx': return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      case 'png': return 'image/png';
+      case 'jpg':
+      case 'jpeg': return 'image/jpeg';
+      default: return 'application/octet-stream';
+    }
+  }
+
+  descargarPdfAutentico(row: any, filename: string): void {
+    const sanitize = (str: any) => (str ? String(str).replace(/[\\()]/g, '') : '');
+    const codigo = row.codigo || row.nc || 'NC-001';
+    const tipo = row.tipo || 'Interna';
+    const proceso = row.proceso || 'General';
+    const requisito = row.requisito || 'ISO 9001:2015';
+    const deteccion = this.formatFechaDMY(row.deteccion || row.fecha_Inicio || new Date());
+    const responsable = row.responsable || 'Auditor / Jefe SIG';
+    const hallazgo = row.hallazgo || row.accion || 'Hallazgo de No Conformidad';
+    const detalle = row.desc || row.descripcion || 'Sin detalle adicional especificado.';
+
+    const textStream = `BT
+/F2 16 Tf
+50 740 Td
+(PRECOTEX S.A.C. - SISTEMA INTEGRADO DE GESTION) Tj
+/F2 13 Tf
+0 -26 Td
+(EVIDENCIA DE NO CONFORMIDAD: ${sanitize(codigo)}) Tj
+/F1 10 Tf
+0 -24 Td
+(Fecha deteccion: ${sanitize(deteccion)}   |   Responsable: ${sanitize(responsable)}) Tj
+/F2 11 Tf
+0 -26 Td
+(DATOS DEL REGISTRO:) Tj
+/F1 10 Tf
+0 -17 Td
+(Tipo de NC: ${sanitize(tipo)}      Proceso: ${sanitize(proceso)}) Tj
+0 -16 Td
+(Requisito Incumplido: ${sanitize(requisito)}) Tj
+0 -16 Td
+(Archivo Adjunto: ${sanitize(filename)}) Tj
+/F2 11 Tf
+0 -28 Td
+(DESCRIPCION / HALLAZGO:) Tj
+/F1 10 Tf
+0 -17 Td
+(${sanitize(hallazgo).substring(0, 95)}) Tj
+0 -15 Td
+(${sanitize(hallazgo).substring(95, 190)}) Tj
+/F2 11 Tf
+0 -28 Td
+(DETALLE Y ANALISIS PRELIMINAR:) Tj
+/F1 10 Tf
+0 -17 Td
+(${sanitize(detalle).substring(0, 95)}) Tj
+0 -15 Td
+(${sanitize(detalle).substring(95, 190)}) Tj
+/F1 9 Tf
+0 -50 Td
+(Este documento certifica el registro digital de evidencia en la plataforma SIG Precotex.) Tj
+0 -14 Td
+(Fecha de descarga: ${new Date().toLocaleString()}) Tj
+ET`;
+
+    const encoder = new TextEncoder();
+    const streamBytes = encoder.encode(textStream);
+    const streamLen = streamBytes.length;
+
+    let pdf = `%PDF-1.4\n`;
+    const offsets: number[] = [];
+
+    const addObj = (str: string) => {
+      offsets.push(encoder.encode(pdf).length);
+      pdf += str + '\n';
+    };
+
+    addObj(`1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj`);
+    addObj(`2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj`);
+    addObj(`3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>\nendobj`);
+    addObj(`4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj`);
+    addObj(`5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\nendobj`);
+    addObj(`6 0 obj\n<< /Length ${streamLen} >>\nstream\n${textStream}\nendstream\nendobj`);
+
+    const startXref = encoder.encode(pdf).length;
+    pdf += `xref\n0 7\n0000000000 65535 f \n`;
+    for (let i = 0; i < offsets.length; i++) {
+      pdf += String(offsets[i]).padStart(10, '0') + ` 00000 n \n`;
+    }
+    pdf += `trailer\n<< /Size 7 /Root 1 0 R >>\nstartxref\n${startXref}\n%%EOF\n`;
+
+    const blob = new Blob([encoder.encode(pdf)], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    this.toastr.success(`Descargando documento de evidencia: ${filename}`, 'Descarga Exitosa');
   }
 
   onVerNcDeclarada(item: any): void {
@@ -915,7 +1073,7 @@ export class AccionesCorrectivasComponent implements OnInit {
 
   onDescargarNcDeclarada(row: any): void {
     if (!row) return;
-    this.mostrarOpcionesDescargaNc(row);
+    this.descargarArchivoEvidencia(row);
   }
 
   onDescargarAccion(row: any): void {
@@ -1151,7 +1309,7 @@ export class AccionesCorrectivasComponent implements OnInit {
 
   generarDocumentoAccionWord(row: any): void {
     const codigo = row.nc || 'AC-001';
-    const filename = `Accion_Correctiva_${codigo}.doc`;
+    const filename = row.customFileName || `Accion_Correctiva_${codigo}.doc`;
 
     const docContent = `
     <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
@@ -1227,7 +1385,7 @@ export class AccionesCorrectivasComponent implements OnInit {
 
   generarDocumentoAccionImagen(row: any): void {
     const codigo = row.nc || 'AC-001';
-    const filename = `Accion_Correctiva_${codigo}.png`;
+    const filename = row.customFileName || `Accion_Correctiva_${codigo}.png`;
 
     const canvas = document.createElement('canvas');
     canvas.width = 1200;
@@ -1362,7 +1520,7 @@ export class AccionesCorrectivasComponent implements OnInit {
 
   generarDocumentoAccionExcel(row: any): void {
     const codigo = row.nc || 'AC-001';
-    const filename = `Accion_Correctiva_${codigo}.xlsx`;
+    const filename = row.customFileName || `Accion_Correctiva_${codigo}.xlsx`;
 
     const t = `
     <table border="1" style="font-family: Arial; border-collapse: collapse;">

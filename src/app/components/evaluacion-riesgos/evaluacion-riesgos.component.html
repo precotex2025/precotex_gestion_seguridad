@@ -230,8 +230,8 @@
             <th style="width: 130px; text-align: center;">Estado</th>
             <th style="width: 140px;">Responsable</th>
             <th style="width: 100px; text-align: center;">F. cierre</th>
-            <th style="width: 110px; text-align: center;">Próx. revisión</th>
-            <th style="width: 110px; text-align: center;">Acciones</th>
+            <th style="width: 160px; min-width: 160px; text-align: center;">Próx. revisión</th>
+            <th style="width: 160px; min-width: 160px; text-align: center;">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -277,6 +277,9 @@
                   <button class="action-btn btn-view" (click)="onVer(item)" title="Ver detalle del riesgo">
                     <mat-icon>visibility</mat-icon>
                   </button>
+                  <button type="button" class="action-btn btn-download" (click)="onDescargarEvidencia(item)" title="Descargar documento de sustento / Matriz IPERC">
+                    <mat-icon>file_download</mat-icon>
+                  </button>
                   <button class="action-btn btn-edit" (click)="onEdit(item)" title="Editar">
                     <mat-icon>edit</mat-icon>
                   </button>
@@ -310,6 +313,19 @@
                     <div class="detail-box">
                       <span class="detail-label">Acción Inmediata Requerida</span>
                       <p class="detail-text">Supervisión continua por el responsable de área y verificación de EPPs.</p>
+                    </div>
+                    <div class="detail-box" style="grid-column: 1 / -1;">
+                      <span class="detail-label">Documento de Sustento / Matriz IPERC Adjunto</span>
+                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 14px;">
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #1e293b;">
+                          <mat-icon style="font-size: 20px; width: 20px; height: 20px; color: #10b981;">description</mat-icon>
+                          <span>{{ item.archivoEvidencia || item.evidencia || "Sin archivo adjunto" }}</span>
+                        </div>
+                        <button type="button" class="action-btn btn-download" (click)="onDescargarEvidencia(item)" title="Descargar documento de sustento" style="width: auto; height: 32px; padding: 0 12px; gap: 6px;">
+                          <mat-icon style="font-size: 16px !important; width: 16px !important; height: 16px !important;">file_download</mat-icon>
+                          <span style="font-size: 12px; font-weight: 600;">Descargar</span>
+                        </button>
+                      </div>
                     </div>
 
                   </div>
@@ -484,6 +500,9 @@
             <!-- Action: Update control -->
             <td style="text-align: center;" (click)="$event.stopPropagation()">
               <div class="actions-wrapper">
+                <button type="button" class="action-btn btn-download" (click)="onDescargarEvidencia(item, $event)" title="Descargar documento de sustento / Matriz IPERC">
+                  <mat-icon>file_download</mat-icon>
+                </button>
                 <button class="action-btn btn-edit" (click)="onActualizarControl(item, $event)"
                   title="Actualizar seguimiento de control">
                   <mat-icon>edit_note</mat-icon>

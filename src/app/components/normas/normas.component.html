@@ -70,14 +70,14 @@
 
     <div class="toolbar-actions-section" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
       <!-- Exportar a Excel (ORG-02, ORG-13) -->
-      <button type="button" (click)="onExportarExcel()" title="Exportar certificaciones a Excel"
+      <button type="button" *ngIf="canDescargarArchivo" (click)="onExportarExcel()" title="Exportar certificaciones a Excel"
         style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; padding: 7px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 12px; height: 36px; box-sizing: border-box;">
         <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #10b981;">grid_on</mat-icon> Exportar
         Certificaciones (Excel)
       </button>
 
       <!-- Exportar a PDF (ORG-02, ORG-13) -->
-      <button type="button" (click)="onExportarPDF()" title="Exportar certificaciones a PDF"
+      <button type="button" *ngIf="canDescargarArchivo" (click)="onExportarPDF()" title="Exportar certificaciones a PDF"
         style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; padding: 7px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 12px; height: 36px; box-sizing: border-box;">
         <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #ef4444;">picture_as_pdf</mat-icon> Exportar
         Certificaciones (PDF)
@@ -90,7 +90,7 @@
           class="inline-search-input">
       </div>
 
-      <button type="button" class="btn-agregar-norma-premium" (click)="onAgregar()">
+      <button type="button" *ngIf="canCrearNorma" class="btn-agregar-norma-premium" (click)="onAgregar()">
         <mat-icon>add</mat-icon>
         <span>Agregar norma</span>
       </button>
@@ -98,7 +98,14 @@
   </div>
 
   <!-- CONTENEDOR DE TABLA PREMIUM HETEROGÉNEO -->
-  <div class="table-container shadow-premium">
+  <!-- AVISO DE VISUALIZACIÓN RESTRINGIDA DE NORMAS -->
+  <div class="permiso-bloqueado-card shadow-premium" *ngIf="!canVerNormas" style="margin-top: 20px; padding: 40px 24px; text-align: center; background: #ffffff; border-radius: 12px; border: 1px dashed #cbd5e1;">
+    <mat-icon style="font-size: 48px; width: 48px; height: 48px; color: #94a3b8;">visibility_off</mat-icon>
+    <h3 style="font-size: 1.15rem; font-weight: 700; color: #1e293b; margin: 12px 0 6px 0;">Visualización de Normas y Certificaciones Deshabilitada</h3>
+    <p style="color: #64748b; font-size: 0.85rem; max-width: 500px; margin: 0 auto;">Tu usuario tiene configurado el acceso a la Gestión de Normas y Certificaciones como <strong>Sin acceso</strong>. Consulta con el Administrador para solicitar acceso.</p>
+  </div>
+
+  <div class="table-container shadow-premium" *ngIf="canVerNormas">
     <table mat-table [dataSource]="dataSource" matSort class="tabla">
 
       <!-- Código de la Norma (OGR-2026-001) -->
@@ -172,13 +179,13 @@
         <th mat-header-cell *matHeaderCellDef style="width: 120px; text-align: center;">Acciones</th>
         <td mat-cell *matCellDef="let e" class="acciones-cell">
           <div class="actions-wrapper">
-            <button class="action-btn btn-download" (click)="onDescargarArchivo(e)" title="Descargar documento adjunto">
+            <button class="action-btn btn-download" *ngIf="canDescargarArchivo" (click)="onDescargarArchivo(e)" title="Descargar documento adjunto">
               <mat-icon>file_download</mat-icon>
             </button>
-            <button class="action-btn btn-edit" (click)="onEditar(e)" title="Editar">
+            <button class="action-btn btn-edit" *ngIf="canEditarNorma" (click)="onEditar(e)" title="Editar">
               <mat-icon>edit</mat-icon>
             </button>
-            <button class="action-btn btn-delete" (click)="onEliminar(e)" title="Eliminar">
+            <button class="action-btn btn-delete" *ngIf="canEliminarNorma" (click)="onEliminar(e)" title="Eliminar">
               <mat-icon>delete</mat-icon>
             </button>
           </div>

@@ -394,22 +394,30 @@
             </div>
 
             <div *ngIf="nombreArchivoEvidencia" class="file-selected-badge" (click)="$event.stopPropagation()">
-              <div class="file-info-left">
+              <div class="file-info-left" (click)="onDescargarArchivoModal($event)" style="cursor: pointer;" title="Haz clic para descargar el archivo adjunto">
                 <div class="file-icon-box">
                   <mat-icon>verified</mat-icon>
                 </div>
                 <div class="file-details">
                   <span class="file-name">{{ nombreArchivoEvidencia }}</span>
-                  <span class="file-status">✓ Documento adjuntado correctamente</span>
+                  <span class="file-status">✓ Documento adjuntado · Clic para descargar</span>
                 </div>
               </div>
-              <button *ngIf="data.Accion !== 'V'" 
-                      type="button" 
-                      class="btn-remove-file" 
-                      (click)="onRemoveFile($event)" 
-                      title="Quitar archivo adjunto">
-                <mat-icon>close</mat-icon>
-              </button>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <button type="button" 
+                        class="btn-download-file-modal" 
+                        (click)="onDescargarArchivoModal($event)" 
+                        title="Descargar documento adjunto">
+                  <mat-icon>file_download</mat-icon>
+                </button>
+                <button *ngIf="data.Accion !== 'V'" 
+                        type="button" 
+                        class="btn-remove-file" 
+                        (click)="onRemoveFile($event)" 
+                        title="Quitar archivo adjunto">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
             </div>
 
           </div>
@@ -425,9 +433,9 @@
         <span>{{ data.Accion === 'V' ? 'Cerrar' : 'Cancelar' }}</span>
       </button>
 
-      <button *ngIf="data.Accion !== 'V'" type="submit" class="btn-primary">
-        <mat-icon>check_circle</mat-icon>
-        <span>Guardar Riesgo</span>
+      <button *ngIf="data.Accion !== 'V'" type="submit" class="btn-primary" [disabled]="isUploading">
+        <mat-icon>{{ isUploading ? 'sync' : 'check_circle' }}</mat-icon>
+        <span>{{ isUploading ? 'Guardando y subiendo archivo...' : 'Guardar Riesgo' }}</span>
       </button>
     </div>
 

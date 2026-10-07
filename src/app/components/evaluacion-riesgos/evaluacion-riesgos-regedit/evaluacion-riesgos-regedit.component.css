@@ -1014,3 +1014,28 @@
     padding: 14px 16px;
   }
 }
+
+
+.btn-download-file-modal {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-download-file-modal:hover {
+  background: #10b981;
+  color: #ffffff;
+  transform: scale(1.06);
+}
+.btn-download-file-modal mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}

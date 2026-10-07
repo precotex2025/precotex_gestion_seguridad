@@ -445,15 +445,33 @@ export class LayoutComponent implements OnInit, OnDestroy {
               if (fineRes && fineRes.success && fineRes.elements && fineRes.elements.length > 0) {
                 const accFine: any = {};
                 fineRes.elements.forEach((row: any) => {
-                  const uid = (row.codigo_Puesto_Usuario || '').trim();
-                  if (!accFine[uid]) {
-                    accFine[uid] = {};
-                  }
-                  const key = (row.modulo || '') + '||' + (row.contenido || '') + '||' + (row.accion || '');
-                  accFine[uid][key] = row.flg_Permitido ? 1 : 0;
+                  const rawUid = (row.codigo_Puesto_Usuario || '').trim();
+                  if (!rawUid) return;
+
+                  // Encontrar alias del puesto (nombre, codigo_Puesto, cod_Usuario)
+                  const matchedPuesto = puestosList.find((p: any) =>
+                    (p.puesto && p.puesto.trim().toLowerCase() === rawUid.toLowerCase()) ||
+                    (p.codigo_Puesto && p.codigo_Puesto.trim().toLowerCase() === rawUid.toLowerCase()) ||
+                    (p.cod_Usuario && p.cod_Usuario.trim().toLowerCase() === rawUid.toLowerCase())
+                  );
+
+                  const targets = Array.from(new Set([
+                    rawUid,
+                    matchedPuesto?.puesto?.trim(),
+                    matchedPuesto?.codigo_Puesto?.trim(),
+                    matchedPuesto?.cod_Usuario?.trim().toLowerCase()
+                  ].filter(Boolean)));
+
+                  const key = (row.modulo || '').trim() + '||' + (row.contenido || '').trim() + '||' + (row.accion || '').trim();
+                  const val = row.flg_Permitido ? 1 : 0;
+
+                  targets.forEach(t => {
+                    if (!accFine[t]) accFine[t] = {};
+                    accFine[t][key] = val;
+                  });
                 });
                 localStorage.setItem('precotex:puestos:accesos_fino', JSON.stringify(accFine));
-                console.log('[Layout] Permisos finos cargados:', Object.keys(accFine));
+                console.log('[Layout] Permisos finos cargados con alias:', Object.keys(accFine));
               }
             }
           });

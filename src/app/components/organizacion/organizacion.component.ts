@@ -1,3 +1,4 @@
+import { PermisosService } from '../../services/permisos.service';
 import { Component, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
@@ -17,6 +18,12 @@ import { GlobalVariable } from '../../VarGlobals';
   styleUrl: './organizacion.component.css'
 })
 export class OrganizacionComponent implements OnInit {
+
+  // Permisos finos por acción (Organización)
+  canVerSedes: boolean = true;
+  canCrearEditarSedes: boolean = true;
+  canDescargarArchivo: boolean = true;
+
 
   stats: {
     total: number;
@@ -53,7 +60,8 @@ export class OrganizacionComponent implements OnInit {
     private toastr: ToastrService,
     private sedesService: SedesService,
     private procesosService: ProcesosService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private permisosService: PermisosService
   ) { }
 
   displayedColumns: string[] = [
@@ -65,6 +73,27 @@ export class OrganizacionComponent implements OnInit {
     'acciones'
   ];
   dataSource = new MatTableDataSource<any>();
+
+  
+  cargarPermisos(): void {
+    const isUserAdmin = GlobalVariable.vCod_Rol === 1 || (typeof localStorage !== 'undefined' && localStorage.getItem('vCod_Rol') === '1');
+    if (isUserAdmin) {
+      this.canVerSedes = true;
+      this.canCrearEditarSedes = true;
+      this.canDescargarArchivo = true;
+      return;
+    }
+
+    this.canVerSedes = this.permisosService.hasFinePermission('Organización', 'Estructura (sedes)', 'Ver', false);
+    this.canCrearEditarSedes = this.permisosService.hasFinePermission('Organización', 'Estructura (sedes)', 'Crear / Editar', false);
+    this.canDescargarArchivo = this.permisosService.hasFinePermission('Organización', 'Certificados (archivo)', 'Descargar', false);
+
+    console.log('[Organización Permisos]', {
+      canVerSedes: this.canVerSedes,
+      canCrearEditarSedes: this.canCrearEditarSedes,
+      canDescargarArchivo: this.canDescargarArchivo
+    });
+  }
 
   async ngOnInit() {
     this.onListado();
@@ -200,6 +229,10 @@ export class OrganizacionComponent implements OnInit {
 
   // ORG-10: Exportar reporte de sedes a Excel con Título Oficial, Procesos completos y Diseño Premium
   onExportarSedes(): void {
+    if (!this.canDescargarArchivo) {
+      this.toastr.warning('No cuentas con permisos para exportar este reporte.', 'Acceso Restringido');
+      return;
+    }
     const dataToExport = (this.dataSource.filteredData && this.dataSource.filteredData.length > 0)
       ? this.dataSource.filteredData
       : this.dataSource.data;
@@ -466,6 +499,10 @@ export class OrganizacionComponent implements OnInit {
   }
 
   onAgregar() {
+    if (!this.canCrearEditarSedes) {
+      this.toastr.warning('No cuentas con permisos para agregar sedes.', 'Acceso Restringido');
+      return;
+    }
     let dialogRef = this.dialog.open(OrganizacionRegeditComponent, {
       width: '750px',
       maxHeight: '90vh',
@@ -485,6 +522,10 @@ export class OrganizacionComponent implements OnInit {
   }
 
   onEditar(item: any) {
+    if (!this.canCrearEditarSedes) {
+      this.toastr.warning('No cuentas con permisos para editar sedes.', 'Acceso Restringido');
+      return;
+    }
     let dialogRef = this.dialog.open(OrganizacionRegeditComponent, {
       width: '750px',
       maxHeight: '90vh',
@@ -504,6 +545,10 @@ export class OrganizacionComponent implements OnInit {
   }
 
   onEliminar(item: any) {
+    if (!this.canCrearEditarSedes) {
+      this.toastr.warning('No cuentas con permisos para eliminar sedes.', 'Acceso Restringido');
+      return;
+    }
     Swal.fire({
       title: '¿Desea eliminar la sede?, Confirme',
       icon: 'question',
