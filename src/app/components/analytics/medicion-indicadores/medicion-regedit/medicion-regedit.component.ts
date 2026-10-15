@@ -24,6 +24,7 @@ export class MedicionRegeditComponent implements OnInit {
   indicadorSeleccionado: any = null;
   nombreArchivoEvidencia: string = '';
   archivoEvidenciaBase64: string = '';
+  selectedRawFile: File | null = null;
   
   // Sedes requeridas por la organización Precotex
   sedesOptions: string[] = [
@@ -459,6 +460,7 @@ export class MedicionRegeditComponent implements OnInit {
       return;
     }
 
+    this.selectedRawFile = file;
     this.nombreArchivoEvidencia = file.name;
 
     const reader = new FileReader();
@@ -518,6 +520,7 @@ export class MedicionRegeditComponent implements OnInit {
       }
     }
 
+    val.rawFile = this.selectedRawFile;
     this.dialogRef.close(val);
   }
 

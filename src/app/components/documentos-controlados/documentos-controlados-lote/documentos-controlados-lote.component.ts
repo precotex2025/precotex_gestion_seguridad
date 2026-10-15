@@ -139,7 +139,7 @@ export class DocumentosControladosLoteComponent implements OnInit {
   // DOC-11: Campos completos idénticos a ingresar un documento individual (REGEDIT)
   tipos = ['Procedimiento', 'Instructivo', 'Formato', 'Manual', 'Perfil de puesto', 'Politica', 'Plan', 'Registro', 'Otros'];
   formatos = ['PDF', 'Word', 'Excel'];
-  estados = ['Vigente', 'Por vencer', 'Obsoleto'];
+  estados = ['Vigente', 'Por vencer'];
 
   constructor(
     public dialogRef: MatDialogRef<DocumentosControladosLoteComponent>,

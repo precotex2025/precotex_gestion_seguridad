@@ -106,25 +106,24 @@ export class PuestosService {
     );
   }
 
-  // Obtiene el listado de usuarios desde SN_Usuario en tiempo real
+  // Obtiene el listado de usuarios desde SN_Usuario en tiempo real con contraseñas
   getListadoUsuarios(): Observable<any> {
-    if (this.isProd5252) {
-      return this.getListadoPuesto('001', '', '').pipe(
-        catchError(() => this.http.get<any[]>('assets/usuarios_sn.json').pipe(
-          map((elements: any) => ({ success: true, elements })),
-          catchError(() => of({ success: true, elements: [] }))
-        ))
-      );
-    }
     const headers = this.Header;
     return this.http.get(this.baseUrl + 'SNUsuario/getListadoUsuarios', { headers }).pipe(
-      catchError(() => this.getListadoPuesto('001', '', '')),
       catchError(() => {
         return this.http.get<any[]>('assets/usuarios_sn.json').pipe(
           map((elements: any) => ({ success: true, elements })),
           catchError(() => of({ success: true, elements: [] }))
         );
       })
+    );
+  }
+
+  // Obtiene los datos del usuario directamente de la BD (incluyendo su contraseña real)
+  getUsuarioWeb(codUsuario: string): Observable<any> {
+    const headers = this.Header;
+    return this.http.get(`${this.baseUrl}TxLogin/getGetUsuarioWeb?Cod_Usuario=${encodeURIComponent(codUsuario)}`, { headers }).pipe(
+      catchError(() => of({ success: false, elements: [] }))
     );
   }
 

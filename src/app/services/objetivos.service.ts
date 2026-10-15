@@ -44,4 +44,15 @@ export class ObjetivosService {
     const headers = this.Header;
     return this.http.post(this.baseUrl + 'SNObjetivo/postProcesoMntoObjetivoMedicion', data, { headers });
   }
+
+  uploadArchivo(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    return this.http.post(this.baseUrl + 'SNDocumentosControlados/uploadArchivo', formData);
+  }
+
+  getDownloadUrl(fileName: string): string {
+    return this.baseUrl + 'SNDocumentosControlados/downloadArchivo?fileName=' + encodeURIComponent(fileName);
+  }
+
 }

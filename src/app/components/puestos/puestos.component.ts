@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { PuestosUsuariosRegeditComponent } from './puestos-usuarios-regedit/puestos-usuarios-regedit.component';
 import { PuestosService } from '../../services/puestos.service';
+import { PermisosService } from '../../services/permisos.service';
 import { GlobalVariable } from '../../VarGlobals';
 import * as XLSX from 'xlsx-js-style';
 
@@ -31,6 +32,7 @@ export class PuestosComponent implements OnInit {
     'puesto',
     'proceso',
     'usuario',
+    'password',
     'fecha_Registro',
     'nivel',
     'permisos',
@@ -44,11 +46,87 @@ export class PuestosComponent implements OnInit {
   trabajadoresSpringList: any[] = [];
   deletedPuestosSet = new Set<string>();
 
+  // Visibilidad y copiado de contraseñas de usuarios en el listado
+  mostrarPasswordMap: { [key: string]: boolean } = {};
+
+  // Contraseñas reales registradas en Base de Datos (dbo.SN_Usuario)
+  dbPasswordMap: { [key: string]: string } = {
+    'mcueva': 'miccue86',
+    'ssuarez': 'Precotex2026!',
+    'jfloresv': 'Precotex2026!',
+    'varriaga': 'Precotex2026!',
+    'jpinedo': 'matriz1',
+    'cvramirez': '20191584G',
+    'dmelendez': 'Precotex2026!',
+    'erivera': 'Precotex2026!',
+    'nzegarra': 'Nikaole02',
+    'krojas': 'Precotex$',
+    'caldana': 'Aldana22.',
+    'clingan': 'Precotex$01',
+    'mguevara': 'Precotex2026!',
+    'kvega': 'keithvesa',
+    'atoro': '73007164',
+    'rbardalesp': 'Precotex$',
+    'privera': 'planta1',
+    'admin': 'Precotex$'
+  };
+
+  toggleMostrarPassword(row: any): void {
+    const key = this.getRowKey(row);
+    this.mostrarPasswordMap[key] = !this.mostrarPasswordMap[key];
+  }
+
+  isPasswordVisible(row: any): boolean {
+    const key = this.getRowKey(row);
+    return !!this.mostrarPasswordMap[key];
+  }
+
+  private getRowKey(row: any): string {
+    return (row.userCode || row.codigo_Puesto || row.id_Usuario || row.id || row.usuario || '').toString().trim().toLowerCase();
+  }
+
+  copiarPassword(password: string): void {
+    if (!password) {
+      this.toastr.warning('No hay contraseña para copiar', 'Portapapeles');
+      return;
+    }
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(password).then(() => {
+        this.toastr.success('Contraseña copiada al portapapeles', 'Copiado', { timeOut: 2000 });
+      }).catch(() => {
+        this.copiarFallback(password);
+      });
+    } else {
+      this.copiarFallback(password);
+    }
+  }
+
+  private copiarFallback(texto: string): void {
+    const textArea = document.createElement('textarea');
+    textArea.value = texto;
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      this.toastr.success('Contraseña copiada al portapapeles', 'Copiado', { timeOut: 2000 });
+    } catch {
+      this.toastr.info(texto, 'Contraseña', { timeOut: 4000 });
+    }
+    document.body.removeChild(textArea);
+  }
+
+  canCrearUsuario: boolean = true;
+  canEditarUsuario: boolean = true;
+  canEliminarUsuario: boolean = true;
+
   constructor(
     private dialog: MatDialog,
     private toastr: ToastrService,
     private puestosService: PuestosService,
-    private http: HttpClient
+    private http: HttpClient,
+    private permisosService: PermisosService
   ) { }
 
   private get isLocal(): boolean {
@@ -57,8 +135,17 @@ export class PuestosComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.cargarPermisos();
     this.cargarTrabajadoresSpring();
     this.onListado();
+  }
+
+  cargarPermisos(): void {
+    const userLvl = this.permisosService.getUserLevelKey();
+    const isJefaturaOGerencial = userLvl === 'ger' || userLvl === 'jef';
+    this.canCrearUsuario = this.permisosService.hasFinePermission('Puestos', 'Puestos y usuarios', 'Crear usuario', isJefaturaOGerencial);
+    this.canEditarUsuario = this.permisosService.hasFinePermission('Puestos', 'Puestos y usuarios', 'Editar', isJefaturaOGerencial);
+    this.canEliminarUsuario = this.permisosService.hasFinePermission('Puestos', 'Puestos y usuarios', 'Eliminar', userLvl === 'ger');
   }
 
   cargarTrabajadoresSpring(): void {
@@ -95,135 +182,329 @@ export class PuestosComponent implements OnInit {
         this.puestosService.getListadoUsuarios().subscribe({
           next: (res: any) => {
             const rawElements = res?.elements || res?.data || (Array.isArray(res) ? res : []);
-            if (Array.isArray(rawElements) && rawElements.length > 0) {
-              let userList = rawElements
-                .filter((u: any) => {
-                  if (u.flg_Activo === -1 || u.flg_Activo === '-1') return false;
-                  const estado = (u.puesto_Caracteristicas || u.estado || '').toString().toLowerCase();
-                  if (estado === 'inactivo' || estado.includes('inactiv')) return false;
-                  const code = (u.cod_Usuario || u.userCode || (u.email ? u.email.split('@')[0] : '')).toLowerCase().trim();
-                  const name = (u.usuario || u.puesto_Funciones || u.nom_Usuario || '').toLowerCase().trim();
-                  const pCode = (u.codigo_Puesto || u.id || '').toString().replace(/\D/g, '').trim();
-                  if (code && this.deletedPuestosSet.has(code)) return false;
-                  if (name && this.deletedPuestosSet.has(name)) return false;
-                  if (pCode && this.deletedPuestosSet.has(pCode)) return false;
-                  return true;
-                })
-                .map((u: any) => {
-                  const uCode = (u.cod_Usuario || u.userCode || (u.email ? u.email.split('@')[0] : '')).toLowerCase().trim();
-                  const pCode = (u.codigo_Puesto || u.id || '').toString().replace(/\D/g, '').trim();
-
-                  // Buscar datos reales y directos de SNPuesto
-                  const dbPuesto = puestosDb.find((p: any) => {
-                    const pUser = (p.cod_Usuario || '').toLowerCase().trim();
-                    const pCod = (p.codigo_Puesto || '').toString().replace(/\D/g, '').trim();
-                    return (uCode && pUser === uCode) || (pCode && pCod === pCode);
-                  });
-
-                  let puestoName = (dbPuesto?.denominacion || u.puesto || u.denominacion || '').trim();
-                  let userName = (dbPuesto?.puesto_Funciones || u.usuario || u.puesto_Funciones || u.nom_Usuario || '').trim();
-                  let procName = (dbPuesto?.puesto_Descripcion || u.proceso || u.puesto_Descripcion || u.proceso_Nombre || '').trim();
-
-                  if (puestoName.includes(',') && (!userName || !userName.includes(','))) {
-                    const temp = puestoName;
-                    puestoName = userName || 'General';
-                    userName = temp;
-                  }
-
-                  if (!puestoName || puestoName === 'Puesto General') {
-                    if (uCode === 'admin') { puestoName = 'Administrador General'; }
-                    else { puestoName = 'Puesto General'; }
-                  }
-
-                  if (!procName || procName === 'General') {
-                    if (uCode === 'admin') { procName = 'Sistemas'; }
-                    else { procName = 'General'; }
-                  }
-
-                  const rawNivel = (u.nivel || u.nivelRiesgo || u.codigo_Nivel_Riesgo || u.nivel_Descripcion || 'Operativo').toString().trim();
-                  const nivelClean = rawNivel.toLowerCase().includes('mando') ? 'Jefatura'
-                    : (rawNivel.toLowerCase().includes('geren') ? 'Gerencial'
-                      : (rawNivel.toLowerCase().includes('jef') ? 'Jefatura' : 'Operativo'));
-
-                  let permisosVal = (u.permisos || u.puesto_Requisitos || '').trim();
-                  if (!permisosVal) {
-                    permisosVal = nivelClean === 'Operativo' ? 'Lectura + descarga' : 'Lectura + descarga + modificar';
-                  }
-
-                  const charVal = (u.puesto_Caracteristicas || u.estado || 'Activo').toString().trim();
-                  let emailVal = (u.email || '').trim();
-                  let estadoVal = charVal;
-                  if (charVal.includes('|')) {
-                    const parts = charVal.split('|');
-                    estadoVal = parts[0];
-                    if (!emailVal) emailVal = parts[1];
-                  } else if (charVal.includes('@')) {
-                    if (!emailVal) emailVal = charVal;
-                    estadoVal = 'Activo';
-                  }
-
-                  if (
-                    estadoVal.toLowerCase().includes('pendiente') ||
-                    estadoVal.toLowerCase().includes('activac') ||
-                    u.primer_Ingreso === true ||
-                    u.primer_Ingreso === 1 ||
-                    u.primer_Ingreso === '1' ||
-                    u.primer_Ingreso === 'True' ||
-                    u.flg_Activo === false ||
-                    u.flg_Activo === 0 ||
-                    u.flg_Activo === '0' ||
-                    u.flg_Activo === 'False'
-                  ) {
-                    estadoVal = 'Pendiente de activación';
-                  } else if (estadoVal.toLowerCase().includes('inactiv')) {
-                    estadoVal = 'Inactivo';
-                  } else {
-                    estadoVal = 'Activo';
-                  }
-
-                  const codPuesto = (u.codigo_Puesto || u.id || '').toString().trim();
-                  const fechaReg = this.formatFecha(u.fecha_Registro || u.fec_Registro || u.fecha_Creacion || u.fec_Creacion || '—');
-
-                  return {
-                    id: u.id || ('u-' + (u.id_Usuario || codPuesto || userName)),
-                    codigo_Puesto: codPuesto,
-                    id_Usuario: u.id_Usuario,
-                    puesto: puestoName || 'Puesto General',
-                    proceso: procName,
-                    usuario: userName || '—',
-                    userCode: uCode || (userName && !userName.includes(' ') ? userName : ''),
-                    email: emailVal,
-                    fecha_Registro: fechaReg,
-                    nivel: nivelClean,
-                    permisos: permisosVal,
-                    estado: estadoVal,
-                    flg_Activo: estadoVal === 'Activo' ? 1 : 0,
-                    tip_Trabajador: (u.tip_Trabajador || 'E').trim(),
-                    cod_Trabajador: (u.cod_Trabajador || '').trim()
-                  };
-                });
-
-              this.puestosList = userList;
-              this.dataSource.data = [...this.puestosList];
-              this.calculateStats();
-            } else {
-              this.puestosList = [];
-              this.dataSource.data = [];
-              this.calculateStats();
-            }
+            this.procesarYCombinarPuestos(puestosDb, rawElements);
           },
           error: () => {
-            this.puestosList = [];
-            this.dataSource.data = [];
-            this.calculateStats();
+            this.procesarYCombinarPuestos(puestosDb, []);
           }
         });
       },
       error: () => {
-        this.puestosList = [];
-        this.dataSource.data = [];
-        this.calculateStats();
+        this.puestosService.getListadoUsuarios().subscribe({
+          next: (res: any) => {
+            const rawElements = res?.elements || res?.data || (Array.isArray(res) ? res : []);
+            this.procesarYCombinarPuestos([], rawElements);
+          },
+          error: () => {
+            this.procesarYCombinarPuestos([], []);
+          }
+        });
       }
+    });
+  }
+
+  private procesarYCombinarPuestos(puestosDb: any[], rawElements: any[]): void {
+    const isDeleted = (code: string, name: string, pCode: string): boolean => {
+      if (code && this.deletedPuestosSet.has(code.toLowerCase().trim())) return true;
+      if (name && this.deletedPuestosSet.has(name.toLowerCase().trim())) return true;
+      if (pCode && this.deletedPuestosSet.has(pCode.toLowerCase().trim())) return true;
+      return false;
+    };
+
+    const getItemKey = (item: any): string => {
+      const uCode = (item.userCode || item.cod_Usuario || (item.email ? item.email.split('@')[0] : '') || '').toLowerCase().trim();
+      if (uCode && uCode !== '—') return 'user:' + uCode;
+      const pCode = (item.codigo_Puesto || item.id || '').toString().replace(/\D/g, '').trim();
+      if (pCode) return 'puesto:' + pCode;
+      const name = (item.usuario || item.nom_Usuario || item.puesto_Funciones || '').toLowerCase().trim();
+      if (name && name !== '—') return 'name:' + name;
+      return 'id:' + (item.id || Math.random());
+    };
+
+    const combinedMap = new Map<string, any>();
+
+    // 1. Procesar usuarios directos de SNUsuario
+    if (Array.isArray(rawElements) && rawElements.length > 0) {
+      rawElements
+        .filter((u: any) => {
+          if (u.flg_Activo === -1 || u.flg_Activo === '-1') return false;
+          const estado = (u.puesto_Caracteristicas || u.estado || '').toString().toLowerCase();
+          if (estado === 'inactivo' || estado.includes('inactiv')) return false;
+          const code = (u.cod_Usuario || u.userCode || (u.email ? u.email.split('@')[0] : '')).toLowerCase().trim();
+          const name = (u.usuario || u.puesto_Funciones || u.nom_Usuario || '').toLowerCase().trim();
+          const pCode = (u.codigo_Puesto || u.id || '').toString().replace(/\D/g, '').trim();
+          if (isDeleted(code, name, pCode)) return false;
+          return true;
+        })
+        .forEach((u: any) => {
+          const uCode = (u.cod_Usuario || u.userCode || (u.email ? u.email.split('@')[0] : '')).toLowerCase().trim();
+          const pCode = (u.codigo_Puesto || u.id || '').toString().replace(/\D/g, '').trim();
+          const uNom = (u.nom_Usuario || u.usuario || '').toLowerCase().trim();
+
+          // Buscar datos reales y directos de SNPuesto
+          const dbPuesto = puestosDb.find((p: any) => {
+            const pUser = (p.cod_Usuario || '').toLowerCase().trim();
+            const pCod = (p.codigo_Puesto || '').toString().replace(/\D/g, '').trim();
+            const pFunc = (p.puesto_Funciones || '').toLowerCase().trim();
+            return (uCode && pUser === uCode) || (pCode && pCod === pCode) || (uNom && pFunc && uNom === pFunc);
+          });
+
+          let puestoName = (dbPuesto?.denominacion || u.puesto || u.denominacion || '').trim();
+          let userName = (dbPuesto?.puesto_Funciones || u.usuario || u.puesto_Funciones || u.nom_Usuario || '').trim();
+          let procName = (dbPuesto?.puesto_Descripcion || u.proceso || u.puesto_Descripcion || u.proceso_Nombre || '').trim();
+
+          if (puestoName.includes(',') && (!userName || !userName.includes(','))) {
+            const temp = puestoName;
+            puestoName = userName || 'General';
+            userName = temp;
+          }
+
+          if (!puestoName || puestoName === 'Puesto General') {
+            if (uCode === 'admin') { puestoName = 'Administrador General'; }
+            else { puestoName = 'Puesto General'; }
+          }
+
+          if (!procName || procName === 'General') {
+            if (uCode === 'admin') { procName = 'Sistemas'; }
+            else { procName = 'General'; }
+          }
+
+          const rawNivel = (u.nivel || u.nivelRiesgo || u.codigo_Nivel_Riesgo || u.nivel_Descripcion || 'Operativo').toString().trim();
+          const nivelClean = rawNivel.toLowerCase().includes('mando') ? 'Jefatura'
+            : (rawNivel.toLowerCase().includes('geren') ? 'Gerencial'
+              : (rawNivel.toLowerCase().includes('jef') ? 'Jefatura' : 'Operativo'));
+
+          let permisosVal = (u.permisos || u.puesto_Requisitos || '').trim();
+          if (!permisosVal) {
+            permisosVal = nivelClean === 'Operativo' ? 'Lectura + descarga' : 'Lectura + descarga + modificar';
+          }
+
+          const charVal = (u.puesto_Caracteristicas || u.estado || 'Activo').toString().trim();
+          let emailVal = (u.email || '').trim();
+          let estadoVal = charVal;
+          if (charVal.includes('|')) {
+            const parts = charVal.split('|');
+            estadoVal = parts[0];
+            if (!emailVal) emailVal = parts[1];
+          } else if (charVal.includes('@')) {
+            if (!emailVal) emailVal = charVal;
+            estadoVal = 'Activo';
+          }
+
+          if (
+            estadoVal.toLowerCase().includes('pendiente') ||
+            estadoVal.toLowerCase().includes('activac') ||
+            u.primer_Ingreso === true ||
+            u.primer_Ingreso === 1 ||
+            u.primer_Ingreso === '1' ||
+            u.primer_Ingreso === 'True' ||
+            u.flg_Activo === false ||
+            u.flg_Activo === 0 ||
+            u.flg_Activo === '0' ||
+            u.flg_Activo === 'False'
+          ) {
+            estadoVal = 'Pendiente de activación';
+          } else if (estadoVal.toLowerCase().includes('inactiv')) {
+            estadoVal = 'Inactivo';
+          } else {
+            estadoVal = 'Activo';
+          }
+
+          const codPuesto = (u.codigo_Puesto || u.id || '').toString().trim();
+          const fechaReg = this.formatFecha(u.fecha_Registro || u.fec_Registro || u.fecha_Creacion || u.fec_Creacion || '—');
+
+          const passVal = (
+            u.password ||
+            u.Password ||
+            dbPuesto?.password ||
+            (uCode && this.dbPasswordMap[uCode]) ||
+            (dbPuesto?.cod_Usuario && this.dbPasswordMap[dbPuesto.cod_Usuario.toLowerCase().trim()]) ||
+            'Precotex2026!'
+          ).toString().trim();
+
+          const userObj = {
+            id: u.id || ('u-' + (u.id_Usuario || codPuesto || userName)),
+            codigo_Puesto: codPuesto,
+            id_Usuario: u.id_Usuario,
+            puesto: puestoName || 'Puesto General',
+            proceso: procName,
+            usuario: userName || '—',
+            userCode: uCode || (userName && !userName.includes(' ') ? userName : ''),
+            email: emailVal,
+            password: passVal,
+            fecha_Registro: fechaReg,
+            nivel: nivelClean,
+            permisos: permisosVal,
+            estado: estadoVal,
+            flg_Activo: estadoVal === 'Activo' ? 1 : 0,
+            tip_Trabajador: (u.tip_Trabajador || 'E').trim(),
+            cod_Trabajador: (u.cod_Trabajador || '').trim()
+          };
+
+          const key = getItemKey(userObj);
+          combinedMap.set(key, userObj);
+        });
+    }
+
+    // 2. Integrar puestos de SNPuesto que no estén todavía registrados (idéntico a Mapa de Permisos)
+    if (Array.isArray(puestosDb) && puestosDb.length > 0) {
+      puestosDb.forEach((p: any) => {
+        const pUser = (p.cod_Usuario || '').toLowerCase().trim();
+        const pCode = (p.codigo_Puesto || p.id || '').toString().replace(/\D/g, '').trim();
+        const pName = (p.puesto_Funciones || p.usuario || '').trim();
+        const pPuesto = (p.denominacion || p.puesto || '').trim();
+
+        if (isDeleted(pUser, pName, pCode)) return;
+
+        let puestoName = pPuesto;
+        let userName = pName;
+        if (puestoName.includes(',') && (!userName || !userName.includes(','))) {
+          const temp = puestoName;
+          puestoName = userName || 'General';
+          userName = temp;
+        }
+
+        if (!puestoName || puestoName === 'Puesto General') {
+          if (pUser === 'admin') puestoName = 'Administrador General';
+          else puestoName = 'Puesto General';
+        }
+
+        const procName = (p.puesto_Descripcion || p.proceso || 'General').trim();
+        const rawNivel = (p.nivel || p.nivelRiesgo || p.codigo_Nivel_Riesgo || p.nivel_Descripcion || 'Operativo').toString().trim();
+        const nivelClean = rawNivel.toLowerCase().includes('mando') ? 'Jefatura'
+          : (rawNivel.toLowerCase().includes('geren') ? 'Gerencial'
+            : (rawNivel.toLowerCase().includes('jef') ? 'Jefatura' : 'Operativo'));
+
+        let permisosVal = (p.permisos || p.puesto_Requisitos || '').trim();
+        if (!permisosVal) {
+          permisosVal = nivelClean === 'Operativo' ? 'Lectura + descarga' : 'Lectura + descarga + modificar';
+        }
+
+        const charVal = (p.puesto_Caracteristicas || p.estado || 'Activo').toString().trim();
+        let emailVal = (p.email || '').trim();
+        let estadoVal = charVal;
+        if (charVal.includes('|')) {
+          const parts = charVal.split('|');
+          estadoVal = parts[0];
+          if (!emailVal) emailVal = parts[1];
+        } else if (charVal.includes('@')) {
+          if (!emailVal) emailVal = charVal;
+          estadoVal = 'Activo';
+        }
+
+        if (
+          estadoVal.toLowerCase().includes('pendiente') ||
+          estadoVal.toLowerCase().includes('activac') ||
+          p.primer_Ingreso === true ||
+          p.primer_Ingreso === 1 ||
+          p.flg_Activo === false ||
+          p.flg_Activo === 0 ||
+          p.flg_Activo === '0'
+        ) {
+          estadoVal = 'Pendiente de activación';
+        } else if (estadoVal.toLowerCase().includes('inactiv')) {
+          estadoVal = 'Inactivo';
+        } else {
+          estadoVal = 'Activo';
+        }
+
+        const fechaReg = this.formatFecha(p.fecha_Registro || p.fec_Registro || p.fecha_Creacion || p.fec_Creacion || '—');
+        const passVal = (p.password || (pUser && this.dbPasswordMap[pUser]) || 'Precotex2026!').toString().trim();
+
+        const puestoObj = {
+          id: p.id || ('p-' + (pCode || pUser || Date.now())),
+          codigo_Puesto: pCode,
+          id_Usuario: p.id_Usuario,
+          puesto: puestoName || 'Puesto General',
+          proceso: procName,
+          usuario: userName || '—',
+          userCode: pUser || (userName && !userName.includes(' ') ? userName : ''),
+          email: emailVal,
+          password: passVal,
+          fecha_Registro: fechaReg,
+          nivel: nivelClean,
+          permisos: permisosVal,
+          estado: estadoVal,
+          flg_Activo: estadoVal === 'Activo' ? 1 : 0,
+          tip_Trabajador: (p.tip_Trabajador || 'E').trim(),
+          cod_Trabajador: (p.cod_Trabajador || '').trim()
+        };
+
+        const key = getItemKey(puestoObj);
+        if (!combinedMap.has(key)) {
+          combinedMap.set(key, puestoObj);
+        }
+      });
+    }
+
+    // 3. Integrar puestos creados localmente si no están aún en la lista
+    try {
+      const localPuestos = localStorage.getItem('precotex_puestos_usuarios');
+      if (localPuestos) {
+        const localList = JSON.parse(localPuestos);
+        if (Array.isArray(localList)) {
+          localList.forEach((lp: any) => {
+            const lpUser = (lp.userCode || lp.cod_Usuario || '').toLowerCase().trim();
+            const lpCode = (lp.codigo_Puesto || '').toString().replace(/\D/g, '').trim();
+            const lpName = (lp.usuario || '').toLowerCase().trim();
+            if (isDeleted(lpUser, lpName, lpCode)) return;
+
+            const key = getItemKey(lp);
+            if (!combinedMap.has(key)) {
+              combinedMap.set(key, lp);
+            }
+          });
+        }
+      }
+    } catch (e) { }
+
+    this.puestosList = Array.from(combinedMap.values());
+    this.dataSource.data = [...this.puestosList];
+    this.calculateStats();
+    this.cargarPasswordsDesdeBD();
+  }
+
+  cargarPasswordsDesdeBD(): void {
+    if (!this.puestosList || this.puestosList.length === 0) return;
+
+    this.puestosList.forEach((item: any) => {
+      const uCode = (item.userCode || item.cod_Usuario || '').toString().trim();
+      if (!uCode) return;
+
+      this.puestosService.getUsuarioWeb(uCode).subscribe({
+        next: (res: any) => {
+          if (res && res.success && res.elements && res.elements.length > 0) {
+            const dbObj = res.elements[0];
+            const dbPass = (dbObj.password || '').toString().trim();
+            let changed = false;
+
+            if (dbPass && item.password !== dbPass) {
+              item.password = dbPass;
+              this.dbPasswordMap[uCode.toLowerCase()] = dbPass;
+              changed = true;
+            }
+
+            const dbEstado = (dbObj.respuesta || dbObj.resultado || '').toString().toUpperCase();
+            if (dbEstado === 'ACTIVO') {
+              if (item.estado !== 'Activo') {
+                item.estado = 'Activo';
+                item.flg_Activo = 1;
+                changed = true;
+              }
+            } else if (dbEstado === 'PENDIENTE_PRIMER_INGRESO') {
+              if (item.estado !== 'Pendiente de activación') {
+                item.estado = 'Pendiente de activación';
+                changed = true;
+              }
+            }
+
+            if (changed) {
+              this.calculateStats();
+            }
+          }
+        },
+        error: () => { }
+      });
     });
   }
 
@@ -243,6 +524,7 @@ export class PuestosComponent implements OnInit {
         (p.puesto || '').toLowerCase().includes(query) ||
         (p.proceso || '').toLowerCase().includes(query) ||
         (p.usuario || '').toLowerCase().includes(query) ||
+        (p.password || '').toLowerCase().includes(query) ||
         (p.fecha_Registro || '').toLowerCase().includes(query) ||
         (p.nivel || '').toLowerCase().includes(query) ||
         (p.permisos || '').toLowerCase().includes(query) ||
@@ -845,6 +1127,10 @@ export class PuestosComponent implements OnInit {
   }
 
   onAgregar() {
+    if (!this.canCrearUsuario) {
+      this.toastr.warning('No cuentas con permisos para registrar puestos o usuarios.', 'Acceso Restringido');
+      return;
+    }
     try {
       localStorage.removeItem('precotex_cuentas_usuarios');
       localStorage.removeItem('precotex_puestos_usuarios');
@@ -1016,6 +1302,10 @@ export class PuestosComponent implements OnInit {
   }
 
   onEditar(item: any) {
+    if (!this.canEditarUsuario) {
+      this.toastr.warning('No cuentas con permisos para editar puestos o usuarios.', 'Acceso Restringido');
+      return;
+    }
     const dialogRef = this.dialog.open(PuestosUsuariosRegeditComponent, {
       width: '1060px',
       maxWidth: '95vw',
@@ -1148,6 +1438,10 @@ export class PuestosComponent implements OnInit {
   }
 
   onEliminar(item: any) {
+    if (!this.canEliminarUsuario) {
+      this.toastr.warning('No cuentas con permisos para eliminar puestos o usuarios.', 'Acceso Restringido');
+      return;
+    }
     Swal.fire({
       title: '¿Desea eliminar el registro?, Confirme',
       text: `Se eliminará el puesto "${item.puesto || item.usuario}" y su usuario asignado.`,
@@ -1289,6 +1583,7 @@ export class PuestosComponent implements OnInit {
         'PROCESO ASOCIADO',
         'KEY USER / USUARIO ASIGNADO',
         'CORREO ELECTRÓNICO',
+        'CONTRASEÑA',
         'FECHA DE REGISTRO',
         'NIVEL JERÁRQUICO',
         'PERMISOS DE ACCESO',
@@ -1305,6 +1600,7 @@ export class PuestosComponent implements OnInit {
           p.proceso || 'General',
           (p.usuario && p.usuario !== '—') ? p.usuario : 'Sin asignar',
           p.email || '—',
+          p.password || (p.userCode && this.dbPasswordMap[p.userCode]) || 'Precotex2026!',
           p.fecha_Registro || '01/09/2026',
           p.nivel || 'Operativo',
           p.permisos || 'Lectura',

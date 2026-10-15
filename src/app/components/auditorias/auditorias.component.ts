@@ -1,3 +1,4 @@
+import { PermisosService } from '../../services/permisos.service';
 import { Component, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
@@ -115,19 +116,33 @@ export class AuditoriasComponent implements OnInit {
     }
   ];
 
+  canCrearPlanificar: boolean = true;
+  canEditarPlanificar: boolean = true;
+  canRegistrarHallazgo: boolean = true;
+  canAprobarCierre: boolean = false;
+
   constructor(
     private dialog : MatDialog,
     private toastr : ToastrService,
     private auditoriasService : AuditoriasService,
-    private router : Router
+    private router : Router,
+    private permisosService: PermisosService
   ) {}
 
   ngOnInit(): void {
+    this.cargarPermisos();
     if (this.router.url.includes('ejecucion-resultados')) {
       this.activeSubTab = 'ejecucion';
     }
     this.onListado();
     this.loadEjecucionData();
+  }
+
+  cargarPermisos(): void {
+    this.canCrearPlanificar = this.permisosService.hasFinePermission('Auditorías', 'Planificación', 'Crear / Planificar');
+    this.canEditarPlanificar = this.permisosService.hasFinePermission('Auditorías', 'Planificación', 'Editar');
+    this.canRegistrarHallazgo = this.permisosService.hasFinePermission('Auditorías', 'Hallazgos', 'Registrar');
+    this.canAprobarCierre = this.permisosService.hasFinePermission('Auditorías', 'Cierre de auditoría', 'Aprobar');
   }
 
   onListado(): void {
@@ -716,6 +731,10 @@ export class AuditoriasComponent implements OnInit {
   }
 
   onEliminarEjecucion(item: any): void {
+    if (!this.canRegistrarHallazgo) {
+      this.toastr.warning('No cuentas con permisos para eliminar hallazgos de auditoría.', 'Acceso Restringido');
+      return;
+    }
     Swal.fire({
       title: '¿Eliminar registro de hallazgo?',
       text: `Se eliminará el hallazgo: ${item.descripcion || item.auditoria}`,
@@ -1774,6 +1793,10 @@ ET`;
   }
 
   onAgregar(): void {
+    if (!this.canCrearPlanificar) {
+      this.toastr.warning('No cuentas con permisos para planificar auditorías.', 'Acceso Restringido');
+      return;
+    }
     const dialogRef = this.dialog.open(AuditoriasRegeditComponent, {
       width: '740px',
       maxWidth: '95vw',
@@ -1802,6 +1825,10 @@ ET`;
   }
 
   onEditar(item: any): void {
+    if (!this.canEditarPlanificar) {
+      this.toastr.warning('No cuentas con permisos para editar auditorías.', 'Acceso Restringido');
+      return;
+    }
     const dialogRef = this.dialog.open(AuditoriasRegeditComponent, {
       width: '740px',
       maxWidth: '95vw',
@@ -1830,6 +1857,10 @@ ET`;
   }
 
   onEliminar(item: any): void {
+    if (!this.canEditarPlanificar) {
+      this.toastr.warning('No cuentas con permisos para eliminar auditorías.', 'Acceso Restringido');
+      return;
+    }
     Swal.fire({
       title: '¿Desea eliminar la auditoría?, Confirme',
       icon: 'question',

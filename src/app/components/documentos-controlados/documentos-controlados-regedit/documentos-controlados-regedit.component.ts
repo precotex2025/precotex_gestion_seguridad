@@ -35,7 +35,7 @@ export class DocumentosControladosRegeditComponent implements OnInit {
 
   tipos = ['Procedimiento', 'Instructivo', 'Formato', 'Manual', 'Perfil de puesto', 'Politica', 'Plan', 'Registro'];
   formatos = ['PDF', 'Word', 'Excel'];
-  estados = ['Vigente', 'Por vencer', 'Obsoleto'];
+  estados = ['Vigente', 'Por vencer'];
 
   fileName: string = 'Ningún archivo cargado';
   selectedFile: File | null = null;
@@ -71,20 +71,22 @@ export class DocumentosControladosRegeditComponent implements OnInit {
     const initialProceso = row?.proceso || activeProcDestino || this.extraerProcesoDelCodigo(row?.codigo) || 'Organización y Métodos';
 
     if (row) {
-      if (row.modoVisibilidad) {
-        this.modoVisibilidad = row.modoVisibilidad;
-      } else if (row.procesosVisibles && row.procesosVisibles.includes('Todos los procesos')) {
-        this.modoVisibilidad = 'TODOS';
-      } else {
-        this.modoVisibilidad = 'PERSONALIZADO';
-      }
-
       if (row.procesos && Array.isArray(row.procesos) && row.procesos.length > 0) {
         this.procesosSeleccionados = [...row.procesos];
       } else if (row.procesosVisibles && Array.isArray(row.procesosVisibles) && row.procesosVisibles.length > 0 && !row.procesosVisibles.includes('Todos los procesos')) {
         this.procesosSeleccionados = [...row.procesosVisibles];
       } else if (row.proceso) {
         this.procesosSeleccionados = row.proceso.split(',').map((s: string) => s.trim()).filter(Boolean);
+      }
+
+      if (row.modoVisibilidad) {
+        this.modoVisibilidad = row.modoVisibilidad;
+      } else if (this.procesosSeleccionados.length > 0 && !this.procesosSeleccionados.includes('Todos los procesos')) {
+        this.modoVisibilidad = 'PERSONALIZADO';
+      } else if (row.procesosVisibles && row.procesosVisibles.includes('Todos los procesos')) {
+        this.modoVisibilidad = 'TODOS';
+      } else {
+        this.modoVisibilidad = 'PERSONALIZADO';
       }
     } else {
       if (activeProcDestino && activeProcDestino !== 'Todos los procesos') {
@@ -97,8 +99,10 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       }
     }
 
+    const cleanInitialNombre = (row?.nombre || '').replace(/\[PROCESOS:.*?\]/gi, '').trim();
+
     this.formulario = this.formBuilder.group({
-      nombre: [row?.nombre || '', Validators.required],
+      nombre: [cleanInitialNombre, Validators.required],
       codigo: [row?.codigo || '', Validators.required],
       tipo: [initialTipo],
       version: [initialVersion, Validators.required],
@@ -126,17 +130,19 @@ export class DocumentosControladosRegeditComponent implements OnInit {
         const autoVer = this.extraerVersionDelCodigo(codeStr);
         if (autoVer) patchObj.version = autoVer;
 
-        // Auto-extraer Proceso Responsable: Solo si no hay un proceso activo asignado
-        const currentActive = (this.data?.ActiveProcess || '').trim();
-        if (!currentActive || currentActive === 'Todos los procesos') {
-          const autoProc = this.extraerProcesoDelCodigo(codeStr);
-          if (autoProc) {
-            patchObj.proceso = autoProc;
-            if (this.modoVisibilidad === 'PERSONALIZADO' && !this.procesosSeleccionados.includes(autoProc)) {
-              if (this.procesosSeleccionados.length === 1 && this.procesosSeleccionados[0] === 'Organización y Métodos') {
-                this.procesosSeleccionados = [autoProc];
-              } else {
-                this.procesosSeleccionados.push(autoProc);
+        // Auto-extraer Proceso Responsable: Solo en altas ('I') y si no hay un proceso activo asignado
+        if (this.action === 'I') {
+          const currentActive = (this.data?.ActiveProcess || '').trim();
+          if (!currentActive || currentActive === 'Todos los procesos') {
+            const autoProc = this.extraerProcesoDelCodigo(codeStr);
+            if (autoProc) {
+              patchObj.proceso = autoProc;
+              if (this.modoVisibilidad === 'PERSONALIZADO' && !this.procesosSeleccionados.includes(autoProc)) {
+                if (this.procesosSeleccionados.length === 1 && this.procesosSeleccionados[0] === 'Organización y Métodos') {
+                  this.procesosSeleccionados = [autoProc];
+                } else {
+                  this.procesosSeleccionados.push(autoProc);
+                }
               }
             }
           }

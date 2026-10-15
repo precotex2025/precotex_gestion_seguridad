@@ -72,7 +72,7 @@
                  class="inline-search-input">
         </div>
 
-        <button type="button" class="btn-agregar-norma-premium" (click)="onAgregar()">
+        <button *ngIf="canCrearPlanificar" type="button" class="btn-agregar-norma-premium" (click)="onAgregar()">
           <mat-icon>add</mat-icon>
           <span>Planificar auditoría</span>
         </button>
@@ -167,10 +167,10 @@
               <button class="action-btn btn-download" (click)="onDescargarPlanificada(e)" title="Descargar documento adjunto">
                 <mat-icon>file_download</mat-icon>
               </button>
-              <button class="action-btn btn-edit" (click)="onEditar(e)" title="Editar auditoría">
+              <button *ngIf="canEditarPlanificar" class="action-btn btn-edit" (click)="onEditar(e)" title="Editar auditoría">
                 <mat-icon>edit</mat-icon>
               </button>
-              <button class="action-btn btn-delete" (click)="onEliminar(e)" title="Eliminar auditoría">
+              <button *ngIf="canEditarPlanificar" class="action-btn btn-delete" (click)="onEliminar(e)" title="Eliminar auditoría">
                 <mat-icon>delete</mat-icon>
               </button>
             </div>
@@ -248,7 +248,7 @@
           <span>Descargar reporte Excel</span>
         </button>
 
-        <button type="button" class="btn-agregar-norma-premium btn-ejecucion" (click)="onRegistrarEjecucion()">
+        <button *ngIf="canRegistrarHallazgo" type="button" class="btn-agregar-norma-premium btn-ejecucion" (click)="onRegistrarEjecucion()">
           <mat-icon>post_add</mat-icon>
           <span>Registrar hallazgo / evidencia</span>
         </button>
@@ -314,10 +314,10 @@
                 <button class="action-btn btn-download" (click)="onDescargarEjecucion(item)" title="Descargar documento adjunto">
                   <mat-icon>file_download</mat-icon>
                 </button>
-                <button class="action-btn btn-edit" (click)="onRegistrarEjecucion(item)" title="Editar hallazgo">
+                <button *ngIf="canRegistrarHallazgo" class="action-btn btn-edit" (click)="onRegistrarEjecucion(item)" title="Editar hallazgo">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <button class="action-btn btn-delete" (click)="onEliminarEjecucion(item)" title="Eliminar">
+                <button *ngIf="canRegistrarHallazgo" class="action-btn btn-delete" (click)="onEliminarEjecucion(item)" title="Eliminar">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>

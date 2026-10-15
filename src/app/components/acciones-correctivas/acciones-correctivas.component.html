@@ -385,7 +385,7 @@
 
           <div class="card-footer-row">
             <div class="card-actions-quick">
-              <button type="button" class="btn-quick-move btn-move-green" (click)="moverEstado(card, 'Cerrada', $event)" title="Mover a Cerrada">
+              <button *ngIf="canAprobarCierre" type="button" class="btn-quick-move btn-move-green" (click)="moverEstado(card, 'Cerrada', $event)" title="Mover a Cerrada">
                 <mat-icon>check</mat-icon> Cerrar
               </button>
             </div>
@@ -678,7 +678,7 @@
             <button type="button" class="btn-step-move btn-step-blue" *ngIf="!(selectedNc.estado || '').toLowerCase().includes('proceso')" (click)="onMoverEstadoDesdeDrawer('En proceso')">
               <mat-icon>trending_up</mat-icon> Pasar a En Proceso
             </button>
-            <button type="button" class="btn-step-move btn-step-green" *ngIf="!(selectedNc.estado || '').toLowerCase().includes('cerrad')" (click)="onMoverEstadoDesdeDrawer('Cerrada')">
+            <button type="button" class="btn-step-move btn-step-green" *ngIf="canAprobarCierre && !(selectedNc.estado || '').toLowerCase().includes('cerrad')" (click)="onMoverEstadoDesdeDrawer('Cerrada')">
               <mat-icon>check_circle</mat-icon> Marcar como Cerrada
             </button>
           </div>

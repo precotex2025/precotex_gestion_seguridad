@@ -3,7 +3,7 @@
 
 
   <!-- BANNER NOTIFICACIÓN -->
-  <div class="banner-aviso" style="margin-top: 15px;">
+  <div class="banner-aviso">
     <span>✦ Registro funcional. Pulsa <strong>Registrar medición</strong>, llena el formulario y guarda. Persiste aunque recargues.</span>
   </div>
 
@@ -53,7 +53,7 @@
 
       <!-- Objetivo -->
       <ng-container matColumnDef="objetivo">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 200px;">Objetivo</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 240px;">Objetivo</th>
         <td mat-cell *matCellDef="let row" class="norma-cell">
           <div class="cell-primary-text">{{ row.objetivo }}</div>
           <div class="cell-code-sub" *ngIf="row.codigoObjetivo">{{ row.codigoObjetivo }}</div>
@@ -62,7 +62,7 @@
 
       <!-- OBJ-07: Indicador -->
       <ng-container matColumnDef="indicador">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 170px;">Indicador</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px; min-width: 130px;">Indicador</th>
         <td mat-cell *matCellDef="let row">
           <span class="indicador-pill">{{ row.indicador || '—' }}</span>
         </td>
@@ -70,13 +70,13 @@
 
       <!-- Proceso -->
       <ng-container matColumnDef="proceso">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 120px;">Proceso</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 110px; min-width: 90px;">Proceso</th>
         <td mat-cell *matCellDef="let row" class="areas-cell">{{ row.proceso || '—' }}</td>
       </ng-container>
 
       <!-- OBJ-07: Resp. Seguimiento -->
       <ng-container matColumnDef="responsableSeguimiento">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 160px;">Resp. Seguimiento</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px; min-width: 130px;">Resp. Seguimiento</th>
         <td mat-cell *matCellDef="let row">
           <div class="resp-seguimiento-cell">
             <mat-icon class="icon-avatar">person</mat-icon>
@@ -87,27 +87,27 @@
 
       <!-- Frecuencia -->
       <ng-container matColumnDef="frecuencia">
-        <th mat-header-cell *matHeaderCellDef style="width: 100px;">Frecuencia</th>
-        <td mat-cell *matCellDef="let row">{{ row.frecuencia || '—' }}</td>
+        <th mat-header-cell *matHeaderCellDef style="width: 90px; text-align: center;">Frecuencia</th>
+        <td mat-cell *matCellDef="let row" style="text-align: center;">{{ row.frecuencia || '—' }}</td>
       </ng-container>
 
       <!-- Meta -->
       <ng-container matColumnDef="meta">
-        <th mat-header-cell *matHeaderCellDef style="width: 90px;">Meta</th>
-        <td mat-cell *matCellDef="let row" class="meta-cell">{{ row.meta || '—' }}</td>
+        <th mat-header-cell *matHeaderCellDef style="width: 75px; text-align: center;">Meta</th>
+        <td mat-cell *matCellDef="let row" class="meta-cell" style="text-align: center;">{{ row.meta || '—' }}</td>
       </ng-container>
 
       <!-- Valor Obtenido -->
       <ng-container matColumnDef="valor">
-        <th mat-header-cell *matHeaderCellDef style="width: 110px;">Valor Obtenido</th>
-        <td mat-cell *matCellDef="let row" [style.color]="getSemaforoColor(row.semaforo)" style="font-weight: 700; font-size: 0.88rem;">
+        <th mat-header-cell *matHeaderCellDef style="width: 90px; text-align: center;">Valor Obtenido</th>
+        <td mat-cell *matCellDef="let row" [style.color]="getSemaforoColor(row.semaforo)" style="font-weight: 700; font-size: 0.88rem; text-align: center;">
           {{ row.valor || '—' }}
         </td>
       </ng-container>
 
       <!-- OBJ-07: Avance (%) -->
       <ng-container matColumnDef="avance">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 130px;">Avance (%)</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 130px; min-width: 115px;">Avance (%)</th>
         <td mat-cell *matCellDef="let row">
           <div class="avance-cell-wrapper">
             <div class="avance-bar-bg">
@@ -120,7 +120,7 @@
 
       <!-- Estado -->
       <ng-container matColumnDef="semaforo">
-        <th mat-header-cell *matHeaderCellDef style="width: 110px;">Estado</th>
+        <th mat-header-cell *matHeaderCellDef style="width: 100px; text-align: center;">Estado</th>
         <td mat-cell *matCellDef="let row">
           <span [class]="'badge-estado-' + getSemaforoClass(row.semaforo)">
             {{ row.semaforo || '—' }}
@@ -130,11 +130,14 @@
 
       <!-- OBJ-07: Acciones -->
       <ng-container matColumnDef="acciones">
-        <th mat-header-cell *matHeaderCellDef style="width: 130px; text-align: center;">Acciones</th>
-        <td mat-cell *matCellDef="let e">
+        <th mat-header-cell *matHeaderCellDef style="width: 150px; min-width: 150px; text-align: center;">Acciones</th>
+        <td mat-cell *matCellDef="let e" style="width: 150px; min-width: 150px; text-align: center;">
           <div class="actions-wrapper">
-            <button class="action-btn btn-view" (click)="onVerDetalle(e)" title="Ver Detalle / Evidencia">
+            <button class="action-btn btn-view" (click)="onVerDetalle(e)" title="Ver Detalle">
               <mat-icon>visibility</mat-icon>
+            </button>
+            <button class="action-btn btn-download" (click)="onDescargar(e)" title="Descargar Documento / Informe">
+              <mat-icon>file_download</mat-icon>
             </button>
             <button class="action-btn btn-edit" (click)="onEditar(e)" title="Editar">
               <mat-icon>edit</mat-icon>

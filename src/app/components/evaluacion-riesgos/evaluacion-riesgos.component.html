@@ -1,15 +1,44 @@
 <div class="contenedor sn-animate-in">
 
-  <!-- BANNER NOTIFICACIÓN DISCRETO COLAPSABLE -->
-  <div class="banner-aviso-collapsible" *ngIf="mostrarBanner">
-    <div class="banner-info-left">
-      <mat-icon class="banner-info-icon">security</mat-icon>
-      <span>Matriz IPERC de evaluación de riesgos. Haz clic en cualquier fila para desplegar los <strong>detalles de
-          evaluación 5x5 y medidas de control</strong>.</span>
+    <!-- GUÍA DE REGISTRO: ¿QUÉ SE REGISTRA EN ESTE MÓDULO? (ISO 9001 vs SSOMA) -->
+  <div class="guide-box">
+    <h3 class="guide-header-title">📋 ¿Qué se registra en este módulo?</h3>
+
+    <div class="guide-cards-grid">
+      <div class="guide-card-item">
+        <span class="guide-card-tag tag-si">SÍ SE REGISTRA AQUÍ</span>
+        <p class="guide-card-desc">
+          Riesgos y oportunidades que afectan el <b>producto</b>, la <b>entrega</b>, el <b>cliente</b> o la <b>operación</b> de tu proceso.
+        </p>
+      </div>
+
+      <div class="guide-card-item">
+        <span class="guide-card-tag tag-no-ssoma">NO: PELIGROS A PERSONAS</span>
+        <p class="guide-card-desc">
+          Van en la <b>matriz IPERC</b>, a cargo de SSOMA.
+        </p>
+      </div>
+
+      <div class="guide-card-item">
+        <span class="guide-card-tag tag-no-amb">NO: ASPECTOS AMBIENTALES</span>
+        <p class="guide-card-desc">
+          Van en la <b>matriz de aspectos e impactos</b>, a cargo de SSOMA.
+        </p>
+      </div>
     </div>
-    <button type="button" class="btn-close-banner" (click)="cerrarBanner()" title="Cerrar aviso">
-      <mat-icon>close</mat-icon>
-    </button>
+
+    <div class="guide-footer-note">
+      ✓ Registra riesgos <b>reales</b>: los que ya causaron una NC, incidente o reclamo. Mejor pocos reales que muchos inventados.
+    </div>
+
+    <div class="guide-ssoma-actions">
+      <button type="button" class="btn-ssoma-quick" (click)="verIPERCArea()">
+        🔒 Ver IPERC de mi área
+      </button>
+      <button type="button" class="btn-ssoma-quick" (click)="verAspectosAmbientalesArea()">
+        🔒 Ver aspectos ambientales de mi área
+      </button>
+    </div>
   </div>
 
   <!-- ESTADÍSTICAS CARDS CON TOP GLOW (5 KPIS RIE-02) -->
@@ -67,84 +96,6 @@
        =================================================================== -->
   <ng-container *ngIf="activeSubTab === 'identificacion'">
 
-    <!-- MATRIZ DE EVALUACIÓN IPERC 5x5 (PROBABILIDAD x IMPACTO - PROTOTIPO) -->
-    <div class="matrix-panel shadow-premium">
-      <div class="matrix-header">
-        <div>
-          <h3 class="seccion-titulo-sm">Matriz de Evaluación (Probabilidad × Impacto)</h3>
-          <span class="matrix-subtitle">Metodología ISO 31000 · Haz clic en cualquier celda para filtrar los
-            riesgos</span>
-        </div>
-        <button *ngIf="cellFilter" type="button" class="btn-clear-cell" (click)="clearCellFilter()">
-          ✖ Limpiar filtro celda ({{ cellFilter }})
-        </button>
-      </div>
-
-      <div class="matrix-body-layout">
-        <div class="matrix-grid-wrapper">
-          <table class="matrix-table">
-            <thead>
-              <tr>
-                <th class="matrix-corner">IMPACTO \ PROB.</th>
-                <th>1 - Muy Baja</th>
-                <th>2 - Baja</th>
-                <th>3 - Media</th>
-                <th>4 - Alta</th>
-                <th>5 - Muy Alta</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let imp of [5, 4, 3, 2, 1]">
-                <td class="impact-label">
-                  {{ imp === 5 ? '5 - Catastrófico' : (imp === 4 ? '4 - Mayor' : (imp === 3 ? '3 - Moderado' : (imp ===
-                  2 ? '2 - Menor' : '1 - Insignificante'))) }}
-                </td>
-                <td *ngFor="let prob of [1, 2, 3, 4, 5]" class="matrix-cell"
-                  [class.cell-active]="cellFilter === prob + '-' + imp"
-                  [style.background]="getMatrixCellColor(prob, imp)" (click)="toggleMatrixCellFilter(prob, imp)"
-                  title="Probabilidad {{prob}} x Impacto {{imp}} = Score {{prob*imp}}">
-                  <span class="score-num">{{ prob * imp }}</span>
-                  <span class="count-badge" *ngIf="getMatrixCount(prob, imp) > 0">
-                    {{ getMatrixCount(prob, imp) }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- LEYENDA DE NIVELES SIDEBAR (RIE-03) -->
-        <div class="matrix-legend-box">
-          <div class="legend-title">Leyenda de Niveles (IPERC)</div>
-          <div class="legend-list">
-            <div class="legend-item">
-              <span class="legend-swatch swatch-alto"></span>
-              <div class="legend-text">
-                <strong style="color: #f0576b;">Alto (15 - 25)</strong>: Acción inmediata
-              </div>
-            </div>
-            <div class="legend-item">
-              <span class="legend-swatch swatch-medio"></span>
-              <div class="legend-text">
-                <strong style="color: #f0b429;">Medio (8 - 14)</strong>: Control específico
-              </div>
-            </div>
-            <div class="legend-item">
-              <span class="legend-swatch swatch-bajo"></span>
-              <div class="legend-text">
-                <strong style="color: #3ecf8e;">Bajo (1 - 7)</strong>: Riesgo aceptable
-              </div>
-            </div>
-          </div>
-
-          <div class="legend-footer-note">
-            💡 <strong>Tip:</strong> Haz clic en cualquier celda de la matriz 5x5 para filtrar automáticamente la tabla
-            IPERC por ese nivel específico.
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- BARRA DE HERRAMIENTAS INTEGRADA -->
     <div class="integrated-toolbar" style="flex-wrap: wrap; gap: 12px;">
       <div class="toolbar-title-section">
@@ -167,7 +118,13 @@
             placeholder="Buscar por código, descripción o responsable..." class="inline-search-input">
         </div>
 
-        <button type="button" class="btn-primary-glow" (click)="onAgregar()">
+                <!-- BOTÓN CRITERIOS DE EVALUACIÓN (Image 1) -->
+        <button type="button" class="btn-criterios-action" (click)="onAbrirCriterios()" title="Criterios de evaluación del riesgo (Escalas P, I, D y Reglas)">
+          <span class="icon-ruler-emoji">📏</span>
+          <span>Criterios de evaluación</span>
+        </button>
+
+<button *ngIf="canRegistrarRiesgo" type="button" class="btn-primary-glow" (click)="onAgregar()">
           <mat-icon>add</mat-icon>
           <span>Declarar riesgo</span>
         </button>
@@ -280,10 +237,10 @@
                   <button type="button" class="action-btn btn-download" (click)="onDescargarEvidencia(item)" title="Descargar documento de sustento / Matriz IPERC">
                     <mat-icon>file_download</mat-icon>
                   </button>
-                  <button class="action-btn btn-edit" (click)="onEdit(item)" title="Editar">
+                  <button *ngIf="canEditarRiesgo" class="action-btn btn-edit" (click)="onEdit(item)" title="Editar">
                     <mat-icon>edit</mat-icon>
                   </button>
-                  <button class="action-btn btn-delete" (click)="onDelete(item)" title="Eliminar">
+                  <button *ngIf="canEditarRiesgo" class="action-btn btn-delete" (click)="onDelete(item)" title="Eliminar">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </div>
@@ -503,7 +460,7 @@
                 <button type="button" class="action-btn btn-download" (click)="onDescargarEvidencia(item, $event)" title="Descargar documento de sustento / Matriz IPERC">
                   <mat-icon>file_download</mat-icon>
                 </button>
-                <button class="action-btn btn-edit" (click)="onActualizarControl(item, $event)"
+                <button *ngIf="canAprobarControl" class="action-btn btn-edit" (click)="onActualizarControl(item, $event)"
                   title="Actualizar seguimiento de control">
                   <mat-icon>edit_note</mat-icon>
                 </button>
@@ -526,3 +483,271 @@
   </ng-container>
 
 </div>
+
+<!-- ===================================================================
+     MODAL: CRITERIOS DE EVALUACIÓN DEL RIESGO (Imágenes 3, 4 y 5)
+     =================================================================== -->
+<ng-template #criteriosModal>
+  <div class="dialog-wrapper">
+    <!-- Top Accent Bar -->
+    <div class="dialog-top-bar"></div>
+
+    <!-- Header -->
+    <div class="dialog-header">
+      <div class="header-left">
+        <div class="header-icon-box">
+          <mat-icon>straighten</mat-icon>
+        </div>
+        <div class="header-text-group">
+          <h2 class="header-title">Criterios de evaluación del riesgo</h2>
+          <p class="header-subtitle">Usa siempre estas escalas. El sistema calcula el NPR y el nivel; no se escriben a mano.</p>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <button type="button" class="btn-close-modal" (click)="onCerrarCriterios()" title="Cerrar ventana">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Body Scrollable -->
+    <div class="dialog-body-scrollable">
+      
+      <!-- SECCIÓN P: PROBABILIDAD (Imagen 3) -->
+      <div class="criterios-section">
+        <div class="criterio-header-row">
+          <span class="badge-tag-modal badge-p">P</span>
+          <span class="criterio-title-text">Probabilidad · ¿cada cuánto ocurre?</span>
+        </div>
+        <table class="criterios-table">
+          <thead>
+            <tr>
+              <th style="width: 70px;">VALOR</th>
+              <th style="width: 140px;">NIVEL</th>
+              <th>CRITERIO</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-val">1</td>
+              <td class="col-nivel">Rara</td>
+              <td class="col-desc">No ha ocurrido en los últimos 3 años.</td>
+            </tr>
+            <tr>
+              <td class="col-val">2</td>
+              <td class="col-nivel">Improbable</td>
+              <td class="col-desc">Ocurrió 1 vez en los últimos 1 a 3 años.</td>
+            </tr>
+            <tr>
+              <td class="col-val">3</td>
+              <td class="col-nivel">Posible</td>
+              <td class="col-desc">Ocurre varias veces al año.</td>
+            </tr>
+            <tr>
+              <td class="col-val">4</td>
+              <td class="col-nivel">Probable</td>
+              <td class="col-desc">Ocurre todos los meses.</td>
+            </tr>
+            <tr>
+              <td class="col-val">5</td>
+              <td class="col-nivel">Casi segura</td>
+              <td class="col-desc">Ocurre cada semana o en cada pedido / lote.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SECCIÓN I: IMPACTO (Imagen 3) -->
+      <div class="criterios-section">
+        <div class="criterio-header-row">
+          <span class="badge-tag-modal badge-i">I</span>
+          <span class="criterio-title-text">Impacto · se toma el efecto más grave</span>
+        </div>
+        <table class="criterios-table">
+          <thead>
+            <tr>
+              <th style="width: 70px;">VALOR</th>
+              <th style="width: 140px;">NIVEL</th>
+              <th>EFECTO EN PRODUCTO, ENTREGA O CLIENTE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-val">1</td>
+              <td class="col-nivel">Insignificante</td>
+              <td class="col-desc">Sin efecto en el producto ni en el cliente.</td>
+            </tr>
+            <tr>
+              <td class="col-val">2</td>
+              <td class="col-nivel">Menor</td>
+              <td class="col-desc">Reproceso interno de menos de 1 día.</td>
+            </tr>
+            <tr>
+              <td class="col-val">3</td>
+              <td class="col-nivel">Moderado</td>
+              <td class="col-desc">Reproceso de lote o retraso interno; reclamo menor.</td>
+            </tr>
+            <tr>
+              <td class="col-val">4</td>
+              <td class="col-nivel">Mayor</td>
+              <td class="col-desc">Incumple la fecha de entrega o reclamo formal; NC menor en auditoría.</td>
+            </tr>
+            <tr>
+              <td class="col-val">5</td>
+              <td class="col-nivel">Catastrófico</td>
+              <td class="col-desc">Pérdida de pedido o cliente; NC mayor o pérdida de certificación.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SECCIÓN D: DETECCIÓN (Imagen 4) -->
+      <div class="criterios-section">
+        <div class="criterio-header-row">
+          <span class="badge-tag-modal badge-d">D</span>
+          <span class="criterio-title-text">Detección · aquí el 1 es lo mejor</span>
+        </div>
+        <table class="criterios-table">
+          <thead>
+            <tr>
+              <th style="width: 70px;">VALOR</th>
+              <th style="width: 140px;">NIVEL</th>
+              <th>CONTROL EXISTENTE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-val">1</td>
+              <td class="col-nivel">Casi segura</td>
+              <td class="col-desc">El sistema bloquea o el control es automático (ej. el ERP no deja avanzar).</td>
+            </tr>
+            <tr>
+              <td class="col-val">2</td>
+              <td class="col-nivel">Alta</td>
+              <td class="col-desc">Inspección al 100 % con registro.</td>
+            </tr>
+            <tr>
+              <td class="col-val">3</td>
+              <td class="col-nivel">Moderada</td>
+              <td class="col-desc">Muestreo o revisión periódica con registro.</td>
+            </tr>
+            <tr>
+              <td class="col-val">4</td>
+              <td class="col-nivel">Baja</td>
+              <td class="col-desc">Control visual informal; depende de la persona.</td>
+            </tr>
+            <tr>
+              <td class="col-val">5</td>
+              <td class="col-nivel">Nula</td>
+              <td class="col-desc">No hay control; se entera el cliente o la autoridad.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SECCIÓN NIVEL FINAL: NPR (Imagen 4) -->
+      <div class="criterios-section">
+        <div class="criterio-header-row">
+          <span class="criterio-title-text" style="font-weight: 800; font-size: 13.5px;">Nivel final · NPR = P × I × D (1 a 125)</span>
+        </div>
+
+        <div class="npr-levels-grid">
+          <div class="npr-level-card card-bajo">
+            <div class="npr-card-header">Bajo · 1 a 24</div>
+            <div class="npr-card-body">Riesgo aceptado. Se registra sin plan de acción; revisión anual.</div>
+          </div>
+
+          <div class="npr-level-card card-medio">
+            <div class="npr-card-header">Medio · 25 a 59</div>
+            <div class="npr-card-body">Plan de acción con responsable y plazo (máx. 90 días).</div>
+          </div>
+
+          <div class="npr-level-card card-alto">
+            <div class="npr-card-header">Alto · 60 a 125</div>
+            <div class="npr-card-body">Acción inmediata y escalamiento a gerencia.</div>
+          </div>
+        </div>
+
+        <!-- Reglas de evaluación (Imagen 4 footer) -->
+        <div class="eval-rules-notice-box">
+          <p>
+            <b>Reglas de evaluación:</b> (1) Si Impacto = 5, el nivel mínimo es Medio. (2) Detección 1 o 2 exige nombrar el control y su registro; sin evidencia, usar D = 4. (3) La probabilidad debe tener sustento (historial de NC, incidentes o reclamos). (4) Si ya ocurrió, no es un riesgo: se registra como incidencia o NC. (5) <b>Riesgo trivial:</b> Impacto 1 no se registra. (6) Peligros a personas y aspectos ambientales no van aquí: se gestionan en la IPERC y en la matriz de aspectos de SSOMA.
+          </p>
+        </div>
+      </div>
+
+      <!-- SECCIÓN REGLAS PARA SISTEMAS (Imagen 5) -->
+      <div class="criterios-section">
+        <div class="criterio-header-row">
+          <span class="criterio-title-text" style="font-weight: 800; font-size: 13.5px;">Reglas para Sistemas</span>
+        </div>
+        <table class="criterios-table">
+          <thead>
+            <tr>
+              <th style="width: 50px;">#</th>
+              <th style="width: 170px;">REGLA</th>
+              <th>COMPORTAMIENTO</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-val col-s-code">S1</td>
+              <td class="col-nivel">Campos automáticos</td>
+              <td class="col-desc">Código, período y cláusula (ISO 9001 · 6.1) los asigna el sistema; se muestran como etiquetas, no como campos.</td>
+            </tr>
+            <tr>
+              <td class="col-val col-s-code">S2</td>
+              <td class="col-nivel">Precarga</td>
+              <td class="col-desc">Sede y proceso se precargan del perfil del usuario (editables).</td>
+            </tr>
+            <tr>
+              <td class="col-val col-s-code">S3</td>
+              <td class="col-nivel">Cálculo</td>
+              <td class="col-desc">NPR = P × I × D; nivel y acción solo lectura. Regla de severidad (I = 5 → mínimo Medio).</td>
+            </tr>
+            <tr>
+              <td class="col-val col-s-code">S4</td>
+              <td class="col-nivel">Filtro trivial</td>
+              <td class="col-desc">Riesgo con I = 1: bloquear guardado y mostrar aviso.</td>
+            </tr>
+            <tr>
+              <td class="col-val col-s-code">S5</td>
+              <td class="col-nivel">Control obligatorio</td>
+              <td class="col-desc">D ≤ 2 exige el campo «Control actual y su registro».</td>
+            </tr>
+            <tr>
+              <td class="col-val col-s-code">S6</td>
+              <td class="col-nivel">Evidencia</td>
+              <td class="col-desc">Obligatoria si el estado no es «Controlado», excepto nivel Bajo (riesgo aceptado).</td>
+            </tr>
+            <tr>
+              <td class="col-val col-s-code">S7</td>
+              <td class="col-nivel">Validación SIG</td>
+              <td class="col-desc">Todo registro queda «Pendiente de validación SIG»; solo el perfil SIG aprueba u observa.</td>
+            </tr>
+            <tr>
+              <td class="col-val col-s-code">S8</td>
+              <td class="col-nivel">Oportunidad</td>
+              <td class="col-desc">Sin evaluación NPR ni control. Al aprobarse, se crea como iniciativa en el Portafolio de Mejora.</td>
+            </tr>
+            <tr>
+              <td class="col-val col-s-code">S9</td>
+              <td class="col-nivel">Consulta SSOMA</td>
+              <td class="col-desc">Botones de solo lectura a la IPERC y a la matriz de aspectos, filtradas por el área del usuario. No se editan desde aquí.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="dialog-footer">
+      <button type="button" class="btn-secondary" (click)="onCerrarCriterios()">
+        <mat-icon>close</mat-icon>
+        <span>Cerrar</span>
+      </button>
+    </div>
+  </div>
+</ng-template>

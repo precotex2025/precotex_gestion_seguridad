@@ -50,23 +50,35 @@ html {
   scroll-behavior: smooth;
 }
 
-/* --- Scrollbar Styling --- */
+/* --- Scrollbar Styling (Global High-Contrast & Visible) --- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #50617a #eaedf5;
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 11px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--panel-2);
+  background: #eaedf5;
+  border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--line);
-  border-radius: 3px;
+  background: #50617a;
+  border-radius: 6px;
+  border: 2px solid #eaedf5;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--faint);
+  background: #5b4bd6;
+  border: 2px solid #eaedf5;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #372aa4;
 }
 
 /* --- Animation Keyframes --- */
@@ -101,26 +113,98 @@ html {
   min-width: 650px !important;
 }
 
-.table-container, .tabla-wrapper, .table-panel {
+.table-container,
+.tabla-wrapper,
+.table-panel,
+.reporte-table-container,
+.custom-table-container,
+.mat-mdc-table-container,
+.mat-table-container,
+.table-responsive,
+.custom-scrollbar,
+div[style*="overflow-x: auto"] {
   width: 100% !important;
   overflow-x: auto !important;
   border-radius: 12px !important;
   background: var(--panel) !important;
   border: 1px solid var(--line) !important;
   box-shadow: 0 2px 10px rgba(30, 37, 69, 0.04) !important;
+  scrollbar-width: auto !important;
+  scrollbar-color: #475569 #e2e8f0 !important;
 }
 
-.table-container::-webkit-scrollbar {
-  height: 6px !important;
+.table-container::-webkit-scrollbar,
+.tabla-wrapper::-webkit-scrollbar,
+.table-panel::-webkit-scrollbar,
+.reporte-table-container::-webkit-scrollbar,
+.custom-table-container::-webkit-scrollbar,
+.mat-mdc-table-container::-webkit-scrollbar,
+.mat-table-container::-webkit-scrollbar,
+.table-responsive::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar,
+div[style*="overflow-x: auto"]::-webkit-scrollbar {
+  height: 12px !important;
+  width: 10px !important;
 }
 
-.table-container::-webkit-scrollbar-track {
-  background: var(--panel-2) !important;
+.table-container::-webkit-scrollbar-track,
+.tabla-wrapper::-webkit-scrollbar-track,
+.table-panel::-webkit-scrollbar-track,
+.reporte-table-container::-webkit-scrollbar-track,
+.custom-table-container::-webkit-scrollbar-track,
+.mat-mdc-table-container::-webkit-scrollbar-track,
+.mat-table-container::-webkit-scrollbar-track,
+.table-responsive::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track,
+div[style*="overflow-x: auto"]::-webkit-scrollbar-track {
+  background: #e2e8f0 !important;
+  border-top: 1.5px solid #cbd5e1 !important;
+  border-radius: 0 0 12px 12px !important;
 }
 
-.table-container::-webkit-scrollbar-thumb {
-  background: var(--line) !important;
-  border-radius: 3px !important;
+.table-container::-webkit-scrollbar-thumb,
+.tabla-wrapper::-webkit-scrollbar-thumb,
+.table-panel::-webkit-scrollbar-thumb,
+.reporte-table-container::-webkit-scrollbar-thumb,
+.custom-table-container::-webkit-scrollbar-thumb,
+.mat-mdc-table-container::-webkit-scrollbar-thumb,
+.mat-table-container::-webkit-scrollbar-thumb,
+.table-responsive::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb,
+div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb {
+  background: #475569 !important;
+  border-radius: 6px !important;
+  border: 2px solid #e2e8f0 !important;
+  min-width: 50px !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover,
+.tabla-wrapper::-webkit-scrollbar-thumb:hover,
+.table-panel::-webkit-scrollbar-thumb:hover,
+.reporte-table-container::-webkit-scrollbar-thumb:hover,
+.custom-table-container::-webkit-scrollbar-thumb:hover,
+.mat-mdc-table-container::-webkit-scrollbar-thumb:hover,
+.mat-table-container::-webkit-scrollbar-thumb:hover,
+.table-responsive::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb:hover {
+  background: #5b4bd6 !important;
+  border: 2px solid #e2e8f0 !important;
+}
+
+.table-container::-webkit-scrollbar-thumb:active,
+.tabla-wrapper::-webkit-scrollbar-thumb:active,
+.table-panel::-webkit-scrollbar-thumb:active,
+.reporte-table-container::-webkit-scrollbar-thumb:active,
+.custom-table-container::-webkit-scrollbar-thumb:active,
+.mat-mdc-table-container::-webkit-scrollbar-thumb:active,
+.mat-table-container::-webkit-scrollbar-thumb:active,
+.table-responsive::-webkit-scrollbar-thumb:active,
+.custom-scrollbar::-webkit-scrollbar-thumb:active,
+div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb:active {
+  background: #372aa4 !important;
+  border: 1px solid #e2e8f0 !important;
 }
 
 .mat-mdc-header-row, tr.mat-mdc-header-row, table.tabla thead tr, table.riesgos-table thead tr, .mat-header-row {
@@ -1298,3 +1382,37 @@ div.actions-wrapper.hover-fade {
   align-items: center !important;
   justify-content: center !important;
 }
+
+/* ===================================================================
+   ACTUALIZAR VERSIÓN DEL DOCUMENTO - MAT-DIALOG OVERLAY
+   =================================================================== */
+.actualizar-version-dialog-backdrop {
+  background: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.actualizar-version-dialog-panel .mat-mdc-dialog-container,
+.actualizar-version-dialog-panel .mat-mdc-dialog-container .mdc-dialog__surface,
+.actualizar-version-dialog-panel .mat-dialog-container {
+  padding: 0 !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.actualizar-version-dialog-panel .mdc-dialog__container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.actualizar-version-dialog-panel {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+

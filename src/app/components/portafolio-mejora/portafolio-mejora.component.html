@@ -14,7 +14,7 @@
 
     <div class="toolbar-actions-section">
       <!-- Primary Solid Glow Button -->
-      <button type="button" class="btn-primary-glow" (click)="onAgregar()">
+      <button *ngIf="canRegistrarIniciativa" type="button" class="btn-primary-glow" (click)="onAgregar()">
         <mat-icon>add</mat-icon>
         <span>+ Nueva iniciativa / incidencia</span>
       </button>
@@ -519,7 +519,7 @@
             <td mat-cell *matCellDef="let e" class="acciones-cell">
               <div class="actions-wrapper" style="display: flex; gap: 6px; justify-content: center;">
                 <!-- EDITAR -->
-                <button type="button" class="action-btn btn-edit" (click)="onEditar(e)" title="Editar registro"
+                <button *ngIf="canEditarIniciativa" type="button" class="action-btn btn-edit" (click)="onEditar(e)" title="Editar registro"
                   style="color: #818cf8; background: rgba(99,102,241,0.15);">
                   <mat-icon style="font-size: 18px; width: 18px; height: 18px;">edit</mat-icon>
                 </button>
@@ -534,7 +534,7 @@
                   <mat-icon style="font-size: 18px; width: 18px; height: 18px;">file_download</mat-icon>
                 </button>
                 <!-- ELIMINAR -->
-                <button type="button" class="action-btn btn-delete" (click)="onEliminar(e)" title="Eliminar registro"
+                <button *ngIf="canEditarIniciativa" type="button" class="action-btn btn-delete" (click)="onEliminar(e)" title="Eliminar registro"
                   style="color: #f87171; background: rgba(239,68,68,0.15);">
                   <mat-icon style="font-size: 18px; width: 18px; height: 18px;">delete</mat-icon>
                 </button>

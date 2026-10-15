@@ -435,3 +435,75 @@
   color: #ffffff;
 }
 
+
+
+/* --- Action Button Sizes & Styles --- */
+.action-btn {
+  border: none;
+  background: transparent;
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.action-btn mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.btn-view {
+  color: #0284c7 !important;
+  background: rgba(2, 132, 199, 0.08) !important;
+}
+
+.btn-view:hover {
+  background: rgba(2, 132, 199, 0.2) !important;
+  color: #0369a1 !important;
+  transform: translateY(-1px);
+}
+
+.btn-download {
+  color: #059669 !important;
+  background: rgba(5, 150, 105, 0.08) !important;
+}
+
+.btn-download:hover {
+  background: rgba(5, 150, 105, 0.2) !important;
+  color: #047857 !important;
+  transform: translateY(-1px);
+}
+
+.btn-edit {
+  color: #d97706 !important;
+  background: rgba(217, 119, 6, 0.08) !important;
+}
+
+.btn-edit:hover {
+  background: rgba(217, 119, 6, 0.2) !important;
+  color: #b45309 !important;
+  transform: translateY(-1px);
+}
+
+.btn-delete {
+  color: #dc2626 !important;
+  background: rgba(220, 38, 38, 0.08) !important;
+}
+
+.btn-delete:hover {
+  background: rgba(220, 38, 38, 0.2) !important;
+  color: #b91c1c !important;
+  transform: translateY(-1px);
+}
+
+::ng-deep .tabla .mat-mdc-cell:last-child,
+::ng-deep .tabla .mat-mdc-header-cell:last-child {
+  padding: 8px 6px !important;
+  text-align: center !important;
+}

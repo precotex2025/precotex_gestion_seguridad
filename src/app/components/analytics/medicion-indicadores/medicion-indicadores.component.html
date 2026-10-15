@@ -103,7 +103,7 @@
                class="inline-search-input">
       </div>
 
-      <button type="button" class="btn-primary-glow" (click)="onAgregar()">
+      <button *ngIf="canRegistrarMedicion" type="button" class="btn-primary-glow" (click)="onAgregar()">
         <mat-icon>add</mat-icon>
         <span>Registrar medición</span>
       </button>
@@ -176,10 +176,10 @@
             <button type="button" class="action-btn btn-download" (click)="onDescargarEvidencia(row)" title="Descargar documento de evidencia adjunto">
               <mat-icon>file_download</mat-icon>
             </button>
-            <button type="button" class="action-btn btn-doc" (click)="exportarFichaTecnica(row)" title="Exportar Ficha Técnica">
+            <button *ngIf="canExportarMedicion" type="button" class="action-btn btn-doc" (click)="exportarFichaTecnica(row)" title="Exportar Ficha Técnica">
               <mat-icon>description</mat-icon>
             </button>
-            <button type="button" class="action-btn btn-edit" (click)="onEditar(row)" title="Editar medición">
+            <button *ngIf="canRegistrarMedicion" type="button" class="action-btn btn-edit" (click)="onEditar(row)" title="Editar medición">
               <mat-icon>edit</mat-icon>
             </button>
           </div>

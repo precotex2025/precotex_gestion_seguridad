@@ -820,3 +820,507 @@
   width: 16px !important;
   height: 16px !important;
 }
+
+
+/* ===================================================================
+   GUÍA DE REGISTRO: ¿QUÉ SE REGISTRA EN ESTE MÓDULO? (ISO 9001 vs SSOMA)
+   =================================================================== */
+.guide-box {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.06);
+}
+
+.guide-header-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #065f46;
+  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.guide-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.guide-card-item {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  padding: 10px 14px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.guide-card-tag {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.guide-card-tag.tag-si {
+  color: #059669;
+}
+
+.guide-card-tag.tag-no-ssoma {
+  color: #dc2626;
+}
+
+.guide-card-tag.tag-no-amb {
+  color: #2563eb;
+}
+
+.guide-card-desc {
+  font-size: 11px;
+  color: #475569;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.guide-card-desc strong,
+.guide-card-desc b {
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.guide-footer-note {
+  font-size: 11.5px;
+  color: #065f46;
+  font-weight: 500;
+  margin: 6px 0 10px 0;
+}
+
+.guide-footer-note strong,
+.guide-footer-note b {
+  color: #047857;
+  font-weight: 700;
+}
+
+.guide-ssoma-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-ssoma-quick {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease;
+}
+
+.btn-ssoma-quick:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+
+/* ===================================================================
+   BOTÓN Y MODAL: CRITERIOS DE EVALUACIÓN DEL RIESGO (Imágenes 1, 3, 4, 5)
+   =================================================================== */
+
+/* Botón Toolbar (Image 1) */
+.btn-criterios-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2b3a55;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-criterios-action:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #1e293b;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.09);
+}
+
+.icon-ruler-emoji {
+  font-size: 14px;
+  display: inline-block;
+  transform: rotate(-10deg);
+}
+
+/* Modal Wrapper & Header (Alineado con Declarar Riesgo) */
+.dialog-wrapper {
+  position: relative;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  color: #0f172a;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.22), 0 0 0 1px #e2e8f0;
+}
+
+.dialog-top-bar {
+  height: 4px;
+  width: 100%;
+  background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+  flex-shrink: 0;
+}
+
+.dialog-header {
+  padding: 18px 24px 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.header-icon-box {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.14) 0%, rgba(139, 92, 246, 0.18) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6366f1;
+  box-shadow: 0 3px 8px rgba(99, 102, 241, 0.12);
+}
+
+.header-icon-box mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.header-text-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.header-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+.header-subtitle {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: 2px 0 0 0;
+  line-height: 1.3;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn-close-modal {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+}
+
+.btn-close-modal:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #ef4444;
+}
+
+.btn-close-modal mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* Modal Body Scrollable */
+.dialog-body-scrollable {
+  max-height: 72vh;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Sections & Badges */
+.criterios-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.criterio-header-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 8px;
+}
+
+.badge-tag-modal {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-p {
+  background: #eceefb;
+  color: #4f46e5;
+  border: 1px solid rgba(79, 70, 229, 0.2);
+}
+
+.badge-i {
+  background: #fde3d9;
+  color: #c2410c;
+  border: 1px solid rgba(194, 65, 12, 0.2);
+}
+
+.badge-d {
+  background: #e0e7ff;
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.criterio-title-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Criterios Tables */
+.criterios-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.criterios-table th {
+  background: #f8fafc;
+  color: #64748b;
+  text-transform: uppercase;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.criterios-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  font-size: 12px;
+}
+
+.criterios-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.criterios-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.col-val {
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.col-s-code {
+  color: #4f46e5;
+}
+
+.col-nivel {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.col-desc {
+  color: #475569;
+  line-height: 1.45;
+}
+
+/* NPR Levels Grid (Image 4) */
+.npr-levels-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+
+.npr-level-card {
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.npr-level-card.card-bajo {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.npr-level-card.card-bajo .npr-card-header {
+  font-size: 12px;
+  font-weight: 800;
+  color: #15803d;
+}
+
+.npr-level-card.card-bajo .npr-card-body {
+  font-size: 11px;
+  color: #166534;
+  line-height: 1.4;
+}
+
+.npr-level-card.card-medio {
+  background: #fffbeb;
+  border: 1px solid #fef08a;
+}
+
+.npr-level-card.card-medio .npr-card-header {
+  font-size: 12px;
+  font-weight: 800;
+  color: #b45309;
+}
+
+.npr-level-card.card-medio .npr-card-body {
+  font-size: 11px;
+  color: #854d0e;
+  line-height: 1.4;
+}
+
+.npr-level-card.card-alto {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.npr-level-card.card-alto .npr-card-header {
+  font-size: 12px;
+  font-weight: 800;
+  color: #b91c1c;
+}
+
+.npr-level-card.card-alto .npr-card-body {
+  font-size: 11px;
+  color: #991b1b;
+  line-height: 1.4;
+}
+
+/* Rules Notice Box */
+.eval-rules-notice-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 11.5px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.eval-rules-notice-box b {
+  color: #0f172a;
+}
+
+/* Footer Actions */
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  flex-shrink: 0;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-secondary:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.btn-secondary mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}

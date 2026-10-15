@@ -100,7 +100,7 @@
                class="inline-search-input">
       </div>
 
-      <button type="button" class="btn-primary-glow" (click)="onAgregar()">
+      <button *ngIf="canCrearEditar" type="button" class="btn-primary-glow" (click)="onAgregar()">
         <mat-icon>add</mat-icon>
         <span>Nuevo objetivo</span>
       </button>
@@ -190,16 +190,19 @@
 
       <!-- Acciones (OBJ-04) -->
       <ng-container matColumnDef="acciones">
-        <th mat-header-cell *matHeaderCellDef style="width: 120px; text-align: center;">Acciones</th>
-        <td mat-cell *matCellDef="let e" class="acciones-cell">
+        <th mat-header-cell *matHeaderCellDef style="width: 170px; min-width: 170px; text-align: center;">Acciones</th>
+        <td mat-cell *matCellDef="let e" class="acciones-cell" style="width: 170px; min-width: 170px; text-align: center;">
           <div class="actions-wrapper">
-            <button class="action-btn" (click)="onVerHistorialSeguimiento(e)" title="Seguimiento Mensual (OBJ-04)" style="color: #38bdf8; background: rgba(56,189,248,0.1);">
+            <button class="action-btn btn-view" (click)="onVerHistorialSeguimiento(e)" title="Seguimiento Mensual (OBJ-04)">
               <mat-icon>show_chart</mat-icon>
             </button>
-            <button class="action-btn btn-edit" (click)="onEditar(e)" title="Editar">
+            <button class="action-btn btn-download" (click)="onDescargar(e)" title="Descargar Ficha Técnica de Objetivo">
+              <mat-icon>file_download</mat-icon>
+            </button>
+            <button *ngIf="canCrearEditar" class="action-btn btn-edit" (click)="onEditar(e)" title="Editar">
               <mat-icon>edit</mat-icon>
             </button>
-            <button class="action-btn btn-delete" (click)="onEliminar(e)" title="Eliminar">
+            <button *ngIf="canCrearEditar" class="action-btn btn-delete" (click)="onEliminar(e)" title="Eliminar">
               <mat-icon>delete</mat-icon>
             </button>
           </div>

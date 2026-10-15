@@ -29,6 +29,23 @@
   <app-root></app-root>
   <!-- mammoth.js: Convierte archivos .docx a HTML para vista previa en el navegador (DOC-10) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+  <!-- Auto-recuperación de versiones antiguas: Si un usuario tiene caché vieja y falla al cargar un bundle nuevo, recarga automáticamente -->
+  <script>
+    window.addEventListener('error', function (e) {
+      var msg = (e && (e.message || (e.target && e.target.src))) || '';
+      var isChunkError = /Loading chunk|Failed to fetch dynamically imported module|Importing a module script failed/i.test(msg);
+      if (isChunkError) {
+        var key = 'preco_cache_bust_reload';
+        var last = sessionStorage.getItem(key);
+        var now = Date.now();
+        if (!last || (now - parseInt(last, 10)) > 15000) {
+          sessionStorage.setItem(key, now.toString());
+          window.location.reload(true);
+        }
+      }
+    }, true);
+  </script>
 </body>
 
 </html>

@@ -6,11 +6,11 @@
   <div class="dialog-header">
     <div class="header-left">
       <div class="header-icon-box">
-        <mat-icon>security</mat-icon>
+        <mat-icon>{{ formulario.get('naturaleza')?.value === 'O' ? 'lightbulb' : 'security' }}</mat-icon>
       </div>
       <div class="header-text-group">
         <h2 class="header-title">{{ cleanTitle }}</h2>
-        <p class="header-subtitle">Identificación de peligros, matriz IPERC 5x5 y planificación de medidas de control</p>
+        <p class="header-subtitle">Gestión de Riesgos y Oportunidades · ISO 9001:2015 Cláusula 6.1</p>
       </div>
     </div>
 
@@ -22,9 +22,9 @@
       </div>
 
       <!-- Badge de Nivel de Riesgo Calculado -->
-      <div class="nivel-badge-pill" [ngClass]="getNivelBadgeClass(formulario.get('nivel')?.value)">
+      <div class="nivel-badge-pill" [ngClass]="getNivelClass()">
         <span class="nivel-dot"></span>
-        <span>Riesgo {{ formulario.get('nivel')?.value || 'Medio' }}</span>
+        <span>{{ formulario.get('naturaleza')?.value === 'O' ? 'Oportunidad' : ('Riesgo ' + getNivel()) }}</span>
       </div>
 
       <button type="button" class="btn-close-modal" (click)="onCancelar()" title="Cerrar ventana">
@@ -33,393 +33,346 @@
     </div>
   </div>
 
-  <!-- Formulario -->
-  <form [formGroup]="formulario" (ngSubmit)="onGuardar()">
-    
-    <div class="form-scroll-container custom-scrollbar">
-      
-      <!-- RIE-18: BANNER DE NOTA EXPLICATIVA DEL FLUJO DE TRABAJO -->
-      <div class="iperc-flow-card">
-        <div class="flow-icon-box">
-          <mat-icon>info</mat-icon>
+  <form [formGroup]="formulario" (ngSubmit)="onGuardar()" class="modal-form-body">
+    <div class="dialog-body-scrollable">
+
+      <!-- BANNER NOTA SUPERIOR (Imagen 1) -->
+      <div class="modal-notice-banner">
+        Todo registro nace como <strong>«Pendiente de validación SIG»</strong>. Los riesgos se evalúan con <strong>P × I × D</strong> y nacen <strong>«Sin control»</strong>; las oportunidades pasan al <strong>Portafolio de Mejora</strong>. Peligros a personas y aspectos ambientales van en las matrices de SSOMA.
+      </div>
+
+      <!-- ===================================================================
+           SECCIÓN 1: IDENTIFICACIÓN (Imagen 1)
+           =================================================================== -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-title-left">
+            <span class="section-number-badge badge-num-1">1</span>
+            <span class="section-title-text">Identificación</span>
+          </div>
+          <span class="iso-clause-tag">ISO 9001 · 6.1</span>
         </div>
-        <div class="flow-card-content">
-          <strong class="flow-card-title">Flujo del Proceso de Gestión de Riesgos (IPERC):</strong>
-          <p class="flow-card-desc">
-            Todo nuevo riesgo declarado nace automáticamente en estado <span class="flow-status-tag">"Sin control" / "En seguimiento"</span>. 
-            Las medidas de control definitivas, sus evidencias y la revaluación del riesgo residual se gestionarán posteriormente en la pestaña <strong class="flow-highlight">"Seguimiento de controles"</strong>.
+
+        <!-- Selector: ¿Qué vas a registrar? (Riesgo vs Oportunidad) -->
+        <div class="nature-toggle-row">
+          <span class="nature-label">¿Qué vas a registrar?</span>
+          <div class="nature-btn-group">
+            <button type="button" class="btn-nature" [class.active]="formulario.get('naturaleza')?.value === 'R'" (click)="setNaturaleza('R')">
+              Riesgo
+            </button>
+            <button type="button" class="btn-nature" [class.active]="formulario.get('naturaleza')?.value === 'O'" (click)="setNaturaleza('O')">
+              Oportunidad
+            </button>
+          </div>
+        </div>
+
+        <!-- Barra: LO COMPLETA EL SISTEMA -->
+        <div class="system-pills-bar">
+          <span class="system-pills-label">LO COMPLETA EL SISTEMA</span>
+          <span class="system-pill">Código <b>{{ formulario.get('codigo')?.value || 'RSG-2026-001' }}</b></span>
+          <span class="system-pill">Período <b>{{ formulario.get('periodo')?.value || '2026' }}</b></span>
+          <span class="system-pill">Tipo <b>{{ formulario.get('tipo')?.value }}</b></span>
+          <span class="system-pill pill-wide">Cláusula <b>{{ formulario.get('clausula')?.value }}</b></span>
+        </div>
+
+        <!-- Campos de Sede, Proceso, Origen -->
+        <div class="form-grid-3 mt-3">
+          <div class="form-field-group">
+            <label class="field-label req">SEDE *</label>
+            <mat-select formControlName="sede" class="custom-select-input">
+              <mat-option *ngFor="let s of sedesOptions" [value]="s">{{ s }}</mat-option>
+            </mat-select>
+            <span class="field-subnote">Precargado de tu perfil</span>
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label req">PROCESO *</label>
+            <mat-select formControlName="proceso" class="custom-select-input">
+              <mat-optgroup *ngFor="let group of procesosGroups | keyvalue" [label]="group.key">
+                <mat-option *ngFor="let proc of group.value" [value]="proc">{{ proc }}</mat-option>
+              </mat-optgroup>
+            </mat-select>
+            <span class="field-subnote">Precargado de tu perfil</span>
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label req">ORIGEN (¿DE DÓNDE SALIÓ?) *</label>
+            <mat-select formControlName="origen" class="custom-select-input">
+              <mat-option *ngFor="let orig of origenesOptions" [value]="orig">{{ orig }}</mat-option>
+            </mat-select>
+            <span class="field-subnote">Ideal: algo real (NC, incidente, reclamo).</span>
+          </div>
+        </div>
+
+        <!-- Descripción del Riesgo / Oportunidad -->
+        <div class="form-field-group mt-3">
+          <label class="field-label req">
+            {{ formulario.get('naturaleza')?.value === 'O' ? 'DESCRIPCIÓN DE LA OPORTUNIDAD (¿QUÉ BENEFICIO SE BUSCA?) *' : 'DESCRIPCIÓN DEL RIESGO (¿QUÉ PUEDE PASAR?) *' }}
+          </label>
+          <textarea formControlName="descbrief" class="custom-textarea" rows="2"
+            [placeholder]="formulario.get('naturaleza')?.value === 'O' ? 'Ej. implementar lector de códigos de barras para acelerar la verificación' : 'Ej. que se corte con una tela distinta a la de la ficha técnica'">
+          </textarea>
+        </div>
+
+        <!-- Causa y Efecto -->
+        <div class="form-grid-2 mt-3">
+          <div class="form-field-group">
+            <label class="field-label req">
+              {{ formulario.get('naturaleza')?.value === 'O' ? 'POTENCIAL DE MEJORA O JUSTIFICACIÓN *' : 'CAUSA (¿POR QUÉ PASARÍA?) *' }}
+            </label>
+            <textarea formControlName="causaprobable" class="custom-textarea" rows="2"
+              [placeholder]="formulario.get('naturaleza')?.value === 'O' ? 'Ej. alto volumen de rollos ingresando en hora punta' : 'Ej. no se verifica el código de tela al recibir el rollo'">
+            </textarea>
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label req">
+              {{ formulario.get('naturaleza')?.value === 'O' ? 'BENEFICIO EN EL PRODUCTO, LA ENTREGA O EL CLIENTE *' : 'EFECTO EN EL PRODUCTO, LA ENTREGA O EL CLIENTE *' }}
+            </label>
+            <textarea formControlName="consecuenciapotencial" class="custom-textarea" rows="2"
+              [placeholder]="formulario.get('naturaleza')?.value === 'O' ? 'Ej. reducción de errores a 0 y despacho 20% más rápido' : 'Ej. reproceso del lote y retraso en la entrega'">
+            </textarea>
+          </div>
+        </div>
+
+        <!-- Caja: ASÍ SE LEERÁ TU RIESGO (Frase en lenguaje natural) -->
+        <div class="preview-sentence-box">
+          <span class="preview-box-label">{{ formulario.get('naturaleza')?.value === 'O' ? 'ASÍ SE LEERÁ TU OPORTUNIDAD' : 'ASÍ SE LEERÁ TU RIESGO' }}</span>
+          <p class="preview-sentence-text" *ngIf="formulario.get('naturaleza')?.value === 'R'">
+            Debido a <b>{{ formulario.get('causaprobable')?.value || '[causa]' }}</b>, puede ocurrir <b>{{ formulario.get('descbrief')?.value || '[evento]' }}</b>, lo que ocasionaría <b>{{ formulario.get('consecuenciapotencial')?.value || '[efecto]' }}</b>.
+          </p>
+          <p class="preview-sentence-text" *ngIf="formulario.get('naturaleza')?.value === 'O'">
+            A través de <b>{{ formulario.get('causaprobable')?.value || '[justificación]' }}</b>, se busca <b>{{ formulario.get('descbrief')?.value || '[iniciativa]' }}</b>, lo que permitiría <b>{{ formulario.get('consecuenciapotencial')?.value || '[beneficio]' }}</b>.
           </p>
         </div>
       </div>
 
-      <!-- ==================== SECCIÓN 1: IDENTIFICACIÓN DEL RIESGO ==================== -->
-      <div class="form-section">
-        <div class="section-header">
-          <div class="section-icon-box icon-purple">
-            <mat-icon>assignment</mat-icon>
-          </div>
-          <div class="section-header-text">
-            <span class="section-title">1. Identificación del Riesgo y Parámetros Operacionales</span>
-            <span class="section-desc">Ubicación física, marco normativo, proceso involucrado y descripción del peligro</span>
-          </div>
-        </div>
-
-        <!-- Fila 1: 4 Columnas (CÓDIGO, PERIODO, SEDE, TIPO) -->
-        <div class="form-row split-4">
-          <div class="form-field">
-            <label class="form-label">
-              <mat-icon class="label-icon">tag</mat-icon>
-              Código (Autogenerado)
-            </label>
-            <div class="input-wrapper">
-              <input type="text" 
-                     formControlName="codigo" 
-                     class="form-input readonly-code-input" 
-                     readonly 
-                     placeholder="RSG-2026-XXX">
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label class="form-label">
-              <mat-icon class="label-icon">calendar_today</mat-icon>
-              Periodo <span class="req">*</span>
-            </label>
-            <div class="input-wrapper select-wrapper">
-              <select formControlName="periodo" class="form-select font-medium">
-                <option *ngFor="let p of periodosOptions" [value]="p">{{ p }}</option>
-              </select>
-              <mat-icon class="select-chevron">expand_more</mat-icon>
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label class="form-label">
-              <mat-icon class="label-icon">business</mat-icon>
-              Sede <span class="req">*</span>
-            </label>
-            <div class="input-wrapper select-wrapper">
-              <select formControlName="sede" class="form-select font-medium">
-                <option *ngFor="let s of sedesOptions" [value]="s">{{ s }}</option>
-              </select>
-              <mat-icon class="select-chevron">expand_more</mat-icon>
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label class="form-label">
-              <mat-icon class="label-icon">verified_user</mat-icon>
-              Tipo / Norma <span class="req">*</span>
-            </label>
-            <div class="input-wrapper select-wrapper">
-              <select formControlName="tipo" class="form-select font-medium">
-                <option *ngFor="let opt of tiposOptions" [value]="opt">{{ opt }}</option>
-              </select>
-              <mat-icon class="select-chevron">expand_more</mat-icon>
-            </div>
-          </div>
-        </div>
-
-        <!-- Fila 2: 2 Columnas (CLÁUSULA ISO, PROCESO) -->
-        <div class="form-row split-2 mt-3">
-          <div class="form-field">
-            <label class="form-label">
-              <mat-icon class="label-icon">rule</mat-icon>
-              Cláusula / Requisito ISO <span class="req">*</span>
-            </label>
-            <div class="input-wrapper">
-              <input type="text" 
-                     formControlName="clausula" 
-                     list="clausulasList" 
-                     class="form-input" 
-                     placeholder="Selecciona de la lista o escribe una cláusula...">
-              <datalist id="clausulasList">
-                <option *ngFor="let c of clausulasOptions" [value]="c"></option>
-              </datalist>
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label class="form-label">
-              <mat-icon class="label-icon">account_tree</mat-icon>
-              Proceso <span class="req">*</span>
-            </label>
-            <div class="input-wrapper select-wrapper">
-              <select formControlName="proceso" class="form-select">
-                <optgroup *ngFor="let key of getProcesosKeys()" [label]="key">
-                  <option *ngFor="let proc of procesosGroups[key]" [value]="proc">{{ proc }}</option>
-                </optgroup>
-              </select>
-              <mat-icon class="select-chevron">expand_more</mat-icon>
-            </div>
-          </div>
-        </div>
-
-        <!-- Fila 3: DESCRIPCIÓN DE PELIGRO / RIESGO -->
-        <div class="form-field full-width mt-3">
-          <label class="form-label">
-            <mat-icon class="label-icon">warning_amber</mat-icon>
-            Descripción de Peligro / Riesgo <span class="req">*</span>
-          </label>
-          <div class="input-wrapper">
-            <input type="text" 
-                   formControlName="descbrief" 
-                   class="form-input font-medium" 
-                   placeholder="Ej. Falla eléctrica en tablero principal de planta de corte por sobrecalentamiento">
-          </div>
-        </div>
-
-        <!-- Fila 4: CAUSA PROBABLE y CONSECUENCIA POTENCIAL -->
-        <div class="form-row split-2 mt-3">
-          <div class="form-field">
-            <label class="form-label">
-              <mat-icon class="label-icon">help_outline</mat-icon>
-              Causa Probable
-            </label>
-            <div class="input-wrapper">
-              <textarea formControlName="causaprobable" 
-                        class="form-input form-textarea" 
-                        rows="2" 
-                        placeholder="Ej. Desgaste por uso continuo, falta de inspección o procedimiento no actualizado..."></textarea>
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label class="form-label">
-              <mat-icon class="label-icon">report_problem</mat-icon>
-              Consecuencia Potencial
-            </label>
-            <div class="input-wrapper">
-              <textarea formControlName="consecuenciapotencial" 
-                        class="form-input form-textarea" 
-                        rows="2" 
-                        placeholder="Ej. Lesión o quemadura de personal, paralización de línea o daño patrimonial..."></textarea>
-            </div>
-          </div>
+      <!-- ===================================================================
+           CASO OPORTUNIDAD: NOTA EXPLICATIVA
+           =================================================================== -->
+      <div class="opportunity-notice-card" *ngIf="formulario.get('naturaleza')?.value === 'O'">
+        <mat-icon class="opp-icon">tips_and_updates</mat-icon>
+        <div>
+          <strong>Las oportunidades no se evalúan con NPR.</strong>
+          <p>Al aprobarla, el SIG la deriva directamente al <b>Portafolio de Mejora</b> para su gestión y seguimiento.</p>
         </div>
       </div>
 
-      <!-- ==================== SECCIÓN 2: EVALUACIÓN DEL RIESGO (MATRIZ IPERC 5x5) ==================== -->
-      <div class="form-section">
-        <div class="section-header">
-          <div class="section-icon-box icon-blue">
-            <mat-icon>analytics</mat-icon>
+      <!-- ===================================================================
+           SECCIÓN 2: EVALUACIÓN DEL RIESGO (P × I × D) (Imagen 2)
+           =================================================================== -->
+      <div class="section-card" *ngIf="formulario.get('naturaleza')?.value === 'R'">
+        <div class="section-card-header">
+          <div class="section-title-left">
+            <span class="section-number-badge badge-num-2">2</span>
+            <span class="section-title-text">Evaluación del riesgo (Probabilidad × Impacto × Detección)</span>
           </div>
-          <div class="section-header-text">
-            <span class="section-title">2. Evaluación Cuantitativa del Riesgo (Matriz IPERC 5x5)</span>
-            <span class="section-desc">Ponderación visual e interactiva de Probabilidad e Impacto con nivel autocalculado</span>
-          </div>
+          <button type="button" class="btn-link-criterios" (click)="onAbrirCriteriosPuntuacion()">
+            📏 Ver criterios de puntuación
+          </button>
         </div>
 
-        <!-- RIE-13: SECCIÓN MATRIZ DE EVALUACIÓN VISUAL 5x5 INTERACTIVA -->
-        <div class="matriz-iperc-card">
-          <div class="matriz-header-bar">
-            <div class="matriz-title-group">
-              <mat-icon class="matriz-icon">grid_on</mat-icon>
-              <span class="matriz-title">Matriz Visual de Evaluación (Probabilidad x Impacto)</span>
-            </div>
-            
-            <div class="matriz-score-badge">
-              <span>Score: <strong class="score-val">{{ getScoreCalculado() }}</strong></span>
-              <span class="badge-separator"></span>
-              <span>Nivel: <strong [style.color]="getNivelColor(formulario.get('nivel')?.value)">{{ formulario.get('nivel')?.value }}</strong></span>
-            </div>
-          </div>
-
-          <div class="matriz-body-grid">
-            <!-- Mini Matriz 5x5 -->
-            <div class="matriz-grid-container">
-              <div class="matriz-cols-header">
-                <div></div>
-                <div>I1</div><div>I2</div><div>I3</div><div>I4</div><div>I5</div>
-              </div>
-              <div *ngFor="let p of probRows" class="matriz-row">
-                <div class="matriz-row-label">P{{ p }}</div>
-                <div *ngFor="let i of impCols" 
-                     (click)="seleccionarCeldaMatriz(p, i)"
-                     [style.background]="getCeldaColorMatriz(p, i)"
-                     [class.celda-activa]="isCeldaSeleccionada(p, i)"
-                     class="matriz-celda"
-                     title="P: {{p}} x I: {{i}} = {{p * i}}">
-                  {{ p * i }}
-                </div>
-              </div>
-            </div>
-
-            <!-- Panel Explicativo y Leyenda -->
-            <div class="matriz-legend-panel">
-              <div class="legend-header-text">Selección Rápida e Interactiva:</div>
-              <p class="legend-desc">
-                Haz clic en cualquier celda de la matriz 5x5 para actualizar de inmediato los valores de Probabilidad e Impacto.
-              </p>
-              <div class="legend-pills-row">
-                <span class="legend-pill pill-alto">🔴 Alto (15 - 25)</span>
-                <span class="legend-pill pill-medio">🟡 Medio (8 - 14)</span>
-                <span class="legend-pill pill-bajo">🟢 Bajo (1 - 7)</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Fila Evaluativa: PROBABILIDAD, IMPACTO, NIVEL AUTOCALCULADO -->
-        <div class="form-row split-3 mt-3">
-          <div class="form-field">
-            <label class="form-label">
-              <mat-icon class="label-icon">speed</mat-icon>
-              Probabilidad (1 - 5) <span class="req">*</span>
-            </label>
-            <div class="input-wrapper select-wrapper">
-              <select formControlName="probabilidad" class="form-select font-bold">
-                <option [value]="1">1 - Muy Baja</option>
-                <option [value]="2">2 - Baja</option>
-                <option [value]="3">3 - Media</option>
-                <option [value]="4">4 - Alta</option>
-                <option [value]="5">5 - Muy Alta</option>
-              </select>
-              <mat-icon class="select-chevron">expand_more</mat-icon>
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label class="form-label">
-              <mat-icon class="label-icon">crisis_alert</mat-icon>
-              Impacto (1 - 5) <span class="req">*</span>
-            </label>
-            <div class="input-wrapper select-wrapper">
-              <select formControlName="impacto" class="form-select font-bold">
-                <option [value]="1">1 - Insignificante</option>
-                <option [value]="2">2 - Menor</option>
-                <option [value]="3">3 - Moderado</option>
-                <option [value]="4">4 - Mayor</option>
-                <option [value]="5">5 - Catastrófico</option>
-              </select>
-              <mat-icon class="select-chevron">expand_more</mat-icon>
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label class="form-label">
-              <mat-icon class="label-icon">shield</mat-icon>
-              Nivel Residual (Autocalculado)
-            </label>
-            <div class="input-wrapper">
-              <input type="text" 
-                     formControlName="nivel" 
-                     class="form-input font-bold nivel-residual-input" 
-                     readonly 
-                     [style.background]="getNivelBg(formulario.get('nivel')?.value)"
-                     [style.color]="getNivelColor(formulario.get('nivel')?.value)"
-                     title="Cálculo automático: Probabilidad x Impacto (Matriz 5x5)">
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ==================== SECCIÓN 3: PLANIFICACIÓN DEL CONTROL ==================== -->
-      <div class="form-section">
-        <div class="section-header">
-          <div class="section-icon-box icon-emerald">
-            <mat-icon>build_circle</mat-icon>
-          </div>
-          <div class="section-header-text">
-            <span class="section-title">3. Planificación y Medidas de Control Propuestas</span>
-            <span class="section-desc">Asignación de liderazgo, propuesta inicial de control y documento de sustento</span>
-          </div>
-        </div>
-
-        <!-- Fila Planificación: RESPONSABLE -->
-        <div class="form-field full-width">
-          <label class="form-label">
-            <mat-icon class="label-icon">person</mat-icon>
-            Responsable (Dueño del Proceso) <span class="req">*</span>
-          </label>
-          <div class="input-wrapper">
-            <input type="text" 
-                   formControlName="responsable" 
-                   class="form-input font-medium" 
-                   placeholder="Ej. Ing. Juan Pérez (Jefe de Planta / Dueño del Proceso)">
-          </div>
-        </div>
-
-        <!-- Fila: MEDIDA DE CONTROL PROPUESTA -->
-        <div class="form-field full-width mt-3">
-          <div class="label-row-with-badge">
-            <label class="form-label">
-              <mat-icon class="label-icon">fact_check</mat-icon>
-              Medida de Control Propuesta Inicial <span class="req">*</span>
-            </label>
-            <span class="control-note-hint">
-              <mat-icon class="note-icon">info_outline</mat-icon>
-              Gestionable en "Seguimiento de controles"
+        <!-- Matriz Interactiva 5x5 -->
+        <div class="inherent-matrix-card">
+          <div class="inherent-matrix-top">
+            <span class="inherent-title">RIESGO INHERENTE · PROB × IMPACTO (SIN CONTROLES)</span>
+            <span class="inherent-summary">
+              P×I: <b>{{ getScoreInherente() }}</b> · NPR: <b>{{ getNpr() }}</b> · Nivel: <b [style.color]="getNivelColor()">{{ getNivel() }}</b>
             </span>
           </div>
-          <div class="input-wrapper">
-            <textarea formControlName="medidacontrol" 
-                      class="form-input form-textarea" 
-                      rows="3" 
-                      placeholder="Ej. Propuesta inicial: Inspección técnica mensual de tableros, rotulado de seguridad eléctrica y uso estricto de EPP dieléctrico..."></textarea>
+
+          <div class="inherent-matrix-content">
+            <!-- 5x5 Grid Table -->
+            <table class="matrix-5x5-table">
+              <tbody>
+                <tr *ngFor="let imp of [5, 4, 3, 2, 1]">
+                  <td *ngFor="let prob of [1, 2, 3, 4, 5]"
+                      class="cell-5x5"
+                      [class.cell-active]="getProb() === prob && getImp() === imp"
+                      [class.score-red]="prob * imp >= 15"
+                      [class.score-amber]="prob * imp >= 8 && prob * imp < 15"
+                      [class.score-green]="prob * imp < 8"
+                      (click)="pickMatrixCell(prob, imp)"
+                      [title]="'P: ' + prob + ' x I: ' + imp + ' = ' + (prob * imp)">
+                    {{ prob * imp }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Explicación y Leyenda -->
+            <div class="matrix-explanation-side">
+              <p class="matrix-instruction-text">
+                Haz clic en una celda para fijar <b>Probabilidad × Impacto</b>. Luego elige la <b>Detección</b>: el nivel final sale del <b>NPR = P × I × D</b>.
+              </p>
+              <div class="inherent-badges-row">
+                <span class="tag-badge-inherente tag-inh-alto">Inherente alto (15-25)</span>
+                <span class="tag-badge-inherente tag-inh-medio">Medio (8-14)</span>
+                <span class="tag-badge-inherente tag-inh-bajo">Bajo (1-7)</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- DOCUMENTO / EVIDENCIA DE SUSTENTO -->
-        <div class="form-field full-width mt-3">
-          <label class="form-label">
-            <mat-icon class="label-icon">cloud_upload</mat-icon>
-            Documento de Sustento / Matriz IPERC (Opcional)
+        <!-- Dropdowns de P, I, D (Imagen 2) -->
+        <div class="form-grid-3 mt-3">
+          <!-- Probabilidad -->
+          <div class="form-field-group">
+            <label class="field-label req">PROBABILIDAD (1-5) · ¿CADA CUÁNTO OCURRE? *</label>
+            <mat-select formControlName="probabilidad" class="custom-select-input">
+              <mat-option *ngFor="let p of probOptions" [value]="p.val">{{ p.label }}</mat-option>
+            </mat-select>
+            <div class="criterio-helper-box">
+              {{ getProbCriterioText() }}
+            </div>
+          </div>
+
+          <!-- Impacto -->
+          <div class="form-field-group">
+            <label class="field-label req">IMPACTO (1-5) · SI OCURRE, ¿QUÉ TAN GRAVE? *</label>
+            <mat-select formControlName="impacto" class="custom-select-input">
+              <mat-option *ngFor="let i of impOptions" [value]="i.val">{{ i.label }}</mat-option>
+            </mat-select>
+            <div class="criterio-helper-box">
+              {{ getImpCriterioText() }}
+            </div>
+          </div>
+
+          <!-- Detección -->
+          <div class="form-field-group">
+            <label class="field-label req">DETECCIÓN (1-5) · ¿LO DETECTAMOS A TIEMPO? *</label>
+            <mat-select formControlName="deteccion" class="custom-select-input">
+              <mat-option *ngFor="let d of detOptions" [value]="d.val">{{ d.label }}</mat-option>
+            </mat-select>
+            <div class="criterio-helper-box">
+              {{ getDetCriterioText() }}
+            </div>
+            <span class="detection-bottom-tip">Aquí el 1 es lo mejor: un buen control baja el puntaje.</span>
+          </div>
+        </div>
+
+        <!-- Inputs de Sustento de Probabilidad y Control Actual (Imagen 2) -->
+        <div class="form-grid-2 mt-3">
+          <div class="form-field-group">
+            <label class="field-label req">SUSTENTO DE LA PROBABILIDAD *</label>
+            <input type="text" formControlName="sustentoProbabilidad" class="custom-text-input"
+              placeholder="Ej. 3 incidencias en 2026 según registro de NC" />
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label" [class.req]="getDet() <= 2">
+              CONTROL ACTUAL QUE LO DETECTA (SI LO HAY) {{ getDet() <= 2 ? '*' : '' }}
+            </label>
+            <input type="text" formControlName="controlActual" class="custom-text-input"
+              placeholder="Ej. Check list firmado por supervisor en cada lote" />
+          </div>
+        </div>
+
+        <!-- Mensajes de Alerta Especiales -->
+        <div class="banner-trivial-warning mt-3" *ngIf="isTrivial()">
+          ✕ <strong>Riesgo trivial (Impacto 1):</strong> no se registra. Si sí tiene efecto, revisa el puntaje de Impacto.
+        </div>
+
+        <div class="banner-severity-warning mt-3" *ngIf="isElevadoSeveridad()">
+          ⚠ Se elevó a <strong>Medio</strong>: con Impacto 5 el nivel mínimo es Medio, aunque la detección sea buena.
+        </div>
+      </div>
+
+      <!-- ===================================================================
+           NPR RESULT BANNER & SECCIÓN 3: PLANIFICACIÓN Y CONTROL (Imagen 3)
+           =================================================================== -->
+      <!-- NPR Result Banner (Imagen 3) -->
+      <div class="npr-summary-banner" *ngIf="formulario.get('naturaleza')?.value === 'R'">
+        <div class="npr-left-data">
+          <div class="npr-big-value">
+            <span class="npr-label-tiny">NPR (P × I × D)</span>
+            <span class="npr-number-display">{{ getNpr() }}</span>
+          </div>
+          <div class="npr-formula-tag">{{ getProb() }} × {{ getImp() }} × {{ getDet() }} = {{ getNpr() }}</div>
+          <span class="npr-level-pill" [ngClass]="getNivelClass()">{{ getNivel() }}</span>
+        </div>
+
+        <div class="npr-right-action">
+          <span *ngIf="isTrivial()" class="text-trivial-alert">No se registra: riesgo trivial.</span>
+          <span *ngIf="!isTrivial() && getNivel() === 'Alto'">Acción inmediata y escalamiento a gerencia.</span>
+          <span *ngIf="!isTrivial() && getNivel() === 'Medio'">Plan de acción con responsable y plazo (máx. 90 días).</span>
+          <span *ngIf="!isTrivial() && getNivel() === 'Bajo'">Riesgo aceptado. Revisión anual sin plan de acción.</span>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 3: PLANIFICACIÓN Y CONTROL (Imagen 3) -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-title-left">
+            <span class="section-number-badge badge-num-3">3</span>
+            <span class="section-title-text">Planificación y control</span>
+          </div>
+        </div>
+
+        <!-- Responsable -->
+        <div class="form-field-group">
+          <label class="field-label req">RESPONSABLE (DUEÑO DEL PROCESO) *</label>
+          <input type="text" formControlName="responsable" class="custom-text-input"
+            placeholder="Ej. Ing. Juan Pérez (dueño del proceso)" />
+        </div>
+
+        <!-- Estado del control & Medida de control -->
+        <div class="form-grid-2 mt-3">
+          <div class="form-field-group">
+            <label class="field-label req">ESTADO DEL CONTROL *</label>
+            <mat-select formControlName="estado" class="custom-select-input">
+              <mat-option *ngFor="let est of estadosOptions" [value]="est">{{ est }}</mat-option>
+            </mat-select>
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label">MEDIDA DE CONTROL PROPUESTA</label>
+            <input type="text" formControlName="medidacontrol" class="custom-text-input"
+              placeholder="Ej. Inspección + control operacional" />
+          </div>
+        </div>
+
+        <!-- Frecuencia de revisión & Próxima revisión -->
+        <div class="form-grid-2 mt-3">
+          <div class="form-field-group">
+            <label class="field-label req">FRECUENCIA DE REVISIÓN *</label>
+            <mat-select formControlName="frecuenciaRevision" class="custom-select-input">
+              <mat-option *ngFor="let frec of frecuenciasOptions" [value]="frec">{{ frec }}</mat-option>
+            </mat-select>
+          </div>
+
+          <div class="form-field-group">
+            <label class="field-label req">PRÓXIMA REVISIÓN DE LA MATRIZ *</label>
+            <input type="date" formControlName="revision" class="custom-text-input" />
+          </div>
+        </div>
+
+        <span class="field-subnote" style="margin-top: 6px; display: block;">
+          La frecuencia de revisión es lo que más revisan los auditores: demuestra que la matriz se mantiene viva.
+        </span>
+
+        <!-- Subida de Archivo de Sustento -->
+        <div class="upload-section-container mt-3">
+          <label class="field-label" [class.req]="isArchivoObligatorio()">
+            {{ isArchivoObligatorio() ? 'DOCUMENTO DE SUSTENTO (OBLIGATORIO: RIESGO NO CONTROLADO) *' : 'DOCUMENTO DE SUSTENTO (OPCIONAL: RIESGO ACEPTADO)' }}
           </label>
-          
-          <div class="file-upload-card" 
-               [class.dragging]="isDragging"
-               (dragover)="onDragOver($event)" 
-               (dragleave)="onDragLeave($event)" 
-               (drop)="onFileDropped($event)"
-               (click)="fileInput.click()">
-            
-            <input #fileInput 
-                   type="file" 
-                   (change)="onFileSelected($event)" 
-                   accept=".pdf,.xlsx,.xls,.doc,.docx,.png,.jpg,.jpeg" 
-                   style="display: none;">
 
-            <div *ngIf="!nombreArchivoEvidencia" class="dropzone-placeholder">
-              <div class="dropzone-icon-box">
-                <mat-icon>cloud_upload</mat-icon>
-              </div>
-              <div class="dropzone-text-primary">
-                <strong>Haz clic aquí</strong> para seleccionar o arrastra tu archivo de sustento
-              </div>
-              <div class="dropzone-text-sub">
-                Formatos compatibles: PDF, Excel (.xlsx, .xls), Word (.docx) o Imágenes — Máx. 10 MB
-              </div>
-            </div>
+          <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none;"
+            accept=".pdf,.xlsx,.xls,.docx,.doc,image/*" />
 
-            <div *ngIf="nombreArchivoEvidencia" class="file-selected-badge" (click)="$event.stopPropagation()">
-              <div class="file-info-left" (click)="onDescargarArchivoModal($event)" style="cursor: pointer;" title="Haz clic para descargar el archivo adjunto">
-                <div class="file-icon-box">
-                  <mat-icon>verified</mat-icon>
-                </div>
-                <div class="file-details">
-                  <span class="file-name">{{ nombreArchivoEvidencia }}</span>
-                  <span class="file-status">✓ Documento adjuntado · Clic para descargar</span>
-                </div>
-              </div>
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <button type="button" 
-                        class="btn-download-file-modal" 
-                        (click)="onDescargarArchivoModal($event)" 
-                        title="Descargar documento adjunto">
-                  <mat-icon>file_download</mat-icon>
-                </button>
-                <button *ngIf="data.Accion !== 'V'" 
-                        type="button" 
-                        class="btn-remove-file" 
-                        (click)="onRemoveFile($event)" 
-                        title="Quitar archivo adjunto">
-                  <mat-icon>close</mat-icon>
-                </button>
-              </div>
-            </div>
+          <div class="upload-dropzone-box" (click)="fileInput.click()">
+            <mat-icon class="upload-cloud-icon">cloud_upload</mat-icon>
+            <span class="upload-instruction-text">
+              <strong>Haz clic aquí</strong> para seleccionar o arrastrar · PDF, Excel, Word, imagen · máx. 10 MB
+            </span>
+          </div>
 
+          <div class="selected-file-pill" *ngIf="nombreArchivoEvidencia">
+            <mat-icon class="file-icon">attach_file</mat-icon>
+            <span class="file-name">{{ nombreArchivoEvidencia }}</span>
+            <button type="button" class="btn-remove-file" (click)="onRemoveFile($event)" title="Quitar archivo">
+              <mat-icon>close</mat-icon>
+            </button>
           </div>
         </div>
       </div>
@@ -430,14 +383,50 @@
     <div class="dialog-footer">
       <button type="button" class="btn-secondary" (click)="onCancelar()">
         <mat-icon>close</mat-icon>
-        <span>{{ data.Accion === 'V' ? 'Cerrar' : 'Cancelar' }}</span>
+        <span>Cancelar</span>
       </button>
 
-      <button *ngIf="data.Accion !== 'V'" type="submit" class="btn-primary" [disabled]="isUploading">
+      <button *ngIf="!isReadOnly" type="submit" class="btn-primary" [disabled]="isUploading || isTrivial()">
         <mat-icon>{{ isUploading ? 'sync' : 'check_circle' }}</mat-icon>
-        <span>{{ isUploading ? 'Guardando y subiendo archivo...' : 'Guardar Riesgo' }}</span>
+        <span>{{ isUploading ? 'Guardando y subiendo archivo...' : (formulario.get('naturaleza')?.value === 'O' ? 'Guardar Oportunidad' : 'Guardar Riesgo') }}</span>
       </button>
     </div>
-
   </form>
 </div>
+
+<!-- Modal Referencia Criterios dentro de Regedit -->
+<ng-template #criteriosModalRef>
+  <div class="dialog-wrapper">
+    <div class="dialog-top-bar"></div>
+    <div class="dialog-header">
+      <div class="header-left">
+        <div class="header-icon-box">
+          <mat-icon>straighten</mat-icon>
+        </div>
+        <div class="header-text-group">
+          <h2 class="header-title">Criterios de evaluación del riesgo</h2>
+          <p class="header-subtitle">Usa siempre estas escalas. El sistema calcula el NPR y el nivel; no se escriben a mano.</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <button type="button" class="btn-close-modal" (click)="onCerrarCriteriosModal()" title="Cerrar ventana">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </div>
+    <div class="dialog-body-scrollable">
+      <div class="criterios-section">
+        <span class="criterio-title-text">Escalas Probabilidad (P), Impacto (I) y Detección (D)</span>
+        <p style="font-size: 12px; color: #475569; margin-top: 6px;">
+          NPR = P × I × D (1 a 125). Alto: 60-125 | Medio: 25-59 | Bajo: 1-24. Si Impacto = 5, el nivel mínimo es Medio.
+        </p>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button type="button" class="btn-secondary" (click)="onCerrarCriteriosModal()">
+        <mat-icon>close</mat-icon>
+        <span>Cerrar</span>
+      </button>
+    </div>
+  </div>
+</ng-template>

@@ -29,6 +29,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   canDelete: boolean = true;
   canDownload: boolean = true;
   canApprove: boolean = true;
+  canVistoBueno: boolean = true;
   isUserAdmin: boolean = false;
   // State for Accordion Sidebar, Quick View Drawer & Banner
   // Observación d: Buscador de procesos y estructura contraída por defecto
@@ -46,6 +47,20 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
 
   quickViewOpen: boolean = false;
   selectedDoc: any = null;
+
+  // Modal Actualizar Versión
+  @ViewChild('actualizarVersionDialog') actualizarVersionDialog!: TemplateRef<any>;
+  private actualizarVersionDialogRef?: MatDialogRef<any>;
+  actualizarVersionModalOpen: boolean = false;
+  docParaActualizarVersion: any = null;
+  nuevaVersionStr: string = '';
+  nuevoCodigoDocStr: string = '';
+  nuevaVigenciaStr: string = '';
+  motivoCambioVersionStr: string = '';
+  archivoNuevaVersion: File | null = null;
+  nombreArchivoNuevaVersion: string = '';
+  isUploadingNuevaVersion: boolean = false;
+  isDragOverVersion: boolean = false;
 
   // Drag & Drop global sobre la plataforma
   isDraggingOver: boolean = false;
@@ -378,6 +393,12 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     }
     if (lower.includes('planeamiento') && (lower.includes('estampado') || lower.includes('e&b') || lower.includes('pceb'))) {
       return 'Planeamiento y Programación de la Producción E&B';
+    }
+    if (lower.includes('ingenier') || lower === 'ing' || lower === 'imc') {
+      return 'Ingeniería';
+    }
+    if (lower.includes('organizaci') || lower.includes('metodo') || lower === 'oym' || lower === 'o&m' || lower === 'om') {
+      return 'Organización y Métodos';
     }
     return clean;
   }
@@ -749,8 +770,24 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         let procName = inferred || d.nombre_Proceso || d.proceso || (d.codigo_Proceso ? this.getProcessNameByCode(d.codigo_Proceso) : '');
         if (!procName) procName = 'Organización y Métodos';
 
-        const nomDoc = d.denominacion || d.nombre || d.descripcion || 'Documento';
+        // Extraer etiquetas [PROCESOS:proc1|proc2] de la descripción
+        const rawDesc = (d.descripcion || d.denominacion || d.nombre || '').toString();
+        let extractedProcesos: string[] = [];
+        const match = rawDesc.match(/\[PROCESOS:(.*?)\]/i);
+        if (match) {
+          extractedProcesos = match[1].split('|')
+            .map((p: string) => this.normalizarNombreProceso(p.trim()))
+            .filter((p: string) => p.length > 0);
+        }
+
+        const nomDoc = (d.denominacion || d.nombre || d.descripcion || 'Documento')
+          .replace(/\[PROCESOS:.*?\]/gi, '').trim();
         const fecVenc = d.fec_Vencimiento ? d.fec_Vencimiento.split('T')[0] : (d.fec_Registro ? d.fec_Registro.split('T')[0] : (d.vig || ''));
+
+        const finalProcesos = extractedProcesos.length > 0
+          ? extractedProcesos
+          : (d.procesos && Array.isArray(d.procesos) && d.procesos.length > 0 ? d.procesos : [procName]);
+        const primaryProc = finalProcesos[0] || procName;
 
         return {
           codigo_Documentos_Controlados: d.codigo_Documentos_Controlados || codDoc,
@@ -759,13 +796,13 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
           tipo: d.codigo_Normas || d.tipo || 'Procedimiento',
           version: d.version_Documento || d.version || 'v1.0',
           formato: d.codigo_Tipo_Descarga || d.formato || 'PDF',
-          proceso: procName,
+          proceso: primaryProc,
           vig: fecVenc,
           estado: this.calcularEstadoDinamico(fecVenc, d.flg_Estado || d.estado),
           archivo: d.ruta_Adjunto || d.archivo || codDoc,
-          procesos: d.procesos || [procName],
-          procesosVisibles: d.procesosVisibles || ['Todos los procesos'],
-          modoVisibilidad: d.modoVisibilidad || 'TODOS',
+          procesos: finalProcesos,
+          procesosVisibles: d.procesosVisibles || (finalProcesos.length > 0 ? finalProcesos : ['Todos los procesos']),
+          modoVisibilidad: d.modoVisibilidad || (finalProcesos.length > 1 ? 'PERSONALIZADO' : 'TODOS'),
           raw: d
         };
       });
@@ -810,9 +847,14 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
           (nomClean !== '' && rNom !== '' && rNom === nomClean);
       });
       if (matchIdx >= 0) {
+        const combinedProcs = (locDoc.procesos && Array.isArray(locDoc.procesos) && locDoc.procesos.length > 0)
+          ? locDoc.procesos
+          : rawList[matchIdx].procesos;
         rawList[matchIdx] = {
           ...rawList[matchIdx],
           ...locDoc,
+          procesos: combinedProcs,
+          proceso: combinedProcs && combinedProcs.length > 0 ? combinedProcs[0] : (locDoc.proceso || rawList[matchIdx].proceso),
           archivo: locDoc.archivo || rawList[matchIdx].archivo,
           version: locDoc.version || rawList[matchIdx].version
         };
@@ -839,8 +881,14 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       });
     }
 
-    // 3. Garantía absoluta de asignación canónica según código oficial Precotex
+    // 3. Garantía absoluta de asignación canónica según código oficial Precotex (solo si no tiene procesos asignados)
     rawList.forEach((d: any) => {
+      if (d.procesos && Array.isArray(d.procesos) && d.procesos.length > 0) {
+        if (!d.proceso) {
+          d.proceso = d.procesos[0];
+        }
+        return;
+      }
       const c = (d.codigo || d.codigo_Documentos_Controlados || '').toString().trim().toUpperCase();
       const inferred = this.extraerProcesoDelCodigo(c);
       if (inferred) {
@@ -856,6 +904,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     this.aplicarReglaObsoletosPorVersion(this.docsList);
     this.restaurarHistorialVersiones(this.docsList);
     this.restaurarVistosBuenos(this.docsList);
+    this.restaurarAuditRevisiones(this.docsList);
     this.saveDocs();
   }
 
@@ -882,8 +931,10 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       const histMap = JSON.parse(localStorage.getItem('precotex:docs_version_history') || '{}');
       list.forEach(d => {
         const codeKey = (d.codigo || '').toLowerCase().trim();
-        if (histMap[codeKey] && (!d.historialVersiones || d.historialVersiones.length <= 1)) {
-          d.historialVersiones = histMap[codeKey];
+        const baseKey = this.obtenerCodigoBase(d.codigo || '').toLowerCase().trim();
+        const found = (codeKey && histMap[codeKey]) || (baseKey && histMap[baseKey]);
+        if (found && (!d.historialVersiones || d.historialVersiones.length <= 1)) {
+          d.historialVersiones = found;
         }
       });
     } catch (e) { }
@@ -906,6 +957,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       this.canDelete = true;
       this.canDownload = true;
       this.canApprove = true;
+      this.canVistoBueno = true;
       return;
     }
 
@@ -941,20 +993,26 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     const isGeneralEdit = nivelGeneral.toLowerCase() === 'editar' || nivelGeneral.toLowerCase() === 'total' || nivelGeneral.toLowerCase() === 'modificar';
     const isGeneralVer = isGeneralEdit || nivelGeneral.toLowerCase() === 'ver' || nivelGeneral.toLowerCase() === 'lectura';
 
+    // Determinar nivel jerárquico del usuario actual ('ger' | 'jef' | 'ope')
+    const userLvl = this.permisosService.getUserLevelKey();
+    const isJefaturaOGerencial = userLvl === 'ger' || userLvl === 'jef';
+
     // Nivel base por defecto según la matriz general
     const defaultCrear = isGeneralEdit;
     const defaultEditar = isGeneralEdit;
     const defaultEliminar = isGeneralEdit;
     const defaultDescargar = isGeneralVer;
-    const defaultAprobar = false;
+    // Confirmar Visto Bueno de Lectura Semestral solo aplica a Jefatura y Gerencial por regla de negocio
+    const defaultAprobar = isJefaturaOGerencial;
 
     // 2. Consultar Ajuste Fino interactivo (SN_Permiso_Usuario_Detalle / precotex:puestos:accesos_fino)
-    // Si el switch específico fue apagado en la vista de permisos, prevalece de manera estricta
+    // Si el switch específico fue configurado en la vista de permisos, prevalece de manera estricta
     this.canCreate = this.permisosService.hasFinePermission('Documentación', 'Documentos', 'Crear', defaultCrear);
     this.canEdit = this.permisosService.hasFinePermission('Documentación', 'Documentos', 'Editar', defaultEditar);
     this.canDelete = this.permisosService.hasFinePermission('Documentación', 'Documentos', 'Eliminar / Obsoletar', defaultEliminar);
     this.canDownload = this.permisosService.hasFinePermission('Documentación', 'Documentos', 'Descargar', defaultDescargar);
     this.canApprove = this.permisosService.hasFinePermission('Documentación', 'Documentos', 'Aprobar', defaultAprobar);
+    this.canVistoBueno = this.canApprove;
 
     console.log('[Docs Permisos Finales]', {
       usuario: userLogin,
@@ -1319,8 +1377,12 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         items.forEach(item => {
           const vNum = this.extraerNumeroVersion(item.version || item.codigo);
           if (vNum < maxVerNum) {
+            const eraObsoleto = (item.estado || '').toLowerCase() === 'obsoleto';
             item.estado = 'Obsoleto';
             if (item.raw) item.raw.flg_Estado = 'Obsoleto';
+            if (!eraObsoleto) {
+              this.registrarRevisionLectura(item, 'Cambio a Obsoleto por Nueva Versión');
+            }
           }
         });
       }
@@ -1355,7 +1417,11 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         const vExistenteNum = this.extraerNumeroVersion(d.version || d.codigo);
         if (vExistenteNum < vNuevoNum) {
           d.estado = 'Obsoleto';
+          this.registrarRevisionLectura(d, 'Cambio a Obsoleto por Nueva Versión');
           const procCode = this.getProcessCodeByName(d.proceso);
+          const dProcs = this.getDocProcesosList(d);
+          const procsTag = dProcs.length > 0 ? ` [PROCESOS:${dProcs.join('|')}]` : '';
+          const cleanNom = (d.nombre || '').replace(/\[PROCESOS:.*?\]/gi, '').trim();
           const requestData = {
             Accion: 'U',
             Codigo_Organizacion: '001',
@@ -1366,11 +1432,11 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
             Codigo_Normas: d.tipo || 'Procedimiento',
             Codigo_Tiempo_Conservacion: '3 Anios',
             Codigo_Tipo_Descarga: d.formato || 'PDF',
-            Denominacion: d.nombre || '',
+            Denominacion: cleanNom,
             Codigo_Documento: d.codigo || '',
             Version_Documento: d.version || 'v1.0',
             Ruta_Adjunto: d.archivo || '',
-            Descripcion: d.nombre || '',
+            Descripcion: `${cleanNom}${procsTag}`,
             bRegistroAsociado: true,
             bRequiereRevision: false,
             Flg_Estado: 'Obsoleto',
@@ -1395,6 +1461,10 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
 
   // DOC-07: Confirmación semestral de lectura por Jefaturas (Visto Bueno) con confirmación
   onDarVistoBueno(doc: any): void {
+    if (!this.canVistoBueno && !this.canApprove && !this.isUserAdmin) {
+      this.toastr.warning('Solo usuarios con nivel de Jefatura o Gerencial pueden confirmar el visto bueno de lectura semestral.', 'Acceso Restringido');
+      return;
+    }
     const usuario = localStorage.getItem('precotex:usuario:nombre') || GlobalVariable.vusu || this.sUsuario || 'Usuario';
     const puesto = localStorage.getItem('precotex:usuario:puesto') || 'Jefe de Proceso';
 
@@ -2137,8 +2207,43 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Helper para registrar cada ingreso o revisión real de un usuario sobre el documento
+  // DOC-15: Persistencia y trazabilidad de auditoría de revisiones y cambios de estado
+  private guardarAuditRevisionesLocal(doc: any): void {
+    if (!doc) return;
+    try {
+      const auditMap = JSON.parse(localStorage.getItem('precotex:docs_audit_revisiones') || '{}');
+      const codeKey = (doc.codigo || doc.codigo_Documentos_Controlados || '').toString().toLowerCase().trim();
+      const baseKey = this.obtenerCodigoBase(doc.codigo || '').toLowerCase().trim();
+      if (codeKey) {
+        auditMap[codeKey] = doc.auditRevisiones || [];
+      }
+      if (baseKey) {
+        auditMap[baseKey] = doc.auditRevisiones || [];
+      }
+      localStorage.setItem('precotex:docs_audit_revisiones', JSON.stringify(auditMap));
+    } catch (e) { }
+  }
+
+  restaurarAuditRevisiones(list: any[]): void {
+    if (!list || list.length === 0) return;
+    try {
+      const auditMap = JSON.parse(localStorage.getItem('precotex:docs_audit_revisiones') || '{}');
+      list.forEach(d => {
+        const codeKey = (d.codigo || d.codigo_Documentos_Controlados || '').toString().toLowerCase().trim();
+        const baseKey = this.obtenerCodigoBase(d.codigo || '').toLowerCase().trim();
+        const found = (codeKey && auditMap[codeKey]) || (baseKey && auditMap[baseKey]);
+        if (found) {
+          if (!d.auditRevisiones || d.auditRevisiones.length < found.length) {
+            d.auditRevisiones = found;
+          }
+        }
+      });
+    } catch (e) { }
+  }
+
+  // Helper para registrar cada ingreso, revisión o cambio de estado de un usuario sobre el documento
   private registrarRevisionLectura(doc: any, accionStr: string = 'Lectura / Vista Previa'): void {
+    if (!doc) return;
     if (!doc.auditRevisiones) {
       doc.auditRevisiones = [];
     }
@@ -2152,11 +2257,11 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       String(ahora.getDate()).padStart(2, '0') + ' ' +
       ahora.toLocaleTimeString('es-PE', { hour12: false });
 
-    // Evitar registros duplicados en el mismo minuto para la misma acción
+    // Evitar registros duplicados consecutivos en el mismo minuto para la misma acción
     const yaExiste = doc.auditRevisiones.some((r: any) =>
       r.usuario === activeUser &&
       r.accion === accionStr &&
-      r.fechaHora.substring(0, 16) === fStr.substring(0, 16)
+      (r.fechaHora || '').substring(0, 16) === fStr.substring(0, 16)
     );
 
     if (!yaExiste) {
@@ -2167,10 +2272,37 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         accion: accionStr
       });
     }
+
+    this.guardarAuditRevisionesLocal(doc);
+    this.saveDocs();
   }
 
   // DOC-09: Historial de versiones y auditoría real de usuarios que ingresaron a revisar
   onVerHistorial(doc: any): void {
+    // Si el documento está en estado Obsoleto y aún no cuenta con registro en historial de revisiones, asegurarlo
+    if ((doc.estado || '').toString().toLowerCase() === 'obsoleto') {
+      const tieneObsoleto = (doc.auditRevisiones || []).some((r: any) =>
+        (r.accion || '').toString().toLowerCase().includes('obsoleto')
+      );
+      if (!tieneObsoleto) {
+        const activeUser = localStorage.getItem('precotex:usuario:nombre') || GlobalVariable.vusu || 'admin';
+        const activePuesto = localStorage.getItem('precotex:usuario:puesto') || (activeUser.toLowerCase().includes('admin') ? 'Super Administrador' : 'Responsable SIG');
+        const ahora = new Date();
+        const fStr = ahora.getFullYear() + '-' +
+          String(ahora.getMonth() + 1).padStart(2, '0') + '-' +
+          String(ahora.getDate()).padStart(2, '0') + ' ' +
+          ahora.toLocaleTimeString('es-PE', { hour12: false });
+        const fechaDoc = doc.vig ? (doc.vig + ' 09:00:00') : fStr;
+        if (!doc.auditRevisiones) doc.auditRevisiones = [];
+        doc.auditRevisiones.unshift({
+          usuario: doc.usuarioSubio || activeUser,
+          puesto: doc.puestoSubio || activePuesto,
+          fechaHora: fechaDoc,
+          accion: 'Cambio a Obsoleto'
+        });
+        this.guardarAuditRevisionesLocal(doc);
+      }
+    }
     this.registrarRevisionLectura(doc, 'Consulta de Histórico');
 
     // Observación a: Hooks globales para descargar o visualizar versiones pasadas desde el modal
@@ -2245,14 +2377,39 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         </tr>
       `;
     } else {
-      revisionesRowsHtml = revisiones.map((r: any) => `
-        <tr style="border-bottom: 1px solid #f1f5f9;">
+      revisionesRowsHtml = revisiones.map((r: any) => {
+        const accionLower = (r.accion || '').toString().toLowerCase();
+        const isObsoleto = accionLower.includes('obsoleto');
+        const isVistoBueno = accionLower.includes('visto bueno');
+        const isRestaurado = accionLower.includes('restaurado') || accionLower.includes('vigente');
+        const isHistorico = accionLower.includes('histórico') || accionLower.includes('historico');
+
+        let badgeStyle = 'background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 10px; font-weight: 600; font-size: 10px; display: inline-flex; align-items: center; gap: 4px;';
+        let badgeIcon = '👁️';
+
+        if (isObsoleto) {
+          badgeStyle = 'background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; padding: 2px 9px; border-radius: 10px; font-weight: 700; font-size: 10.5px; display: inline-flex; align-items: center; gap: 4px;';
+          badgeIcon = '⚠️';
+        } else if (isVistoBueno) {
+          badgeStyle = 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 2px 8px; border-radius: 10px; font-weight: 600; font-size: 10px; display: inline-flex; align-items: center; gap: 4px;';
+          badgeIcon = '✅';
+        } else if (isRestaurado) {
+          badgeStyle = 'background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 2px 8px; border-radius: 10px; font-weight: 600; font-size: 10px; display: inline-flex; align-items: center; gap: 4px;';
+          badgeIcon = '🔄';
+        } else if (isHistorico) {
+          badgeStyle = 'background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 2px 8px; border-radius: 10px; font-weight: 600; font-size: 10px; display: inline-flex; align-items: center; gap: 4px;';
+          badgeIcon = '📜';
+        }
+
+        return `
+        <tr style="border-bottom: 1px solid #f1f5f9; background: ${isObsoleto ? '#fff1f2' : 'transparent'};">
           <td style="padding: 8px 10px; font-weight: 600; color: #0f172a;">${r.usuario}</td>
           <td style="padding: 8px 10px; color: #475569;">${r.puesto}</td>
           <td style="padding: 8px 10px; color: #475569; font-family: monospace;">${r.fechaHora}</td>
-          <td style="padding: 8px 10px;"><span style="background: #e0e7ff; color: #3730a3; padding: 2px 7px; border-radius: 10px; font-weight: 600; font-size: 10px;">${r.accion}</span></td>
+          <td style="padding: 8px 10px;"><span style="${badgeStyle}">${badgeIcon} ${r.accion}</span></td>
         </tr>
-      `).join('');
+        `;
+      }).join('');
     }
 
     const versionesHtml = `
@@ -2675,13 +2832,17 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
           res.tipo = activeTipo;
         }
 
+        const procsArray: string[] = res.procesos && res.procesos.length > 0 ? res.procesos : (res.proceso ? [res.proceso] : []);
         const inferredFromCode = this.extraerProcesoDelCodigo(res.codigo);
-        const procPrincipal = inferredFromCode || (res.procesos && res.procesos.length > 0 ? res.procesos[0] : res.proceso);
-        const finalProc = procPrincipal || activeProc || 'Costura';
-        res.proceso = finalProc;
-        if (!res.procesos || res.procesos.length === 0) {
-          res.procesos = [finalProc];
+        const finalProc = (procsArray.length > 0 ? procsArray[0] : null) || inferredFromCode || activeProc || 'Costura';
+        if (procsArray.length === 0) {
+          procsArray.push(finalProc);
         }
+        res.proceso = finalProc;
+        res.procesos = procsArray;
+
+        const cleanNombre = (res.nombre || '').replace(/\[PROCESOS:.*?\]/gi, '').trim();
+        const descProcesosTag = ` [PROCESOS:${procsArray.join('|')}]`;
         const procCode = this.getProcessCodeByName(finalProc);
         const requestData = {
           Accion: 'I',
@@ -2693,11 +2854,11 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
           Codigo_Normas: res.tipo || 'Procedimiento',
           Codigo_Tiempo_Conservacion: '3 Anios',
           Codigo_Tipo_Descarga: res.formato || 'PDF',
-          Denominacion: res.nombre || '',
+          Denominacion: cleanNombre,
           Codigo_Documento: res.codigo || '',
           Version_Documento: res.version || 'v1.0',
           Ruta_Adjunto: res.archivo || '',
-          Descripcion: res.nombre || '',
+          Descripcion: `${cleanNombre}${descProcesosTag}`,
           bRegistroAsociado: true,
           bRequiereRevision: false,
           Flg_Estado: res.estado || 'Vigente',
@@ -2751,12 +2912,503 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     });
   }
 
+  // DOC-14: Cambiar estado a Obsoleto (o restaurar a Vigente) directamente desde la columna Acciones
+  onMarcarObsoleto(doc: any): void {
+    if (!this.canEdit) {
+      this.toastr.warning('No cuentas con permisos para cambiar el estado del documento.', 'Acceso Restringido');
+      return;
+    }
+
+    const esObsoleto = (doc.estado || '').toLowerCase() === 'obsoleto';
+    const nuevoEstado = esObsoleto ? 'Vigente' : 'Obsoleto';
+    const accionTitulo = esObsoleto ? 'Restaurar a Vigente' : 'Marcar como Obsoleto';
+    const accionDesc = esObsoleto
+      ? '¿Deseas restaurar este documento al estado <strong>Vigente</strong>?'
+      : '¿Deseas cambiar el estado de este documento a <strong>Obsoleto</strong>? Esta acción quedará registrada en el historial de revisiones del documento.';
+
+    Swal.fire({
+      title: '¿' + accionTitulo + '?',
+      html: `
+        <div style="text-align: left; font-size: 13px; line-height: 1.6; color: #334155;">
+          <p style="margin-bottom: 10px;">${accionDesc}</p>
+          <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-bottom: 8px;">
+            <div style="font-weight: 700; color: #0f172a; font-size: 13.5px;">📄 ${doc.nombre}</div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
+              Código: <strong>${doc.codigo}</strong> &nbsp;|&nbsp; Versión: <strong>${doc.version}</strong>
+            </div>
+          </div>
+          <div style="background: ${esObsoleto ? '#f0fdf4' : '#fff1f2'}; border: 1px solid ${esObsoleto ? '#bbf7d0' : '#fecdd3'}; border-radius: 6px; padding: 8px 12px; font-size: 11.5px; color: ${esObsoleto ? '#166534' : '#9f1239'};">
+            ℹ️ Esta modificación se registrará en la <strong>Sección 2 (Historial de Usuarios que Ingresaron a Revisar el Documento)</strong> con tu usuario, cargo, fecha y hora.
+          </div>
+        </div>
+      `,
+      icon: esObsoleto ? 'question' : 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, ' + accionTitulo,
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: esObsoleto ? '#16a34a' : '#e11d48',
+      cancelButtonColor: '#64748b'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        doc.estado = nuevoEstado;
+        if (doc.raw) doc.raw.flg_Estado = nuevoEstado;
+
+        const accionLog = esObsoleto ? 'Restaurado a Vigente' : 'Cambio a Obsoleto';
+        this.registrarRevisionLectura(doc, accionLog);
+
+        const procCode = this.getProcessCodeByName(doc.proceso);
+        const docProcs = this.getDocProcesosList(doc);
+        const procsTag = docProcs.length > 0 ? ` [PROCESOS:${docProcs.join('|')}]` : '';
+        const cleanNom = (doc.nombre || '').replace(/\[PROCESOS:.*?\]/gi, '').trim();
+        const requestData = {
+          Accion: 'U',
+          Codigo_Organizacion: '001',
+          Codigo_Sede: '001',
+          Codigo_Documentos_Controlados: doc.codigo_Documentos_Controlados || doc.codigo || '001',
+          Codigo_Proceso: procCode,
+          Codigo_Carpeta_Control: '001',
+          Codigo_Normas: doc.tipo || 'Procedimiento',
+          Codigo_Tiempo_Conservacion: '3 Anios',
+          Codigo_Tipo_Descarga: doc.formato || 'PDF',
+          Denominacion: cleanNom,
+          Codigo_Documento: doc.codigo || '',
+          Version_Documento: doc.version || 'v1.0',
+          Ruta_Adjunto: doc.archivo || '',
+          Descripcion: `${cleanNom}${procsTag}`,
+          bRegistroAsociado: true,
+          bRequiereRevision: false,
+          Flg_Estado: nuevoEstado,
+          Fec_Vencimiento: doc.vig || '',
+          Flg_Activo: true,
+          Cod_Usuario: this.sUsuario || GlobalVariable.vusu || 'admin'
+        };
+
+        this.documentosControladosService.postProcesoMnto(requestData).subscribe({
+          next: () => {},
+          error: () => {}
+        });
+
+        // Actualizar almacenamiento local de documentos creados
+        try {
+          const locCreated = JSON.parse(localStorage.getItem('precotex_documentos_creados') || '[]');
+          const idx = locCreated.findIndex((d: any) => (d.codigo || '').toLowerCase() === (doc.codigo || '').toLowerCase());
+          if (idx >= 0) {
+            locCreated[idx].estado = nuevoEstado;
+            locCreated[idx].auditRevisiones = doc.auditRevisiones;
+            localStorage.setItem('precotex_documentos_creados', JSON.stringify(locCreated));
+          }
+        } catch (e) { }
+
+        this.saveDocs();
+        this.toastr.success('Documento marcado como ' + nuevoEstado, 'Estado Actualizado');
+      }
+    });
+  }
+
+  obtenerVigencia3Anios(): string {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() + 3);
+    return d.toISOString().substring(0, 10);
+  }
+
+  extraerVersionDelCodigo(code: string): string {
+    if (!code) return '';
+    const parts = code.trim().split('-');
+    if (parts.length >= 5) {
+      const last = parts[parts.length - 1].trim();
+      if (/^\d+$/.test(last)) {
+        return 'v' + parseInt(last, 10);
+      }
+      if (/^[vV]\d+/.test(last)) {
+        return last;
+      }
+    }
+    const match = code.match(/[-_ ]([vV]\d+(?:\.\d+)?)/);
+    if (match) return match[1];
+    return '';
+  }
+
+  sugerirSiguienteVersion(ver: any): string {
+    if (!ver) return 'v2.0';
+    const clean = String(ver).trim();
+    const matchSimpleV = clean.match(/^([vV])(\d+)$/);
+    if (matchSimpleV) {
+      const num = parseInt(matchSimpleV[2], 10) + 1;
+      return `${matchSimpleV[1]}${num}`;
+    }
+    const matchMajorMinor = clean.match(/^([vV]?)(\d+)\.(\d+)$/);
+    if (matchMajorMinor) {
+      const prefix = matchMajorMinor[1];
+      const major = parseInt(matchMajorMinor[2], 10) + 1;
+      return `${prefix}${major}.0`;
+    }
+    const matchNum = clean.match(/^(\d+)$/);
+    if (matchNum) {
+      const num = parseInt(matchNum[1], 10) + 1;
+      return matchNum[1].startsWith('0') && matchNum[1].length > 1
+        ? String(num).padStart(matchNum[1].length, '0')
+        : String(num);
+    }
+    return clean + '.1';
+  }
+
+  sugerirSiguienteCodigo(code: any, newVer: any): string {
+    if (!code) return '';
+    const clean = String(code).trim();
+    const matchDashNum = clean.match(/^(.*)-(\d{2,3})$/);
+    if (matchDashNum) {
+      const base = matchDashNum[1];
+      const numDigits = matchDashNum[2].length;
+      const verNumMatch = String(newVer || '').match(/\d+/);
+      const nextNum = verNumMatch ? parseInt(verNumMatch[0], 10) : (parseInt(matchDashNum[2], 10) + 1);
+      return `${base}-${String(nextNum).padStart(numDigits, '0')}`;
+    }
+    const matchDashV = clean.match(/^(.*)-[vV](\d+)$/);
+    if (matchDashV) {
+      const base = matchDashV[1];
+      const verNumMatch = String(newVer || '').match(/\d+/);
+      const nextNum = verNumMatch ? verNumMatch[0] : (parseInt(matchDashV[2], 10) + 1);
+      return `${base}-v${nextNum}`;
+    }
+    return clean;
+  }
+
+  onActualizarVersion(doc: any): void {
+    if (!this.canEdit) {
+      this.toastr.warning('No cuentas con permisos para actualizar la versión del documento.', 'Acceso Restringido');
+      return;
+    }
+    if (!doc) return;
+    this.docParaActualizarVersion = { ...doc };
+    this.nuevaVersionStr = this.sugerirSiguienteVersion(doc.version || 'v1.0');
+    this.nuevoCodigoDocStr = this.sugerirSiguienteCodigo(doc.codigo || '', this.nuevaVersionStr);
+    const rawVig = doc.vig || this.obtenerVigencia3Anios();
+    this.nuevaVigenciaStr = (rawVig && rawVig.length >= 10) ? rawVig.substring(0, 10) : this.obtenerVigencia3Anios();
+    this.motivoCambioVersionStr = 'Actualización de versión por revisión periódica';
+    this.archivoNuevaVersion = null;
+    this.nombreArchivoNuevaVersion = '';
+    this.isUploadingNuevaVersion = false;
+    this.isDragOverVersion = false;
+    this.actualizarVersionModalOpen = true;
+
+    if (this.actualizarVersionDialogRef) {
+      this.actualizarVersionDialogRef.close();
+      this.actualizarVersionDialogRef = undefined;
+    }
+
+    if (this.actualizarVersionDialog) {
+      this.actualizarVersionDialogRef = this.dialog.open(this.actualizarVersionDialog, {
+        panelClass: 'actualizar-version-dialog-panel',
+        backdropClass: 'actualizar-version-dialog-backdrop',
+        width: '680px',
+        maxWidth: '96vw',
+        maxHeight: '92vh',
+        autoFocus: false,
+        disableClose: false
+      });
+
+      this.actualizarVersionDialogRef.afterClosed().subscribe(() => {
+        this.actualizarVersionModalOpen = false;
+        this.actualizarVersionDialogRef = undefined;
+        this.docParaActualizarVersion = null;
+        this.archivoNuevaVersion = null;
+        this.nombreArchivoNuevaVersion = '';
+        this.isUploadingNuevaVersion = false;
+        this.isDragOverVersion = false;
+      });
+    }
+  }
+
+  onCerrarActualizarVersion(): void {
+    if (this.actualizarVersionDialogRef) {
+      this.actualizarVersionDialogRef.close();
+      this.actualizarVersionDialogRef = undefined;
+    }
+    this.actualizarVersionModalOpen = false;
+    this.docParaActualizarVersion = null;
+    this.archivoNuevaVersion = null;
+    this.nombreArchivoNuevaVersion = '';
+    this.isUploadingNuevaVersion = false;
+    this.isDragOverVersion = false;
+  }
+
+  onDragOverVersion(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOverVersion = true;
+  }
+
+  onDragLeaveVersion(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOverVersion = false;
+  }
+
+  onDropVersion(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOverVersion = false;
+    if (event.dataTransfer && event.dataTransfer.files.length > 0) {
+      this.asignarArchivoNuevaVersion(event.dataTransfer.files[0]);
+    }
+  }
+
+  onArchivoVersionSeleccionado(event: any): void {
+    const file = event.target?.files?.[0];
+    if (file) {
+      this.asignarArchivoNuevaVersion(file);
+    }
+  }
+
+  asignarArchivoNuevaVersion(file: File): void {
+    this.archivoNuevaVersion = file;
+    this.nombreArchivoNuevaVersion = file.name;
+    const verDetectada = this.extraerVersionDelCodigo(file.name);
+    if (verDetectada) {
+      this.nuevaVersionStr = verDetectada;
+      if (this.docParaActualizarVersion) {
+        this.nuevoCodigoDocStr = this.sugerirSiguienteCodigo(this.docParaActualizarVersion.codigo, this.nuevaVersionStr);
+      }
+    }
+  }
+
+  onRemoveArchivoVersion(): void {
+    this.archivoNuevaVersion = null;
+    this.nombreArchivoNuevaVersion = '';
+  }
+
+  getArchivoVersionIcon(name: string): string {
+    if (!name) return 'insert_drive_file';
+    const lower = name.toLowerCase();
+    if (lower.endsWith('.pdf')) return 'picture_as_pdf';
+    if (lower.endsWith('.xls') || lower.endsWith('.xlsx')) return 'table_chart';
+    if (lower.endsWith('.doc') || lower.endsWith('.docx')) return 'description';
+    return 'insert_drive_file';
+  }
+
+  getArchivoVersionClass(name: string): string {
+    if (!name) return 'is-default';
+    const lower = name.toLowerCase();
+    if (lower.endsWith('.pdf')) return 'is-pdf';
+    if (lower.endsWith('.xls') || lower.endsWith('.xlsx')) return 'is-excel';
+    if (lower.endsWith('.doc') || lower.endsWith('.docx')) return 'is-word';
+    return 'is-default';
+  }
+
+  guardarActualizacionVersion(): void {
+    const doc = this.docParaActualizarVersion;
+    if (!doc) return;
+
+    const nuevaVer = (this.nuevaVersionStr || '').trim();
+    if (!nuevaVer) {
+      this.toastr.warning('Por favor ingrese el código de la nueva versión (ej. v3).', 'Campo Requerido');
+      return;
+    }
+
+    if (!this.archivoNuevaVersion && !this.nombreArchivoNuevaVersion) {
+      this.toastr.warning('Debe seleccionar o arrastrar el nuevo archivo para actualizar la versión.', 'Archivo Requerido');
+      return;
+    }
+
+    const versionAnterior = doc.version || 'v1';
+    const archivoAnterior = doc.archivo || '';
+    const nuevoCodigo = (this.nuevoCodigoDocStr || doc.codigo || '').trim();
+    const nuevaVig = this.nuevaVigenciaStr || doc.vig || this.obtenerVigencia3Anios();
+
+    const activeUser = localStorage.getItem('precotex:usuario:nombre') || GlobalVariable.vusu || this.sUsuario || 'Super Administrador';
+    const activePuesto = localStorage.getItem('precotex:usuario:puesto') || 'Responsable SIG';
+    const ahora = new Date();
+    const fechaHoraStr = ahora.getFullYear() + '-' +
+      String(ahora.getMonth() + 1).padStart(2, '0') + '-' +
+      String(ahora.getDate()).padStart(2, '0') + ' ' +
+      ahora.toLocaleTimeString('es-PE', { hour12: false });
+
+    const procesarGuardado = (nombreArchivoFinal: string) => {
+      // 1. Historial de Versiones Resguardadas en Backup (Sección 1)
+      if (!doc.historialVersiones || !Array.isArray(doc.historialVersiones) || doc.historialVersiones.length === 0) {
+        const uploaderNombre = doc.usuarioSubio || `${activeUser} (${activePuesto})`;
+        const uploaderFecha = doc.fechaHoraSubida || (doc.vig ? doc.vig + ' 09:00:00' : '2026-08-19 12:45:00');
+        doc.historialVersiones = [
+          {
+            version: versionAnterior,
+            usuarioSubio: uploaderNombre,
+            fechaHora: uploaderFecha,
+            tipoCarga: 'Versión Anterior (Obsoleta)',
+            archivo: archivoAnterior
+          }
+        ];
+      } else {
+        doc.historialVersiones.forEach((h: any) => {
+          if (h.version === versionAnterior || h.tipoCarga?.includes('Vigente') || h.tipoCarga?.includes('Inicial')) {
+            h.tipoCarga = 'Versión Anterior (Obsoleta)';
+            if (!h.archivo && archivoAnterior) h.archivo = archivoAnterior;
+          }
+        });
+      }
+
+      // Nueva versión vigente en la cima (Actual)
+      const nuevaVersionEntry = {
+        version: nuevaVer,
+        usuarioSubio: `${activeUser} (${activePuesto})`,
+        fechaHora: fechaHoraStr,
+        tipoCarga: 'Versión Vigente',
+        archivo: nombreArchivoFinal
+      };
+      doc.historialVersiones.unshift(nuevaVersionEntry);
+
+      // Persistir mapa histórico por código nuevo, anterior y base
+      try {
+        const histMap = JSON.parse(localStorage.getItem('precotex:docs_version_history') || '{}');
+        histMap[(nuevoCodigo || '').toLowerCase().trim()] = doc.historialVersiones;
+        histMap[(doc.codigo || '').toLowerCase().trim()] = doc.historialVersiones;
+        const baseKey = this.obtenerCodigoBase(nuevoCodigo).toLowerCase().trim();
+        if (baseKey) histMap[baseKey] = doc.historialVersiones;
+        localStorage.setItem('precotex:docs_version_history', JSON.stringify(histMap));
+      } catch (e) { }
+
+      // 2. Sección 2: Historial de Usuarios que Ingresaron a Revisar el Documento
+      // "el documento anterior va quedar como obsoleto en 2. Historial de Usuarios que Ingresaron a Revisar el Documento"
+      if (!doc.auditRevisiones) doc.auditRevisiones = [];
+      doc.auditRevisiones.unshift({
+        usuario: activeUser,
+        puesto: activePuesto,
+        fechaHora: fechaHoraStr,
+        accion: `Versión anterior ${versionAnterior} queda Obsoleta por actualización a ${nuevaVer}`
+      });
+      this.guardarAuditRevisionesLocal(doc);
+
+      // 3. Actualizar campos del documento en memoria
+      doc.version = nuevaVer;
+      doc.codigo = nuevoCodigo;
+      doc.archivo = nombreArchivoFinal;
+      doc.estado = 'Vigente';
+      doc.vig = nuevaVig;
+      doc.usuarioSubio = `${activeUser} (${activePuesto})`;
+      doc.fechaHoraSubida = fechaHoraStr;
+
+      const matchExt = (nombreArchivoFinal || '').match(/\.([a-zA-Z0-9]+)$/);
+      if (matchExt) {
+        const ext = matchExt[1].toLowerCase();
+        if (ext === 'pdf') doc.formato = 'PDF';
+        else if (ext === 'xlsx' || ext === 'xls') doc.formato = 'Excel';
+        else if (ext === 'docx' || ext === 'doc') doc.formato = 'Word';
+      }
+
+      // 4. Actualizar en Base de Datos SQL Server
+      const procPrincipal = doc.proceso || 'General';
+      const procCode = this.getProcessCodeByName(procPrincipal);
+      const cleanNom = (doc.nombre || '').replace(/\[PROCESOS:.*?\]/gi, '').trim();
+      const docProcs = this.getDocProcesosList(doc);
+      const procsTag = docProcs.length > 0 ? ` [PROCESOS:${docProcs.join('|')}]` : '';
+
+      const requestData = {
+        Accion: 'U',
+        Codigo_Organizacion: '001',
+        Codigo_Sede: '001',
+        Codigo_Documentos_Controlados: doc.codigo_Documentos_Controlados || doc.codigo || '001',
+        Codigo_Proceso: procCode,
+        Codigo_Carpeta_Control: '001',
+        Codigo_Normas: doc.tipo || 'Procedimiento',
+        Codigo_Tiempo_Conservacion: '3 Anios',
+        Codigo_Tipo_Descarga: doc.formato || 'PDF',
+        Denominacion: cleanNom,
+        Codigo_Documento: nuevoCodigo,
+        Version_Documento: nuevaVer,
+        Ruta_Adjunto: nombreArchivoFinal,
+        Descripcion: `${cleanNom}${procsTag}`,
+        bRegistroAsociado: true,
+        bRequiereRevision: false,
+        Flg_Estado: 'Vigente',
+        Fec_Vencimiento: nuevaVig,
+        Flg_Activo: true,
+        Cod_Usuario: this.sUsuario || GlobalVariable.vusu || 'admin'
+      };
+
+      this.documentosControladosService.postProcesoMnto(requestData).subscribe({
+        next: () => {
+          this.toastr.success(`Versión actualizada a ${nuevaVer} con éxito en la BD.`, 'Versión Publicada');
+        },
+        error: () => {
+          this.toastr.success(`Versión actualizada a ${nuevaVer}.`, 'Versión Publicada');
+        }
+      });
+
+      // 5. Actualizar en almacenamiento local y refrescar
+      try {
+        const locCreated = JSON.parse(localStorage.getItem('precotex_documentos_creados') || '[]');
+        const idx = locCreated.findIndex((d: any) =>
+          (d.codigo || '').toLowerCase() === (doc.codigo || '').toLowerCase() ||
+          (d.codigo || '').toLowerCase() === (nuevoCodigo || '').toLowerCase()
+        );
+        if (idx >= 0) {
+          locCreated[idx] = { ...doc };
+        } else {
+          locCreated.unshift({ ...doc });
+        }
+        localStorage.setItem('precotex_documentos_creados', JSON.stringify(locCreated));
+      } catch (e) { }
+
+      this.saveDocs();
+      if (this.actualizarVersionDialogRef) {
+        this.actualizarVersionDialogRef.close();
+        this.actualizarVersionDialogRef = undefined;
+      }
+      this.actualizarVersionModalOpen = false;
+      this.isUploadingNuevaVersion = false;
+
+      Swal.fire({
+        icon: 'success',
+        title: '✅ Versión Actualizada Correctamente',
+        html: `
+          <div style="text-align: left; font-size: 13px; line-height: 1.6; color: #334155;">
+            <p>Se ha publicado la nueva versión vigente del documento:</p>
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 14px; margin: 10px 0;">
+              <div>📄 <strong>${cleanNom}</strong></div>
+              <div style="font-size: 12px; margin-top: 4px; color: #166534;">
+                Código: <strong>${nuevoCodigo}</strong> &nbsp;|&nbsp; Nueva Versión: <strong>${nuevaVer}</strong> (Vigente)
+              </div>
+              <div style="font-size: 11.5px; color: #475569; margin-top: 2px;">
+                Archivo adjunto: <code>${nombreArchivoFinal}</code>
+              </div>
+            </div>
+            <ul style="padding-left: 18px; margin: 8px 0; font-size: 12px; color: #475569;">
+              <li>La versión anterior <strong>${versionAnterior}</strong> quedó resguardada en el <strong>Historial de Backup</strong>.</li>
+              <li>Quedó registrado en el historial de revisiones que la versión anterior es <strong>Obsoleta</strong>.</li>
+              <li>El documento actualizado ya está disponible para su descarga en el listado.</li>
+            </ul>
+          </div>
+        `,
+        confirmButtonColor: '#2563eb',
+        confirmButtonText: 'Entendido'
+      });
+    };
+
+    if (this.archivoNuevaVersion) {
+      this.isUploadingNuevaVersion = true;
+      this.documentosControladosService.uploadArchivo(this.archivoNuevaVersion).subscribe({
+        next: (res: any) => {
+          const finalName = res.fileName || this.archivoNuevaVersion?.name || this.nombreArchivoNuevaVersion;
+          procesarGuardado(finalName);
+        },
+        error: () => {
+          const finalName = this.archivoNuevaVersion?.name || this.nombreArchivoNuevaVersion;
+          procesarGuardado(finalName);
+        }
+      });
+    } else {
+      procesarGuardado(this.nombreArchivoNuevaVersion || doc.archivo);
+    }
+  }
+
   onEditar(doc: any, index: number) {
     if (!this.canEdit) {
       this.toastr.warning('No cuentas con permisos para editar documentos.', 'Acceso Restringido');
       return;
     }
-    const mainIdx = this.docsList.findIndex(d => d.codigo === doc.codigo);
+    const mainIdx = this.docsList.findIndex(d => 
+      (d.codigo && doc.codigo && d.codigo.toString().trim().toLowerCase() === doc.codigo.toString().trim().toLowerCase()) ||
+      (d.codigo_Documentos_Controlados && doc.codigo_Documentos_Controlados && d.codigo_Documentos_Controlados === doc.codigo_Documentos_Controlados)
+    );
 
     let dialogRef = this.dialog.open(DocumentosControladosRegeditComponent, {
       width: '640px',
@@ -2765,7 +3417,10 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       data: {
         Title: "Editando registro",
         Accion: "E",
-        Datos: doc,
+        Datos: {
+          ...doc,
+          nombre: (doc.nombre || '').replace(/\[PROCESOS:.*?\]/gi, '').trim()
+        },
         ExistingDocs: this.docsList.map(d => ({
           nombre: (d.nombre || '').trim(),
           codigo: (d.codigo || '').trim()
@@ -2775,8 +3430,12 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe((res) => {
       if (res) {
-        const procPrincipal = res.procesos && res.procesos.length > 0 ? res.procesos[0] : res.proceso;
+        const procsArray: string[] = res.procesos && res.procesos.length > 0 ? res.procesos : (res.proceso ? [res.proceso] : ['Ingeniería']);
+        const procPrincipal = procsArray[0];
         const procCode = this.getProcessCodeByName(procPrincipal);
+        const cleanNombre = (res.nombre || doc.nombre || '').replace(/\[PROCESOS:.*?\]/gi, '').trim();
+        const descProcesosTag = ` [PROCESOS:${procsArray.join('|')}]`;
+
         const requestData = {
           Accion: 'U',
           Codigo_Organizacion: '001',
@@ -2787,11 +3446,11 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
           Codigo_Normas: res.tipo || 'Procedimiento',
           Codigo_Tiempo_Conservacion: '3 Anios',
           Codigo_Tipo_Descarga: res.formato || 'PDF',
-          Denominacion: res.nombre || '',
+          Denominacion: cleanNombre,
           Codigo_Documento: res.codigo || '',
           Version_Documento: res.version || 'v1.0',
           Ruta_Adjunto: res.archivo || '',
-          Descripcion: res.nombre || '',
+          Descripcion: `${cleanNombre}${descProcesosTag}`,
           bRegistroAsociado: true,
           bRequiereRevision: false,
           Flg_Estado: res.estado || 'Vigente',
@@ -2832,13 +3491,26 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
           localStorage.setItem('precotex:docs_version_history', JSON.stringify(histMap));
         } catch (e) { }
 
+        const estadoAnterior = (doc.estado || '').toString().trim();
+        const nuevoEstado = (res.estado || doc.estado || '').toString().trim();
+
+        if (nuevoEstado.toLowerCase() === 'obsoleto' && estadoAnterior.toLowerCase() !== 'obsoleto') {
+          this.registrarRevisionLectura(doc, 'Cambio a Obsoleto');
+        } else if (nuevoEstado.toLowerCase() === 'vigente' && estadoAnterior.toLowerCase() === 'obsoleto') {
+          this.registrarRevisionLectura(doc, 'Restaurado a Vigente');
+        } else if (nuevoEstado && nuevoEstado !== estadoAnterior) {
+          this.registrarRevisionLectura(doc, 'Cambio a ' + nuevoEstado);
+        }
+
         const updatedDoc = {
           ...doc,
           ...res,
+          nombre: cleanNombre,
+          auditRevisiones: doc.auditRevisiones,
           proceso: procPrincipal,
-          procesos: res.procesos && res.procesos.length > 0 ? res.procesos : [procPrincipal],
-          procesosVisibles: res.procesosVisibles || (res.modoVisibilidad === 'TODOS' ? ['Todos los procesos'] : [procPrincipal]),
-          modoVisibilidad: res.modoVisibilidad || (res.procesosVisibles?.includes('Todos los procesos') ? 'TODOS' : 'PERSONALIZADO')
+          procesos: procsArray,
+          procesosVisibles: procsArray,
+          modoVisibilidad: procsArray.length > 1 ? 'PERSONALIZADO' : (res.modoVisibilidad || 'PERSONALIZADO')
         };
 
         try {

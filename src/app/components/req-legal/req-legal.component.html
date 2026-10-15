@@ -24,7 +24,7 @@
         <span>Plantilla</span>
       </button>
 
-      <button type="button" class="btn-primary-glow" (click)="onAgregar()">
+      <button *ngIf="canCrearEditarMatriz" type="button" class="btn-primary-glow" (click)="onAgregar()">
         <mat-icon>add</mat-icon>
         <span>Nuevo requisito</span>
       </button>
@@ -70,7 +70,7 @@
         <span>Exportar Excel</span>
       </button>
 
-      <button type="button" class="btn-primary-glow" (click)="onAgregar()">
+      <button *ngIf="canCrearEditarMatriz" type="button" class="btn-primary-glow" (click)="onAgregar()">
         <span>+ Nuevo requisito legal</span>
       </button>
     </div>
@@ -266,10 +266,10 @@
                 <button type="button" class="action-btn btn-download" (click)="onDescargarEvidencia(row)" title="Descargar archivo de evidencia">
                   <mat-icon>file_download</mat-icon>
                 </button>
-                <button type="button" class="action-btn btn-edit" (click)="onEditar(row)" title="Editar">
+                <button *ngIf="canCrearEditarMatriz" type="button" class="action-btn btn-edit" (click)="onEditar(row)" title="Editar">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <button type="button" class="action-btn btn-delete" (click)="onEliminar(row)" title="Eliminar">
+                <button *ngIf="canCrearEditarMatriz" type="button" class="action-btn btn-delete" (click)="onEliminar(row)" title="Eliminar">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
@@ -371,10 +371,10 @@
               <button type="button" class="action-btn btn-download" (click)="onDescargarEvidencia(row)" title="Descargar archivo de evidencia">
                 <mat-icon>file_download</mat-icon>
               </button>
-              <button type="button" class="action-btn btn-edit" (click)="onEditar(row)" title="Editar">
+              <button *ngIf="canCrearEditarMatriz" type="button" class="action-btn btn-edit" (click)="onEditar(row)" title="Editar">
                 <mat-icon>edit</mat-icon>
               </button>
-              <button type="button" class="action-btn btn-delete" (click)="onEliminar(row)" title="Eliminar">
+              <button *ngIf="canCrearEditarMatriz" type="button" class="action-btn btn-delete" (click)="onEliminar(row)" title="Eliminar">
                 <mat-icon>delete</mat-icon>
               </button>
             </div>

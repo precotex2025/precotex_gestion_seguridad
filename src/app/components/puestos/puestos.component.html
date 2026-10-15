@@ -4,7 +4,8 @@
   <div class="banner-aviso-collapsible" *ngIf="mostrarBanner">
     <div class="banner-info-left">
       <mat-icon class="banner-info-icon">info</mat-icon>
-      <span>Gestión de puestos y colaboradores. Pulsa <strong>+ Nuevo puesto</strong> para registrar un cargo y asignar permisos del sistema.</span>
+      <span>Gestión de puestos y colaboradores. Pulsa <strong>+ Nuevo puesto</strong> para registrar un cargo y asignar
+        permisos del sistema.</span>
     </div>
     <button type="button" class="btn-close-banner" (click)="cerrarBanner()" title="Cerrar aviso">
       <mat-icon>close</mat-icon>
@@ -13,7 +14,7 @@
 
   <!-- ESTADÍSTICAS COMPACTAS CON TOP-GLOW E ICONOS MARCA DE AGUA -->
   <div class="stats-grid-compact">
-    
+
     <div class="stat-card-compact glow-border-total">
       <div class="stat-watermark">
         <mat-icon>badge</mat-icon>
@@ -60,19 +61,18 @@
       <!-- Buscador Inline Integrado -->
       <div class="inline-search-box">
         <mat-icon class="search-icon">search</mat-icon>
-        <input type="text" 
-               (keyup)="aplicarFiltro($event)" 
-               placeholder="Buscar puesto, proceso o usuario..." 
-               class="inline-search-input">
+        <input type="text" (keyup)="aplicarFiltro($event)" placeholder="Buscar puesto, proceso o usuario..."
+          class="inline-search-input">
       </div>
 
       <!-- Botón Exportar Reporte a Excel (PUE-04) -->
-      <button type="button" class="btn-exportar-excel" (click)="onExportarReporte()" title="Exportar Reporte General a Excel con Fechas de Registro (PUE-04)">
+      <button type="button" class="btn-exportar-excel" (click)="onExportarReporte()"
+        title="Exportar Reporte General a Excel con Fechas de Registro">
         <mat-icon>file_download</mat-icon>
         <span>Exportar reporte</span>
       </button>
 
-      <button type="button" class="btn-agregar-norma-premium" (click)="onAgregar()">
+      <button *ngIf="canCrearUsuario" type="button" class="btn-agregar-norma-premium" (click)="onAgregar()">
         <mat-icon>add</mat-icon>
         <span>Nuevo puesto</span>
       </button>
@@ -105,8 +105,8 @@
             </div>
             <div style="display: flex; flex-direction: column;">
               <span class="user-full-name">{{ row.usuario }}</span>
-              <span *ngIf="row.userCode || (row.email && !row.usuario.toLowerCase().includes(row.email.split('@')[0]))" 
-                    style="font-size: 11px; color: #64748b; font-weight: 500; margin-top: 1px;">
+              <span *ngIf="row.userCode || (row.email && !row.usuario.toLowerCase().includes(row.email.split('@')[0]))"
+                style="font-size: 11px; color: #64748b; font-weight: 500; margin-top: 1px;">
                 {{ '@' + (row.userCode || (row.email ? row.email.split('@')[0] : '')) }}
               </span>
             </div>
@@ -117,12 +117,39 @@
         </td>
       </ng-container>
 
+
+      <!-- Contraseña de Usuario con Ojo para Revelar y Copiado Rápido (Opción A) -->
+      <ng-container matColumnDef="password">
+        <th mat-header-cell *matHeaderCellDef style="min-width: 230px; width: 230px;">Contraseña</th>
+        <td mat-cell *matCellDef="let row">
+          <div class="password-cell-box" *ngIf="row.password; else noPass">
+            <span class="password-value" [class.is-masked]="!isPasswordVisible(row)">
+              {{ isPasswordVisible(row) ? row.password : '••••••••' }}
+            </span>
+            <div class="password-actions">
+              <button type="button" class="btn-pass-action" (click)="toggleMostrarPassword(row)"
+                [title]="isPasswordVisible(row) ? 'Ocultar contraseña' : 'Ver contraseña'">
+                <mat-icon>{{ isPasswordVisible(row) ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              <button type="button" class="btn-pass-action" (click)="copiarPassword(row.password)"
+                title="Copiar contraseña al portapapeles">
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </div>
+          </div>
+          <ng-template #noPass>
+            <span class="no-pass-text">— Sin clave —</span>
+          </ng-template>
+        </td>
+      </ng-container>
       <!-- Fecha de Registro (Ticket PUE-04) -->
       <ng-container matColumnDef="fecha_Registro">
         <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 140px;">Fecha Registro</th>
         <td mat-cell *matCellDef="let row" class="cat-cell">
-          <div style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 500; color: #475569; white-space: nowrap;">
-            <mat-icon style="font-size: 15px; width: 15px; height: 15px; color: #6366f1; min-width: 15px;">calendar_today</mat-icon>
+          <div
+            style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 500; color: #475569; white-space: nowrap;">
+            <mat-icon
+              style="font-size: 15px; width: 15px; height: 15px; color: #6366f1; min-width: 15px;">calendar_today</mat-icon>
             <span>{{ formatFecha(row.fecha_Registro) }}</span>
           </div>
         </td>
@@ -137,7 +164,8 @@
       <!-- Permisos -->
       <ng-container matColumnDef="permisos">
         <th mat-header-cell *matHeaderCellDef mat-sort-header style="min-width: 200px;">Permisos</th>
-        <td mat-cell *matCellDef="let row" class="desc-cell-truncated" [matTooltip]="row.permisos" matTooltipPosition="above">
+        <td mat-cell *matCellDef="let row" class="desc-cell-truncated" [matTooltip]="row.permisos"
+          matTooltipPosition="above">
           {{ row.permisos }}
         </td>
       </ng-container>
@@ -151,11 +179,9 @@
               <span class="glowing-dot"></span>
               <span class="badge-text">{{ row.estado || 'Activo' }}</span>
             </span>
-            <button *ngIf="row.estado === 'Pendiente de activación' || (row.estado && row.estado.includes('Pendiente'))" 
-                    type="button" 
-                    class="btn-quick-activate" 
-                    (click)="onConfirmarActivacion(row)" 
-                    title="Confirmar recepción de correo y activar cuenta">
+            <button *ngIf="row.estado === 'Pendiente de activación' || (row.estado && row.estado.includes('Pendiente'))"
+              type="button" class="btn-quick-activate" (click)="onConfirmarActivacion(row)"
+              title="Confirmar recepción de correo y activar cuenta">
               <mat-icon>mark_email_read</mat-icon>
               <span>Confirmar</span>
             </button>
@@ -168,10 +194,10 @@
         <th mat-header-cell *matHeaderCellDef style="width: 100px; text-align: center;">Acciones</th>
         <td mat-cell *matCellDef="let row" class="acciones-cell">
           <div class="actions-wrapper">
-            <button class="action-btn btn-edit" (click)="onEditar(row)" title="Editar">
+            <button *ngIf="canEditarUsuario" class="action-btn btn-edit" (click)="onEditar(row)" title="Editar">
               <mat-icon>edit</mat-icon>
             </button>
-            <button class="action-btn btn-delete" (click)="onEliminar(row)" title="Eliminar">
+            <button *ngIf="canEliminarUsuario" class="action-btn btn-delete" (click)="onEliminar(row)" title="Eliminar">
               <mat-icon>delete</mat-icon>
             </button>
           </div>

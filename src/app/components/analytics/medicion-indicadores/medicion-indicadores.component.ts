@@ -6,6 +6,9 @@ import { ToastrService } from 'ngx-toastr';
 import { MedicionRegeditComponent } from './medicion-regedit/medicion-regedit.component';
 import { AnalyticsDetalleComponent } from '../analytics-detalle/analytics-detalle.component';
 import { IndicadoresService } from '../../../services/indicadores.service';
+import { PermisosService } from '../../../services/permisos.service';
+import { DocumentosControladosService } from '../../../services/documentos-controlados.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-medicion-indicadores',
@@ -36,14 +39,27 @@ export class MedicionIndicadoresComponent implements OnInit {
 
   dataSource = new MatTableDataSource<any>();
 
+  canRegistrarMedicion: boolean = true;
+  canExportarMedicion: boolean = true;
+
   constructor(
     private dialog: MatDialog,
     private toastr: ToastrService,
-    private indicadoresService: IndicadoresService
+    private indicadoresService: IndicadoresService,
+    private docService: DocumentosControladosService,
+    private permisosService: PermisosService
   ) { }
 
   ngOnInit(): void {
+    this.cargarPermisos();
     this.onListado();
+  }
+
+  cargarPermisos(): void {
+    const userLvl = this.permisosService.getUserLevelKey();
+    const isJefaturaOGerencial = userLvl === 'ger' || userLvl === 'jef';
+    this.canRegistrarMedicion = this.permisosService.hasFinePermission('Indicadores', 'Medición', 'Registrar medición', true);
+    this.canExportarMedicion = this.permisosService.hasFinePermission('Indicadores', 'Medición', 'Exportar', isJefaturaOGerencial);
   }
 
   formatearMeta(meta: any, unidad?: string): string {
@@ -182,7 +198,20 @@ export class MedicionIndicadoresComponent implements OnInit {
       localSavedMediciones = [];
     }
 
-    let listFinal = [...localSavedMediciones, ...medicionesExistentes];
+    // Priorizar SIEMPRE medicionesExistentes que provienen directamente de la Base de Datos
+    let listFinal = [...medicionesExistentes];
+
+    // Incluir de localStorage únicamente las que no estén presentes en la BD
+    localSavedMediciones.forEach((localItem: any) => {
+      const match = listFinal.some((dbItem: any) =>
+        (dbItem.idMedicion && localItem.idMedicion && dbItem.idMedicion === localItem.idMedicion) ||
+        ((dbItem.codigoIndicador || '').toLowerCase() === (localItem.codigoIndicador || '').toLowerCase() &&
+         (dbItem.periodo || '').toLowerCase() === (localItem.periodo || '').toLowerCase())
+      );
+      if (!match) {
+        listFinal.push(localItem);
+      }
+    });
 
     // Para cada indicador en el catálogo, si no tiene medición registrada, crear fila inicial (IND-10)
     catalogo.forEach((ind: any) => {
@@ -192,8 +221,8 @@ export class MedicionIndicadoresComponent implements OnInit {
       );
 
       if (!exists) {
-        listFinal.unshift({
-          id: ind.id_Indicador || ind.id || Date.now(),
+        listFinal.push({
+          id: ind.id_Indicador || ind.id,
           idMedicion: null,
           idIndicador: ind.id_Indicador || ind.id,
           codigoIndicador: ind.codigo,
@@ -220,12 +249,17 @@ export class MedicionIndicadoresComponent implements OnInit {
       listFinal = this.cargarMedicionesFallback();
     }
 
-    // Eliminar duplicados por id o código
+    // Eliminar duplicados dando prioridad a los registros con Id_Medicion real de Base de Datos
     const map = new Map<string, any>();
     listFinal.forEach(item => {
-      const key = (item.codigoIndicador || item.indicador || '') + (item.periodo || '');
+      const key = (item.codigoIndicador || item.indicador || '') + '_' + (item.periodo || '');
       if (!map.has(key)) {
         map.set(key, item);
+      } else {
+        const existing = map.get(key);
+        if (item.idMedicion && item.idMedicion > 0 && item.idMedicion < 1000000000 && (!existing.idMedicion || existing.idMedicion > 1000000000)) {
+          map.set(key, item);
+        }
       }
     });
 
@@ -233,6 +267,12 @@ export class MedicionIndicadoresComponent implements OnInit {
     this.allRawData = uniqueList;
     this.dataSource.data = uniqueList;
     this.calculateStats(uniqueList);
+
+    // Mantener localStorage limpio y sincronizado con los registros reales
+    try {
+      const persistibles = uniqueList.filter(u => u.idMedicion && u.idMedicion > 0 && u.idMedicion < 1000000000);
+      localStorage.setItem('precotex_mediciones', JSON.stringify(persistibles));
+    } catch (e) { }
   }
 
   cargarMedicionesFallback(): any[] {
@@ -491,6 +531,10 @@ export class MedicionIndicadoresComponent implements OnInit {
   }
 
   onAgregar(): void {
+    if (!this.canRegistrarMedicion) {
+      this.toastr.warning('No cuentas con permisos para registrar mediciones.', 'Acceso Restringido');
+      return;
+    }
     const dialogRef = this.dialog.open(MedicionRegeditComponent, {
       width: '680px',
       disableClose: true,
@@ -502,93 +546,13 @@ export class MedicionIndicadoresComponent implements OnInit {
       }
     });
 
-    dialogRef.afterClosed().subscribe(res => {
+    dialogRef.afterClosed().subscribe(async (res) => {
       if (res) {
-        const numericVal = parseFloat(String(res.valor).replace(/[^0-9.]/g, '')) || 0;
-        const metaNum = parseFloat(String(res.meta).replace(/[^0-9.]/g, '')) || 85;
-        const codeFinal = res.codigoIndicador || 'IND-2026-001';
-
-        const payload = {
-          Accion: 'I',
-          Id_Indicador: res.idIndicador || null,
-          Codigo_Indicador: codeFinal,
-          Nombre_Indicador: res.indicador || '',
-          Tipo: res.tipo || 'Eficacia',
-          Sede: res.sede || 'Todas',
-          Proceso: res.proceso || 'SSOMA',
-          Norma: res.norma || 'ISO 9001:2015',
-          Frecuencia: res.frecuencia || 'Mensual',
-          Meta: metaNum,
-          Periodo: res.periodo || 'Ene-2026',
-          Valor_Obtenido: numericVal,
-          Semaforo: res.semaforo || 'En meta',
-          Evidencia: res.evidencia || '',
-          Archivo_Base64: res.archivoBase64 || '',
-          Comentario: res.obs || '',
-          Usuario_Registro: 'SISTEMAS'
-        };
-
-        const newItem = {
-          id: Date.now(),
-          idMedicion: Date.now(),
-          idIndicador: res.idIndicador || null,
-          codigoIndicador: codeFinal,
-          indicador: res.indicador || 'Indicador Medición',
-          tipo: res.tipo || 'Eficacia',
-          sede: res.sede || 'Todas',
-          proceso: res.proceso || 'SSOMA',
-          norma: res.norma || 'ISO 9001:2015',
-          frecuencia: res.frecuencia || 'Mensual',
-          meta: metaNum + '%',
-          metaNumerica: metaNum,
-          valor: numericVal + '%',
-          valorNumerico: numericVal,
-          periodo: res.periodo || 'Ene-2026',
-          semaforo: res.semaforo || 'En meta',
-          evidencia: res.evidencia || '',
-          archivoBase64: res.archivoBase64 || '',
-          obs: res.obs || ''
-        };
-
-        // Guardar de inmediato en localStorage y actualizar pantalla reactivamente
-        try {
-          const localMeds = JSON.parse(localStorage.getItem('precotex_mediciones') || '[]');
-          localStorage.setItem('precotex_mediciones', JSON.stringify([newItem, ...localMeds.filter((m: any) => m.codigoIndicador !== newItem.codigoIndicador || m.periodo !== newItem.periodo)]));
-        } catch (e) { }
-
-        if (res.archivoBase64) {
-          const fileObj = { base64: res.archivoBase64, name: res.evidencia || 'evidencia' };
-          this.indicadorFileMap.set(String(newItem.id), fileObj);
-          this.indicadorFileMap.set(newItem.codigoIndicador, fileObj);
-          this.indicadorFileMap.set(newItem.codigoIndicador + '_' + newItem.periodo, fileObj);
-          if (res.evidencia) this.indicadorFileMap.set(res.evidencia, fileObj);
-        }
-        if (res.archivoBase64) {
-          const fileObj = { base64: res.archivoBase64, name: res.evidencia || 'evidencia' };
-          this.indicadorFileMap.set(String(newItem.id), fileObj);
-          this.indicadorFileMap.set(newItem.codigoIndicador, fileObj);
-          this.indicadorFileMap.set(newItem.codigoIndicador + '_' + newItem.periodo, fileObj);
-          if (res.evidencia) this.indicadorFileMap.set(res.evidencia, fileObj);
-        }
-        const updatedList = [newItem, ...this.allRawData.filter(d => d.codigoIndicador !== newItem.codigoIndicador || d.periodo !== newItem.periodo)];
-        this.allRawData = updatedList;
-        this.dataSource.data = updatedList;
-        this.calculateStats(updatedList);
-        this.toastr.success('Medición registrada y visible en el panel.', '', { timeOut: 2500 });
-
-        this.indicadoresService.postProcesoMntoIndicadorMedicion(payload).subscribe({
-          next: (response: any) => {
-            if (response && response.success) {
-              this.onListado();
-            }
-          },
-          error: () => {
-            // Se mantiene visible localmente
-          }
-        });
+        await this.procesarYGuardarMedicion(res, true, null);
       }
     });
   }
+
 
   onVerDetalle(row: any): void {
     this.dialog.open(AnalyticsDetalleComponent, {
@@ -602,12 +566,12 @@ export class MedicionIndicadoresComponent implements OnInit {
           codigoIndicador: row.codigoIndicador || row.codigo,
           nombre: row.indicador || row.nombre,
           indicador: row.indicador || row.nombre,
-          responsable: row.responsable || 'Jefe de Costura',
+          responsable: row.responsable || 'Jefe de Área',
           tipo: row.tipo || 'Eficacia',
-          sede: row.sede || 'Huachipa 1, Huachipa 2',
-          proceso: row.proceso || 'Operaciones Manufactura (OPM) · Costura (COST)',
+          sede: row.sede || 'Todas',
+          proceso: row.proceso || 'Operaciones Precotex',
           norma: row.norma || 'ISO 9001:2015',
-          frecuencia: row.frecuencia || 'Diario',
+          frecuencia: row.frecuencia || 'Mensual',
           meta: row.meta || '≥85%',
           unidad: row.unidad || 'Porcentaje (%)',
           lineaBase: row.lineaBase || '75%',
@@ -624,6 +588,10 @@ export class MedicionIndicadoresComponent implements OnInit {
   }
 
   onEditar(item: any): void {
+    if (!this.canRegistrarMedicion) {
+      this.toastr.warning('No cuentas con permisos para editar mediciones.', 'Acceso Restringido');
+      return;
+    }
     const dialogRef = this.dialog.open(MedicionRegeditComponent, {
       width: '680px',
       disableClose: true,
@@ -635,84 +603,108 @@ export class MedicionIndicadoresComponent implements OnInit {
       }
     });
 
-    dialogRef.afterClosed().subscribe(res => {
+    dialogRef.afterClosed().subscribe(async (res) => {
       if (res) {
-        const numericVal = parseFloat(String(res.valor).replace(/[^0-9.]/g, '')) || 0;
-        const metaNum = parseFloat(String(res.meta).replace(/[^0-9.]/g, '')) || 85;
-        const codeFinal = res.codigoIndicador || item.codigoIndicador || 'IND-2026-001';
+        const isNew = !item.idMedicion || typeof item.idMedicion !== 'number' || item.idMedicion <= 0 || item.idMedicion > 1000000000;
+        const targetMedId = isNew ? null : item.idMedicion;
+        await this.procesarYGuardarMedicion(res, isNew, targetMedId, item);
+      }
+    });
+  }
 
-        const isNew = !item.idMedicion || item.idMedicion <= 0;
-        const payload = {
-          Accion: isNew ? 'I' : 'U',
-          Id_Medicion: isNew ? null : item.idMedicion,
-          Id_Indicador: res.idIndicador || item.idIndicador,
-          Codigo_Indicador: codeFinal,
-          Nombre_Indicador: res.indicador || item.indicador || '',
-          Tipo: res.tipo || item.tipo || 'Eficacia',
-          Sede: res.sede || item.sede || 'Todas',
-          Proceso: res.proceso || item.proceso || 'SSOMA',
-          Norma: res.norma || item.norma || 'ISO 9001:2015',
-          Frecuencia: res.frecuencia || item.frecuencia || 'Mensual',
-          Meta: metaNum,
-          Periodo: res.periodo || 'Ene-2026',
-          Valor_Obtenido: numericVal,
-          Semaforo: res.semaforo || item.semaforo || 'En meta',
-          Evidencia: res.evidencia || item.evidencia || '',
-          Archivo_Base64: res.archivoBase64 || '',
-          Comentario: res.obs || '',
-          Usuario_Registro: 'SISTEMAS'
-        };
+  dataURLtoFile(dataurl: string, filename: string): File {
+    const arr = dataurl.split(',');
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+  }
 
-        const updatedItem = {
-          ...item,
-          indicador: res.indicador || item.indicador,
-          sede: res.sede || item.sede,
-          proceso: res.proceso || item.proceso,
-          meta: metaNum + '%',
-          metaNumerica: metaNum,
-          valor: numericVal + '%',
-          valorNumerico: numericVal,
-          periodo: res.periodo || item.periodo,
-          semaforo: res.semaforo || item.semaforo,
-          evidencia: res.evidencia || item.evidencia,
-          archivoBase64: res.archivoBase64 || item.archivoBase64 || '',
-          obs: res.obs || item.obs
-        };
+  async procesarYGuardarMedicion(res: any, isNew: boolean, targetMedId: any, item?: any): Promise<void> {
+    const numericVal = parseFloat(String(res.valor).replace(/[^0-9.]/g, '')) || 0;
+    const metaNum = parseFloat(String(res.meta).replace(/[^0-9.]/g, '')) || 85;
+    const codeFinal = res.codigoIndicador || item?.codigoIndicador || 'IND-2026-001';
 
-        if (res.archivoBase64 || item.archivoBase64) {
-          const fileObj = { base64: res.archivoBase64 || item.archivoBase64, name: updatedItem.evidencia || 'evidencia' };
-          if (item.id) this.indicadorFileMap.set(String(item.id), fileObj);
-          if (item.idMedicion) this.indicadorFileMap.set(String(item.idMedicion), fileObj);
-          if (item.codigoIndicador) this.indicadorFileMap.set(item.codigoIndicador, fileObj);
-          if (item.codigoIndicador && updatedItem.periodo) this.indicadorFileMap.set(item.codigoIndicador + '_' + updatedItem.periodo, fileObj);
-          if (updatedItem.evidencia) this.indicadorFileMap.set(updatedItem.evidencia, fileObj);
+    let serverFileName = (res.evidencia || item?.evidencia || '').trim();
+
+    // 1. Subir archivo a servidor si se adjuntó uno nuevo
+    if (res.rawFile) {
+      try {
+        const uploadRes: any = await firstValueFrom(this.docService.uploadArchivo(res.rawFile));
+        if (uploadRes && uploadRes.fileName) {
+          serverFileName = uploadRes.fileName;
         }
+      } catch (err) {
+        console.warn('Error al subir archivo a servidor, manteniendo local:', err);
+      }
+    } else if (res.archivoBase64 && res.evidencia && (!serverFileName || !serverFileName.includes('_'))) {
+      try {
+        const fileObj = this.dataURLtoFile(res.archivoBase64, res.evidencia);
+        const uploadRes: any = await firstValueFrom(this.docService.uploadArchivo(fileObj));
+        if (uploadRes && uploadRes.fileName) {
+          serverFileName = uploadRes.fileName;
+        }
+      } catch (err) {
+        console.warn('Error al subir base64 a servidor:', err);
+      }
+    }
 
-        try {
-          const localMeds = JSON.parse(localStorage.getItem('precotex_mediciones') || '[]');
-          const idx = localMeds.findIndex((m: any) => m.id === item.id || m.idMedicion === item.idMedicion);
-          if (idx >= 0) {
-            localMeds[idx] = updatedItem;
-          } else {
-            localMeds.unshift(updatedItem);
-          }
-          localStorage.setItem('precotex_mediciones', JSON.stringify(localMeds));
-        } catch (e) { }
+    const targetIndId = (res.idIndicador && res.idIndicador < 1000000000) ? res.idIndicador : ((item?.idIndicador && item.idIndicador < 1000000000) ? item.idIndicador : null);
 
-        const listCopy = this.allRawData.map(d => (d.id === item.id || d.idMedicion === item.idMedicion) ? updatedItem : d);
-        this.allRawData = listCopy;
-        this.dataSource.data = listCopy;
-        this.calculateStats(listCopy);
-        this.toastr.success('Medición actualizada correctamente.', '', { timeOut: 2500 });
+    // Empaquetar evidencia en Comentario si existe para que el SP en BD la guarde en columna Evidencia
+    let obsTexto = (res.obs || item?.obs || '').replace(/\[EVIDENCIA:[^\]]+\]\s*/g, '').trim();
+    let comentarioFinal = obsTexto;
+    if (serverFileName) {
+      comentarioFinal = `[EVIDENCIA:${serverFileName}] ${obsTexto}`.trim();
+    }
 
-        this.indicadoresService.postProcesoMntoIndicadorMedicion(payload).subscribe({
-          next: (response: any) => {
-            if (response && response.success) {
-              this.onListado();
-            }
-          },
-          error: () => { }
-        });
+    const payload = {
+      Accion: isNew ? 'I' : 'U',
+      Id_Medicion: targetMedId,
+      Id_Indicador: targetIndId,
+      Codigo_Indicador: codeFinal,
+      Nombre_Indicador: res.indicador || item?.indicador || '',
+      Tipo: res.tipo || item?.tipo || 'Eficacia',
+      Sede: res.sede || item?.sede || 'Todas',
+      Proceso: res.proceso || item?.proceso || 'SSOMA',
+      Norma: res.norma || item?.norma || 'ISO 9001:2015',
+      Frecuencia: res.frecuencia || item?.frecuencia || 'Mensual',
+      Meta: metaNum,
+      Periodo: res.periodo || item?.periodo || 'Ene-2026',
+      Valor_Obtenido: numericVal,
+      Semaforo: res.semaforo || item?.semaforo || 'En meta',
+      Evidencia: serverFileName,
+      Archivo_Base64: res.archivoBase64 || item?.archivoBase64 || '',
+      Comentario: comentarioFinal,
+      Usuario_Registro: 'SISTEMAS'
+    };
+
+    if (res.archivoBase64 || item?.archivoBase64) {
+      const fileObj = { base64: res.archivoBase64 || item.archivoBase64, name: serverFileName || res.evidencia || 'evidencia' };
+      if (item?.id) this.indicadorFileMap.set(String(item.id), fileObj);
+      if (item?.idMedicion) this.indicadorFileMap.set(String(item.idMedicion), fileObj);
+      if (codeFinal) this.indicadorFileMap.set(codeFinal, fileObj);
+      if (codeFinal && payload.Periodo) this.indicadorFileMap.set(codeFinal + '_' + payload.Periodo, fileObj);
+      if (serverFileName) this.indicadorFileMap.set(serverFileName, fileObj);
+    }
+
+    this.indicadoresService.postProcesoMntoIndicadorMedicion(payload).subscribe({
+      next: (response: any) => {
+        if (response && response.success) {
+          const successMsg = isNew ? 'Medición registrada y guardada en la Base de Datos con éxito.' : 'Medición actualizada y guardada en la Base de Datos con éxito.';
+          this.toastr.success(successMsg, 'Operación Exitosa', { timeOut: 3000 });
+          this.onListado();
+        } else {
+          this.toastr.error(response?.message || 'Error al guardar la medición en la Base de Datos.', 'Error BD');
+        }
+      },
+      error: (err: any) => {
+        this.toastr.error(err?.error?.message || err?.message || 'Error del servidor al registrar medición.', 'Error Servidor');
       }
     });
   }
@@ -728,32 +720,38 @@ export class MedicionIndicadoresComponent implements OnInit {
       cancelButtonText: 'No'
     }).then(result => {
       if (result.isConfirmed) {
+        const idToDelete = (item.idMedicion && item.idMedicion > 0 && item.idMedicion < 1000000000) ? item.idMedicion : ((item.id && item.id > 0 && item.id < 1000000000) ? item.id : null);
+        if (!idToDelete) {
+          this.toastr.info('Medición retirada del panel.');
+          this.allRawData = this.allRawData.filter(d => d !== item);
+          this.dataSource.data = this.allRawData;
+          this.calculateStats(this.allRawData);
+          return;
+        }
+
         const payload = {
           Accion: 'D',
-          Id_Medicion: item.idMedicion || item.id,
+          Id_Medicion: idToDelete,
           Usuario_Registro: 'SISTEMAS'
         };
 
         this.indicadoresService.postProcesoMntoIndicadorMedicion(payload).subscribe({
           next: (response: any) => {
-            if (response.success) {
-              this.toastr.success('Medición eliminada correctamente.', '', { timeOut: 2500 });
+            if (response && response.success) {
+              this.toastr.success('Medición eliminada correctamente de la Base de Datos.', '', { timeOut: 2500 });
               this.onListado();
             } else {
-              this.toastr.error(response.message || 'Error al eliminar', 'Error BD');
+              this.toastr.error(response?.message || 'Error al eliminar', 'Error BD');
             }
           },
-          error: (err) => {
-            this.toastr.error(err.error?.message || err.message, 'Error Servidor');
+          error: (err: any) => {
+            this.toastr.error(err?.error?.message || err?.message || 'Error al eliminar', 'Error Servidor');
           }
         });
       }
     });
   }
 
-  // ===================================================================
-  // DESCARGA DIRECTA DE EVIDENCIA ADJUNTA A LA MEDICIÓN DE INDICADOR
-  // ===================================================================
   onDescargarEvidencia(row: any): void {
     if (!row) {
       this.toastr.warning('No se pudo identificar la medición seleccionada.', 'Sin Registro');
@@ -763,8 +761,8 @@ export class MedicionIndicadoresComponent implements OnInit {
     const filename = (row.evidencia || row.archivo_Evidencia || row.archivo || row.nombre_Archivo || '').trim();
     const codigo = row.codigoIndicador || row.codigo || 'IND';
 
-    // 1. Obtener base64 o URL
-    let fileBase64 = row.archivoBase64 || row.archivo_Base64 || row.evidenciaData;
+    // 1. Si tenemos el archivo en memoria o cache en Base64
+    let fileBase64 = row.archivoBase64 || row.archivo_Base64;
     if (!fileBase64 && this.indicadorFileMap) {
       const cached = (row.id && this.indicadorFileMap.get(String(row.id))) ||
                      (row.idMedicion && this.indicadorFileMap.get(String(row.idMedicion))) ||
@@ -776,197 +774,32 @@ export class MedicionIndicadoresComponent implements OnInit {
       }
     }
 
-    // Verificar en localStorage si aún no se tiene en memoria
-    if (!fileBase64 && typeof localStorage !== 'undefined') {
-      try {
-        const localMeds = JSON.parse(localStorage.getItem('precotex_mediciones') || '[]');
-        const found = localMeds.find((m: any) =>
-          (m.id && m.id === row.id) ||
-          (m.idMedicion && m.idMedicion === row.idMedicion) ||
-          (m.codigoIndicador && m.codigoIndicador === row.codigoIndicador && m.periodo === row.periodo)
-        );
-        if (found && found.archivoBase64) {
-          fileBase64 = found.archivoBase64;
-        }
-      } catch (e) { }
-    }
-
-    if (!filename && !fileBase64) {
-      this.toastr.warning(`La medición de '${row.indicador || codigo}' no cuenta con un documento de evidencia adjunto subido.`, 'Sin Evidencia Adjunta');
+    if (fileBase64 && typeof fileBase64 === 'string' && fileBase64.includes(';base64,')) {
+      const a = document.createElement('a');
+      a.href = fileBase64;
+      a.download = filename || `Evidencia_Medicion_${codigo}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      this.toastr.success(`Descargando documento de evidencia: ${a.download}`, 'Descarga Exitosa');
       return;
     }
 
-    const finalFileName = (filename && filename.length > 0) ? filename : `Evidencia_Medicion_${codigo}.pdf`;
-
-    // 2. Si viene como URL remota
-    if (typeof fileBase64 === 'string' && (fileBase64.startsWith('http://') || fileBase64.startsWith('https://') || fileBase64.startsWith('/'))) {
+    // 2. Si el archivo está guardado en el servidor Precotex
+    if (filename && filename.length > 0) {
+      const downloadUrl = this.docService.getDownloadUrl(filename);
       const a = document.createElement('a');
-      a.href = fileBase64;
-      a.download = finalFileName;
+      a.href = downloadUrl;
+      a.download = filename;
       a.target = '_blank';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      this.toastr.success(`Descargando documento de evidencia: ${finalFileName}`, 'Descarga Exitosa');
+      this.toastr.success(`Descargando documento de evidencia: ${filename}`, 'Descarga Exitosa');
       return;
     }
 
-    // 3. Si viene con Data URL o Base64 guardado
-    if (fileBase64 && typeof fileBase64 === 'string' && fileBase64.trim().length > 0) {
-      try {
-        let downloadHref = fileBase64;
-        if (!downloadHref.startsWith('data:')) {
-          const mime = this.obtenerMimePorExtension(finalFileName);
-          downloadHref = `data:${mime};base64,${downloadHref}`;
-        }
-        const a = document.createElement('a');
-        a.href = downloadHref;
-        a.download = finalFileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        this.toastr.success(`Descargando evidencia: ${finalFileName}`, 'Descarga Exitosa');
-        return;
-      } catch (err) {
-        console.error('Error al decodificar archivo de evidencia:', err);
-      }
-    }
-
-    // 4. Si el registro tiene nombre de archivo pero no el buffer binario en cache
-    const ext = finalFileName.split('.').pop()?.toLowerCase() || '';
-    if (ext === 'pdf') {
-      this.descargarPdfAutenticoMedicion(row, finalFileName);
-    } else if (ext === 'xls' || ext === 'xlsx') {
-      this.generarExcelMedicion(row, finalFileName);
-    } else if (ext === 'doc' || ext === 'docx') {
-      this.generarWordMedicion(row, finalFileName);
-    } else if (ext === 'png' || ext === 'jpg' || ext === 'jpeg') {
-      this.generarImagenMedicion(row, finalFileName);
-    } else {
-      const content = `PRECOTEX S.A.C. - SISTEMA INTEGRADO DE GESTION\n` +
-        `EVIDENCIA DE MEDICION DE INDICADOR: ${codigo}\n` +
-        `Indicador: ${row.indicador || ''}\n` +
-        `Sede: ${row.sede || 'Todas'}\n` +
-        `Proceso: ${row.proceso || 'General'}\n` +
-        `Periodo: ${row.periodo || ''}\n` +
-        `Meta: ${row.meta || ''}\n` +
-        `Valor Obtenido: ${row.valor || ''}\n` +
-        `Estado: ${row.semaforo || ''}\n` +
-        `Observaciones: ${row.obs || 'Sin observaciones'}\n` +
-        `Archivo registrado: ${finalFileName}\n`;
-      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = finalFileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      this.toastr.success(`Descargando evidencia: ${finalFileName}`, 'Descarga Exitosa');
-    }
-  }
-
-  obtenerMimePorExtension(filename: string): string {
-    const ext = (filename.split('.').pop() || '').toLowerCase();
-    switch (ext) {
-      case 'pdf': return 'application/pdf';
-      case 'doc': return 'application/msword';
-      case 'docx': return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-      case 'xls': return 'application/vnd.ms-excel';
-      case 'xlsx': return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-      case 'png': return 'image/png';
-      case 'jpg':
-      case 'jpeg': return 'image/jpeg';
-      default: return 'application/octet-stream';
-    }
-  }
-
-  descargarPdfAutenticoMedicion(row: any, filename: string): void {
-    const sanitize = (str: any) => (str ? String(str).replace(/[\\()]/g, '') : '');
-    const codigo = row.codigoIndicador || row.codigo || 'IND-001';
-    const indicador = row.indicador || 'Indicador SIG';
-    const proceso = row.proceso || 'General';
-    const sede = row.sede || 'Todas';
-    const periodo = row.periodo || 'Periodo actual';
-    const meta = row.meta || '85%';
-    const valor = row.valor || '0%';
-    const semaforo = row.semaforo || 'En meta';
-    const obs = row.obs || 'Sin observaciones adicionales especificadas.';
-
-    const textStream = `BT
-/F2 16 Tf
-50 740 Td
-(PRECOTEX S.A.C. - SISTEMA INTEGRADO DE GESTION) Tj
-/F2 13 Tf
-0 -26 Td
-(EVIDENCIA DE MEDICION DE INDICADOR: ${sanitize(codigo)}) Tj
-/F1 10 Tf
-0 -24 Td
-(Periodo: ${sanitize(periodo)}   |   Sede: ${sanitize(sede)}) Tj
-/F2 11 Tf
-0 -26 Td
-(DATOS DEL INDICADOR:) Tj
-/F1 10 Tf
-0 -17 Td
-(Indicador: ${sanitize(indicador).substring(0, 75)}) Tj
-0 -16 Td
-(Proceso: ${sanitize(proceso)}      Frecuencia: ${sanitize(row.frecuencia || 'Mensual')}) Tj
-0 -16 Td
-(Meta: ${sanitize(meta)}      Valor Obtenido: ${sanitize(valor)}      Estado: ${sanitize(semaforo)}) Tj
-0 -16 Td
-(Archivo de Evidencia: ${sanitize(filename)}) Tj
-/F2 11 Tf
-0 -28 Td
-(OBSERVACIONES Y ANALISIS DE RESULTADOS:) Tj
-/F1 10 Tf
-0 -17 Td
-(${sanitize(obs).substring(0, 95)}) Tj
-0 -15 Td
-(${sanitize(obs).substring(95, 190)}) Tj
-/F1 9 Tf
-0 -60 Td
-(Este documento certifica el registro digital de medicion y evidencia en Precotex SIG.) Tj
-0 -14 Td
-(Fecha de descarga: ${new Date().toLocaleString()}) Tj
-ET`;
-
-    const encoder = new TextEncoder();
-    const streamBytes = encoder.encode(textStream);
-    const streamLen = streamBytes.length;
-
-    let pdf = `%PDF-1.4\n`;
-    const offsets: number[] = [];
-
-    const addObj = (str: string) => {
-      offsets.push(encoder.encode(pdf).length);
-      pdf += str + '\n';
-    };
-
-    addObj(`1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj`);
-    addObj(`2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj`);
-    addObj(`3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>\nendobj`);
-    addObj(`4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj`);
-    addObj(`5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\nendobj`);
-    addObj(`6 0 obj\n<< /Length ${streamLen} >>\nstream\n${textStream}\nendstream\nendobj`);
-
-    const startXref = encoder.encode(pdf).length;
-    pdf += `xref\n0 7\n0000000000 65535 f \n`;
-    for (let i = 0; i < offsets.length; i++) {
-      pdf += String(offsets[i]).padStart(10, '0') + ` 00000 n \n`;
-    }
-    pdf += `trailer\n<< /Size 7 /Root 1 0 R >>\nstartxref\n${startXref}\n%%EOF\n`;
-
-    const blob = new Blob([encoder.encode(pdf)], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    this.toastr.success(`Descargando documento de evidencia: ${filename}`, 'Descarga Exitosa');
+    this.toastr.warning(`La medición de '${row.indicador || codigo}' no cuenta con un documento de evidencia adjunto registrado.`, 'Sin Evidencia');
   }
 
   generarExcelMedicion(row: any, filename: string): void {

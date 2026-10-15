@@ -1,3 +1,4 @@
+import { firstValueFrom } from 'rxjs';
 import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -23,6 +24,10 @@ export class MedicionObjetivosRegeditComponent implements OnInit {
   objetivos: any[] = [];
   objetivoSeleccionado: any = null;
   nombreArchivoEvidencia: string = '';
+  archivoBase64: string = '';
+  selectedFile: File | null = null;
+  serverFileName: string = '';
+  isUploading: boolean = false;
 
   frecuenciasOptions = ['Mensual', 'Trimestral', 'Semestral', 'Anual'];
   semaforosOptions = ['En meta', 'En riesgo', 'Crítico'];
@@ -85,6 +90,8 @@ export class MedicionObjetivosRegeditComponent implements OnInit {
     if (this.data.Accion === 'U' && this.data.Datos) {
       this.formulario.patchValue(this.data.Datos);
       this.nombreArchivoEvidencia = this.data.Datos.evidencia || this.data.Datos.archivoEvidencia || '';
+      this.archivoBase64 = this.data.Datos.archivoBase64 || '';
+      this.serverFileName = this.data.Datos.serverFileName || '';
       this.buscarYAutocompletar(this.data.Datos.objetivo || this.data.Datos.codigoObjetivo || '');
     }
 
@@ -215,24 +222,43 @@ export class MedicionObjetivosRegeditComponent implements OnInit {
     return Object.keys(this.procesosGroups) as Array<keyof typeof this.procesosGroups>;
   }
 
-  onFileEvidenciaSelected(event: any): void {
+  async onFileEvidenciaSelected(event: any): Promise<void> {
     const file = event.target.files && event.target.files[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        this.toastr.warning('El archivo supera el límite máximo permitido de 10MB.', 'Archivo muy pesado');
+      if (file.size > 25 * 1024 * 1024) {
+        this.toastr.warning('El archivo supera el límite máximo permitido de 25MB.', 'Archivo muy pesado');
         return;
       }
+      this.selectedFile = file;
       this.nombreArchivoEvidencia = file.name;
       this.formulario.patchValue({
         evidencia: file.name,
         archivoEvidencia: file.name
       });
-      this.toastr.info(`Archivo "${file.name}" adjuntado como evidencia.`, 'Evidencia Adjuntada', { timeOut: 2500 });
+
+      // Subida física inmediata al servidor Backend en el momento de la selección
+      this.isUploading = true;
+      try {
+        const uploadRes: any = await firstValueFrom(this.objetivosService.uploadArchivo(file));
+        if (uploadRes && (uploadRes.success || uploadRes.fileName)) {
+          this.serverFileName = uploadRes.fileName;
+          console.log('[Medicion Regedit] Archivo subido inmediatamente al servidor:', this.serverFileName);
+          this.toastr.success(`Documento "${file.name}" subido al servidor correctamente.`, 'Archivo Adjuntado', { timeOut: 3000 });
+        }
+      } catch (err) {
+        console.warn('[Medicion Regedit] Error subiendo archivo al servidor:', err);
+        this.toastr.warning('No se pudo subir al servidor en este instante, se intentará al guardar.', 'Aviso');
+      } finally {
+        this.isUploading = false;
+      }
     }
   }
 
   onRemoveEvidencia(fileInput?: HTMLInputElement): void {
     this.nombreArchivoEvidencia = '';
+    this.archivoBase64 = '';
+    this.selectedFile = null;
+    this.serverFileName = '';
     this.formulario.patchValue({
       evidencia: '',
       archivoEvidencia: ''
@@ -242,16 +268,44 @@ export class MedicionObjetivosRegeditComponent implements OnInit {
     }
   }
 
-  onGuardar(): void {
+  async onGuardar(): Promise<void> {
     if (this.formulario.invalid) {
       this.toastr.warning('Por favor complete los campos obligatorios (*)', 'Formulario Incompleto');
       return;
     }
+
+    if (this.isUploading) {
+      this.toastr.info('Espere a que termine de subirse el documento adjunto...', 'Subiendo Archivo');
+      return;
+    }
+
+    let finalServerFileName = this.serverFileName;
+
+    // Si hay un archivo seleccionado y aún no tiene nombre de servidor, subirlo
+    if (this.selectedFile && !finalServerFileName) {
+      this.isUploading = true;
+      try {
+        const uploadRes: any = await firstValueFrom(this.objetivosService.uploadArchivo(this.selectedFile));
+        if (uploadRes && (uploadRes.success || uploadRes.fileName)) {
+          finalServerFileName = uploadRes.fileName;
+          console.log('[Medicion Regedit] Archivo subido exitosamente:', finalServerFileName);
+        }
+      } catch (err) {
+        console.warn('[Medicion Regedit] Subida al servidor falló:', err);
+      } finally {
+        this.isUploading = false;
+      }
+    }
+
     const val = { ...this.formulario.getRawValue() };
     if (!val.codigoObjetivo && this.objetivoSeleccionado) {
       val.codigoObjetivo = this.objetivoSeleccionado.codigo;
       val.idObjetivo = this.objetivoSeleccionado.id;
     }
+    val.serverFileName = finalServerFileName || this.data.Datos?.serverFileName || '';
+    val.evidencia = this.nombreArchivoEvidencia || this.data.Datos?.evidencia || '';
+    val.archivoEvidencia = this.nombreArchivoEvidencia || this.data.Datos?.archivoEvidencia || '';
+
     this.dialogRef.close(val);
   }
 

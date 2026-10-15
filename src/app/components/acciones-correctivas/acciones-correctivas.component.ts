@@ -1,3 +1,4 @@
+import { PermisosService } from '../../services/permisos.service';
 import { Component, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
@@ -141,12 +142,15 @@ export class AccionesCorrectivasComponent implements OnInit {
 
   dataSource = new MatTableDataSource<any>();
 
+  canAprobarCierre: boolean = false;
+
   constructor(
     private dialog: MatDialog,
     private toastr: ToastrService,
     private noConformidadService: NoConformidadService,
     private procesosService: ProcesosService,
-    private router: Router
+    private router: Router,
+    private permisosService: PermisosService
   ) {}
 
   // View mode, banner & Drawer states
@@ -182,6 +186,10 @@ export class AccionesCorrectivasComponent implements OnInit {
 
   onMoverEstadoDesdeDrawer(nuevoEstado: string): void {
     if (!this.selectedNc) return;
+    if (nuevoEstado === 'Cerrada' && !this.canAprobarCierre) {
+      this.toastr.warning('Solo usuarios con nivel de Jefatura o Gerencial pueden aprobar el cierre de No Conformidades.', 'Acceso Restringido');
+      return;
+    }
     this.selectedNc.estado = nuevoEstado;
     const idx = this.dataSource.data.findIndex(d => d.nc === this.selectedNc.nc);
     if (idx !== -1) {
@@ -223,6 +231,7 @@ export class AccionesCorrectivasComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.cargarPermisos();
     if (this.router.url.includes('acciones-correctivas')) {
       this.activeSubTab = 'acciones';
     }
@@ -238,6 +247,19 @@ export class AccionesCorrectivasComponent implements OnInit {
   }
 
   // DECLARACIÓN DE NC METHODS
+  canRegistrarNc: boolean = true;
+  canRegistrarAc: boolean = true;
+  canEditarAc: boolean = true;
+
+  cargarPermisos(): void {
+    const userLvl = this.permisosService.getUserLevelKey();
+    const isJefaturaOGerencial = userLvl === 'ger' || userLvl === 'jef';
+    this.canRegistrarNc = this.permisosService.hasFinePermission('No conformidades', 'Declaración de NC', 'Registrar', true);
+    this.canRegistrarAc = this.permisosService.hasFinePermission('No conformidades', 'Acciones correctivas', 'Registrar', true);
+    this.canEditarAc = this.permisosService.hasFinePermission('No conformidades', 'Acciones correctivas', 'Editar', true);
+    this.canAprobarCierre = this.permisosService.hasFinePermission('No conformidades', 'Cierre de NC', 'Aprobar', isJefaturaOGerencial);
+  }
+
   loadDeclaracionData(): void {
     let localSaved: any[] = [];
     const saved = localStorage.getItem('precotex:noconf:declaraciones');
@@ -1740,6 +1762,10 @@ ET`;
 
   moverEstado(item: any, nuevoEstado: string, event?: Event): void {
     if (event) event.stopPropagation();
+    if (nuevoEstado === 'Cerrada' && !this.canAprobarCierre) {
+      this.toastr.warning('Solo usuarios con nivel de Jefatura o Gerencial pueden aprobar el cierre de No Conformidades.', 'Acceso Restringido');
+      return;
+    }
     item.estado = nuevoEstado;
     this.calculateStats(this.dataSource.data);
     this.toastr.success(`Acción ${item.nc} movida a ${nuevoEstado}`, 'Kanban Actualizado');

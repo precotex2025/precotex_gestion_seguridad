@@ -1,3 +1,4 @@
+import { PermisosService } from '../../services/permisos.service';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
@@ -159,20 +160,30 @@ export class ReqLegalComponent implements OnInit {
     { id: 104, item: '3.1', ambito: 'Laboral', entidad: 'SUNAFIL', norma: 'D.S. N° 003-97-TR — Ley de Productividad y Competitividad Laboral', articulo: 'Art. 87', requisito: 'Entrega oportuna de boletas de pago y beneficios sociales.', evidenciadoc: 'Boletas electrónicas en Portal del Empleado', responsable: 'Recursos Humanos', estado: 'Cumple', observaciones: 'Cumplimiento 100% digital.' }
   ];
 
+  canCrearEditarMatriz: boolean = true;
+  canAprobarMatriz: boolean = false;
+
   constructor(
     private router: Router,
     private reqLegalService: ReqLegalService,
     private dialog: MatDialog,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private permisosService: PermisosService
   ) { }
 
   ngOnInit(): void {
+    this.cargarPermisos();
     if (this.router.url.includes('/matriz')) {
       this.activeTab = 'matriz';
     } else {
       this.activeTab = 'documentos';
     }
     this.cargarDatos();
+  }
+
+  cargarPermisos(): void {
+    this.canCrearEditarMatriz = this.permisosService.hasFinePermission('Gestión Legal', 'Matriz legal', 'Crear / Editar');
+    this.canAprobarMatriz = this.permisosService.hasFinePermission('Gestión Legal', 'Matriz legal', 'Aprobar');
   }
 
   cargarDatos(): void {
@@ -290,6 +301,10 @@ export class ReqLegalComponent implements OnInit {
   }
 
   onAgregar(): void {
+    if (!this.canCrearEditarMatriz) {
+      this.toastr.warning('No cuentas con permisos para registrar requisitos legales.', 'Acceso Restringido');
+      return;
+    }
     const dialogRef = this.dialog.open(ReqLegalRegeditComponent, {
       width: '720px',
       maxHeight: '90vh',

@@ -1,11 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { EvaluacionRiesgosRegeditComponent } from './evaluacion-riesgos-regedit/evaluacion-riesgos-regedit.component';
 import { RiesgosService } from '../../services/riesgos.service';
 import { Router } from '@angular/router';
+import { PermisosService } from '../../services/permisos.service';
 
 export interface RiesgoItem {
   id: number;
@@ -18,7 +19,7 @@ export interface RiesgoItem {
   responsable: string;
   revision: string; // YYYY-MM-DD
   medidacontrol?: string;
-  planaccion?: string; // RIE-21: Plan de acción / acción correctiva
+  planaccion?: string;
   evidencia?: string;
   archivoEvidencia?: string;
   serverFileName?: string;
@@ -27,12 +28,20 @@ export interface RiesgoItem {
   avance?: number;
   probabilidad?: number;
   impacto?: number;
+  deteccion?: number;
+  npr?: number;
   sede?: string;
   fcierre?: string;
   periodo?: string;
   clausula?: string;
   causaprobable?: string;
   consecuenciapotencial?: string;
+  naturaleza?: string; // 'R' | 'O'
+  origen?: string;
+  sustentoProbabilidad?: string;
+  controlActual?: string;
+  frecuenciaRevision?: string;
+  validacionSig?: string;
 }
 
 @Component({
@@ -59,15 +68,21 @@ export class EvaluacionRiesgosComponent implements OnInit {
   expandedRow: string | null = null;
   mostrarBanner: boolean = false;
 
+  canRegistrarRiesgo: boolean = true;
+  canEditarRiesgo: boolean = true;
+  canAprobarControl: boolean = false;
+
   constructor(
     private fb: FormBuilder,
     private dialog: MatDialog,
     private toastr: ToastrService,
     private riesgosService: RiesgosService,
-    private router: Router
+    private router: Router,
+    private permisosService: PermisosService
   ) { }
 
   ngOnInit(): void {
+    this.cargarPermisos();
     if (this.router.url.includes('seguimiento-controles')) {
       this.activeSubTab = 'seguimiento';
     } else {
@@ -83,6 +98,14 @@ export class EvaluacionRiesgosComponent implements OnInit {
     });
 
     this.cargarDatos();
+  }
+
+  cargarPermisos(): void {
+    const userLvl = this.permisosService.getUserLevelKey();
+    const isJefaturaOGerencial = userLvl === 'ger' || userLvl === 'jef';
+    this.canRegistrarRiesgo = this.permisosService.hasFinePermission('Riesgos', 'Declaración de riesgo', 'Registrar', true);
+    this.canEditarRiesgo = this.permisosService.hasFinePermission('Riesgos', 'Declaración de riesgo', 'Editar', true);
+    this.canAprobarControl = this.permisosService.hasFinePermission('Riesgos', 'Control / estado', 'Aprobar', isJefaturaOGerencial);
   }
 
   setSegUrgFilter(filter: 'all' | 'venc' | 'prox' | 'ald'): void {
@@ -121,6 +144,10 @@ export class EvaluacionRiesgosComponent implements OnInit {
   }
 
   onActualizarControl(item: RiesgoItem, event?: Event): void {
+    if (!this.canAprobarControl) {
+      this.toastr.warning('Solo usuarios con nivel de Jefatura o Gerencial pueden actualizar o aprobar controles.', 'Acceso Restringido');
+      return;
+    }
     if (event) event.stopPropagation();
 
     const currUrg = this.getRiesgoUrgencia(item.revision);
@@ -733,6 +760,10 @@ export class EvaluacionRiesgosComponent implements OnInit {
   }
 
   onAgregar(): void {
+    if (!this.canRegistrarRiesgo) {
+      this.toastr.warning('No cuentas con permisos para registrar riesgos.', 'Acceso Restringido');
+      return;
+    }
     const nextCod = this.generarNuevoCodigo();
     const dialogRef = this.dialog.open(EvaluacionRiesgosRegeditComponent, {
       width: '1150px',
@@ -811,6 +842,10 @@ export class EvaluacionRiesgosComponent implements OnInit {
   }
 
   onEdit(item: RiesgoItem): void {
+    if (!this.canEditarRiesgo) {
+      this.toastr.warning('No cuentas con permisos para editar riesgos.', 'Acceso Restringido');
+      return;
+    }
     const dialogRef = this.dialog.open(EvaluacionRiesgosRegeditComponent, {
       width: '1150px',
       maxWidth: '95vw',
@@ -886,6 +921,10 @@ export class EvaluacionRiesgosComponent implements OnInit {
   }
 
   onDelete(item: RiesgoItem): void {
+    if (!this.canEditarRiesgo) {
+      this.toastr.warning('No cuentas con permisos para eliminar riesgos.', 'Acceso Restringido');
+      return;
+    }
     Swal.fire({
       title: `¿Está seguro de eliminar el riesgo "${item.codigo}"?`,
       icon: 'warning',
@@ -1069,4 +1108,48 @@ export class EvaluacionRiesgosComponent implements OnInit {
       default: return 'application/octet-stream';
     }
   }
+
+  verIPERCArea(): void {
+    Swal.fire({
+      title: 'Matriz IPERC (SSOMA)',
+      html: '<p style="font-size: 13px; color: #475569;">Abre la matriz IPERC de Seguridad y Salud en el Trabajo en modo <b>solo lectura</b>, filtrada por tu área o proceso.</p>',
+      icon: 'info',
+      confirmButtonColor: '#4f46e5',
+      confirmButtonText: 'Entendido'
+    });
+  }
+
+  verAspectosAmbientalesArea(): void {
+    Swal.fire({
+      title: 'Matriz de Aspectos e Impactos (SSOMA)',
+      html: '<p style="font-size: 13px; color: #475569;">Abre la matriz de aspectos e impactos ambientales en modo <b>solo lectura</b>, a cargo de SSOMA y filtrada por tu área o proceso.</p>',
+      icon: 'info',
+      confirmButtonColor: '#4f46e5',
+      confirmButtonText: 'Entendido'
+    });
+  }
+
+
+  @ViewChild('criteriosModal') criteriosModal!: TemplateRef<any>;
+  private dialogCriteriosRef: MatDialogRef<any> | null = null;
+
+  onAbrirCriterios(): void {
+    if (this.criteriosModal) {
+      this.dialogCriteriosRef = this.dialog.open(this.criteriosModal, {
+        width: '940px',
+        maxWidth: '96vw',
+        maxHeight: '92vh',
+        autoFocus: false,
+        panelClass: 'custom-large-dialog'
+      });
+    }
+  }
+
+  onCerrarCriterios(): void {
+    if (this.dialogCriteriosRef) {
+      this.dialogCriteriosRef.close();
+      this.dialogCriteriosRef = null;
+    }
+  }
+
 }

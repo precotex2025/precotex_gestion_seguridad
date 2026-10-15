@@ -433,8 +433,8 @@ export class LoginComponent implements OnInit {
       localStorage.removeItem('remembered_user');
     }
 
-    localStorage.removeItem('precotex:puestos:accesos');
-    localStorage.removeItem('precotex:puestos:accesos_fino');
+    // Preservar precotex:puestos:accesos
+    // Preservar precotex:puestos:accesos_fino
 
     this.registrarLogAccesoHistorial(
       GlobalVariable.vusu,

@@ -60,7 +60,7 @@
           class="inline-search-input">
       </div>
 
-      <button type="button" class="btn-primary-glow" (click)="onAgregar()">
+      <button *ngIf="canCrearIndicador" type="button" class="btn-primary-glow" (click)="onAgregar()">
         <mat-icon>add</mat-icon>
         <span>Nuevo indicador</span>
       </button>
@@ -125,10 +125,10 @@
             <button class="action-btn btn-view" (click)="onVerDetalle(e)" title="Ver Detalle y Mediciones">
               <mat-icon>visibility</mat-icon>
             </button>
-            <button class="action-btn btn-edit" (click)="onEditar(e)" title="Editar">
+            <button *ngIf="canEditarIndicador" class="action-btn btn-edit" (click)="onEditar(e)" title="Editar">
               <mat-icon>edit</mat-icon>
             </button>
-            <button class="action-btn btn-delete" (click)="onEliminar(e)" title="Eliminar">
+            <button *ngIf="canEliminarIndicador" class="action-btn btn-delete" (click)="onEliminar(e)" title="Eliminar">
               <mat-icon>delete</mat-icon>
             </button>
           </div>

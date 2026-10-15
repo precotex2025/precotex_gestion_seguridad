@@ -277,7 +277,7 @@
               <th style="min-width: 120px; width: 120px; text-align: center;">Estado</th>
               <th style="min-width: 110px; width: 110px; text-align: center;">Visor / Lectura</th>
               <th style="min-width: 70px; width: 70px; text-align: center;">Archivo</th>
-              <th style="min-width: 140px; width: 140px; text-align: center;">Acciones</th>
+              <th style="min-width: 175px; width: 175px; text-align: center;">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -346,7 +346,8 @@
                   </button>
                   <button type="button" class="action-btn btn-visto-bueno" (click)="onDarVistoBueno(doc)"
                     [title]="doc.vistoBuenoInfo ? 'Visto Bueno dado por ' + doc.vistoBuenoInfo.usuario : 'Dar Visto Bueno de Lectura Semestral'"
-                    [class.visto-bueno-done]="doc.vistoBuenoInfo">
+                    [class.visto-bueno-done]="doc.vistoBuenoInfo"
+                    *ngIf="canVistoBueno || canApprove">
                     <mat-icon>check_circle</mat-icon>
                   </button>
                 </div>
@@ -360,18 +361,23 @@
                 </button>
               </td>
 
-              <!-- Hover Fade-In Actions (DOC-09, Edit, Delete) -->
-              <td style="min-width: 140px; width: 140px; text-align: center;" class="acciones-cell">
+              <!-- Hover Fade-In Actions (DOC-09, Obsoleto, Edit, Delete) -->
+              <td style="min-width: 175px; width: 175px; text-align: center;" class="acciones-cell">
                 <div class="actions-wrapper">
-                  <button class="action-btn btn-historial" (click)="onVerHistorial(doc)"
-                    title="Ver Historial de Versiones">
+                  <button type="button" class="action-btn btn-historial" (click)="onVerHistorial(doc)"
+                    title="Ver Historial de Versiones y Revisiones">
                     <mat-icon>history</mat-icon>
                   </button>
-                  <button class="action-btn btn-edit" (click)="onEditar(doc, i)" title="Editar registro"
+                  <button type="button" class="action-btn btn-actualizar-version" (click)="onActualizarVersion(doc)"
+                    title="Actualizar Versión del Documento"
+                    *ngIf="canEdit">
+                    <mat-icon>published_with_changes</mat-icon>
+                  </button>
+                  <button type="button" class="action-btn btn-edit" (click)="onEditar(doc, i)" title="Editar registro"
                     *ngIf="canEdit">
                     <mat-icon>edit</mat-icon>
                   </button>
-                  <button class="action-btn btn-delete" (click)="onEliminar(doc)" title="Eliminar registro"
+                  <button type="button" class="action-btn btn-delete" (click)="onEliminar(doc)" title="Eliminar registro"
                     *ngIf="canDelete">
                     <mat-icon>delete</mat-icon>
                   </button>
@@ -824,7 +830,7 @@
 
                 <!-- ACCIÓN -->
                 <td style="text-align: center;">
-                  <button type="button" class="btn-dar-vb-table" *ngIf="!doc.vistoBuenoInfo"
+                  <button type="button" class="btn-dar-vb-table" *ngIf="!doc.vistoBuenoInfo && (canVistoBueno || canApprove)"
                     (click)="onDarVistoBuenoDesdeReporte(doc)" title="Confirmar visto bueno">
                     <mat-icon>check_circle</mat-icon>
                     <span>Dar V.B.</span>
@@ -905,4 +911,157 @@
       </div>
     </div>
   </ng-template>
+
+  <!-- ===================================================================
+       MODAL ACTUALIZAR VERSIÓN DEL DOCUMENTO (MAT-DIALOG NATIVO)
+       =================================================================== -->
+  <ng-template #actualizarVersionDialog>
+    <div class="actualizar-version-modal-dialog shadow-premium" (click)="$event.stopPropagation()">
+      <div class="actualizar-version-modal-header">
+        <div class="header-title-box">
+          <div class="modal-icon-avatar">
+            <mat-icon>published_with_changes</mat-icon>
+          </div>
+          <div>
+            <h3 class="modal-title">Actualizar Versión del Documento</h3>
+            <p class="modal-sub">
+              Publicar una nueva versión vigente. La versión anterior se resguardará automáticamente en el historial de backup y quedará como obsoleta.
+            </p>
+          </div>
+        </div>
+        <button type="button" class="btn-close-modal" (click)="onCerrarActualizarVersion()" title="Cerrar">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="actualizar-version-modal-body" *ngIf="docParaActualizarVersion">
+        <!-- Tarjeta Resumen del Documento Actual -->
+        <div class="doc-current-card">
+          <div class="doc-current-header">
+            <span class="badge-tipo">{{ docParaActualizarVersion?.tipo || 'Documento' }}</span>
+            <span class="code-pill">{{ docParaActualizarVersion?.codigo }}</span>
+            <span class="badge-version-actual">Versión actual: {{ docParaActualizarVersion?.version || 'v1.0' }}</span>
+          </div>
+          <div class="doc-current-name">{{ docParaActualizarVersion?.nombre }}</div>
+          <div class="doc-current-meta">
+            <span>Proceso: <strong>{{ docParaActualizarVersion?.proceso || 'General' }}</strong></span>
+            <span>Archivo actual: <code>{{ docParaActualizarVersion?.archivo || '(Sin archivo)' }}</code></span>
+          </div>
+        </div>
+
+        <!-- Formulario de Nueva Versión -->
+        <div class="actualizar-form-grid">
+          <!-- Nueva Versión -->
+          <div class="form-field-group">
+            <label class="field-label">Nueva Versión (*)</label>
+            <div class="input-with-icon">
+              <mat-icon class="field-icon">auto_fix_high</mat-icon>
+              <input type="text" [(ngModel)]="nuevaVersionStr" class="custom-input" placeholder="Ej. v3, v4" />
+            </div>
+            <small class="field-hint">Se incrementa la versión automáticamente (ej. {{ docParaActualizarVersion?.version || 'v1' }} &rarr; {{ nuevaVersionStr }}).</small>
+          </div>
+
+          <!-- Nuevo Código del Documento -->
+          <div class="form-field-group">
+            <label class="field-label">Código del Documento (*)</label>
+            <div class="input-with-icon">
+              <mat-icon class="field-icon">tag</mat-icon>
+              <input type="text" [(ngModel)]="nuevoCodigoDocStr" class="custom-input" placeholder="Ej. PRO-GGHH-SDP-001-04" />
+            </div>
+            <small class="field-hint">Actualizado correlativamente según la nueva versión.</small>
+          </div>
+
+          <!-- Fecha de Vigencia -->
+          <div class="form-field-group">
+            <label class="field-label">Fecha de Vigencia (Vencimiento)</label>
+            <input type="date" [(ngModel)]="nuevaVigenciaStr" class="custom-input form-input-date" />
+            <small class="field-hint">Por defecto +3 años de vigencia reglamentaria.</small>
+          </div>
+
+          <!-- Motivo o Resumen del Cambio -->
+          <div class="form-field-group">
+            <label class="field-label">Motivo de la Nueva Versión</label>
+            <div class="input-with-icon">
+              <mat-icon class="field-icon">description</mat-icon>
+              <input type="text" [(ngModel)]="motivoCambioVersionStr" class="custom-input" placeholder="Motivo o cambios realizados" />
+            </div>
+            <small class="field-hint">Quedará registrado en la trazabilidad de revisiones.</small>
+          </div>
+        </div>
+
+        <!-- Zona de Carga de Archivo (Estilo idéntico a Nuevo Documento) -->
+        <div class="upload-version-section">
+          <label class="field-label">Nuevo Archivo del Documento (*)</label>
+          
+          <div class="dropzone-box" [class.drag-over]="isDragOverVersion"
+               (dragover)="onDragOverVersion($event)"
+               (dragleave)="onDragLeaveVersion($event)"
+               (drop)="onDropVersion($event)">
+            
+            <input type="file" #versionFileInput 
+                   (change)="onArchivoVersionSeleccionado($event)" 
+                   accept=".pdf,.doc,.docx,.xls,.xlsx" 
+                   style="display: none;" />
+
+            <div class="dropzone-idle" *ngIf="!nombreArchivoNuevaVersion" (click)="versionFileInput.click()">
+              <div class="dropzone-icon-circle">
+                <mat-icon class="drop-icon">cloud_upload</mat-icon>
+              </div>
+              <div class="dropzone-texts">
+                <strong class="dropzone-main-text">Arrastra y suelta tu archivo aquí</strong>
+                <span class="dropzone-sub-text">o <span class="dropzone-browse-link">haz clic para examinar tu equipo</span></span>
+                <span class="dropzone-formats-badge">Formatos soportados: PDF, Word (.docx), Excel (.xlsx)</span>
+              </div>
+            </div>
+
+            <div class="dropzone-file-card" *ngIf="nombreArchivoNuevaVersion" (click)="$event.stopPropagation()">
+              <div class="file-card-left">
+                <div class="file-icon-box" [ngClass]="getArchivoVersionClass(nombreArchivoNuevaVersion)">
+                  <mat-icon>{{ getArchivoVersionIcon(nombreArchivoNuevaVersion) }}</mat-icon>
+                </div>
+                <div class="file-info-group">
+                  <span class="file-card-name" [title]="nombreArchivoNuevaVersion">{{ nombreArchivoNuevaVersion }}</span>
+                  <span class="file-card-status">
+                    <mat-icon class="check-ico">check_circle</mat-icon>
+                    <span>Archivo listo para actualizar <span *ngIf="archivoNuevaVersion">({{ (archivoNuevaVersion.size / 1024).toFixed(1) }} KB)</span></span>
+                  </span>
+                </div>
+              </div>
+              <div class="file-card-actions">
+                <button type="button" class="btn-change-file" (click)="versionFileInput.click()" title="Cambiar archivo">
+                  <mat-icon>sync</mat-icon>
+                  <span>Cambiar</span>
+                </button>
+                <button type="button" class="btn-remove-file" (click)="onRemoveArchivoVersion()" title="Quitar archivo">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alerta Informativa de Backup Automático -->
+        <div class="version-backup-notice">
+          <mat-icon class="notice-icon">info</mat-icon>
+          <div class="notice-text">
+            <strong>Resguardo Garantizado:</strong> El documento actual (Versión <strong>{{ docParaActualizarVersion?.version || 'v1' }}</strong>) se almacenará de inmediato en la sección <strong>1. Historial de Versiones Resguardadas en Backup</strong> con opción a visualización y descarga, y se registrará en la sección <strong>2. Historial de Usuarios</strong> como obsoleta.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer con Botones idénticos a Nuevo Documento -->
+      <div class="actualizar-version-modal-footer">
+        <button type="button" class="btn-ghost" (click)="onCerrarActualizarVersion()" [disabled]="isUploadingNuevaVersion">
+          Cancelar y volver
+        </button>
+        <button type="button" class="btn-primary" (click)="guardarActualizacionVersion()" [disabled]="isUploadingNuevaVersion">
+          <span class="spinner-btn" *ngIf="isUploadingNuevaVersion"></span>
+          <mat-icon *ngIf="!isUploadingNuevaVersion" style="font-size: 18px; width: 18px; height: 18px; margin-right: 6px;">save</mat-icon>
+          <span>{{ isUploadingNuevaVersion ? 'Subiendo y publicando...' : 'Guardar y Publicar Versión' }}</span>
+        </button>
+      </div>
+    </div>
+  </ng-template>
+
 </div>

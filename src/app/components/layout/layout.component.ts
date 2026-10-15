@@ -811,7 +811,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     localStorage.removeItem('vCod_Rol');
     localStorage.removeItem('precotex:puestos:accesos');
     localStorage.removeItem('precotex:puestos:listado');
-    localStorage.removeItem('precotex:puestos:accesos_fino');
+    // Preservar precotex:puestos:accesos_fino en logout
     localStorage.removeItem('precotex:usuario:proceso');
     sessionStorage.removeItem('precotex:session:logged_entry');
 

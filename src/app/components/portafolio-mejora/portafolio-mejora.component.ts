@@ -8,6 +8,7 @@ import { Plantilla5w2hModalComponent } from './plantilla-5w2h-modal/plantilla-5w
 import { ProcesosService } from '../../services/procesos.service';
 import { MejoraService } from '../../services/mejora.service';
 import { SedesService } from '../../services/sedes.service';
+import { PermisosService } from '../../services/permisos.service';
 import * as XLSX from 'xlsx-js-style';
 import * as ExcelJS from 'exceljs';
 import { PRECOTEX_LOGO_BASE64 } from './precotex-logo';
@@ -171,12 +172,17 @@ export class PortafolioMejoraComponent implements OnInit {
   ];
   dataSource = new MatTableDataSource<any>();
 
+  canRegistrarIniciativa: boolean = true;
+  canEditarIniciativa: boolean = true;
+  canAprobarCierre: boolean = false;
+
   constructor(
     private dialog: MatDialog,
     private toastr: ToastrService,
     private procesosService: ProcesosService,
     private mejoraService: MejoraService,
-    private sedesService: SedesService
+    private sedesService: SedesService,
+    private permisosService: PermisosService
   ) { }
 
   procesoNameToCodeMap: { [key: string]: string } = {};
@@ -191,6 +197,7 @@ export class PortafolioMejoraComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.cargarPermisos();
     // Cargar caché persistente de Fechas Fin desde localStorage
     try {
       const stored = localStorage.getItem('PRECOTEX_MEJORA_FECHAS_FIN');
@@ -1845,7 +1852,19 @@ export class PortafolioMejoraComponent implements OnInit {
     this.dataSource.data = list;
   }
 
+  cargarPermisos(): void {
+    const userLvl = this.permisosService.getUserLevelKey();
+    const isJefaturaOGerencial = userLvl === 'ger' || userLvl === 'jef';
+    this.canRegistrarIniciativa = this.permisosService.hasFinePermission('Portafolio de Mejora', 'Iniciativas', 'Registrar', true);
+    this.canEditarIniciativa = this.permisosService.hasFinePermission('Portafolio de Mejora', 'Iniciativas', 'Editar', true);
+    this.canAprobarCierre = this.permisosService.hasFinePermission('Portafolio de Mejora', 'Cierre', 'Aprobar', isJefaturaOGerencial);
+  }
+
   onAgregar() {
+    if (!this.canRegistrarIniciativa) {
+      this.toastr.warning('No cuentas con permisos para registrar iniciativas de mejora.', 'Acceso Restringido');
+      return;
+    }
     const dialogRef = this.dialog.open(PortafolioMejoraRegeditComponent, {
       width: '780px',
       maxWidth: '95vw',
@@ -1915,6 +1934,10 @@ export class PortafolioMejoraComponent implements OnInit {
   }
 
   onEditar(item: any) {
+    if (!this.canEditarIniciativa) {
+      this.toastr.warning('No cuentas con permisos para editar iniciativas de mejora.', 'Acceso Restringido');
+      return;
+    }
     const dialogRef = this.dialog.open(PortafolioMejoraRegeditComponent, {
       width: '780px',
       maxWidth: '95vw',
@@ -2003,6 +2026,10 @@ export class PortafolioMejoraComponent implements OnInit {
   }
 
   onEliminar(item: any) {
+    if (!this.canEditarIniciativa) {
+      this.toastr.warning('No cuentas con permisos para eliminar iniciativas de mejora.', 'Acceso Restringido');
+      return;
+    }
     Swal.fire({
       title: `¿Desea eliminar la iniciativa "${item.titulo}"?`,
       icon: 'question',

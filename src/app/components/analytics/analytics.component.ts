@@ -1,3 +1,4 @@
+import { PermisosService } from '../../services/permisos.service';
 import { Component, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
@@ -40,14 +41,26 @@ export class AnalyticsComponent implements OnInit {
 
   dataSource = new MatTableDataSource<any>();
 
+  canCrearIndicador: boolean = true;
+  canEditarIndicador: boolean = true;
+  canEliminarIndicador: boolean = true;
+
   constructor(
     private dialog: MatDialog,
     private toastr: ToastrService,
-    private indicadoresService: IndicadoresService
+    private indicadoresService: IndicadoresService,
+    private permisosService: PermisosService
   ) {}
 
   ngOnInit(): void {
+    this.cargarPermisos();
     this.onListado();
+  }
+
+  cargarPermisos(): void {
+    this.canCrearIndicador = this.permisosService.hasFinePermission('Indicadores', 'Alta de indicadores', 'Crear');
+    this.canEditarIndicador = this.permisosService.hasFinePermission('Indicadores', 'Alta de indicadores', 'Editar');
+    this.canEliminarIndicador = this.permisosService.hasFinePermission('Indicadores', 'Alta de indicadores', 'Eliminar');
   }
 
   limpiarTexto(text: any): string {
@@ -232,6 +245,10 @@ export class AnalyticsComponent implements OnInit {
   }
 
   onAgregar(): void {
+    if (!this.canCrearIndicador) {
+      this.toastr.warning('No cuentas con permisos para registrar nuevos indicadores.', 'Acceso Restringido');
+      return;
+    }
     let nextNum = 1;
     if (this.dataSource.data && this.dataSource.data.length > 0) {
       const nums = this.dataSource.data
@@ -364,6 +381,10 @@ export class AnalyticsComponent implements OnInit {
   }
 
   onEditar(item: any): void {
+    if (!this.canEditarIndicador) {
+      this.toastr.warning('No cuentas con permisos para editar indicadores.', 'Acceso Restringido');
+      return;
+    }
     const dialogRef = this.dialog.open(AnalyticsRegeditComponent, {
       width: '740px',
       maxWidth: '95vw',
@@ -458,6 +479,10 @@ export class AnalyticsComponent implements OnInit {
   }
 
   onEliminar(item: any): void {
+    if (!this.canEliminarIndicador) {
+      this.toastr.warning('No cuentas con permisos para eliminar indicadores.', 'Acceso Restringido');
+      return;
+    }
     Swal.fire({
       title: '¿Desea eliminar el indicador?, Confirme',
       icon: 'question',

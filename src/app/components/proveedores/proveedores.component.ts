@@ -1,3 +1,4 @@
+import { PermisosService } from '../../services/permisos.service';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
@@ -57,14 +58,28 @@ export class ProveedoresComponent implements OnInit {
     { id: 5, razon: 'Mantenimiento Eléctrico S.R.L.', ruc: '20455566778', tipo: 'Contratista', proceso: 'Mantenimiento General', contacto: 'servicio@manelectrico.pe', homologacion: 'No apto', desempeno: 'Deficiente', evaluacion: '2025-06-01', reeval: '2026-06-01', sctr: '2026-06-01', induccion: '2026-09-01', iperc: '2026-08-20', seguro: '2026-12-01' }
   ];
 
+  canRegistrarProveedor: boolean = true;
+  canEditarProveedor: boolean = true;
+  canAprobarHomologacion: boolean = false;
+
   constructor(
     private proveedoresService: ProveedoresService,
     private dialog: MatDialog,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private permisosService: PermisosService
   ) { }
 
   ngOnInit(): void {
+    this.cargarPermisos();
     this.cargarDatos();
+  }
+
+  cargarPermisos(): void {
+    const userLvl = this.permisosService.getUserLevelKey();
+    const isJefaturaOGerencial = userLvl === 'ger' || userLvl === 'jef';
+    this.canRegistrarProveedor = this.permisosService.hasFinePermission('Proveedores', 'Catálogo de proveedores', 'Registrar', isJefaturaOGerencial);
+    this.canEditarProveedor = this.permisosService.hasFinePermission('Proveedores', 'Catálogo de proveedores', 'Editar', isJefaturaOGerencial);
+    this.canAprobarHomologacion = this.permisosService.hasFinePermission('Proveedores', 'Homologación y contratos', 'Aprobar', userLvl === 'ger');
   }
 
   cargarDatos(): void {
@@ -162,6 +177,10 @@ export class ProveedoresComponent implements OnInit {
   }
 
   onAgregar(): void {
+    if (!this.canRegistrarProveedor) {
+      this.toastr.warning('No cuentas con permisos para registrar nuevos proveedores.', 'Acceso Restringido');
+      return;
+    }
     const dialogRef = this.dialog.open(ProveedoresRegeditComponent, {
       width: '720px',
       maxHeight: '90vh',
@@ -193,6 +212,10 @@ export class ProveedoresComponent implements OnInit {
   }
 
   onEditar(item: Proveedor): void {
+    if (!this.canEditarProveedor) {
+      this.toastr.warning('No cuentas con permisos para editar proveedores.', 'Acceso Restringido');
+      return;
+    }
     const dialogRef = this.dialog.open(ProveedoresRegeditComponent, {
       width: '720px',
       maxHeight: '90vh',
@@ -264,6 +287,10 @@ export class ProveedoresComponent implements OnInit {
   }
 
   onEliminar(item: Proveedor): void {
+    if (!this.canEditarProveedor) {
+      this.toastr.warning('No cuentas con permisos para eliminar proveedores.', 'Acceso Restringido');
+      return;
+    }
     Swal.fire({
       title: '¿Eliminar proveedor?',
       text: `Se eliminará el registro: ${item.razon}`,

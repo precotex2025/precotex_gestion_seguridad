@@ -4,13 +4,24 @@ export const GlobalVariable = {
   vusu: '',
   vCod_Rol: 0,
 
-  //----------------------------------------------LOCAL-----------------------------------------------
-
-  //baseUrlBackEnd: "https://localhost:7093/api/", //LOCAL <- BACK (SEGURIDAD)
-
-  //--------------------------------------------PRODUCCION--------------------------------------------
-
-  baseUrlBackEnd: "http://192.168.1.36:5252/api/", // PRODUCCION SEGURIDAD <- BACK
+  //----------------------------------------------URL BACKEND DINÁMICA-----------------------------
+  // Detección automática de entorno:
+  // - Si se ejecuta en red/producción (IP de red o dominio) -> http://192.168.1.36:5252/api/
+  // - Si se ejecuta en desarrollo local (localhost / 127.0.0.1) -> https://localhost:7093/api/
+  _customBaseUrl: '',
+  get baseUrlBackEnd(): string {
+    if (this._customBaseUrl) return this._customBaseUrl;
+    if (typeof window !== 'undefined' && window.location) {
+      const host = window.location.hostname;
+      if (host && host !== 'localhost' && host !== '127.0.0.1') {
+        return "http://192.168.1.36:5252/api/";
+      }
+    }
+    return "https://localhost:7093/api/";
+  },
+  set baseUrlBackEnd(val: string) {
+    this._customBaseUrl = val;
+  },
 
   num_planta: 0,
   cod_ordtra: '',

@@ -194,7 +194,7 @@
 .tabla-wrapper {
   width: 100%;
   border-radius: var(--sn-radius-lg) !important;
-  overflow: hidden !important;
+  overflow-x: auto !important;
   background: var(--sn-surface-card) !important;
   border: 1px solid var(--sn-slate-200) !important;
   box-shadow: var(--sn-shadow-md) !important;

@@ -1,3 +1,4 @@
+import { PermisosService } from '../../services/permisos.service';
 import { Component, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
@@ -15,6 +16,9 @@ import { ObjetivosService } from '../../services/objetivos.service';
   styleUrls: ['./planificacion-objetivos.component.css']
 })
 export class PlanificacionObjetivosComponent implements OnInit {
+
+  canCrearEditar: boolean = true;
+  canAprobar: boolean = false;
 
   stats = {
     total: 0,
@@ -58,11 +62,20 @@ export class PlanificacionObjetivosComponent implements OnInit {
   constructor(
     private dialog: MatDialog,
     private toastr: ToastrService,
-    private objetivosService: ObjetivosService
+    private objetivosService: ObjetivosService,
+    private permisosService: PermisosService
   ) { }
 
   ngOnInit(): void {
+    this.cargarPermisos();
     this.onListado();
+  }
+
+  cargarPermisos(): void {
+    const userLvl = this.permisosService.getUserLevelKey();
+    const isJefaturaOGerencial = userLvl === 'ger' || userLvl === 'jef';
+    this.canCrearEditar = this.permisosService.hasFinePermission('Objetivos', 'Planificación', 'Crear / Editar', isJefaturaOGerencial);
+    this.canAprobar = this.permisosService.hasFinePermission('Objetivos', 'Planificación', 'Aprobar', userLvl === 'ger');
   }
 
   // Filtros Avanzados (OBJ-03)
@@ -493,6 +506,10 @@ export class PlanificacionObjetivosComponent implements OnInit {
   }
 
   onAgregar(): void {
+    if (!this.canCrearEditar) {
+      this.toastr.warning('No cuentas con permisos para registrar nuevos objetivos.', 'Acceso Restringido');
+      return;
+    }
     const dialogRef = this.dialog.open(PlanificacionObjetivosRegeditComponent, {
       width: '840px',
       maxWidth: '95vw',
@@ -586,6 +603,10 @@ export class PlanificacionObjetivosComponent implements OnInit {
   }
 
   onEditar(item: any): void {
+    if (!this.canCrearEditar) {
+      this.toastr.warning('No cuentas con permisos para editar objetivos.', 'Acceso Restringido');
+      return;
+    }
     const dialogRef = this.dialog.open(PlanificacionObjetivosRegeditComponent, {
       width: '840px',
       maxWidth: '95vw',
@@ -686,6 +707,10 @@ export class PlanificacionObjetivosComponent implements OnInit {
   }
 
   onEliminar(item: any): void {
+    if (!this.canCrearEditar) {
+      this.toastr.warning('No cuentas con permisos para eliminar objetivos.', 'Acceso Restringido');
+      return;
+    }
     Swal.fire({
       title: '¿Desea eliminar el objetivo?, Confirme',
       icon: 'question',
@@ -718,4 +743,105 @@ export class PlanificacionObjetivosComponent implements OnInit {
       }
     });
   }
+
+  onDescargar(item: any): void {
+    if (!item) {
+      this.toastr.warning('No se pudo identificar el objetivo seleccionado.', 'Sin Registro');
+      return;
+    }
+
+    const codigo = item.codigo || 'OBJ-001';
+    const sanitize = (str: any) => (str ? String(str).replace(/[\\()]/g, '') : '');
+    const objetivo = item.objetivo || item.nombre || 'Objetivo del SIG';
+    const proceso = item.proceso || 'SSOMA';
+    const norma = item.norma || 'ISO 9001:2015';
+    const indicador = item.indicador || '% Cumplimiento';
+    const responsable = item.responsableProceso || item.responsable || 'Coordinador SIG';
+    const periodo = item.periodo || '2026';
+    const meta = item.meta || '100%';
+    const frecuencia = item.frecuencia || 'Mensual';
+    const estado = item.estado || item.semaforo || 'Planificado';
+    const fecha = new Date().toLocaleDateString('es-PE', { year: 'numeric', month: '2-digit', day: '2-digit' });
+
+    const textStream = 'BT\n' +
+      '/F2 16 Tf\n' +
+      '50 740 Td\n' +
+      '(PRECOTEX S.A.C. - SISTEMA INTEGRADO DE GESTION) Tj\n' +
+      '/F2 12 Tf\n' +
+      '0 -24 Td\n' +
+      '(FICHA TECNICA DE PLANIFICACION DE OBJETIVO SIG) Tj\n' +
+      '/F1 10 Tf\n' +
+      '0 -22 Td\n' +
+      '(Codigo: ' + sanitize(codigo) + '   |   Norma: ' + sanitize(norma) + '   |   Fecha: ' + sanitize(fecha) + ') Tj\n' +
+      '/F2 11 Tf\n' +
+      '0 -26 Td\n' +
+      '(1. DEFINICION DEL OBJETIVO:) Tj\n' +
+      '/F1 10 Tf\n' +
+      '0 -16 Td\n' +
+      '(Objetivo: ' + sanitize(objetivo).substring(0, 95) + ') Tj\n' +
+      '0 -15 Td\n' +
+      '(' + sanitize(objetivo).substring(95, 190) + ') Tj\n' +
+      '0 -16 Td\n' +
+      '(Proceso Responsable: ' + sanitize(proceso) + '      Periodo: ' + sanitize(periodo) + ') Tj\n' +
+      '0 -16 Td\n' +
+      '(Responsable del Proceso: ' + sanitize(responsable) + ') Tj\n' +
+      '/F2 11 Tf\n' +
+      '0 -26 Td\n' +
+      '(2. METAS E INDICADOR DE GESTION:) Tj\n' +
+      '/F1 10 Tf\n' +
+      '0 -16 Td\n' +
+      '(Indicador: ' + sanitize(indicador) + ') Tj\n' +
+      '0 -16 Td\n' +
+      '(Meta Programada: ' + sanitize(meta) + '      Frecuencia de Medicion: ' + sanitize(frecuencia) + ') Tj\n' +
+      '0 -16 Td\n' +
+      '(Estado de Planificacion: ' + sanitize(estado) + ') Tj\n' +
+      '/F2 11 Tf\n' +
+      '0 -28 Td\n' +
+      '(3. CONFORMIDAD Y REGISTRO INSTITUCIONAL:) Tj\n' +
+      '/F1 9 Tf\n' +
+      '0 -16 Td\n' +
+      '(Documento generado bajo los estandares del Sistema Integrado de Gestion Precotex.) Tj\n' +
+      '0 -14 Td\n' +
+      '(Validado por Coordinacion de Calidad, Seguridad y Medio Ambiente.) Tj\n' +
+      'ET';
+
+    const encoder = new TextEncoder();
+    const streamBytes = encoder.encode(textStream);
+    const streamLen = streamBytes.length;
+
+    let pdf = '%PDF-1.4\n';
+    const offsets: number[] = [];
+
+    const addObj = (str: string) => {
+      offsets.push(encoder.encode(pdf).length);
+      pdf += str + '\n';
+    };
+
+    addObj('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj');
+    addObj('2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj');
+    addObj('3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>\nendobj');
+    addObj('4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj');
+    addObj('5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\nendobj');
+    addObj('6 0 obj\n<< /Length ' + streamLen + ' >>\nstream\n' + textStream + '\nendobj');
+
+    const xrefOffset = encoder.encode(pdf).length;
+    pdf += 'xref\n0 7\n0000000000 65535 f \n';
+    for (const off of offsets) {
+      pdf += String(off).padStart(10, '0') + ' 00000 n \n';
+    }
+    pdf += 'trailer\n<< /Size 7 /Root 1 0 R >>\nstartxref\n' + xrefOffset + '\n%%EOF';
+
+    const filename = 'Ficha_Tecnica_Objetivo_' + codigo + '.pdf';
+    const blob = new Blob([encoder.encode(pdf)], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    this.toastr.success('Descargando ficha técnica: ' + filename, 'Descarga Exitosa');
+  }
+
 }
