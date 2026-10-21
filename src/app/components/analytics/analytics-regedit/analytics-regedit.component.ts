@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, HostListener } from '@angular/core';
+﻿import { Component, Inject, OnInit, HostListener } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
@@ -37,7 +37,7 @@ export class AnalyticsRegeditComponent implements OnInit {
     'Todas'
   ];
 
-  previousSedeSelection: string[] = ['Todas'];
+  previousSedeSelection: string[] = [];
   
   // IND-05: Fuente de datos seleccionable y digitable
   fuentesOptions: string[] = [
@@ -83,15 +83,16 @@ export class AnalyticsRegeditComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Cargar sedes activas de la base de datos
+    // Cargar sedes activas de la base de datos dinámicamente
     this.sedesService.getListadoSedes('001', '1').subscribe({
       next: (res: any) => {
         if (res && res.success && res.elements) {
           const listS = res.elements
-            .map((s: any) => (s.denominacion || '').trim())
+            .map((s: any) => (s.denominacion || s.Denominacion || s.nombre_Sede || s.sede || '').trim())
             .filter((s: string) => s.length > 0);
           listS.forEach((s: string) => {
-            if (!this.sedesOptions.some(opt => opt.toLowerCase() === s.toLowerCase())) {
+            const exists = this.sedesOptions.some(opt => opt.toLowerCase() === s.toLowerCase());
+            if (!exists && !s.toLowerCase().includes('sede ')) {
               this.sedesOptions.splice(this.sedesOptions.length - 1, 0, s);
             }
           });
@@ -120,7 +121,7 @@ export class AnalyticsRegeditComponent implements OnInit {
       responsable: ['', Validators.required],
       respmed: ['', Validators.required],
       estado: ['Activo', Validators.required],
-      sede: [['Todas'], Validators.required],
+      sede: [[], Validators.required],
       proceso: ['SSOMA', Validators.required],
       areasacc: [''],
       inicio: ['', Validators.required],
@@ -174,12 +175,32 @@ export class AnalyticsRegeditComponent implements OnInit {
         sedeVal = specific.length > 0 ? specific : ['Todas'];
       }
 
-      // Asegurar que las sedes existan en sedesOptions
+      // Normalizar sedes con opciones disponibles (case-insensitive)
+      const mappedSedes: string[] = [];
       sedeVal.forEach(s => {
-        if (!this.sedesOptions.some(opt => opt.toLowerCase() === s.toLowerCase())) {
-          this.sedesOptions.splice(this.sedesOptions.length - 1, 0, s);
+        const lower = s.toLowerCase();
+        if (lower === 'todas') {
+          mappedSedes.push('Todas');
+          return;
+        }
+        if (lower.includes('huachipa 1')) mappedSedes.push('Huachipa 1');
+        else if (lower.includes('huachipa 2')) mappedSedes.push('Huachipa 2');
+        else if (lower.includes('huachipa 3')) mappedSedes.push('Huachipa 3');
+        else if (lower.includes('huachipa')) mappedSedes.push('Huachipa 1');
+        else if (lower.includes('santa cecilia')) mappedSedes.push('Santa Cecilia');
+        else if (lower.includes('santa rosa')) mappedSedes.push('Santa Rosa');
+        else if (lower.includes('santa maria')) mappedSedes.push('Santa Maria');
+        else if (lower.includes('independencia 1')) mappedSedes.push('Independencia 1');
+        else if (lower.includes('independencia 2')) mappedSedes.push('Independencia 2');
+        else {
+          const match = this.sedesOptions.find(opt => opt.toLowerCase() === lower);
+          if (match) mappedSedes.push(match);
         }
       });
+      sedeVal = Array.from(new Set(mappedSedes));
+      if (sedeVal.length === 0) {
+        sedeVal = [];
+      }
       this.previousSedeSelection = [...sedeVal];
 
       // Helper para formatear fechas a YYYY-MM-DD
@@ -360,30 +381,29 @@ export class AnalyticsRegeditComponent implements OnInit {
 
     let updated: string[] = [];
 
-    const hadTodas = prev.includes('Todas');
-    const hasTodas = current.includes('Todas');
+    const hadTodas = prev.some(s => s.toLowerCase() === 'todas');
+    const hasTodas = current.some(s => s.toLowerCase() === 'todas');
 
     if (!hadTodas && hasTodas) {
-      // Usuario seleccionó explícitamente "Todas" -> desmarcar todas las sedes específicas
+      // El usuario seleccionó explícitamente "Todas" -> desmarcar todas las sedes específicas
       updated = ['Todas'];
     } else if (hadTodas && hasTodas && current.length > 1) {
-      // "Todas" estaba marcado y el usuario seleccionó una sede específica -> desmarcar "Todas"
-      updated = current.filter(s => s !== 'Todas');
+      // "Todas" estaba marcado y el usuario seleccionó una o más sedes específicas -> quitar "Todas"
+      updated = current.filter(s => s.toLowerCase() !== 'todas');
     } else if (hadTodas && !hasTodas) {
-      // Usuario desmarcó "Todas"
-      updated = current.filter(s => s !== 'Todas');
+      // El usuario desmarcó "Todas" -> dejar lo que tenga seleccionado (o vacío si ninguna)
+      updated = current.filter(s => s.toLowerCase() !== 'todas');
     } else {
       // Conmutación normal de sedes específicas
-      updated = current.filter(s => s !== 'Todas');
-    }
-
-    if (updated.length === 0) {
-      // Si el usuario desmarca todo, vuelve por defecto a ['Todas']
-      updated = ['Todas'];
+      updated = current.filter(s => s.toLowerCase() !== 'todas');
     }
 
     this.previousSedeSelection = [...updated];
-    this.formulario.get('sede')?.setValue(updated, { emitEvent: false });
+
+    // Sincronizar en el siguiente tick para que mat-select actualice su vista y checkboxes limpiamente
+    setTimeout(() => {
+      this.formulario.get('sede')?.setValue(updated);
+    });
   }
 
   onToggleConstante(event: any): void {
@@ -405,14 +425,28 @@ export class AnalyticsRegeditComponent implements OnInit {
     if (val.esConstante || !val.fin || String(val.fin).trim() === '') {
       val.fin = null;
     }
-    if (Array.isArray(val.sede)) {
-      const specificSedes = val.sede.filter((s: string) => s && s.trim().toLowerCase() !== 'todas');
-      val.sede = specificSedes.length > 0 ? specificSedes.join(', ') : 'Todas';
-    } else if (typeof val.sede === 'string' && val.sede.trim() !== '') {
-      val.sede = val.sede.trim();
-    } else {
-      val.sede = 'Todas';
+
+    const rawSede = val.sede;
+    let sedeFinal = 'Todas';
+
+    if (Array.isArray(rawSede)) {
+      const specificSedes = rawSede
+        .map((s: string) => (s || '').trim())
+        .filter((s: string) => s.length > 0 && s.toLowerCase() !== 'todas');
+
+      if (specificSedes.length > 0) {
+        sedeFinal = specificSedes.join(', ');
+      } else if (rawSede.some((s: string) => s.toLowerCase() === 'todas')) {
+        sedeFinal = 'Todas';
+      } else {
+        sedeFinal = 'Todas';
+      }
+    } else if (typeof rawSede === 'string' && rawSede.trim() !== '') {
+      const trimmed = rawSede.trim();
+      sedeFinal = trimmed.toLowerCase() === 'todas' ? 'Todas' : trimmed;
     }
+
+    val.sede = sedeFinal;
     this.dialogRef.close(val);
   }
 

@@ -3274,3 +3274,492 @@
 }
 
 
+
+
+/* ===================================================================
+   DOC-19: SUBCARPETAS POR ÁREA EN PERFILES DE PUESTO (GESTIÓN HUMANA)
+   =================================================================== */
+
+/* Mini flecha de acordeón en el árbol */
+.mini-arrow-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  margin-right: 2px;
+  width: 16px;
+  height: 16px;
+  transition: color 0.15s ease;
+}
+
+.mini-arrow-btn:hover {
+  color: #4f46e5;
+}
+
+.arrow-icon-mini {
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.arrow-icon-mini.rotated {
+  transform: rotate(-90deg);
+}
+
+/* Contenedor de subcarpetas de áreas en el árbol */
+.tree-perfil-subareas-container {
+  margin: 2px 0 6px 24px;
+  padding: 6px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.tree-area-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 2px 6px;
+  margin-bottom: 6px;
+}
+
+.tree-area-search-ico {
+  font-size: 13px;
+  width: 13px;
+  height: 13px;
+  color: #94a3b8;
+}
+
+.tree-area-search-input {
+  border: none;
+  outline: none;
+  font-size: 10.5px;
+  color: #334155;
+  width: 100%;
+  background: transparent;
+}
+
+.btn-clear-tree-area {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+}
+
+.btn-clear-tree-area:hover {
+  color: #ef4444;
+}
+
+.tree-area-list-scroll {
+  max-height: 190px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.tree-area-list-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.tree-area-list-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.area-subfolder-node {
+  height: 24px !important;
+  padding: 2px 6px !important;
+  font-size: 10.5px !important;
+  border-radius: 5px;
+  transition: all 0.15s ease;
+}
+
+.area-subfolder-node:hover {
+  background: #e2e8f0 !important;
+}
+
+.area-subfolder-node.active {
+  background: rgba(99, 102, 241, 0.12) !important;
+  border-left: 3px solid #6366f1 !important;
+}
+
+.area-subfolder-node.active .area-tree-text {
+  color: #4338ca !important;
+  font-weight: 700 !important;
+}
+
+.area-tree-folder-icon {
+  font-size: 13px;
+  width: 13px;
+  height: 13px;
+  color: #818cf8;
+  margin-right: 3px;
+}
+
+.area-tree-text {
+  font-size: 10.5px;
+  color: #475569;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.area-pill {
+  font-size: 9px !important;
+  padding: 0 4px !important;
+  min-width: 16px;
+  text-align: center;
+}
+
+.area-pill.has-docs {
+  background: #e0e7ff !important;
+  color: #4338ca !important;
+  font-weight: 700 !important;
+}
+
+/* -------------------------------------------------------------------
+   EXPLORADOR DE SUBCARPETAS POR ÁREA EN PANEL DERECHO (GRID DE ÁREAS)
+   ------------------------------------------------------------------- */
+.perfil-areas-explorer-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background-image: linear-gradient(to right bottom, #ffffff, #fbfcfe);
+}
+
+.perfil-areas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 12px;
+}
+
+.perfil-areas-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.perfil-areas-icon-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.25);
+}
+
+.perfil-areas-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+.perfil-areas-subtitle {
+  font-size: 12px;
+  color: #64748b;
+  margin: 2px 0 0 0;
+}
+
+.perfil-areas-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.perfil-search-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 5px 10px;
+  width: 260px;
+  transition: all 0.2s ease;
+}
+
+.perfil-search-box:focus-within {
+  border-color: #6366f1;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.perfil-search-input {
+  border: none;
+  outline: none;
+  font-size: 12px;
+  color: #1e293b;
+  width: 100%;
+  background: transparent;
+}
+
+.total-areas-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  background: #eef2ff;
+  color: #4f46e5;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  white-space: nowrap;
+}
+
+/* Grid de carpetas por área */
+.perfil-areas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+  gap: 12px;
+  max-height: 290px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.perfil-areas-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.perfil-areas-grid::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 6px;
+}
+
+.area-folder-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.area-folder-card:hover {
+  transform: translateY(-2px);
+  border-color: #818cf8;
+  box-shadow: 0 6px 14px rgba(99, 102, 241, 0.12);
+}
+
+.area-folder-card.has-profiles {
+  border-color: rgba(99, 102, 241, 0.35);
+  background: linear-gradient(to bottom, #ffffff, #fbfcfe);
+}
+
+.area-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.area-card-icon-wrap {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.area-folder-card:hover .area-card-icon-wrap,
+.area-folder-card.has-profiles .area-card-icon-wrap {
+  background: #eef2ff;
+}
+
+.area-card-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #64748b;
+  transition: color 0.2s ease;
+}
+
+.area-folder-card:hover .area-card-icon,
+.area-folder-card.has-profiles .area-card-icon {
+  color: #6366f1;
+}
+
+.area-card-count {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.area-card-count.badge-active {
+  background: #e0e7ff;
+  color: #4338ca;
+  font-weight: 700;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.area-card-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  min-height: 31px;
+}
+
+.area-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10.5px;
+  color: #94a3b8;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 6px;
+  margin-top: 2px;
+}
+
+.area-folder-card:hover .area-card-footer {
+  color: #6366f1;
+}
+
+.area-card-arrow {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease;
+}
+
+.area-folder-card:hover .area-card-arrow {
+  transform: translateX(3px);
+}
+
+/* -------------------------------------------------------------------
+   BARRA DE NAVEGACIÓN DENTRO DE SUBCARPETA DE ÁREA ESPECÍFICA
+   ------------------------------------------------------------------- */
+.subarea-breadcrumb-bar {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background-image: linear-gradient(to right, #ffffff, #fbfcfe);
+}
+
+.subarea-breadcrumb-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.btn-subarea-back {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.18s ease;
+}
+
+.btn-subarea-back:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  transform: translateX(-2px);
+}
+
+.btn-subarea-back mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.subarea-divider {
+  width: 1px;
+  height: 22px;
+  background: #cbd5e1;
+}
+
+.subarea-current-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.subarea-tag-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #6366f1;
+}
+
+.subarea-label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.subarea-name {
+  font-size: 13.5px;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.subarea-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  background: #e0e7ff;
+  color: #4338ca;
+  border-radius: 12px;
+  margin-left: 4px;
+}
+
+.btn-subarea-upload {
+  padding: 7px 16px !important;
+  font-size: 12.5px !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

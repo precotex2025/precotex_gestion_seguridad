@@ -416,15 +416,9 @@ export class LayoutComponent implements OnInit, OnDestroy {
                     if (moduloClave) {
                       const cleanKey = moduloClave.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
-                      // Guardar clave exacta
+                      // Guardar siempre el valor real y actualizado de la base de datos tanto en la clave exacta como en la normalizada
                       accesosObj[puestoClave][moduloClave] = nivelAcceso;
-
-                      // Guardar clave normalizada sin tildes (auditorias, organizacion, etc.)
-                      // Si viene 'Sin acceso', se respeta estrictamente para evitar que 'Ver' residual prevalezca
-                      const prevClean = accesosObj[puestoClave][cleanKey];
-                      if (!prevClean || nivelAcceso.toLowerCase() === 'sin acceso' || prevClean.toLowerCase() !== 'sin acceso') {
-                        accesosObj[puestoClave][cleanKey] = nivelAcceso;
-                      }
+                      accesosObj[puestoClave][cleanKey] = nivelAcceso;
                     }
                   }
                 });
@@ -455,19 +449,27 @@ export class LayoutComponent implements OnInit, OnDestroy {
                     (p.cod_Usuario && p.cod_Usuario.trim().toLowerCase() === rawUid.toLowerCase())
                   );
 
-                  const targets = Array.from(new Set([
-                    rawUid,
-                    matchedPuesto?.puesto?.trim(),
-                    matchedPuesto?.codigo_Puesto?.trim(),
-                    matchedPuesto?.cod_Usuario?.trim().toLowerCase()
-                  ].filter(Boolean)));
+                  // Si rawUid corresponde a un usuario específico, NO contaminar el puesto compartido
+                  const isUserSpecific = matchedPuesto && matchedPuesto.cod_Usuario &&
+                    matchedPuesto.cod_Usuario.trim().toLowerCase() === rawUid.toLowerCase();
+
+                  const targets = isUserSpecific
+                    ? [rawUid, matchedPuesto.cod_Usuario.trim().toLowerCase()]
+                    : Array.from(new Set([
+                        rawUid,
+                        matchedPuesto?.puesto?.trim(),
+                        matchedPuesto?.codigo_Puesto?.trim(),
+                        matchedPuesto?.cod_Usuario?.trim().toLowerCase()
+                      ].filter(Boolean)));
 
                   const key = (row.modulo || '').trim() + '||' + (row.contenido || '').trim() + '||' + (row.accion || '').trim();
                   const val = row.flg_Permitido ? 1 : 0;
 
                   targets.forEach(t => {
-                    if (!accFine[t]) accFine[t] = {};
-                    accFine[t][key] = val;
+                    if (t) {
+                      if (!accFine[t]) accFine[t] = {};
+                      accFine[t][key] = val;
+                    }
                   });
                 });
                 localStorage.setItem('precotex:puestos:accesos_fino', JSON.stringify(accFine));
@@ -532,24 +534,24 @@ export class LayoutComponent implements OnInit, OnDestroy {
       }
       console.log('[Permisos] Puesto:', puestoName, '| Proceso/Área asignado:', procesoPuesto);
 
-      // Buscar permisos por nombre de puesto o código de puesto
-      let permisos = accesosObj[puestoName] || (puestoCode ? accesosObj[puestoCode] : null);
+      // 1. Permisos base del puesto o cÃ³digo de puesto
+      const basePermsPuesto = (puestoName ? accesosObj[puestoName] : null) || {};
+      const basePermsCod = (puestoCode ? accesosObj[puestoCode] : null) || {};
 
-      if (!permisos) {
-        // Buscar haciendo trim y normalización case-insensitive
-        const matchingKey = Object.keys(accesosObj).find(key =>
-          key.trim().toLowerCase() === puestoName.toLowerCase() ||
-          (puestoCode && key.trim().toLowerCase() === puestoCode.toLowerCase()) ||
-          key.trim().toLowerCase() === userLogin.toLowerCase()
-        );
-        if (matchingKey) {
-          permisos = accesosObj[matchingKey];
-          console.log('[Permisos] Coincidencia encontrada. Clave BD:', JSON.stringify(matchingKey), '| Puesto:', JSON.stringify(puestoName));
+      // 2. Permisos especÃ­ficos asignados directamente al usuario (userLogin)
+      let userSpecificPerms: any = {};
+      if (userLogin) {
+        const uKey = userLogin.toLowerCase().trim();
+        userSpecificPerms = accesosObj[uKey] || accesosObj[userLogin] || {};
+        if (!userSpecificPerms || Object.keys(userSpecificPerms).length === 0) {
+          const matchU = Object.keys(accesosObj).find(k => k.trim().toLowerCase() === uKey);
+          if (matchU) userSpecificPerms = accesosObj[matchU];
         }
       }
 
-      this.permisosUsuario = permisos || {};
-      console.log('[Permisos] Usuario:', userLogin, '| Puesto:', puestoName, '| Permisos:', JSON.stringify(this.permisosUsuario));
+      // 3. Fusionar: la base hereda del puesto/cÃ³digo, y los overrides especÃ­ficos del usuario mandan estrictamente
+      this.permisosUsuario = { ...basePermsPuesto, ...basePermsCod, ...userSpecificPerms };
+      console.log('[Permisos] Usuario:', userLogin, '| Puesto:', puestoName, '| Permisos Consolidados:', JSON.stringify(this.permisosUsuario));
     } else {
       this.permisosUsuario = {};
       this.puestoUsuario = '';
@@ -631,22 +633,20 @@ export class LayoutComponent implements OnInit, OnDestroy {
       // Buscar si el módulo tiene nivel asignado
       let nivel: string | undefined = undefined;
 
-      // 1. Coincidencia directa
-      if (this.permisosUsuario[moduloKey] !== undefined) {
-        nivel = this.permisosUsuario[moduloKey];
-      } else if (this.permisosUsuario[cleanTarget] !== undefined) {
+      // 1. Coincidencia directa o normalizada
+      if (this.permisosUsuario[cleanTarget] !== undefined) {
         nivel = this.permisosUsuario[cleanTarget];
       } else if (this.permisosUsuario[targetKey] !== undefined) {
         nivel = this.permisosUsuario[targetKey];
+      } else if (this.permisosUsuario[moduloKey] !== undefined) {
+        nivel = this.permisosUsuario[moduloKey];
       } else {
         // Buscar por normalización de claves
         for (const [k, v] of Object.entries(this.permisosUsuario)) {
           const cleanK = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
           if (cleanK === cleanTarget || k.toLowerCase().trim() === targetKey) {
             nivel = v;
-            if ((v || '').trim().toLowerCase() === 'sin acceso') {
-              break;
-            }
+            break;
           }
         }
       }
@@ -661,8 +661,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
         }
       }
 
-      // Si el usuario tiene permisos configurados pero no tiene este módulo otorgado, denegar por defecto para usuarios estándar
-      return false;
+      // Si el módulo no tiene restricción explícita de "Sin acceso", el usuario conserva el acceso por defecto
+      return true;
     }
 
     return true;

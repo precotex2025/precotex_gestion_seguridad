@@ -203,6 +203,18 @@ export class PuestosComponent implements OnInit {
     });
   }
 
+  normalizarNivel(val: any, puesto?: string): string {
+    const str = (val || '').toString().trim().toLowerCase();
+    const pStr = (puesto || '').toString().trim().toLowerCase();
+    if (str === '001' || str === '1' || str.includes('geren') || pStr.includes('geren')) {
+      return 'Gerencial';
+    }
+    if (str === '002' || str === '2' || str.includes('jef') || str.includes('mando') || pStr.includes('jefe') || pStr.includes('jefat') || pStr.includes('coordinad')) {
+      return 'Jefatura';
+    }
+    return 'Operativo';
+  }
+
   private procesarYCombinarPuestos(puestosDb: any[], rawElements: any[]): void {
     const isDeleted = (code: string, name: string, pCode: string): boolean => {
       if (code && this.deletedPuestosSet.has(code.toLowerCase().trim())) return true;
@@ -223,6 +235,25 @@ export class PuestosComponent implements OnInit {
 
     const combinedMap = new Map<string, any>();
 
+    // Cargar modificaciones recientes guardadas en localStorage para no sobrescribir ediciones del usuario
+    const localEditsMap = new Map<string, any>();
+    try {
+      const rawLocal = localStorage.getItem('precotex_puestos_usuarios');
+      if (rawLocal) {
+        const parsed = JSON.parse(rawLocal);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((p: any) => {
+            const uKey = (p.userCode || (p.email ? p.email.split('@')[0] : '') || '').toLowerCase().trim();
+            const pKey = (p.codigo_Puesto || p.id || '').toString().replace(/\D/g, '').trim();
+            const nKey = (p.usuario || '').toLowerCase().trim();
+            if (uKey) localEditsMap.set('user:' + uKey, p);
+            if (pKey) localEditsMap.set('puesto:' + pKey, p);
+            if (nKey) localEditsMap.set('name:' + nKey, p);
+          });
+        }
+      }
+    } catch (e) { }
+
     // 1. Procesar usuarios directos de SNUsuario
     if (Array.isArray(rawElements) && rawElements.length > 0) {
       rawElements
@@ -241,6 +272,11 @@ export class PuestosComponent implements OnInit {
           const pCode = (u.codigo_Puesto || u.id || '').toString().replace(/\D/g, '').trim();
           const uNom = (u.nom_Usuario || u.usuario || '').toLowerCase().trim();
 
+          // Buscar datos de localEditsMap si existen
+          const localEdit = (uCode ? localEditsMap.get('user:' + uCode) : null) ||
+            (pCode ? localEditsMap.get('puesto:' + pCode) : null) ||
+            (uNom ? localEditsMap.get('name:' + uNom) : null);
+
           // Buscar datos reales y directos de SNPuesto
           const dbPuesto = puestosDb.find((p: any) => {
             const pUser = (p.cod_Usuario || '').toLowerCase().trim();
@@ -249,9 +285,9 @@ export class PuestosComponent implements OnInit {
             return (uCode && pUser === uCode) || (pCode && pCod === pCode) || (uNom && pFunc && uNom === pFunc);
           });
 
-          let puestoName = (dbPuesto?.denominacion || u.puesto || u.denominacion || '').trim();
-          let userName = (dbPuesto?.puesto_Funciones || u.usuario || u.puesto_Funciones || u.nom_Usuario || '').trim();
-          let procName = (dbPuesto?.puesto_Descripcion || u.proceso || u.puesto_Descripcion || u.proceso_Nombre || '').trim();
+          let puestoName = (localEdit?.puesto || dbPuesto?.denominacion || u.puesto || u.denominacion || '').trim();
+          let userName = (localEdit?.usuario || dbPuesto?.puesto_Funciones || u.usuario || u.puesto_Funciones || u.nom_Usuario || '').trim();
+          let procName = (localEdit?.proceso || dbPuesto?.puesto_Descripcion || u.proceso || u.puesto_Descripcion || u.proceso_Nombre || '').trim();
 
           if (puestoName.includes(',') && (!userName || !userName.includes(','))) {
             const temp = puestoName;
@@ -269,14 +305,25 @@ export class PuestosComponent implements OnInit {
             else { procName = 'General'; }
           }
 
-          const rawNivel = (u.nivel || u.nivelRiesgo || u.codigo_Nivel_Riesgo || u.nivel_Descripcion || 'Operativo').toString().trim();
-          const nivelClean = rawNivel.toLowerCase().includes('mando') ? 'Jefatura'
-            : (rawNivel.toLowerCase().includes('geren') ? 'Gerencial'
-              : (rawNivel.toLowerCase().includes('jef') ? 'Jefatura' : 'Operativo'));
+          // Priorizar nivel de BD (dbPuesto o SN_Usuario), o de modificaciones locales recientes
+          const rawNivel = (
+            dbPuesto?.nivelRiesgo ||
+            dbPuesto?.codigo_Nivel_Riesgo ||
+            localEdit?.nivel ||
+            u.codigo_Nivel ||
+            u.nivelRiesgo ||
+            u.codigo_Nivel_Riesgo ||
+            u.nivel ||
+            u.nivel_Descripcion ||
+            'Operativo'
+          ).toString().trim();
+          const nivelClean = this.normalizarNivel(rawNivel, puestoName);
 
-          let permisosVal = (u.permisos || u.puesto_Requisitos || '').trim();
-          if (!permisosVal) {
+          let permisosVal = (localEdit?.permisos || dbPuesto?.puesto_Requisitos || u.permisos || u.puesto_Requisitos || '').trim();
+          if (!permisosVal || permisosVal === '—') {
             permisosVal = nivelClean === 'Operativo' ? 'Lectura + descarga' : 'Lectura + descarga + modificar';
+          } else if (nivelClean === 'Gerencial' && permisosVal === 'Lectura + descarga') {
+            permisosVal = 'Lectura + descarga + modificar';
           }
 
           const charVal = (u.puesto_Caracteristicas || u.estado || 'Activo').toString().trim();
@@ -356,8 +403,12 @@ export class PuestosComponent implements OnInit {
 
         if (isDeleted(pUser, pName, pCode)) return;
 
-        let puestoName = pPuesto;
-        let userName = pName;
+        const localEdit = (pUser ? localEditsMap.get('user:' + pUser) : null) ||
+          (pCode ? localEditsMap.get('puesto:' + pCode) : null) ||
+          (pName ? localEditsMap.get('name:' + pName.toLowerCase().trim()) : null);
+
+        let puestoName = (localEdit?.puesto || pPuesto).trim();
+        let userName = (localEdit?.usuario || pName).trim();
         if (puestoName.includes(',') && (!userName || !userName.includes(','))) {
           const temp = puestoName;
           puestoName = userName || 'General';
@@ -369,15 +420,15 @@ export class PuestosComponent implements OnInit {
           else puestoName = 'Puesto General';
         }
 
-        const procName = (p.puesto_Descripcion || p.proceso || 'General').trim();
-        const rawNivel = (p.nivel || p.nivelRiesgo || p.codigo_Nivel_Riesgo || p.nivel_Descripcion || 'Operativo').toString().trim();
-        const nivelClean = rawNivel.toLowerCase().includes('mando') ? 'Jefatura'
-          : (rawNivel.toLowerCase().includes('geren') ? 'Gerencial'
-            : (rawNivel.toLowerCase().includes('jef') ? 'Jefatura' : 'Operativo'));
+        const procName = (localEdit?.proceso || p.puesto_Descripcion || p.proceso || 'General').trim();
+        const rawNivel = (p.nivelRiesgo || p.codigo_Nivel_Riesgo || localEdit?.nivel || p.nivel || p.nivel_Descripcion || 'Operativo').toString().trim();
+        const nivelClean = this.normalizarNivel(rawNivel, puestoName);
 
-        let permisosVal = (p.permisos || p.puesto_Requisitos || '').trim();
-        if (!permisosVal) {
+        let permisosVal = (localEdit?.permisos || p.puesto_Requisitos || p.permisos || '').trim();
+        if (!permisosVal || permisosVal === '—') {
           permisosVal = nivelClean === 'Operativo' ? 'Lectura + descarga' : 'Lectura + descarga + modificar';
+        } else if (nivelClean === 'Gerencial' && permisosVal === 'Lectura + descarga') {
+          permisosVal = 'Lectura + descarga + modificar';
         }
 
         const charVal = (p.puesto_Caracteristicas || p.estado || 'Activo').toString().trim();
@@ -1349,7 +1400,7 @@ export class PuestosComponent implements OnInit {
           Password: userPass
         };
 
-        if (this.isLocal && result.ctrol_enviar_credenciales && rawEmail) {
+        if (result.ctrol_enviar_credenciales && rawEmail) {
           const emailPayload = {
             Destinatario: rawEmail,
             Nombre: userDisplayName,
@@ -1400,12 +1451,10 @@ export class PuestosComponent implements OnInit {
           Codigo_Nivel: editCodigoNivelVal,
           Flg_Activo: result.ctrol_estado === 'Inactivo' ? 0 : 1
         };
-        if (this.isLocal) {
-          this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postRegistrarUsuario`, userDbUpdatePayload).subscribe({
-            next: () => { },
-            error: () => { }
-          });
-        }
+        this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postRegistrarUsuario`, userDbUpdatePayload).subscribe({
+          next: () => { },
+          error: () => { }
+        });
 
         const updateLocal = () => {
           const idx = this.puestosList.findIndex(p => p.id === item.id || p.codigo_Puesto === item.codigo_Puesto);

@@ -11,19 +11,19 @@ import { PuestosService } from '../../services/puestos.service';
 })
 export class MapaPermisosComponent implements OnInit {
 
-  permsDefault = {
-    'Inicio (Dashboard)': { ger: ['Ver'], jef: ['Ver'], ope: ['Ver'] },
-    'Organización': { ger: ['Ver', 'Editar', 'Aprobar'], jef: ['Ver'], ope: ['Ver'] },
-    'Puestos': { ger: ['Ver', 'Usuarios'], jef: ['Ver', 'Usuarios'], ope: ['Ver'] },
-    'Documentación': { ger: ['Ver', 'Aprobar', 'Exportar'], jef: ['Ver', 'Registrar', 'Editar'], ope: ['Ver', 'Exportar'] },
-    'Auditorías': { ger: ['Ver', 'Aprobar'], jef: ['Ver', 'Registrar', 'Editar'], ope: ['Ver'] },
-    'No conformidades': { ger: ['Ver', 'Aprobar'], jef: ['Ver', 'Registrar', 'Editar'], ope: ['Ver', 'Registrar'] },
-    'Indicadores': { ger: ['Ver'], jef: ['Ver', 'Registrar', 'Editar'], ope: ['Ver', 'Registrar'] },
-    'Objetivos': { ger: ['Ver', 'Editar', 'Aprobar'], jef: ['Ver', 'Registrar', 'Editar'], ope: ['Ver', 'Registrar'] },
-    'Riesgos': { ger: ['Ver', 'Aprobar'], jef: ['Ver', 'Registrar', 'Editar'], ope: ['Ver', 'Registrar'] },
-    'Portafolio de Mejora': { ger: ['Ver'], jef: ['Ver', 'Registrar', 'Editar'], ope: ['Ver', 'Registrar'] },
-    'Gestión Legal': { ger: ['Ver', 'Aprobar'], jef: ['Ver', 'Registrar'], ope: ['Ver'] },
-    'Proveedores': { ger: ['Ver', 'Aprobar'], jef: ['Ver', 'Registrar', 'Editar'], ope: ['Ver'] },
+  permsDefault: any = {
+    'Inicio (Dashboard)': { ger: ['Ver', 'Exportar'], jef: ['Ver', 'Exportar'], ope: ['Ver'] },
+    'Organización': { ger: ['Ver', 'Registrar', 'Editar', 'Eliminar', 'Aprobar', 'Descargar'], jef: ['Ver', 'Descargar'], ope: ['Ver', 'Descargar'] },
+    'Puestos': { ger: ['Ver', 'Editar', 'Usuarios'], jef: ['Ver', 'Editar', 'Usuarios'], ope: ['Ver'] },
+    'Documentación': { ger: ['Ver', 'Registrar', 'Editar', 'Eliminar', 'Aprobar', 'Exportar'], jef: ['Ver', 'Registrar', 'Editar', 'Exportar'], ope: ['Ver', 'Exportar'] },
+    'Auditorías': { ger: ['Ver', 'Registrar', 'Editar', 'Aprobar', 'Exportar'], jef: ['Ver', 'Registrar', 'Editar', 'Aprobar', 'Exportar'], ope: ['Ver'] },
+    'No conformidades': { ger: ['Ver', 'Registrar', 'Editar', 'Aprobar'], jef: ['Ver', 'Registrar', 'Editar', 'Aprobar'], ope: ['Ver', 'Registrar'] },
+    'Indicadores': { ger: ['Ver', 'Registrar', 'Editar', 'Eliminar', 'Exportar'], jef: ['Ver', 'Registrar', 'Editar', 'Eliminar', 'Exportar'], ope: ['Ver'] },
+    'Objetivos': { ger: ['Ver', 'Registrar', 'Editar', 'Aprobar'], jef: ['Ver', 'Registrar', 'Editar', 'Aprobar'], ope: ['Ver'] },
+    'Riesgos': { ger: ['Ver', 'Registrar', 'Editar', 'Aprobar'], jef: ['Ver', 'Registrar', 'Editar', 'Aprobar'], ope: ['Ver'] },
+    'Portafolio de Mejora': { ger: ['Ver', 'Registrar', 'Editar', 'Aprobar'], jef: ['Ver', 'Registrar', 'Editar', 'Aprobar'], ope: ['Ver'] },
+    'Gestión Legal': { ger: ['Ver', 'Registrar', 'Editar', 'Aprobar'], jef: ['Ver', 'Registrar', 'Editar', 'Aprobar'], ope: ['Ver'] },
+    'Proveedores': { ger: ['Ver', 'Registrar', 'Editar', 'Aprobar', 'Exportar'], jef: ['Ver', 'Registrar', 'Editar', 'Aprobar', 'Exportar'], ope: ['Ver'] },
     'Ayuda': { ger: ['Ver'], jef: ['Ver'], ope: ['Ver'] }
   };
 
@@ -168,11 +168,11 @@ export class MapaPermisosComponent implements OnInit {
     organizacion: 'Ver',
     documentacion: 'Ver',
     auditorias: 'Ver',
-    noconf: 'Editar',
-    indicadores: 'Editar',
+    noconf: 'Ver',
+    indicadores: 'Ver',
     objetivos: 'Ver',
-    riesgos: 'Editar',
-    mejora: 'Editar',
+    riesgos: 'Ver',
+    mejora: 'Ver',
     legal: 'Ver',
     proveedores: 'Ver'
   };
@@ -406,6 +406,18 @@ export class MapaPermisosComponent implements OnInit {
     });
   }
 
+  normalizarNivel(val: any, puesto?: string): string {
+    const str = (val || '').toString().trim().toLowerCase();
+    const pStr = (puesto || '').toString().trim().toLowerCase();
+    if (str === '001' || str === '1' || str.includes('geren') || pStr.includes('geren')) {
+      return 'Gerencial';
+    }
+    if (str === '002' || str === '2' || str.includes('jef') || str.includes('mando') || pStr.includes('jefe') || pStr.includes('jefat') || pStr.includes('coordinad')) {
+      return 'Jefatura';
+    }
+    return 'Operativo';
+  }
+
   private buildColaboradoresList(puestosDb: any[], rawUsers: any[]): void {
     const deletedPuestosSet = new Set<string>();
     try {
@@ -482,13 +494,8 @@ export class MapaPermisosComponent implements OnInit {
             else procName = 'General';
           }
 
-          const rawNivelStr = (dbPuesto?.nivelRiesgo || dbPuesto?.codigo_Nivel_Riesgo || u.nivelRiesgo || u.codigo_Nivel_Riesgo || u.nivel || u.nivel_Descripcion || '').toString().toLowerCase();
-          let nivelClean = 'Operativo';
-          if (rawNivelStr.includes('geren') || puestoName.toLowerCase().includes('geren')) {
-            nivelClean = 'Gerencial';
-          } else if (rawNivelStr.includes('jef') || rawNivelStr.includes('mando') || puestoName.toLowerCase().includes('jefe') || puestoName.toLowerCase().includes('jefat')) {
-            nivelClean = 'Jefatura';
-          }
+          const rawNivelStr = (dbPuesto?.nivelRiesgo || dbPuesto?.codigo_Nivel_Riesgo || u.codigo_Nivel || u.nivelRiesgo || u.codigo_Nivel_Riesgo || u.nivel || u.nivel_Descripcion || '').toString().toLowerCase();
+          const nivelClean = this.normalizarNivel(rawNivelStr, puestoName);
 
           const charVal = (u.puesto_Caracteristicas || u.estado || 'Activo').toString().trim();
           let emailVal = (u.email || '').trim();
@@ -560,12 +567,7 @@ export class MapaPermisosComponent implements OnInit {
         }
 
         const rawNivelStr = (p.nivelRiesgo || p.codigo_Nivel_Riesgo || '').toString().toLowerCase();
-        let nivelClean = 'Operativo';
-        if (rawNivelStr.includes('geren') || puestoName.toLowerCase().includes('geren')) {
-          nivelClean = 'Gerencial';
-        } else if (rawNivelStr.includes('jef') || rawNivelStr.includes('mando') || puestoName.toLowerCase().includes('jefe') || puestoName.toLowerCase().includes('jefat')) {
-          nivelClean = 'Jefatura';
-        }
+        const nivelClean = this.normalizarNivel(rawNivelStr, puestoName);
 
         const item: any = {
           id: p.id || (pUser ? ('usr-' + pUser) : (pCode ? ('p-' + pCode) : ('pue-' + puestoName))),
@@ -694,9 +696,10 @@ export class MapaPermisosComponent implements OnInit {
       return null;
     };
 
-    const val = (puestoCode ? checkObj(this.accObj[puestoCode]) : null) ||
-                (userCode ? checkObj(this.accObj[userCode]) : null) ||
+    // Prioridad 1: Permiso explÃ­cito asignado al USUARIO individual (userCode o uid)
+    const val = (userCode ? checkObj(this.accObj[userCode]) : null) ||
                 checkObj(this.accObj[uid]) ||
+                (puestoCode ? checkObj(this.accObj[puestoCode]) : null) ||
                 (puestoNombre ? checkObj(this.accObj[puestoNombre]) : null);
     if (val) return val;
 
@@ -725,9 +728,17 @@ export class MapaPermisosComponent implements OnInit {
     };
     const keysToSave = moduleVariants[cleanKey] || [mk, cleanKey];
 
-    const targets = Array.from(new Set([uid, userCode, puestoCode].filter(Boolean)));
-    if (targets.length === 0 && puestoNombre) targets.push(puestoNombre);
-    targets.forEach(t => {
+    // Prioridad del identificador: Si es un usuario específico (userCode / uid individual), guardar bajo su usuario
+    // para que NO afecte ni colisione con otros colaboradores que comparten el mismo puesto.
+    const targetUserId = userCode || (uid && !uid.startsWith('pue-') ? uid : '') || puestoCode || puestoNombre;
+
+    // Guardar en memoria local:
+    // Si tenemos usuario específico, guardar ÚNICAMENTE para ese usuario y sus aliases individuales.
+    const localTargets = userCode 
+      ? Array.from(new Set([userCode, uid, 'usr-' + userCode].filter(Boolean)))
+      : Array.from(new Set([uid, puestoCode, puestoNombre].filter(Boolean)));
+
+    localTargets.forEach(t => {
       if (!this.accObj[t]) {
         this.accObj[t] = {};
       }
@@ -738,11 +749,10 @@ export class MapaPermisosComponent implements OnInit {
 
     this.saveGeneralAcc();
 
-    // Guardar en la base de datos para todas las variantes clave
-    const identifier = puestoNombre || puestoCode || uid;
+    // Guardar en la base de datos bajo el identificador individual (ej. 'cvramirez', 'jpinedo', 'mcueva')
     keysToSave.forEach(modK => {
       this.permisosService.postGuardarUsuarioModulo({
-        Codigo_Puesto_Usuario: identifier,
+        Codigo_Puesto_Usuario: targetUserId,
         Modulo_Clave: modK,
         Nivel_Acceso: val
       }).subscribe();
@@ -857,7 +867,24 @@ export class MapaPermisosComponent implements OnInit {
   resetPolitica() {
     this.perms = JSON.parse(JSON.stringify(this.permsDefault));
     this.savePolicy();
-    this.toastr.success('Políticas restablecidas.', '', { timeOut: 2000 });
+
+    // Guardar en la base de datos de forma persistente para cada módulo, nivel y acción
+    Object.keys(this.appl).forEach(mod => {
+      const allActions = this.appl[mod] || [];
+      ['ger', 'jef', 'ope'].forEach(lvl => {
+        allActions.forEach((act: string) => {
+          const isAllowed = this.isPolActive(mod, lvl, act);
+          this.permisosService.postGuardarPolitica({
+            Modulo: mod,
+            Nivel: lvl,
+            Accion: act,
+            Flg_Permitido: isAllowed
+          }).subscribe();
+        });
+      });
+    });
+
+    this.toastr.success('Políticas restablecidas y sincronizadas con la base de datos.', '', { timeOut: 2500 });
   }
 
   // Override / Ajuste Fino
@@ -904,12 +931,14 @@ export class MapaPermisosComponent implements OnInit {
         (p.cod_Usuario && p.cod_Usuario.trim().toLowerCase() === kLower)
       );
       if (matched) {
-        const aliases = [
-          matched.puesto?.trim(),
-          matched.codigo_Puesto?.trim(),
-          matched.cod_Usuario?.trim().toLowerCase(),
-          matched.id
-        ].filter(Boolean);
+        // IMPORTANTE: Si la clave original k es de un usuario individual (cod_Usuario o id de usuario),
+        // NUNCA copiarla al puesto compartido, porque de lo contrario todos los demás colaboradores
+        // con el mismo puesto heredarán los permisos finos de este usuario.
+        const isUserKey = matched.cod_Usuario && matched.cod_Usuario.trim().toLowerCase() === kLower;
+        const aliases = isUserKey
+          ? [matched.cod_Usuario?.trim().toLowerCase(), matched.id].filter(Boolean)
+          : [matched.puesto?.trim(), matched.codigo_Puesto?.trim(), matched.id].filter(Boolean);
+
         aliases.forEach((a: string) => {
           if (!this.accFine[a]) this.accFine[a] = {};
           Object.assign(this.accFine[a], this.accFine[k]);
@@ -951,17 +980,16 @@ export class MapaPermisosComponent implements OnInit {
     const puestoNombre = (item?.puesto || this.drawerUser?.puesto || this.getSelectedPuestoName(uid) || "").trim();
     const puestoCode = (item?.codigo_Puesto || this.drawerUser?.codigo_Puesto || "").trim();
     const userCode = (item?.cod_Usuario || this.drawerUser?.cod_Usuario || "").trim().toLowerCase();
-    const userName = (item?.usuario || this.drawerUser?.usuario || "").trim();
 
+    // Prioridad 1: Permiso fino específico del usuario individual (userCode, uid)
+    // Prioridad 2: Permiso del código de puesto o puesto general
     const targets = Array.from(new Set([
       userCode,
-      puestoNombre,
       uid,
-      puestoCode,
-      userName,
       this.drawerUser?.cod_Usuario?.trim().toLowerCase(),
-      this.drawerUser?.puesto?.trim(),
-      this.drawerUser?.id
+      this.drawerUser?.id,
+      puestoCode,
+      puestoNombre
     ].filter(Boolean)));
 
     const cleanK = this.normalizeFinoKey(k);
@@ -999,15 +1027,13 @@ export class MapaPermisosComponent implements OnInit {
     const key = this.finoKey(mod, cont, acc);
     const val = checked ? 1 : 0;
 
-    const targets = Array.from(new Set([
-      uid, 
-      puestoNombre, 
-      puestoCode, 
-      userCode,
-      this.drawerUser?.id,
-      this.drawerUser?.puesto?.trim(),
-      this.drawerUser?.cod_Usuario?.trim().toLowerCase()
-    ].filter(Boolean)));
+    // Si es un colaborador específico, guardamos bajo su código de usuario/id
+    // NUNCA asignar al puesto general para evitar conflictos entre colaboradores
+    const targetUserId = userCode || (uid && !uid.startsWith('pue-') ? uid : '') || puestoCode || puestoNombre;
+
+    const targets = userCode
+      ? Array.from(new Set([userCode, uid, this.drawerUser?.id, this.drawerUser?.cod_Usuario?.trim().toLowerCase()].filter(Boolean)))
+      : Array.from(new Set([uid, puestoCode, puestoNombre, this.drawerUser?.id].filter(Boolean)));
 
     targets.forEach(t => {
       if (!this.accFine[t]) {
@@ -1018,30 +1044,17 @@ export class MapaPermisosComponent implements OnInit {
 
     this.saveFineAcc();
 
-    // Guardar para el puesto en base de datos
-    if (puestoNombre) {
-      this.permisosService.postGuardarUsuarioDetalle({
-        Codigo_Puesto_Usuario: puestoNombre,
-        Modulo: mod,
-        Contenido: cont,
-        Accion: acc,
-        Flg_Permitido: checked
-      }).subscribe({
-        next: () => this.toastr.success("Permiso específico guardado en la BD.", "", { timeOut: 1500 }),
-        error: () => this.toastr.success("Permiso específico actualizado.", "", { timeOut: 1500 })
-      });
-    }
-
-    // Guardar también para el usuario individual si existe
-    if (userCode && userCode !== puestoNombre.toLowerCase()) {
-      this.permisosService.postGuardarUsuarioDetalle({
-        Codigo_Puesto_Usuario: userCode,
-        Modulo: mod,
-        Contenido: cont,
-        Accion: acc,
-        Flg_Permitido: checked
-      }).subscribe();
-    }
+    // Guardar en la base de datos bajo el identificador individual
+    this.permisosService.postGuardarUsuarioDetalle({
+      Codigo_Puesto_Usuario: targetUserId,
+      Modulo: mod,
+      Contenido: cont,
+      Accion: acc,
+      Flg_Permitido: checked
+    }).subscribe({
+      next: () => this.toastr.success("Permiso específico guardado en la BD.", "", { timeOut: 1500 }),
+      error: () => this.toastr.success("Permiso específico actualizado.", "", { timeOut: 1500 })
+    });
   }
 
   resetFino() {
@@ -1052,15 +1065,9 @@ export class MapaPermisosComponent implements OnInit {
     const userCode = (item?.cod_Usuario || this.drawerUser?.cod_Usuario || "").trim().toLowerCase();
     const mod = this.selectedModule;
 
-    const targets = Array.from(new Set([
-      uid, 
-      puestoNombre, 
-      puestoCode, 
-      userCode,
-      this.drawerUser?.id,
-      this.drawerUser?.puesto?.trim(),
-      this.drawerUser?.cod_Usuario?.trim().toLowerCase()
-    ].filter(Boolean)));
+    const targets = userCode
+      ? Array.from(new Set([userCode, uid, this.drawerUser?.id, this.drawerUser?.cod_Usuario?.trim().toLowerCase()].filter(Boolean)))
+      : Array.from(new Set([uid, puestoCode, puestoNombre, this.drawerUser?.id].filter(Boolean)));
 
     const cleanMod = this.normalizeFinoKey(mod);
 

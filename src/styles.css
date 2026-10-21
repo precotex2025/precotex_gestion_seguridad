@@ -1416,3 +1416,422 @@ div.actions-wrapper.hover-fade {
   justify-content: center !important;
 }
 
+/* ===================================================================
+   SWEETALERT2: MODAL SUBIR DOCUMENTO / MANUAL (CENTRO DE AYUDA)
+   =================================================================== */
+.swal2-popup.custom-swal-ayuda-subir {
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  padding: 0 !important;
+  box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.28), 0 0 0 1px #e2e8f0 !important;
+  overflow: hidden !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  color: #0f172a !important;
+  width: 660px !important;
+  max-width: 95vw !important;
+  position: relative !important;
+}
+
+/* Barra superior perfectamente integrada en las esquinas curvas (sin sobresalir) */
+.custom-swal-ayuda-subir::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #3b82f6 100%);
+  z-index: 10;
+}
+
+/* Botón cerrar alineado y armonioso con las esquinas */
+.custom-swal-ayuda-subir .swal2-close {
+  top: 14px !important;
+  right: 16px !important;
+  width: 32px !important;
+  height: 32px !important;
+  font-size: 22px !important;
+  color: #94a3b8 !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+  outline: none !important;
+  box-shadow: none !important;
+  z-index: 20 !important;
+}
+
+.custom-swal-ayuda-subir .swal2-close:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+.custom-swal-ayuda-subir .swal2-html-container {
+  margin: 0 !important;
+  padding: 24px 28px 0 28px !important;
+  overflow-x: hidden !important;
+  text-align: left !important;
+}
+
+.custom-swal-ayuda-subir .swal2-actions {
+  margin: 20px 0 0 0 !important;
+  padding: 16px 28px 24px 28px !important;
+  gap: 12px !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  border-top: 1px solid #f1f5f9 !important;
+  background: #ffffff !important;
+}
+
+.custom-swal-ayuda-subir .swal-ayuda-btn-confirm {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  font-size: 13.5px !important;
+  letter-spacing: 0.01em !important;
+  padding: 11px 24px !important;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.custom-swal-ayuda-subir .swal-ayuda-btn-confirm:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45) !important;
+  transform: translateY(-1px) !important;
+}
+
+.custom-swal-ayuda-subir .swal-ayuda-btn-cancel {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 13.5px !important;
+  padding: 11px 20px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.custom-swal-ayuda-subir .swal-ayuda-btn-cancel:hover {
+  background: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+/* Header */
+.ayuda-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 16px 0;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 16px;
+}
+
+.ayuda-modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ayuda-modal-icon-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.18) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6366f1;
+}
+
+.ayuda-modal-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+.ayuda-modal-subtitle {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: 3px 0 0 0;
+}
+
+.ayuda-modal-header-right {
+  display: flex;
+  align-items: center;
+  margin-right: 32px;
+}
+
+.ayuda-modal-badge {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.1);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+/* Modern Drag & Drop Zone */
+.ayuda-dropzone-container {
+  border: 2px dashed #c7d2fe;
+  border-radius: 14px;
+  background: #f8faff;
+  padding: 20px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 16px;
+}
+
+.ayuda-dropzone-container:hover,
+.ayuda-dropzone-container.is-dragover {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.05);
+  transform: translateY(-1px);
+}
+
+.ayuda-dropzone-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  transition: transform 0.2s ease;
+}
+
+.ayuda-dropzone-container:hover .ayuda-dropzone-icon {
+  transform: scale(1.08);
+}
+
+.ayuda-dropzone-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+}
+
+.ayuda-dropzone-sub {
+  font-size: 11.5px;
+  color: #64748b;
+  margin: 0 0 10px 0;
+}
+
+.ayuda-dropzone-pills {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ayuda-dropzone-pill {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #475569;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  padding: 3px 9px;
+  border-radius: 8px;
+}
+
+/* File Selected Card */
+.ayuda-file-preview-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border: 1.5px solid #6366f1;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.12);
+  animation: ayudaFadeIn 0.22s ease-out;
+}
+
+.ayuda-file-preview-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.ayuda-file-preview-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #eef2ff;
+  color: #4f46e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ayuda-file-preview-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 380px;
+}
+
+.ayuda-file-preview-size {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.ayuda-file-preview-btn-change {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.ayuda-file-preview-btn-change:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* Form Layout */
+.ayuda-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.ayuda-form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+}
+
+.ayuda-form-group.mb-0 {
+  margin-bottom: 0;
+}
+
+.ayuda-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ayuda-label-required {
+  color: #ef4444;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.ayuda-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ayuda-input-icon {
+  position: absolute;
+  left: 12px;
+  color: #6366f1;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.ayuda-input, .ayuda-select, .ayuda-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #0f172a;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.ayuda-input.has-icon {
+  padding-left: 38px;
+}
+
+.ayuda-input:focus, .ayuda-select:focus, .ayuda-textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* ESTILO READONLY EXCLUSIVO PARA AUTOR NO EDITABLE */
+.ayuda-input.ayuda-input-readonly {
+  background-color: #f8fafc !important;
+  color: #334155 !important;
+  font-weight: 700 !important;
+  border-color: #e2e8f0 !important;
+  cursor: not-allowed !important;
+  user-select: none !important;
+  padding-right: 120px !important; /* Espacio para el badge de solo lectura */
+}
+
+.ayuda-input.ayuda-input-readonly:focus {
+  border-color: #cbd5e1 !important;
+  box-shadow: none !important;
+}
+
+.ayuda-badge-readonly {
+  position: absolute;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  background: #e2e8f0;
+  padding: 4px 9px;
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.ayuda-input-hint {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+@keyframes ayudaFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

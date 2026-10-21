@@ -1,4 +1,4 @@
-<div class="dialog-container">
+﻿<div class="dialog-container">
   
   <!-- ==================== HEADER ==================== -->
   <div class="dialog-header">
@@ -99,6 +99,7 @@
               </label>
               <div class="select-wrapper">
                 <select formControlName="sede" class="form-control field-select">
+                  <option value="" disabled selected>Selecciona una Sede</option>
                   <option *ngFor="let opt of sedesOptions" [value]="opt">{{ opt }}</option>
                 </select>
               </div>
@@ -231,7 +232,7 @@
               <div class="drop-text-container">
                 <div *ngIf="!nombreArchivoEvidencia">
                   <p class="drop-title"><strong>Haz clic aquí</strong> para adjuntar evidencia de medición</p>
-                  <p class="drop-subtitle">Formatos admitidos: PDF, Excel (.xlsx, .xls), Imágenes (.png, .jpg) — Máx. 10 MB</p>
+                  <p class="drop-subtitle">Formatos admitidos: PDF, Excel (.xlsx, .xls), Imágenes (.png, .jpg), Word (.docx) — Máx. 100 MB</p>
                 </div>
 
                 <div *ngIf="nombreArchivoEvidencia" class="file-loaded-info">

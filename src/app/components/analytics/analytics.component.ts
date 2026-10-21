@@ -1,4 +1,4 @@
-import { PermisosService } from '../../services/permisos.service';
+﻿import { PermisosService } from '../../services/permisos.service';
 import { Component, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
@@ -110,7 +110,7 @@ export class AnalyticsComponent implements OnInit {
             codigo: item.codigo,
             nombre: this.limpiarTexto(item.nombre),
             tipo: item.tipo || 'Eficacia',
-            sede: this.limpiarTexto(item.sede || 'Todas'),
+            sede: this.limpiarTexto(item.sede || item.Sede || item.areas_Acceso || item.Areas_Acceso || 'Todas las sedes'),
             proceso: this.limpiarTexto(item.nombre_Proceso || item.proceso || item.codigo_Proceso || 'General'),
             codigoProceso: item.codigo_Proceso,
             codigo_proceso: item.codigo_Proceso,
@@ -137,7 +137,7 @@ export class AnalyticsComponent implements OnInit {
             fecha_inicio: item.fecha_Inicio || item.fec_Inicio || item.inicio || '',
             fin: item.fecha_Fin || item.fec_Fin || item.fin || '',
             fecha_fin: item.fecha_Fin || item.fec_Fin || item.fin || '',
-            areasacc: this.limpiarTexto(item.areas_Acceso || item.sede || 'Todas')
+            areasacc: this.limpiarTexto(item.areas_Acceso || item.Areas_Acceso || item.sede || item.Sede || 'Todas las sedes')
           }));
           this.dataSource.data = mapped;
           this.calculateStats(mapped);
@@ -154,10 +154,10 @@ export class AnalyticsComponent implements OnInit {
 
   cargarIndicadoresDefault(): void {
     const defaultData = [
-      { codigo: 'IND-COS-001', nombre: '% Eficiencia de Costura', tipo: 'Eficiencia', sede: 'Sede Huachipa', proceso: 'Costura', norma: 'ISO 9001:2015', frecuencia: 'Mensual', meta: '85', unidad: '%', estado: 'Activo', fuente: 'Reporte de producción', responsable: 'Jefe de Costura', respmed: 'Supervisor de Costura' },
+      { codigo: 'IND-COS-001', nombre: '% Eficiencia de Costura', tipo: 'Eficiencia', sede: 'Huachipa 1', proceso: 'Costura', norma: 'ISO 9001:2015', frecuencia: 'Mensual', meta: '85', unidad: '%', estado: 'Activo', fuente: 'Reporte de producción', responsable: 'Jefe de Costura', respmed: 'Supervisor de Costura' },
       { codigo: 'IND-SST-002', nombre: 'Índice de Frecuencia de Accidentes (IFA)', tipo: 'Eficacia', sede: 'Todas', proceso: 'SSOMA', norma: 'ISO 45001:2018', frecuencia: 'Mensual', meta: '2.5', unidad: 'Índice', estado: 'Activo', fuente: 'Reporte SSOMA', responsable: 'Jefe de SSOMA', respmed: 'Analista de Seguridad' },
-      { codigo: 'IND-CAL-003', nombre: '% Auditorías de Calidad Aprobadas', tipo: 'Efectividad', sede: 'Sede Huachipa', proceso: 'Gestión de Calidad', norma: 'ISO 9001:2015', frecuencia: 'Trimestral', meta: '95', unidad: '%', estado: 'Activo', fuente: 'Informe de Auditoría Interna', responsable: 'Líder de Calidad', respmed: 'Auditor Interno' },
-      { codigo: 'IND-TIN-004', nombre: 'Rendimiento de Tintorería', tipo: 'Eficiencia', sede: 'Sede Santa Cecilia', proceso: 'Tintorería', norma: 'ISO 14001:2015', frecuencia: 'Mensual', meta: '90', unidad: '%', estado: 'Activo', fuente: 'Sistema ERP', responsable: 'Jefe de Tintorería', respmed: 'Supervisor de Tintorería' }
+      { codigo: 'IND-CAL-003', nombre: '% Auditorías de Calidad Aprobadas', tipo: 'Efectividad', sede: 'Huachipa 1', proceso: 'Gestión de Calidad', norma: 'ISO 9001:2015', frecuencia: 'Trimestral', meta: '95', unidad: '%', estado: 'Activo', fuente: 'Informe de Auditoría Interna', responsable: 'Líder de Calidad', respmed: 'Auditor Interno' },
+      { codigo: 'IND-TIN-004', nombre: 'Rendimiento de Tintorería', tipo: 'Eficiencia', sede: 'Santa Cecilia', proceso: 'Tintorería', norma: 'ISO 14001:2015', frecuencia: 'Mensual', meta: '90', unidad: '%', estado: 'Activo', fuente: 'Sistema ERP', responsable: 'Jefe de Tintorería', respmed: 'Supervisor de Tintorería' }
     ];
 
     const localInds = JSON.parse(localStorage.getItem('precotex_indicadores') || '[]');
@@ -280,12 +280,17 @@ export class AnalyticsComponent implements OnInit {
       if (res) {
         // Formatear valor numérico de meta
         const numericMeta = parseFloat(String(res.meta).replace(/[^0-9.]/g, '')) || 0;
-        let sedeStr = 'Todas';
+        let sedeStr = 'Todas las sedes';
         if (Array.isArray(res.sede)) {
-          const specific = res.sede.filter((s: string) => s && s.trim().toLowerCase() !== 'todas');
+          const specific = res.sede
+            .map((s: string) => (s || '').trim())
+            .filter((s: string) => s.length > 0 && s.toLowerCase() !== 'todas');
           sedeStr = specific.length > 0 ? specific.join(', ') : 'Todas';
         } else if (typeof res.sede === 'string' && res.sede.trim() !== '') {
-          sedeStr = res.sede.trim();
+          const parts = res.sede.split(',')
+            .map((s: string) => s.trim())
+            .filter((s: string) => s.length > 0 && s.toLowerCase() !== 'todas');
+          sedeStr = parts.length > 0 ? parts.join(', ') : (res.sede.trim().toLowerCase() === 'todas' ? 'Todas las sedes' : res.sede.trim());
         }
 
         const payload = {
@@ -400,12 +405,17 @@ export class AnalyticsComponent implements OnInit {
     dialogRef.afterClosed().subscribe(res => {
       if (res) {
         const numericMeta = parseFloat(String(res.meta).replace(/[^0-9.]/g, '')) || 0;
-        let sedeStr = 'Todas';
+        let sedeStr = 'Todas las sedes';
         if (Array.isArray(res.sede)) {
-          const specific = res.sede.filter((s: string) => s && s.trim().toLowerCase() !== 'todas');
+          const specific = res.sede
+            .map((s: string) => (s || '').trim())
+            .filter((s: string) => s.length > 0 && s.toLowerCase() !== 'todas');
           sedeStr = specific.length > 0 ? specific.join(', ') : 'Todas';
         } else if (typeof res.sede === 'string' && res.sede.trim() !== '') {
-          sedeStr = res.sede.trim();
+          const parts = res.sede.split(',')
+            .map((s: string) => s.trim())
+            .filter((s: string) => s.length > 0 && s.toLowerCase() !== 'todas');
+          sedeStr = parts.length > 0 ? parts.join(', ') : (res.sede.trim().toLowerCase() === 'todas' ? 'Todas las sedes' : res.sede.trim());
         }
 
         const payload = {

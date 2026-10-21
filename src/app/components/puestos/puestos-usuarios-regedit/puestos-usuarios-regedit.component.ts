@@ -174,6 +174,16 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
       this.validarUsuarioDuplicado(val);
     });
 
+    // Sincronización reactiva del nivel jerárquico con permisos sugeridos
+    this.formulario.get('ctrol_nivel')?.valueChanges.subscribe(nivel => {
+      const nivStr = (nivel || '').toString().toLowerCase();
+      if (nivStr.includes('geren') || nivStr.includes('jef') || nivStr.includes('mando')) {
+        this.formulario.patchValue({ ctrol_permisos: 'Lectura + descarga + modificar' }, { emitEvent: false });
+      } else {
+        this.formulario.patchValue({ ctrol_permisos: 'Lectura + descarga' }, { emitEvent: false });
+      }
+    });
+
     if (this.data.Accion === 'U' && this.data.Datos) {
       const email = this.data.Datos.email || (this.data.Datos.raw?.puesto_Caracteristicas && this.data.Datos.raw.puesto_Caracteristicas.includes('|') ? this.data.Datos.raw.puesto_Caracteristicas.split('|')[1] : '');
       const loginAcceso = (this.data.Datos.userCode || (this.data.Datos.usuario && !this.data.Datos.usuario.includes(' ') && this.data.Datos.usuario.length <= 25))

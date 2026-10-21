@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import Swal from 'sweetalert2';
@@ -137,7 +137,7 @@ export class MedicionIndicadoresComponent implements OnInit {
               codigoIndicador: codInd,
               indicador: this.limpiarTexto(nomInd),
               tipo: this.limpiarTexto(item.tipo || 'Eficacia'),
-              sede: this.limpiarSede(item.sede),
+              sede: this.limpiarSede(item.sede || item.Sede || item.areas_Acceso || item.Areas_Acceso),
               proceso: this.limpiarTexto(item.nombre_Proceso || item.proceso || 'SSOMA'),
               norma: item.norma || 'ISO 9001:2015',
               frecuencia: item.frecuencia || 'Mensual',
@@ -228,7 +228,7 @@ export class MedicionIndicadoresComponent implements OnInit {
           codigoIndicador: ind.codigo,
           indicador: this.limpiarTexto(ind.nombre),
           tipo: this.limpiarTexto(ind.tipo || 'Eficacia'),
-          sede: this.limpiarSede(ind.sede),
+          sede: this.limpiarSede(ind.sede || ind.Sede || ind.areas_Acceso || ind.Areas_Acceso),
           proceso: this.limpiarTexto(ind.nombre_Proceso || ind.proceso || 'General'),
           norma: ind.norma || 'ISO 9001:2015',
           frecuencia: ind.frecuencia || 'Mensual',
@@ -324,7 +324,7 @@ export class MedicionIndicadoresComponent implements OnInit {
         codigoIndicador: 'IND-CAL-003',
         indicador: '% Auditorías de Calidad Aprobadas',
         tipo: 'Calidad',
-        sede: 'Sede Huachipa',
+        sede: 'Huachipa 1',
         proceso: 'Gestión de Calidad',
         norma: 'ISO 9001:2015',
         frecuencia: 'Trimestral',
@@ -344,7 +344,7 @@ export class MedicionIndicadoresComponent implements OnInit {
         codigoIndicador: 'IND-COS-004',
         indicador: 'Rendimiento de Producción y Costura',
         tipo: 'Productividad',
-        sede: 'Sede Ate',
+        sede: 'Santa Maria',
         proceso: 'Costura',
         norma: 'ISO 9001:2015',
         frecuencia: 'Mensual',

@@ -1,4 +1,4 @@
-<div class="contenedor sn-animate-in">
+﻿<div class="contenedor sn-animate-in">
 
   <!-- BANNER NOTIFICACIÓN DISCRETO COLAPSABLE -->
   <div class="banner-aviso-collapsible" *ngIf="mostrarBanner">
@@ -94,7 +94,7 @@
       <!-- Sede -->
       <ng-container matColumnDef="sede">
         <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 130px;">Sede</th>
-        <td mat-cell *matCellDef="let row" class="cat-cell">{{ row.sede || 'Todas' }}</td>
+        <td mat-cell *matCellDef="let row" class="cat-cell">{{ row.sede || 'Todas las sedes' }}</td>
       </ng-container>
 
       <!-- Norma ISO -->

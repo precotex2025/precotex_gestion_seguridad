@@ -163,10 +163,10 @@ export class PermisosService {
           (p.usuario && p.usuario.toLowerCase().includes(userLogin))
         );
         if (match) {
-          const rawNivel = (match.nivelRiesgo || match.codigo_Nivel_Riesgo || match.nivel || '').toLowerCase();
+          const rawNivel = (match.nivelRiesgo || match.codigo_Nivel_Riesgo || match.nivel || '').toString().toLowerCase().trim();
           const pName = (match.puesto || '').toLowerCase();
-          if (rawNivel.includes('geren') || pName.includes('geren')) return 'ger';
-          if (rawNivel.includes('jef') || rawNivel.includes('mando') || pName.includes('jefe') || pName.includes('jefat')) return 'jef';
+          if (rawNivel === '001' || rawNivel === '1' || rawNivel.includes('geren') || pName.includes('geren')) return 'ger';
+          if (rawNivel === '002' || rawNivel === '2' || rawNivel.includes('jef') || rawNivel.includes('mando') || pName.includes('jefe') || pName.includes('jefat') || pName.includes('coordinad')) return 'jef';
         }
       } catch (e) { }
     }

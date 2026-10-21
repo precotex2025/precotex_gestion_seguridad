@@ -36,6 +36,11 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   searchProcesoTree: string = '';
   expandedMacrosState: { [macro: string]: boolean } = {};
 
+  // DOC-19: Segmentación de Perfiles de Puesto por Área en Gestión Humana
+  treeAreaSearchQuery: string = '';
+  panelAreaSearchQuery: string = '';
+  expandedPerfilPuestosState: { [procName: string]: boolean } = { 'Gestión Humana': true, 'Capacitaciones y Desarrollo': true };
+
   // Observación g: Estructura documental flotante que aparece al mantener el cursor a la izquierda
   treeHovered: boolean = false;
   treePinned: boolean = true; // false = modo flotante por hover; true = fijado al layout
@@ -216,6 +221,12 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     { nombre: 'Instructivo de Uso de Formato 5W-2H', codigo: 'INS-IMC-OYM-002', tipo: 'Instructivo', version: 'v1.2', formato: 'PDF', proceso: 'Organización y Métodos', vig: '2026-01-15', estado: 'Vigente', archivo: 'INS-IMC-OYM-002.pdf' },
     { nombre: 'Manual de Organización y Funciones — O&M', codigo: 'MAN-IMC-OYM-001', tipo: 'Manual', version: 'v5.2', formato: 'PDF', proceso: 'Organización y Métodos', vig: '2026-05-02', estado: 'Vigente', archivo: 'MAN-IMC-OYM-001.pdf' },
     { nombre: 'Perfil de Puesto — Analista O&M', codigo: 'PER-IMC-OYM-004', tipo: 'Perfil de puesto', version: 'v1.1', formato: 'PDF', proceso: 'Organización y Métodos', vig: '2025-06-30', estado: 'Por vencer', archivo: 'PER-IMC-OYM-004.pdf' },
+    { nombre: 'Perfil de Puesto — Operario de Costura Industrial', codigo: 'PER-OPM-COS-001', tipo: 'Perfil de puesto', version: 'v1.0', formato: 'PDF', proceso: 'Costura', vig: '2026-12-31', estado: 'Vigente', archivo: 'PER-OPM-COS-001.pdf' },
+    { nombre: 'Perfil de Puesto — Cortador Textil', codigo: 'PER-OPM-COR-001', tipo: 'Perfil de puesto', version: 'v1.0', formato: 'PDF', proceso: 'Corte', vig: '2026-12-31', estado: 'Vigente', archivo: 'PER-OPM-COR-001.pdf' },
+    { nombre: 'Perfil de Puesto — Analista de Sistemas y Soporte TI', codigo: 'PER-SOP-SIS-001', tipo: 'Perfil de puesto', version: 'v1.0', formato: 'PDF', proceso: 'Sistemas', vig: '2026-12-31', estado: 'Vigente', archivo: 'PER-SOP-SIS-001.pdf' },
+    { nombre: 'Perfil de Puesto — Administrador de Infraestructura y Redes', codigo: 'PER-SOP-SIS-002', tipo: 'Perfil de puesto', version: 'v1.0', formato: 'PDF', proceso: 'Sistemas', vig: '2026-12-31', estado: 'Vigente', archivo: 'PER-SOP-SIS-002.pdf' },
+    { nombre: 'Perfil de Puesto — Supervisor de SSOMA', codigo: 'PER-SOP-SSO-001', tipo: 'Perfil de puesto', version: 'v1.0', formato: 'PDF', proceso: 'SSOMA', vig: '2026-12-31', estado: 'Vigente', archivo: 'PER-SOP-SSO-001.pdf' },
+    { nombre: 'Perfil de Puesto — Coordinador de Gestión Humana', codigo: 'PER-GH-GGHH-001', tipo: 'Perfil de puesto', version: 'v1.0', formato: 'PDF', proceso: 'Gestión Humana', vig: '2026-12-31', estado: 'Vigente', archivo: 'PER-GH-GGHH-001.pdf' },
     { nombre: 'Procedimiento de Control Patrimonial', codigo: 'PRO-SOP-CTP-002', tipo: 'Procedimiento', version: 'v1.0', formato: 'PDF', proceso: 'Control Patrimonial', vig: '2026-03-01', estado: 'Vigente', archivo: 'PRO-SOP-CTP-002.pdf' },
     { nombre: 'Plan Anual de Auditorías Internas', codigo: 'PLN-AIO-001', tipo: 'Formato', version: 'v2.0', formato: 'Excel', proceso: 'Auditoría Interna', vig: '2025-08-15', estado: 'Por vencer', archivo: 'PLN-AIO-001.xlsx' }
   ];
@@ -601,7 +612,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       'SIST': 'Sistemas', 'SIS': 'Sistemas',
       'MANT': 'Mantenimiento General', 'MNT': 'Mantenimiento General',
       'SEGP': 'Seguridad Patrimonial',
-      'SSOMA': 'SSOMA', 'SST': 'SSOMA',
+      'SSOMA': 'SSOMA', 'SST': 'SSOMA', 'SSO': 'SSOMA',
       'AUDI': 'Auditoría Interna', 'AUD': 'Auditoría Interna',
       'CPT': 'Control Patrimonial', 'CTP': 'Control Patrimonial',
       'ING': 'Ingeniería', 'MC': 'Ingeniería',
@@ -837,6 +848,19 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       }
     } catch (e) { }
 
+    // DOC-19: Asegurar que los perfiles de puesto estén siempre disponibles en el catálogo
+    const hasPerfiles = rawList.some((d: any) => {
+      const t = (d.tipo || '').toLowerCase();
+      return t.includes('perfil') || t.includes('puesto');
+    });
+    if (!hasPerfiles) {
+      const perfilesDefault = this.defaultDocs.filter((d: any) => {
+        const t = (d.tipo || '').toLowerCase();
+        return t.includes('perfil') || t.includes('puesto');
+      });
+      rawList.push(...perfilesDefault);
+    }
+
     localCombined.forEach(locDoc => {
       const codeClean = (locDoc.codigo || locDoc.codigo_Documentos_Controlados || '').toString().trim().toLowerCase();
       const nomClean = (locDoc.nombre || locDoc.denominacion || '').toString().trim().toLowerCase();
@@ -1053,12 +1077,21 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   }
 
   getProcessCount(proc: string): number {
+    const isPerfilHolder = this.isPerfilPuestosFolder(proc, 'Descripción del Puesto');
     return this.docsList.filter(d => {
       const procs = this.getDocProcesosList(d);
       const docP = d.proceso || '';
-      return procs.some(p => this.matchesProcess(p, proc)) ||
+      const matchesStandard = procs.some(p => this.matchesProcess(p, proc)) ||
         this.matchesProcess(docP, proc) ||
         procs.includes('Todos los procesos');
+      if (matchesStandard) return true;
+
+      if (isPerfilHolder) {
+        const t = (d.tipo || '').toLowerCase().trim();
+        return t.includes('perfil') || t.includes('puesto') || t.includes('descripci') ||
+          (!['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k)));
+      }
+      return false;
     }).length;
   }
 
@@ -1145,9 +1178,16 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       const parts = this.activeFilter.substring(7).split('|');
       const proc = parts[0];
       const folderType = parts[1] || '';
+      const subArea = (parts[2] || '').trim();
+      const title = subArea
+        ? (proc + ' — ' + folderType + ' · ' + subArea)
+        : (folderType ? (proc + ' — ' + folderType) : proc);
+      const breadcrumb = subArea
+        ? ('Documentación · ' + proc + ' · ' + folderType + ' · ' + subArea)
+        : (folderType ? ('Documentación · ' + proc + ' · ' + folderType) : ('Documentación · ' + proc));
       this.headerTitleService.setTitle({
-        title: folderType ? (proc + ' — ' + folderType) : proc,
-        breadcrumb: folderType ? ('Documentación · ' + proc + ' · ' + folderType) : ('Documentación · ' + proc)
+        title,
+        breadcrumb
       });
       return;
     }
@@ -1159,12 +1199,154 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     });
   }
 
+    // DOC-19: Métodos de soporte para Segmentación de Perfiles de Puesto por Área en Gestión Humana
+  isPerfilPuestosFolder(procName: string, folderType?: string): boolean {
+    const p = (procName || '').toLowerCase().trim();
+    const isGH = p.includes('gestion humana') || p.includes('gestión humana') || 
+                 p.includes('capacita') || p.includes('desarrollo') || 
+                 p === 'gh' || p === 'gghh' || 
+                 (this.getMacroGroupForProcess(procName) || '').toLowerCase().includes('gestion humana');
+    if (!folderType) return isGH;
+    const f = folderType.toLowerCase().trim();
+    return isGH && (f.includes('perfil') || f.includes('puesto') || f.includes('descripci'));
+  }
+
+  isCurrentFolderPerfilPuestos(): boolean {
+    if (!this.activeFilter || !this.activeFilter.startsWith('folder:')) return false;
+    const parts = this.activeFilter.substring(7).split('|');
+    const proc = parts[0] || '';
+    const folderType = parts[1] || '';
+    return this.isPerfilPuestosFolder(proc, folderType);
+  }
+
+  getActiveSubAreaName(): string {
+    if (this.activeFilter && this.activeFilter.startsWith('folder:')) {
+      const parts = this.activeFilter.substring(7).split('|');
+      return (parts[2] || '').trim();
+    }
+    return '';
+  }
+
+  selectSubArea(proc: string, folderType: string, area: string): void {
+    const p = proc || 'Gestión Humana';
+    const f = folderType || 'Perfil de puestos';
+    this.setFilter('folder:' + p + '|' + f + '|' + area);
+  }
+
+  clearSubAreaFilter(): void {
+    if (this.activeFilter && this.activeFilter.startsWith('folder:')) {
+      const parts = this.activeFilter.substring(7).split('|');
+      const proc = parts[0] || 'Gestión Humana';
+      const folderType = parts[1] || 'Perfil de puestos';
+      this.setFilter('folder:' + proc + '|' + folderType);
+    }
+  }
+
+  isPerfilPuestosExpanded(proc: string): boolean {
+    if (this.expandedPerfilPuestosState[proc] !== undefined) {
+      return this.expandedPerfilPuestosState[proc];
+    }
+    if (this.activeFilter && this.activeFilter.startsWith('folder:' + proc)) {
+      const parts = this.activeFilter.substring(7).split('|');
+      if (this.isPerfilPuestosFolder(proc, parts[1])) {
+        return true;
+      }
+    }
+    return true;
+  }
+
+  togglePerfilPuestosTree(proc: string, event?: Event): void {
+    if (event) event.stopPropagation();
+    this.expandedPerfilPuestosState[proc] = !this.isPerfilPuestosExpanded(proc);
+  }
+
+  getAllAreasForPerfilPuesto(): string[] {
+    const areasSet = new Set<string>();
+    if (this.PROCESOS_GROUPS) {
+      for (const macro in this.PROCESOS_GROUPS) {
+        (this.PROCESOS_GROUPS[macro] || []).forEach(p => {
+          if (p && p.trim()) areasSet.add(this.normalizarNombreProceso(p.trim()));
+        });
+      }
+    }
+    if (this.codeToProcessMap) {
+      Object.values(this.codeToProcessMap).forEach(p => {
+        if (p && p.trim() && p !== 'Organización y Métodos') {
+          areasSet.add(this.normalizarNombreProceso(p.trim()));
+        }
+      });
+    }
+    // Fallback asegurado de áreas clave
+    ['Corte', 'Costura', 'Inspección', 'Acabados', 'Aseguramiento de la Calidad Manufactura',
+     'Tejeduría', 'Tintorería', 'Estampado', 'Bordado', 'Sistemas', 'SSOMA', 'Mantenimiento General',
+     'Seguridad Patrimonial', 'Logística', 'Almacén', 'Comercio Exterior', 'Administración', 'Finanzas',
+     'Contabilidad y Costos', 'Tesorería', 'Gestión Humana', 'Administración de Personal', 'Capacitación',
+     'Auditoría Interna', 'Control Patrimonial', 'Organización y Métodos', 'Ingeniería'].forEach(a => areasSet.add(a));
+
+    return Array.from(areasSet).sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+  }
+
+  getFilteredAreasForTree(): string[] {
+    const all = this.getAllAreasForPerfilPuesto();
+    if (!this.treeAreaSearchQuery.trim()) return all;
+    const q = this.treeAreaSearchQuery.toLowerCase().trim();
+    return all.filter(a => a.toLowerCase().includes(q));
+  }
+
+  getFilteredAreasForPanel(): string[] {
+    const all = this.getAllAreasForPerfilPuesto();
+    if (!this.panelAreaSearchQuery.trim()) return all;
+    const q = this.panelAreaSearchQuery.toLowerCase().trim();
+    return all.filter(a => a.toLowerCase().includes(q));
+  }
+
+  documentoCoincideConArea(doc: any, areaName: string): boolean {
+    if (!doc || !areaName) return false;
+    const normArea = this.normalizarNombreProceso(areaName).toLowerCase().trim();
+    const docProc = this.normalizarNombreProceso(doc.proceso || '').toLowerCase().trim();
+    if (docProc === normArea || this.matchesProcess(docProc, areaName)) return true;
+
+    const procs = this.getDocProcesosList(doc);
+    if (procs.some(p => this.matchesProcess(p, areaName) || this.normalizarNombreProceso(p).toLowerCase() === normArea)) {
+      return true;
+    }
+
+    const inferredProc = this.extraerProcesoDelCodigo(doc.codigo);
+    if (inferredProc) {
+      if (this.matchesProcess(inferredProc, areaName) || this.normalizarNombreProceso(inferredProc).toLowerCase() === normArea) {
+        return true;
+      }
+      return false;
+    }
+
+    const docNom = (doc.nombre || '').toLowerCase();
+    if (docNom.includes(normArea)) return true;
+
+    return false;
+  }
+
+  getPerfilPuestoAreaCount(areaName: string): number {
+    return this.docsList.filter(d => {
+      const t = (d.tipo || '').toLowerCase().trim();
+      const isDocPerfil = t.includes('perfil') || t.includes('puesto') || t.includes('descripci') || 
+                          (!['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k)));
+      if (!isDocPerfil) return false;
+      return this.documentoCoincideConArea(d, areaName);
+    }).length;
+  }
+
   getActiveFolderTitle(): string {
     if (!this.activeFilter || this.activeFilter === '__all__') return 'Todos los procesos';
     if (this.activeFilter.startsWith('macro:')) return this.activeFilter.substring(6);
     if (this.activeFilter.startsWith('folder:')) {
       const parts = this.activeFilter.substring(7).split('|');
-      return parts[1] ? (parts[0] + ' — ' + parts[1]) : parts[0];
+      const proc = parts[0];
+      const folderType = parts[1] || '';
+      const subArea = (parts[2] || '').trim();
+      if (subArea) {
+        return `${proc} — ${folderType} · ${subArea}`;
+      }
+      return folderType ? (proc + ' — ' + folderType) : proc;
     }
     return this.activeFilter;
   }
@@ -1183,6 +1365,14 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
 
   getProcessTypeCount(procName: string, tipoName: string): number {
     const target = (tipoName || '').toLowerCase().trim();
+
+    if (this.isPerfilPuestosFolder(procName, tipoName)) {
+      return this.docsList.filter(d => {
+        const t = (d.tipo || '').toLowerCase().trim();
+        return t.includes('perfil') || t.includes('puesto') || t.includes('descripci') ||
+          (!['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k)));
+      }).length;
+    }
 
     return this.docsList.filter(d => {
       const procs = this.getDocProcesosList(d);
@@ -1270,46 +1460,65 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
           return processes.some(p => procs.some(pr => this.matchesProcess(pr, p)) || this.matchesProcess(docP, p)) || procs.includes('Todos los procesos');
         });
       } else if (this.activeFilter.startsWith('folder:')) {
-        // Formato: folder:NombreProceso|TipoCarpeta
+        // Formato: folder:NombreProceso|TipoCarpeta[|SubArea]
         const parts = this.activeFilter.substring(7).split('|');
         const proc = parts[0];
         const folderType = parts[1] || '';
-        list = list.filter(d => {
-          const procs = this.getDocProcesosList(d);
-          const docP = d.proceso || '';
+        const subArea = (parts[2] || '').trim();
 
-          const matchesProc = procs.some(p => this.matchesProcess(p, proc)) ||
-            this.matchesProcess(docP, proc) ||
-            procs.includes('Todos los procesos');
+        const isPerfilFolder = this.isPerfilPuestosFolder(proc, folderType);
 
-          if (!matchesProc) return false;
+        if (isPerfilFolder) {
+          list = list.filter(d => {
+            const t = (d.tipo || '').toLowerCase().trim();
+            const isDocPerfil = t.includes('perfil') || t.includes('puesto') || t.includes('descripci') ||
+              (!['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k)));
 
-          const t = (d.tipo || '').toLowerCase().trim();
-          const target = folderType.toLowerCase().trim();
+            if (!isDocPerfil) return false;
 
-          if (target === 'otros') {
-            return t === 'otros' || !['procedimiento', 'instructivo', 'formato', 'politica', 'manual', 'perfil', 'descripci'].some(k => t.includes(k));
-          }
-          if (target.includes('descripci') || target.includes('puesto') || target.includes('perfil')) {
-            return t.includes('perfil') || t.includes('puesto') || t.includes('descripci') || (!['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k)));
-          }
-          if (target.startsWith('proced')) {
-            return t.includes('proced');
-          }
-          if (target.startsWith('instruct')) {
-            return t.includes('instruct');
-          }
-          if (target.startsWith('format')) {
-            return t.includes('format');
-          }
-          if (target.startsWith('polit') || target.startsWith('polít')) {
-            return t.includes('polit') || t.includes('polít');
-          }
-          if (target.startsWith('manu')) {
-            return t.includes('manu');
-          }
-          return t.includes(target.substring(0, 4));
-        });
+            if (subArea) {
+              return this.documentoCoincideConArea(d, subArea);
+            }
+            return true;
+          });
+        } else {
+          list = list.filter(d => {
+            const procs = this.getDocProcesosList(d);
+            const docP = d.proceso || '';
+
+            const matchesProc = procs.some(p => this.matchesProcess(p, proc)) ||
+              this.matchesProcess(docP, proc) ||
+              procs.includes('Todos los procesos');
+
+            if (!matchesProc) return false;
+
+            const t = (d.tipo || '').toLowerCase().trim();
+            const target = folderType.toLowerCase().trim();
+
+            if (target === 'otros') {
+              return t === 'otros' || !['procedimiento', 'instructivo', 'formato', 'politica', 'manual', 'perfil', 'descripci'].some(k => t.includes(k));
+            }
+            if (target.includes('descripci') || target.includes('puesto') || target.includes('perfil')) {
+              return t.includes('perfil') || t.includes('puesto') || t.includes('descripci') || (!['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k)));
+            }
+            if (target.startsWith('proced')) {
+              return t.includes('proced');
+            }
+            if (target.startsWith('instruct')) {
+              return t.includes('instruct');
+            }
+            if (target.startsWith('format')) {
+              return t.includes('format');
+            }
+            if (target.startsWith('polit') || target.startsWith('polít')) {
+              return t.includes('polit') || t.includes('polít');
+            }
+            if (target.startsWith('manu')) {
+              return t.includes('manu');
+            }
+            return t.includes(target.substring(0, 4));
+          });
+        }
       } else {
         const filterP = this.activeFilter;
         list = list.filter(d => {
@@ -2802,7 +3011,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       this.toastr.warning('No cuentas con permisos para registrar nuevos documentos.', 'Acceso Restringido');
       return;
     }
-    const activeProc = this.getActiveProcessName();
+    const activeProc = this.getActiveSubAreaName() || this.getActiveProcessName();
     const activeFolder = this.getActiveFolderTypeName();
     const activeTipo = this.getActiveFolderDocTipo();
 
@@ -3754,7 +3963,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   }
 
   onCargarLote(initialFiles?: File[]) {
-    const activeProc = this.getActiveProcessName();
+    const activeProc = this.getActiveSubAreaName() || this.getActiveProcessName();
     const activeFolder = this.getActiveFolderTypeName();
     const activeTipo = this.getActiveFolderDocTipo();
 

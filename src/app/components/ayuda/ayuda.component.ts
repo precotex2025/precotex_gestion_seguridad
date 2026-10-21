@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { AyudaService } from '../../services/ayuda.service';
+import { GlobalVariable } from '../../VarGlobals';
 
 interface Manual {
   id: number;
@@ -35,6 +36,13 @@ interface Faq {
   styleUrls: ['./ayuda.component.css']
 })
 export class AyudaComponent implements OnInit {
+  get sUsuario(): string {
+    return (
+      GlobalVariable.vusu ||
+      (typeof localStorage !== 'undefined' ? (localStorage.getItem('vusu') || localStorage.getItem('precotex:usuario:nombre')) : '') ||
+      'admin'
+    ).trim();
+  }
   searchText: string = '';
   manuales: Manual[] = [];
   expandedFaqs: { [id: number]: boolean } = {};
@@ -171,7 +179,7 @@ export class AyudaComponent implements OnInit {
   ) { }
 
   formatFechaDMY(val: any): string {
-    if (!val) return '—';
+    if (!val || val === '—' || val === 'undefined') return '—';
     if (typeof val === 'string' && val.includes('-')) {
       const parts = val.split('T')[0].split('-');
       if (parts.length === 3 && parts[0].length === 4) {
@@ -197,24 +205,36 @@ export class AyudaComponent implements OnInit {
         if (res && res.success && res.elements) {
           this.manuales = res.elements
             .filter((item: any) => item.flg_Activo !== false && item.flg_Activo !== 0)
-            .map((item: any) => ({
-              id: item.id_Manual,
-              codigo: item.codigo,
-              titulo: item.titulo,
-              subtitulo: item.subtitulo || item.tipo_Documento || 'Manual de usuario',
-              tipoDocumento: item.tipo_Documento || item.subtitulo || 'Manual de usuario',
-              fechaVigencia: this.formatFechaDMY(item.fecha_Vigencia || item.vigencia || ''),
-              usuarioRegistro: item.usuario_Registro || item.autor || 'SISTEMAS',
-              descripcion: item.descripcion || '',
-              autor: item.autor || 'O&M',
-              fecha: this.formatFechaDMY(item.fecha_Publicacion || new Date()),
-              version: item.version || 'v1.0',
-              color: item.color || '#7c6cf0',
-              icono: item.icono || 'menu_book',
-              archivo: item.archivo || '',
-              descargas: item.descargas || 0,
-              flg_Activo: item.flg_Activo
-            }));
+            .map((item: any) => {
+              let rawVersion = item.version || 'v1.0';
+              let rawVigencia = item.fecha_Vigencia || item.vigencia || '';
+              if (rawVersion.includes('|')) {
+                const parts = rawVersion.split('|');
+                rawVersion = parts[0] || 'v1.0';
+                if (!rawVigencia && parts[1]) {
+                  rawVigencia = parts[1];
+                }
+              }
+
+              return {
+                id: item.id_Manual,
+                codigo: item.codigo,
+                titulo: item.titulo,
+                subtitulo: item.subtitulo || item.tipo_Documento || 'Manual de usuario',
+                tipoDocumento: item.tipo_Documento || item.subtitulo || 'Manual de usuario',
+                fechaVigencia: this.formatFechaDMY(rawVigencia),
+                usuarioRegistro: item.usuario_Registro || item.autor || 'SISTEMAS',
+                descripcion: item.descripcion || '',
+                autor: item.autor || 'O&M',
+                fecha: this.formatFechaDMY(item.fecha_Publicacion || new Date()),
+                version: rawVersion,
+                color: item.color || '#7c6cf0',
+                icono: item.icono || 'menu_book',
+                archivo: item.archivo || '',
+                descargas: item.descargas || 0,
+                flg_Activo: item.flg_Activo
+              };
+            });
         } else {
           this.manuales = [];
         }
@@ -259,6 +279,19 @@ export class AyudaComponent implements OnInit {
   }
 
   onDescargarManual(m: Manual): void {
+    // CDA-05: Si no se tiene registrado un archivo para el manual, advertir amigablemente
+    if (!m.archivo || !m.archivo.trim()) {
+      Swal.fire({
+        title: 'Documento no registrado',
+        html: `Actualmente <strong>no se tiene registrado ningún documento</strong> para el manual <em>"${m.titulo}"</em>.<br><br><span style="font-size:12px;color:#64748b;">Puede adjuntar el documento oficial utilizando el botón <strong>"Subir manual"</strong>.</span>`,
+        icon: 'info',
+        confirmButtonColor: '#7c6cf0',
+        confirmButtonText: 'Entendido'
+      });
+      this.toastr.warning('No se tiene registrado ningún documento para este manual.', 'Documento no disponible');
+      return;
+    }
+
     // Incrementar contador en BD SQL Server
     const payload = {
       Accion: 'INC',
@@ -274,105 +307,282 @@ export class AyudaComponent implements OnInit {
       }
     });
 
-    if (m.archivo) {
-      const downloadUrl = this.ayudaService.getDownloadUrl(m.archivo);
-      window.open(downloadUrl, '_blank');
-      this.toastr.info(`Descargando manual: ${m.titulo}`, 'Descarga BD');
-    } else {
-      this.toastr.info(`Descarga de muestra para ${m.titulo}`, 'Simulación');
-    }
+    this.toastr.info(`Preparando descarga de "${m.titulo}"...`, 'Centro de Ayuda', { timeOut: 2000 });
+
+    this.ayudaService.downloadManualBlob(m.archivo).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = m.archivo || `${m.titulo}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        this.toastr.success(`Documento "${m.titulo}" descargado correctamente.`, 'Descarga Exitosa');
+      },
+      error: (err) => {
+        console.warn('Error al descargar documento:', err);
+        Swal.fire({
+          title: 'Documento no registrado',
+          html: `Actualmente <strong>no se tiene registrado ningún documento</strong> en el servidor para el manual <em>"${m.titulo}"</em>.<br><br><span style="font-size:12px;color:#64748b;">Por favor comuníquese con el área de Organización & Métodos o suba el archivo mediante <strong>"Subir manual"</strong>.</span>`,
+          icon: 'warning',
+          confirmButtonColor: '#7c6cf0',
+          confirmButtonText: 'Aceptar'
+        });
+        this.toastr.warning('No se tiene registrado ningún documento en el servidor para este manual.', 'Documento no disponible');
+      }
+    });
   }
 
   onSubirManual(): void {
     const nextYear = new Date();
     nextYear.setFullYear(nextYear.getFullYear() + 1);
     const dateVigenciaDefault = nextYear.toISOString().slice(0, 10);
+    const usuarioActual = this.sUsuario;
 
     Swal.fire({
-      title: '📁 Subir Documento de Ayuda / Manual',
+      width: '660px',
       background: '#ffffff',
-      color: '#1e2545',
-      width: '580px',
+      showCloseButton: true,
       customClass: {
-        popup: 'shadow-premium'
+        popup: 'custom-swal-ayuda-subir',
+        confirmButton: 'swal-ayuda-btn-confirm',
+        cancelButton: 'swal-ayuda-btn-cancel'
       },
+      buttonsStyling: false,
+      showCancelButton: true,
+      confirmButtonText: `
+        <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        <span>Subir Documento</span>
+      `,
+      cancelButtonText: 'Cancelar',
       html: `
-        <div style="text-align: left; font-size: 13px; color: #1e2545; display: flex; flex-direction: column; gap: 12px; font-family: var(--sn-font-family);">
-          
-          <!-- Seleccionar Archivo -->
-          <div>
-            <label style="font-weight: 700; color: #1e2545; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px;">
-              1. Seleccionar Archivo (PDF, Word, Excel) (*)
-            </label>
-            <input type="file" id="swal-manual-file" accept=".pdf,.doc,.docx,.xls,.xlsx"
-                   style="width: 100%; padding: 8px 12px; background: #f4f6fc; border: 1px solid #e2e7f1; border-radius: 8px; color: #1e2545; font-size: 12px;">
+        <div class="ayuda-modal-header">
+          <div class="ayuda-modal-header-left">
+            <div class="ayuda-modal-icon-badge">
+              <svg style="width:24px;height:24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="12" y1="18" x2="12" y2="12"></line>
+                <line x1="9" y1="15" x2="15" y2="15"></line>
+              </svg>
+            </div>
+            <div>
+              <h3 class="ayuda-modal-title">Subir Documento de Ayuda / Manual</h3>
+              <p class="ayuda-modal-subtitle">Centro de Ayuda • Publicación Oficial SIG Precotex</p>
+            </div>
+          </div>
+          <div class="ayuda-modal-header-right">
+            <span class="ayuda-modal-badge">CDA-01</span>
+          </div>
+        </div>
+
+        <div>
+          <!-- Input oculto de archivo -->
+          <input type="file" id="swal-manual-file" accept=".pdf,.doc,.docx,.xls,.xlsx" style="display: none;">
+
+          <!-- Zona Drag & Drop -->
+          <div id="swal-manual-dropzone" class="ayuda-dropzone-container">
+            <div class="ayuda-dropzone-icon">
+              <svg style="width:24px;height:24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            </div>
+            <div class="ayuda-dropzone-title">Seleccionar o arrastrar archivo aquí <span class="ayuda-label-required">*</span></div>
+            <div class="ayuda-dropzone-sub">Haz clic para buscar en tu equipo o suelta el documento en esta área</div>
+            <div class="ayuda-dropzone-pills">
+              <span class="ayuda-dropzone-pill">PDF (.pdf)</span>
+              <span class="ayuda-dropzone-pill">Word (.docx)</span>
+              <span class="ayuda-dropzone-pill">Excel (.xlsx)</span>
+              <span class="ayuda-dropzone-pill">Hasta 50 MB</span>
+            </div>
           </div>
 
-          <!-- Tipo de Documento (DESPLEGABLE -->
-          <div>
-            <label style="font-weight: 700; color: #1e2545; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px;">
-              2. Tipo de Documento (*)
-            </label>
-            <select id="swal-manual-tipo" style="width: 100%; padding: 9px 12px; background: #ffffff; border: 1px solid #e2e7f1; border-radius: 8px; color: #1e2545; font-size: 13px; outline: none; cursor: pointer;">
-              <option value="Manual de usuario" selected>Manual de usuario</option>
-              <option value="Guías rápidas">Guías rápidas</option>
-              <option value="Preguntas frecuentes">Preguntas frecuentes</option>
-              <option value="Glosario">Glosario</option>
-            </select>
+          <!-- Card de Archivo Seleccionado (Oculto inicialmente) -->
+          <div id="swal-manual-file-preview" class="ayuda-file-preview-card" style="display: none;">
+            <div class="ayuda-file-preview-left">
+              <div class="ayuda-file-preview-icon">
+                <svg style="width:20px;height:20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                  <polyline points="13 2 13 9 20 9"></polyline>
+                </svg>
+              </div>
+              <div>
+                <div id="swal-manual-file-name" class="ayuda-file-preview-name">archivo.pdf</div>
+                <div id="swal-manual-file-size" class="ayuda-file-preview-size">0 KB</div>
+              </div>
+            </div>
+            <button type="button" id="swal-manual-btn-change" class="ayuda-file-preview-btn-change">
+              Cambiar archivo
+            </button>
           </div>
 
-          <!-- Título / Nombre -->
-          <div>
-            <label style="font-weight: 700; color: #1e2545; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px;">
-              3. Título del Documento / Manual (*)
-            </label>
-            <input type="text" id="swal-manual-titulo" placeholder="Ej: Manual del Sistema de Gestión de Seguridad ISO 45001"
-                   style="width: 100%; padding: 9px 12px; background: #ffffff; border: 1px solid #e2e7f1; border-radius: 8px; color: #1e2545; font-size: 13px;">
+          <!-- Fila 1: Tipo de Documento y Fecha de Vigencia -->
+          <div class="ayuda-form-grid-2">
+            <div class="ayuda-form-group mb-0">
+              <label class="ayuda-label" for="swal-manual-tipo">
+                <svg style="width:14px;height:14px;color:#6366f1;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+                <span>Tipo de Documento <span class="ayuda-label-required">*</span></span>
+              </label>
+              <select id="swal-manual-tipo" class="ayuda-select">
+                <option value="Manual de usuario" selected>Manual de usuario</option>
+                <option value="Guías rápidas">Guías rápidas</option>
+                <option value="Preguntas frecuentes">Preguntas frecuentes</option>
+                <option value="Glosario">Glosario</option>
+              </select>
+            </div>
+
+            <div class="ayuda-form-group mb-0">
+              <label class="ayuda-label" for="swal-manual-vigencia">
+                <svg style="width:14px;height:14px;color:#6366f1;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>Fecha de Vigencia <span class="ayuda-label-required">*</span></span>
+              </label>
+              <input type="date" id="swal-manual-vigencia" value="${dateVigenciaDefault}" class="ayuda-input">
+            </div>
           </div>
 
-          <!-- Fecha de Vigencia (FECHA VIGENCIA -->
-          <div>
-            <label style="font-weight: 700; color: #1e2545; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px;">
-              4. Fecha de Vigencia (*)
+          <!-- Fila 2: Título del Documento -->
+          <div class="ayuda-form-group">
+            <label class="ayuda-label" for="swal-manual-titulo">
+              <svg style="width:14px;height:14px;color:#6366f1;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="9" x2="20" y2="9"></line>
+                <line x1="4" y1="15" x2="20" y2="15"></line>
+                <line x1="10" y1="3" x2="8" y2="21"></line>
+                <line x1="16" y1="3" x2="14" y2="21"></line>
+              </svg>
+              <span>Título del Documento / Manual <span class="ayuda-label-required">*</span></span>
             </label>
-            <input type="date" id="swal-manual-vigencia" value="${dateVigenciaDefault}"
-                   style="width: 100%; padding: 9px 12px; background: #ffffff; border: 1px solid #e2e7f1; border-radius: 8px; color: #1e2545; font-weight: 600; font-size: 13px; cursor: pointer;">
+            <input type="text" id="swal-manual-titulo" placeholder="Ej: Manual del Sistema de Gestión de Seguridad ISO 45001" class="ayuda-input">
           </div>
 
-          <!-- Descripción / Resumen -->
-          <div>
-            <label style="font-weight: 700; color: #5a6178; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px;">
-              5. Descripción o Resumen (Opcional)
+          <!-- Fila 3: Descripción o Resumen -->
+          <div class="ayuda-form-group">
+            <label class="ayuda-label" for="swal-manual-desc">
+              <svg style="width:14px;height:14px;color:#6366f1;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="21" y1="10" x2="3" y2="10"></line>
+                <line x1="21" y1="6" x2="3" y2="6"></line>
+                <line x1="21" y1="14" x2="3" y2="14"></line>
+                <line x1="21" y1="18" x2="7" y2="18"></line>
+              </svg>
+              <span>Descripción o Resumen (Opcional)</span>
             </label>
-            <textarea id="swal-manual-desc" rows="2" placeholder="Breve resumen del contenido y alcance..."
-                      style="width: 100%; padding: 9px 12px; background: #ffffff; border: 1px solid #e2e7f1; border-radius: 8px; color: #1e2545; font-size: 13px; resize: vertical;"></textarea>
+            <textarea id="swal-manual-desc" rows="2" placeholder="Breve resumen del contenido y alcance del documento..." class="ayuda-textarea"></textarea>
           </div>
 
-          <!-- Autor / Área -->
-          <div>
-            <label style="font-weight: 700; color: #5a6178; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px;">
-              6. Área / Autor Responsable
+          <!-- Fila 4: Área / Autor Responsable (NO EDITABLE / SOLO LECTURA) -->
+          <div class="ayuda-form-group mb-0">
+            <label class="ayuda-label" for="swal-manual-autor">
+              <svg style="width:14px;height:14px;color:#6366f1;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span>Área / Autor Responsable</span>
             </label>
-            <input type="text" id="swal-manual-autor" value="Organización & Métodos"
-                   style="width: 100%; padding: 9px 12px; background: #ffffff; border: 1px solid #e2e7f1; border-radius: 8px; color: #1e2545; font-size: 13px;">
+            <div class="ayuda-input-wrapper">
+              <span class="ayuda-input-icon">
+                <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+              </span>
+              <input type="text" id="swal-manual-autor" value="${usuarioActual}" readonly tabindex="-1"
+                     class="ayuda-input has-icon ayuda-input-readonly"
+                     placeholder="Usuario responsable...">
+              <span class="ayuda-badge-readonly" title="Campo bloqueado para auditoría SIG">
+                <svg style="width:12px;height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <span>Solo lectura</span>
+              </span>
+            </div>
+            <div class="ayuda-input-hint">
+              <svg style="width:12px;height:12px;color:#10b981;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span>Registrado con tu usuario de sesión: <strong>${usuarioActual}</strong> (asignado automáticamente)</span>
+            </div>
           </div>
-
         </div>
       `,
-      showCancelButton: true,
-      confirmButtonText: 'Subir Documento',
-      cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#5b4bd6',
-      cancelButtonColor: '#94a3b8',
       didOpen: () => {
         const fileInput = document.getElementById('swal-manual-file') as HTMLInputElement;
+        const dropzone = document.getElementById('swal-manual-dropzone');
+        const previewCard = document.getElementById('swal-manual-file-preview');
+        const fileNameEl = document.getElementById('swal-manual-file-name');
+        const fileSizeEl = document.getElementById('swal-manual-file-size');
+        const btnChange = document.getElementById('swal-manual-btn-change');
         const titleInput = document.getElementById('swal-manual-titulo') as HTMLInputElement;
-        fileInput?.addEventListener('change', () => {
-          if (fileInput.files && fileInput.files[0] && !titleInput.value) {
-            const rawTitle = fileInput.files[0].name.replace(/\.[^.]+$/, '').replace(/[_\-]+/g, ' ');
+
+        const handleFileSelected = (file: File) => {
+          if (!file) return;
+
+          if (dropzone) dropzone.style.display = 'none';
+          if (previewCard) previewCard.style.display = 'flex';
+          if (fileNameEl) fileNameEl.textContent = file.name;
+
+          const sizeKb = file.size / 1024;
+          const sizeText = sizeKb >= 1024
+            ? `${(sizeKb / 1024).toFixed(2)} MB`
+            : `${sizeKb.toFixed(1)} KB`;
+          if (fileSizeEl) fileSizeEl.textContent = `${sizeText} • Listo para registrar`;
+
+          if (titleInput && !titleInput.value.trim()) {
+            const rawTitle = file.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ');
             titleInput.value = rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1);
           }
+        };
+
+        dropzone?.addEventListener('click', () => fileInput?.click());
+        btnChange?.addEventListener('click', () => fileInput?.click());
+
+        fileInput?.addEventListener('change', () => {
+          if (fileInput.files && fileInput.files[0]) {
+            handleFileSelected(fileInput.files[0]);
+          }
         });
+
+        if (dropzone) {
+          ['dragenter', 'dragover'].forEach(evtName => {
+            dropzone.addEventListener(evtName, (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              dropzone.classList.add('is-dragover');
+            });
+          });
+
+          ['dragleave', 'drop'].forEach(evtName => {
+            dropzone.addEventListener(evtName, (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              dropzone.classList.remove('is-dragover');
+            });
+          });
+
+          dropzone.addEventListener('drop', (e: DragEvent) => {
+            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+              const droppedFile = e.dataTransfer.files[0];
+              const dataTransfer = new DataTransfer();
+              dataTransfer.items.add(droppedFile);
+              fileInput.files = dataTransfer.files;
+              handleFileSelected(droppedFile);
+            }
+          });
+        }
       },
       preConfirm: () => {
         const fileInput = document.getElementById('swal-manual-file') as HTMLInputElement;
@@ -380,17 +590,16 @@ export class AyudaComponent implements OnInit {
         const titleInput = document.getElementById('swal-manual-titulo') as HTMLInputElement;
         const vigenciaInput = document.getElementById('swal-manual-vigencia') as HTMLInputElement;
         const descInput = document.getElementById('swal-manual-desc') as HTMLTextAreaElement;
-        const autorInput = document.getElementById('swal-manual-autor') as HTMLInputElement;
 
         const file = fileInput?.files?.[0];
         const tipo = tipoInput?.value;
         const titulo = titleInput?.value?.trim();
         const vigencia = vigenciaInput?.value;
         const desc = descInput?.value?.trim();
-        const autor = autorInput?.value?.trim() || 'Organización & Métodos';
+        const autor = usuarioActual; // El usuario de sesión no es editable
 
         if (!file) {
-          Swal.showValidationMessage('Por favor seleccione un archivo (PDF/Word/Excel).');
+          Swal.showValidationMessage('Por favor seleccione un archivo (PDF, Word o Excel).');
           return false;
         }
         if (!titulo) {
@@ -418,7 +627,7 @@ export class AyudaComponent implements OnInit {
               const payload = {
                 Accion: 'I',
                 Titulo: titulo,
-                Subtitulo: tipo, // 'Manual de usuario', 'Guías rápidas', 'Preguntas frecuentes', 'Glosario'
+                Subtitulo: tipo,
                 Tipo_Documento: tipo,
                 Fecha_Vigencia: vigencia,
                 Descripcion: desc || `Guía y documentación técnica oficial (${tipo}).`,
@@ -428,7 +637,7 @@ export class AyudaComponent implements OnInit {
                 Color: tipo === 'Guías rápidas' ? '#3ecf8e' : (tipo === 'Preguntas frecuentes' ? '#f0b429' : (tipo === 'Glosario' ? '#38bdf8' : '#7c6cf0')),
                 Icono: tipo === 'Guías rápidas' ? 'speed' : (tipo === 'Preguntas frecuentes' ? 'quiz' : (tipo === 'Glosario' ? 'auto_stories' : 'picture_as_pdf')),
                 Archivo: fileName,
-                Usuario_Registro: 'SISTEMAS'
+                Usuario_Registro: usuarioActual
               };
 
               this.ayudaService.postManualMnto(payload).subscribe({

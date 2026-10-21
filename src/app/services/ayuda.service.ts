@@ -37,4 +37,11 @@ export class AyudaService {
   getDownloadUrl(fileName: string): string {
     return `${this.baseUrl}SNManual/downloadManual?fileName=${encodeURIComponent(fileName)}`;
   }
+
+  downloadManualBlob(fileName: string): Observable<Blob> {
+    return this.http.get(this.baseUrl + 'SNManual/downloadManual', {
+      params: { fileName },
+      responseType: 'blob'
+    });
+  }
 }

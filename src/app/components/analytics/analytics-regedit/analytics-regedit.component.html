@@ -1,4 +1,4 @@
-<div class="dialog-wrapper">
+﻿<div class="dialog-wrapper">
   <!-- Accent Top Line -->
   <div class="dialog-top-bar"></div>
 
@@ -162,7 +162,15 @@
               Sedes donde aplica <span class="req">*</span> (Múltiple)
             </label>
             <div class="input-wrapper">
-              <mat-select formControlName="sede" multiple class="form-select-mat" placeholder="-- Seleccionar Sedes --" (selectionChange)="onSedeSelectionChange($event)">
+              <mat-select formControlName="sede" multiple class="form-select-mat" placeholder="Selecciona una Sede" (selectionChange)="onSedeSelectionChange($event)">
+                <mat-select-trigger>
+                  <span *ngIf="!formulario.get('sede')?.value || formulario.get('sede')?.value.length === 0" style="color: #94a3b8;">
+                    Selecciona una Sede
+                  </span>
+                  <span *ngIf="formulario.get('sede')?.value && formulario.get('sede')?.value.length > 0">
+                    {{ formulario.get('sede')?.value.join(', ') }}
+                  </span>
+                </mat-select-trigger>
                 <mat-option *ngFor="let opt of sedesOptions" [value]="opt">{{ opt }}</mat-option>
               </mat-select>
             </div>

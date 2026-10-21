@@ -117,20 +117,65 @@
                   }}</span>
               </div>
 
-              <!-- DOC-03 / Observación f: Subcarpetas con 'Descripción del Puesto' en Capacitaciones y Desarrollo -->
+              <!-- DOC-03 / DOC-19: Subcarpetas estandarizadas del Proceso y Subcarpetas por Área en Gestión Humana -->
               <div class="sub-folders-doc03-container"
                 *ngIf="activeFilter === proc || activeFilter.startsWith('folder:' + proc)">
-                <div *ngFor="let fType of getCarpetasPorProceso(proc)" class="tree-node-item folder-type-node"
-                  [class.active]="activeFilter === 'folder:' + proc + '|' + fType"
-                  (click)="setFilter('folder:' + proc + '|' + fType)"
-                  style="padding-left: 36px; font-size: 11px; height: 26px;">
-                  <div class="node-left">
-                    <mat-icon
-                      style="font-size: 14px; width: 14px; height: 14px; color: #6366f1; margin-right: 4px;">folder_special</mat-icon>
-                    <span class="node-name" style="color: #475569; font-weight: 500;">{{ fType }}</span>
+                <div *ngFor="let fType of getCarpetasPorProceso(proc)" class="folder-group-wrapper">
+
+                  <!-- Nodo de carpeta estandarizada -->
+                  <div class="tree-node-item folder-type-node"
+                    [class.active]="activeFilter === 'folder:' + proc + '|' + fType || activeFilter.startsWith('folder:' + proc + '|' + fType + '|')"
+                    (click)="setFilter('folder:' + proc + '|' + fType)"
+                    style="padding-left: 36px; font-size: 11px; height: 26px;">
+                    <div class="node-left">
+                      <!-- Flecha acordeón si es carpeta de Perfiles de Puesto en Gestión Humana -->
+                      <button type="button" class="mini-arrow-btn" *ngIf="isPerfilPuestosFolder(proc, fType)"
+                        (click)="togglePerfilPuestosTree(proc, $event)" title="Desplegar subcarpetas de todas las áreas">
+                        <mat-icon class="arrow-icon-mini" [class.rotated]="!isPerfilPuestosExpanded(proc)">keyboard_arrow_down</mat-icon>
+                      </button>
+
+                      <mat-icon
+                        style="font-size: 14px; width: 14px; height: 14px; color: #6366f1; margin-right: 4px;">
+                        {{ isPerfilPuestosFolder(proc, fType) ? 'badge' : 'folder_special' }}
+                      </mat-icon>
+                      <span class="node-name" style="color: #475569; font-weight: 500;">{{ fType }}</span>
+                    </div>
+                    <span class="mini-count-pill" style="font-size: 9px; padding: 1px 5px;">{{ getProcessTypeCount(proc,
+                      fType) }}</span>
                   </div>
-                  <span class="mini-count-pill" style="font-size: 9px; padding: 1px 5px;">{{ getProcessTypeCount(proc,
-                    fType) }}</span>
+
+                  <!-- DOC-19: Subcarpetas de todas las áreas dentro de Perfiles de Puesto de Gestión Humana -->
+                  <div class="tree-perfil-subareas-container"
+                    *ngIf="isPerfilPuestosFolder(proc, fType) && isPerfilPuestosExpanded(proc)">
+                    
+                    <!-- Buscador rápido dentro del árbol -->
+                    <div class="tree-area-search-wrap" (click)="$event.stopPropagation()">
+                      <mat-icon class="tree-area-search-ico">search</mat-icon>
+                      <input type="text" [(ngModel)]="treeAreaSearchQuery" placeholder="Buscar área..."
+                        class="tree-area-search-input">
+                      <button type="button" *ngIf="treeAreaSearchQuery" (click)="treeAreaSearchQuery = ''" class="btn-clear-tree-area">
+                        <mat-icon style="font-size: 11px; width: 11px; height: 11px;">close</mat-icon>
+                      </button>
+                    </div>
+
+                    <!-- Lista con scroll de subcarpetas de todas las áreas -->
+                    <div class="tree-area-list-scroll">
+                      <div *ngFor="let area of getFilteredAreasForTree()"
+                        class="tree-node-item area-subfolder-node"
+                        [class.active]="activeFilter === 'folder:' + proc + '|' + fType + '|' + area"
+                        (click)="setFilter('folder:' + proc + '|' + fType + '|' + area)"
+                        [title]="'Perfiles de Puesto: ' + area">
+                        <div class="node-left">
+                          <mat-icon class="area-tree-folder-icon">folder</mat-icon>
+                          <span class="area-tree-text">{{ area }}</span>
+                        </div>
+                        <span class="mini-count-pill area-pill" [class.has-docs]="getPerfilPuestoAreaCount(area) > 0">
+                          {{ getPerfilPuestoAreaCount(area) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               </div>
 
@@ -157,6 +202,82 @@
           [title]="isUserAdmin ? 'Volver a todos los procesos' : 'Volver a mi proceso'">
           <mat-icon style="font-size: 14px; width: 14px; height: 14px;">close</mat-icon>
           <span>{{ isUserAdmin ? 'Mostrar todos' : 'Mi proceso' }}</span>
+        </button>
+      </div>
+
+      <!-- DOC-19: EXPLORADOR DE SUBCARPETAS POR ÁREA EN PERFILES DE PUESTO (VISTA GENERAL) -->
+      <div class="perfil-areas-explorer-panel shadow-premium" *ngIf="isCurrentFolderPerfilPuestos() && !getActiveSubAreaName()">
+        <div class="perfil-areas-header">
+          <div class="perfil-areas-header-left">
+            <div class="perfil-areas-icon-badge">
+              <mat-icon>badge</mat-icon>
+            </div>
+            <div>
+              <h3 class="perfil-areas-title">Subcarpetas por Área — Perfiles de Puesto</h3>
+              <p class="perfil-areas-subtitle">
+                Gestión Humana sube y administra los perfiles de puesto segmentados por cada área de la empresa. Selecciona un área para ver o registrar sus perfiles.
+              </p>
+            </div>
+          </div>
+          <div class="perfil-areas-header-right">
+            <div class="perfil-search-box">
+              <mat-icon class="search-icon">search</mat-icon>
+              <input type="text" [(ngModel)]="panelAreaSearchQuery" placeholder="Filtrar área (ej. Costura, Corte, Sistemas)..."
+                class="perfil-search-input">
+              <button type="button" *ngIf="panelAreaSearchQuery" (click)="panelAreaSearchQuery = ''" class="btn-clear-search">
+                <mat-icon style="font-size: 14px; width: 14px; height: 14px;">close</mat-icon>
+              </button>
+            </div>
+            <span class="total-areas-badge">
+              <mat-icon style="font-size: 14px; width: 14px; height: 14px; margin-right: 4px;">folder_special</mat-icon>
+              {{ getAllAreasForPerfilPuesto().length }} Áreas
+            </span>
+          </div>
+        </div>
+
+        <!-- Grid de carpetas por área -->
+        <div class="perfil-areas-grid">
+          <div *ngFor="let area of getFilteredAreasForPanel()" 
+            class="area-folder-card"
+            [class.has-profiles]="getPerfilPuestoAreaCount(area) > 0"
+            (click)="selectSubArea(getActiveProcessName(), getActiveFolderTypeName(), area)"
+            [title]="'Abrir subcarpeta de ' + area">
+            <div class="area-card-top">
+              <div class="area-card-icon-wrap">
+                <mat-icon class="area-card-icon">folder</mat-icon>
+              </div>
+              <span class="area-card-count" [class.badge-active]="getPerfilPuestoAreaCount(area) > 0">
+                {{ getPerfilPuestoAreaCount(area) }} {{ getPerfilPuestoAreaCount(area) === 1 ? 'perfil' : 'perfiles' }}
+              </span>
+            </div>
+            <div class="area-card-name" [title]="area">{{ area }}</div>
+            <div class="area-card-footer">
+              <span class="area-card-hint">Abrir subcarpeta</span>
+              <mat-icon class="area-card-arrow">arrow_forward</mat-icon>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DOC-19: BARRA DE NAVEGACIÓN DENTRO DE SUBCARPETA DE ÁREA ESPECÍFICA -->
+      <div class="subarea-breadcrumb-bar shadow-premium" *ngIf="isCurrentFolderPerfilPuestos() && getActiveSubAreaName()">
+        <div class="subarea-breadcrumb-info">
+          <button type="button" class="btn-subarea-back" (click)="clearSubAreaFilter()" title="Volver al catálogo de áreas">
+            <mat-icon>arrow_back</mat-icon>
+            <span>Ver todas las áreas</span>
+          </button>
+          <div class="subarea-divider"></div>
+          <div class="subarea-current-tag">
+            <mat-icon class="subarea-tag-icon">folder_open</mat-icon>
+            <span class="subarea-label">Subcarpeta de Área:</span>
+            <strong class="subarea-name">{{ getActiveSubAreaName() }}</strong>
+            <span class="subarea-pill">{{ filteredDocs.length }} {{ filteredDocs.length === 1 ? 'perfil' : 'perfiles' }}</span>
+          </div>
+        </div>
+
+        <button type="button" class="btn-primary-glow btn-subarea-upload" (click)="onAgregar()" *ngIf="canCreate">
+          <mat-icon>add</mat-icon>
+          <span>Subir Perfil para {{ getActiveSubAreaName() }}</span>
         </button>
       </div>
 

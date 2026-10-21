@@ -1,7 +1,7 @@
 <div class="contenedor sn-animate-in">
 
     <!-- GUÍA DE REGISTRO: ¿QUÉ SE REGISTRA EN ESTE MÓDULO? (ISO 9001 vs SSOMA) -->
-  <div class="guide-box">
+  <div class="guide-box" *ngIf="activeSubTab === 'identificacion'">
     <h3 class="guide-header-title">📋 ¿Qué se registra en este módulo?</h3>
 
     <div class="guide-cards-grid">

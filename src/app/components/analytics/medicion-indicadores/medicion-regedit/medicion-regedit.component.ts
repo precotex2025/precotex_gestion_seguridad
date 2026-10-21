@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+﻿import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
@@ -63,7 +63,7 @@ export class MedicionRegeditComponent implements OnInit {
       codigoIndicador: [''],
       indicador: ['', Validators.required],
       tipo: ['Eficacia'],
-      sede: ['Todas', Validators.required],
+      sede: ['', Validators.required],
       proceso: ['SSOMA', Validators.required],
       norma: ['ISO 9001:2015'],
       frecuencia: ['Mensual'],
@@ -159,13 +159,20 @@ export class MedicionRegeditComponent implements OnInit {
     // 1. Resolver Sede (asegurar que exista en las opciones para que se seleccione)
     let sedeVal = this.limpiarTexto(d.sede || d.Sede || 'Todas');
     if (sedeVal) {
-      const match = this.sedesOptions.find(s => s.toLowerCase() === sedeVal.toLowerCase());
+      const firstSede = sedeVal.split(',')[0].trim();
+      const match = this.sedesOptions.find(s => s.toLowerCase() === firstSede.toLowerCase() || s.toLowerCase() === sedeVal.toLowerCase());
       if (match) {
         sedeVal = match;
+      } else if (sedeVal.toLowerCase().includes('huachipa')) {
+        sedeVal = 'Huachipa 1';
+      } else if (sedeVal.toLowerCase().includes('santa cecilia')) {
+        sedeVal = 'Santa Cecilia';
+      } else if (sedeVal.toLowerCase().includes('santa rosa')) {
+        sedeVal = 'Santa Rosa';
+      } else if (sedeVal.toLowerCase().includes('santa maria')) {
+        sedeVal = 'Santa Maria';
       } else {
-        if (!this.sedesOptions.includes(sedeVal)) {
-          this.sedesOptions.splice(this.sedesOptions.length - 1, 0, sedeVal);
-        }
+        sedeVal = 'Todas';
       }
     } else {
       sedeVal = 'Todas';
@@ -375,15 +382,20 @@ export class MedicionRegeditComponent implements OnInit {
       // IND-07 & IND-11: Jalar todas las informaciones registradas del indicador
       let sedeToSet = 'Todas';
       if (found.sede) {
-        const matched = this.sedesOptions.find(s => s.toLowerCase() === found.sede.trim().toLowerCase());
+        const firstSede = found.sede.split(',')[0].trim();
+        const matched = this.sedesOptions.find(s => s.toLowerCase() === firstSede.toLowerCase() || s.toLowerCase() === found.sede.trim().toLowerCase());
         if (matched) {
           sedeToSet = matched;
-        } else if (found.sede.trim() !== '') {
-          // Si es una sede válida no catalogada previamente, incluirla
-          if (!this.sedesOptions.includes(found.sede.trim())) {
-            this.sedesOptions.splice(this.sedesOptions.length - 1, 0, found.sede.trim());
-          }
-          sedeToSet = found.sede.trim();
+        } else if (found.sede.toLowerCase().includes('huachipa')) {
+          sedeToSet = 'Huachipa 1';
+        } else if (found.sede.toLowerCase().includes('santa cecilia')) {
+          sedeToSet = 'Santa Cecilia';
+        } else if (found.sede.toLowerCase().includes('santa rosa')) {
+          sedeToSet = 'Santa Rosa';
+        } else if (found.sede.toLowerCase().includes('santa maria')) {
+          sedeToSet = 'Santa Maria';
+        } else {
+          sedeToSet = 'Todas';
         }
       }
 
@@ -453,26 +465,37 @@ export class MedicionRegeditComponent implements OnInit {
       return;
     }
 
-    // Validar tamaño máximo (10MB)
-    const maxSizeBytes = 10 * 1024 * 1024;
+    // Validar tamaño máximo (100MB)
+    const maxSizeBytes = 100 * 1024 * 1024;
     if (file.size > maxSizeBytes) {
-      this.toastr.warning('El archivo excede el tamaño máximo permitido de 10 MB.', 'Archivo muy pesado');
+      this.toastr.warning('El archivo excede el tamaño máximo permitido de 100 MB.', 'Archivo muy pesado');
       return;
     }
 
     this.selectedRawFile = file;
     this.nombreArchivoEvidencia = file.name;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.archivoEvidenciaBase64 = reader.result as string;
+    // Si el archivo supera 15MB, no generamos dataURL (base64) en memoria del navegador
+    // ya que la subida al servidor envía selectedRawFile directamente como FormData multipart/form-data
+    if (file.size > 15 * 1024 * 1024) {
+      this.archivoEvidenciaBase64 = '';
       this.formulario.patchValue({
         evidencia: file.name,
-        archivoBase64: this.archivoEvidenciaBase64
+        archivoBase64: ''
       });
       this.toastr.info(`Archivo "${file.name}" adjuntado como evidencia correctamente.`, 'Evidencia Adjuntada', { timeOut: 2000 });
-    };
-    reader.readAsDataURL(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.archivoEvidenciaBase64 = reader.result as string;
+        this.formulario.patchValue({
+          evidencia: file.name,
+          archivoBase64: this.archivoEvidenciaBase64
+        });
+        this.toastr.info(`Archivo "${file.name}" adjuntado como evidencia correctamente.`, 'Evidencia Adjuntada', { timeOut: 2000 });
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   onRemoveEvidencia(inputRef: HTMLInputElement): void {

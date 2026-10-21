@@ -156,7 +156,7 @@
           <small style="color: #a78bfa; font-weight: 600; display: block; margin-top: 2px;">
             👤 Registrado por: <b>{{ m.usuarioRegistro || m.autor }}</b>
           </small>
-          <small *ngIf="m.fechaVigencia" style="color: #34d399; font-weight: 600; display: block; margin-top: 2px;">
+          <small *ngIf="m.fechaVigencia && m.fechaVigencia !== '—'" style="color: #34d399; font-weight: 600; display: block; margin-top: 2px;">
             ⌛ Vigencia exacta: {{ m.fechaVigencia }}
           </small>
         </div>
