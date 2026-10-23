@@ -51,7 +51,7 @@
             <input type="checkbox" formControlName="recordarme">
             <span>Recordarme</span>
           </label>
-          <a href="javascript:void(0)" class="forgot-link">¿Olvidó su contraseña?</a>
+          <a href="javascript:void(0)" (click)="abrirModalRecuperarPass()" class="forgot-link" id="btn-olvido-pass">¿Olvidó su contraseña?</a>
         </div>
 
         <!-- Botón Ingresar -->
@@ -246,6 +246,170 @@
                   [disabled]="isUpdatingPassword || !nuevaPassword || nuevaPassword.length < 6 || nuevaPassword !== confirmarPassword">
             <mat-icon *ngIf="!isUpdatingPassword">verified_user</mat-icon>
             <span>{{ isUpdatingPassword ? 'Activando cuenta...' : 'Cambiar y Activar Cuenta' }}</span>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+
+  <!-- ===================================================================
+       MODAL DE RECUPERACIÓN / CAMBIO DE CONTRASEÑA
+       =================================================================== -->
+  <div class="primer-ingreso-backdrop sn-animate-fade" *ngIf="mostrarModalRecuperarPass">
+    <div class="primer-ingreso-modal sn-animate-scale" style="max-width: 520px;">
+      
+      <!-- Top Accent Bar -->
+      <div class="modal-top-accent recovery-accent"></div>
+
+      <!-- Modal Header -->
+      <div class="modal-header-box">
+        <div class="modal-icon-shield recovery-shield">
+          <mat-icon>lock_reset</mat-icon>
+        </div>
+        <div class="modal-title-group">
+          <span class="modal-pill-tag recovery-tag">Gestión de Acceso Seguro</span>
+          <h3 class="modal-main-title">Restablecer Contraseña</h3>
+          <p class="modal-subtitle">
+            Recupere el acceso a su cuenta corporativa actualizando su clave de seguridad.
+          </p>
+        </div>
+      </div>
+
+      <!-- PASO 1: BÚSQUEDA Y VERIFICACIÓN DE USUARIO -->
+      <div *ngIf="recuperarPaso === 1" class="modal-form-body">
+        
+        <div class="form-group-modal">
+          <label class="modal-label">Usuario o Correo Corporativo <span class="req">*</span></label>
+          <div class="modal-input-wrapper">
+            <mat-icon class="modal-input-icon">person</mat-icon>
+            <input type="text" 
+                   [(ngModel)]="recuperarInputUsuario" 
+                   (keyup.enter)="verificarUsuarioParaRecuperacion()"
+                   placeholder="Ej: atoro o usuario@precotexperu.com" 
+                   class="modal-input" 
+                   autocomplete="username">
+            <button type="button" class="clear-btn-modal" *ngIf="recuperarInputUsuario"
+                    (click)="recuperarInputUsuario = ''" title="Limpiar">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          <span class="modal-help-text">
+            Ingrese su usuario del sistema (ej: fhuamani, atoro, mguevara) o su correo corporativo institucional.
+          </span>
+        </div>
+
+        <!-- Banner de Error si no se encuentra -->
+        <div *ngIf="recuperarErrorMensaje" class="recovery-error-alert sn-animate-fade">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ recuperarErrorMensaje }}</span>
+        </div>
+
+        <!-- Botones de Acción Paso 1 -->
+        <div class="modal-actions-footer">
+          <button type="button" class="btn-cancel-modal" (click)="cerrarModalRecuperarPass()">
+            <mat-icon>close</mat-icon>
+            <span>Cancelar</span>
+          </button>
+          <button type="button" 
+                  class="btn-submit-activate" 
+                  [disabled]="isVerificandoRecuperacion || !recuperarInputUsuario.trim()"
+                  (click)="verificarUsuarioParaRecuperacion()">
+            <mat-icon *ngIf="!isVerificandoRecuperacion">search</mat-icon>
+            <span>{{ isVerificandoRecuperacion ? 'Buscando cuenta...' : 'Buscar Cuenta' }}</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- PASO 2: CONFIRMACIÓN DE IDENTIDAD Y NUEVA CONTRASEÑA -->
+      <form *ngIf="recuperarPaso === 2" (ngSubmit)="onConfirmarRecuperarPassword()" class="modal-form-body">
+        
+        <!-- Info del Colaborador Verificado -->
+        <div class="user-info-banner recovery-user-banner">
+          <div class="user-avatar-mini recovery-avatar">
+            <mat-icon>verified_user</mat-icon>
+          </div>
+          <div class="user-meta-details">
+            <span class="user-meta-name">{{ usuarioVerificadoRecuperar?.nombre || 'Colaborador Precotex' }}</span>
+            <span class="user-meta-cargo">{{ usuarioVerificadoRecuperar?.puesto || 'Puesto SIG' }} • <code>&#64;{{ usuarioVerificadoRecuperar?.cod_Usuario }}</code></span>
+            <span class="user-meta-email" *ngIf="usuarioVerificadoRecuperar?.email">{{ usuarioVerificadoRecuperar?.email }}</span>
+          </div>
+          <span class="badge-verified-tag">
+            <mat-icon>check</mat-icon>
+            Verificado
+          </span>
+        </div>
+
+        <!-- Campo: Nueva Contraseña -->
+        <div class="form-group-modal">
+          <label class="modal-label">Nueva Contraseña <span class="req">*</span></label>
+          <div class="modal-input-wrapper">
+            <mat-icon class="modal-input-icon">vpn_key</mat-icon>
+            <input [type]="ocultarNuevaPassRecuperar ? 'password' : 'text'" 
+                   [(ngModel)]="nuevaPassRecuperar" 
+                   name="nuevaPassRecuperar"
+                   placeholder="Mínimo 6 caracteres" 
+                   class="modal-input" 
+                   autocomplete="new-password">
+            <button type="button" class="btn-toggle-eye" (click)="ocultarNuevaPassRecuperar = !ocultarNuevaPassRecuperar" title="Ver contraseña">
+              <mat-icon>{{ ocultarNuevaPassRecuperar ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </div>
+          <span *ngIf="nuevaPassRecuperar && nuevaPassRecuperar.length < 6" class="error-hint">
+            La contraseña debe tener al menos 6 caracteres.
+          </span>
+        </div>
+
+        <!-- Campo: Confirmar Nueva Contraseña -->
+        <div class="form-group-modal">
+          <label class="modal-label">Confirmar Nueva Contraseña <span class="req">*</span></label>
+          <div class="modal-input-wrapper">
+            <mat-icon class="modal-input-icon">lock</mat-icon>
+            <input [type]="ocultarConfirmarPassRecuperar ? 'password' : 'text'" 
+                   [(ngModel)]="confirmarPassRecuperar" 
+                   name="confirmarPassRecuperar"
+                   placeholder="Repita la nueva contraseña" 
+                   class="modal-input" 
+                   autocomplete="new-password">
+            <button type="button" class="btn-toggle-eye" (click)="ocultarConfirmarPassRecuperar = !ocultarConfirmarPassRecuperar" title="Ver contraseña">
+              <mat-icon>{{ ocultarConfirmarPassRecuperar ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </div>
+          <span *ngIf="confirmarPassRecuperar && nuevaPassRecuperar !== confirmarPassRecuperar" class="error-hint">
+            Las contraseñas no coinciden.
+          </span>
+        </div>
+
+        <!-- Requisitos Checklist -->
+        <div class="password-rules-box">
+          <div class="rule-item" [class.rule-valid]="nuevaPassRecuperar && nuevaPassRecuperar.length >= 6">
+            <mat-icon class="rule-icon">{{ (nuevaPassRecuperar && nuevaPassRecuperar.length >= 6) ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+            <span>Mínimo 6 caracteres</span>
+          </div>
+          <div class="rule-item" [class.rule-valid]="nuevaPassRecuperar && confirmarPassRecuperar && nuevaPassRecuperar === confirmarPassRecuperar">
+            <mat-icon class="rule-icon">{{ (nuevaPassRecuperar && confirmarPassRecuperar && nuevaPassRecuperar === confirmarPassRecuperar) ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+            <span>Las contraseñas coinciden</span>
+          </div>
+        </div>
+
+        <!-- Botones de Acción Paso 2 -->
+        <div class="modal-actions-footer">
+          <button type="button" class="btn-back-modal" (click)="recuperarPaso = 1">
+            <mat-icon>arrow_back</mat-icon>
+            <span>Atrás</span>
+          </button>
+          <button type="button" class="btn-cancel-modal" (click)="cerrarModalRecuperarPass()">
+            <mat-icon>close</mat-icon>
+            <span>Cancelar</span>
+          </button>
+          <button type="submit" 
+                  class="btn-submit-activate" 
+                  [disabled]="isActualizandoPassRecuperar || !nuevaPassRecuperar || nuevaPassRecuperar.length < 6 || nuevaPassRecuperar !== confirmarPassRecuperar">
+            <mat-icon *ngIf="!isActualizandoPassRecuperar">save</mat-icon>
+            <span>{{ isActualizandoPassRecuperar ? 'Guardando contraseña...' : 'Actualizar Contraseña' }}</span>
           </button>
         </div>
 

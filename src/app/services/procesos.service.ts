@@ -73,7 +73,6 @@ export class ProcesosService {
       'Administración de Personal',
       'Capacitación',
       'Comunicaciones',
-      'Desarrollo Organizacional',
       'Gestión Humana',
       'Bienestar Social',
       'Selección de Personal'
@@ -158,6 +157,9 @@ export class ProcesosService {
     if (lower.includes('planeamiento') && (lower.includes('estampado') || lower.includes('e&b') || lower.includes('pceb'))) {
       return 'Planeamiento y Programación de la Producción E&B';
     }
+    if (lower.includes('ingenier') || lower.includes('inge') || lower.includes('ingenierã')) {
+      return 'Ingeniería';
+    }
     return clean;
   }
 
@@ -187,6 +189,9 @@ export class ProcesosService {
             if (pLower.startsWith('comercial') || pLower.includes('exportacion de telas') || pLower.includes('venta local')) {
               tipoCode = 'GC';
             }
+            if (pLower.includes('ingenier') || pLower.includes('inge')) {
+              tipoCode = 'IM';
+            }
 
             let label = this.TIPO_PROCESO_LABELS[tipoCode] || tipoCode || 'Operativos / Cadena de Valor';
             if (label === 'Gerencia General (GG)' && pLower.includes('comercial')) {
@@ -215,6 +220,7 @@ export class ProcesosService {
               const itmLower = item.toLowerCase();
               if (itmLower === 'hilanderia' || itmLower === 'hilandería' || itmLower === 'capacitaciones y desarrollo') return false;
               if (k === 'Gerencia General (GG)' && itmLower.includes('comercial')) return false;
+              if (k === 'Soporte (SOP)' && (itmLower.includes('ingenier') || itmLower.includes('inge'))) return false;
               return true;
             })
             .filter(item => {

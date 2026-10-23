@@ -138,6 +138,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       const lower = p.toLowerCase();
       if (lower === 'hilanderia' || lower === 'hilandería' || lower === 'capacitaciones y desarrollo') return false;
       if (macro === 'Gerencia General (GG)' && lower.includes('comercial')) return false;
+      if (macro === 'Soporte (SOP)' && (lower.includes('ingenier') || lower.includes('inge'))) return false;
       return true;
     });
 
@@ -202,7 +203,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     'Control Patrimonial (CPT)': ['Control Patrimonial'],
     'Ingeniería y Mejora Continua (IMC)': ['Ingeniería', 'Organización y Métodos', 'Investigación, Desarrollo e Innovación', 'Certificaciones'],
     'Administración y Finanzas (AFC)': ['Administración', 'Finanzas', 'Contabilidad y Costos', 'Tesorería'],
-    'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitación', 'Comunicaciones', 'Desarrollo Organizacional', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
+    'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitación', 'Comunicaciones', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
     'Servicio de Estampado y Bordado (SEB)': ['Estampado', 'Bordado', 'Calidad Estampado y Bordado', 'Planeamiento y Programación de la Producción E&B'],
     'Operaciones Manufactura (OPM)': ['Corte', 'Costura', 'Inspección', 'Acabados', 'Aseguramiento de la Calidad Manufactura', 'Consumos'],
     'Operaciones Textil (OPT)': ['Tejeduría', 'Tintorería', 'Producción Textil', 'Laboratorio de Color', 'Estampado Digital', 'Acabados Textil', 'Laboratorio de Calidad Textil', 'Aseguramiento de la Calidad Textil', 'Lavandería'],
@@ -226,7 +227,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     { nombre: 'Perfil de Puesto — Analista de Sistemas y Soporte TI', codigo: 'PER-SOP-SIS-001', tipo: 'Perfil de puesto', version: 'v1.0', formato: 'PDF', proceso: 'Sistemas', vig: '2026-12-31', estado: 'Vigente', archivo: 'PER-SOP-SIS-001.pdf' },
     { nombre: 'Perfil de Puesto — Administrador de Infraestructura y Redes', codigo: 'PER-SOP-SIS-002', tipo: 'Perfil de puesto', version: 'v1.0', formato: 'PDF', proceso: 'Sistemas', vig: '2026-12-31', estado: 'Vigente', archivo: 'PER-SOP-SIS-002.pdf' },
     { nombre: 'Perfil de Puesto — Supervisor de SSOMA', codigo: 'PER-SOP-SSO-001', tipo: 'Perfil de puesto', version: 'v1.0', formato: 'PDF', proceso: 'SSOMA', vig: '2026-12-31', estado: 'Vigente', archivo: 'PER-SOP-SSO-001.pdf' },
-    { nombre: 'Perfil de Puesto — Coordinador de Gestión Humana', codigo: 'PER-GH-GGHH-001', tipo: 'Perfil de puesto', version: 'v1.0', formato: 'PDF', proceso: 'Gestión Humana', vig: '2026-12-31', estado: 'Vigente', archivo: 'PER-GH-GGHH-001.pdf' },
+    { nombre: 'Perfil de Puesto — Coordinador de Gestión Humana', codigo: 'PER-GH-GGHH-001', tipo: 'Perfil de puesto', version: 'v1.0', formato: 'PDF', proceso: 'Capacitación', vig: '2026-12-31', estado: 'Vigente', archivo: 'PER-GH-GGHH-001.pdf' },
     { nombre: 'Procedimiento de Control Patrimonial', codigo: 'PRO-SOP-CTP-002', tipo: 'Procedimiento', version: 'v1.0', formato: 'PDF', proceso: 'Control Patrimonial', vig: '2026-03-01', estado: 'Vigente', archivo: 'PRO-SOP-CTP-002.pdf' },
     { nombre: 'Plan Anual de Auditorías Internas', codigo: 'PLN-AIO-001', tipo: 'Formato', version: 'v2.0', formato: 'Excel', proceso: 'Auditoría Interna', vig: '2025-08-15', estado: 'Por vencer', archivo: 'PLN-AIO-001.xlsx' }
   ];
@@ -405,7 +406,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     if (lower.includes('planeamiento') && (lower.includes('estampado') || lower.includes('e&b') || lower.includes('pceb'))) {
       return 'Planeamiento y Programación de la Producción E&B';
     }
-    if (lower.includes('ingenier') || lower === 'ing' || lower === 'imc') {
+    if (lower.includes('ingenier') || lower.includes('inge') || lower.includes('ingenierã') || lower === 'ing' || lower === 'imc') {
       return 'Ingeniería';
     }
     if (lower.includes('organizaci') || lower.includes('metodo') || lower === 'oym' || lower === 'o&m' || lower === 'om') {
@@ -452,7 +453,8 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       if (pLower.includes('calidad')) return 'Aseguramiento de la Calidad Manufactura';
       if (pLower.includes('sistemas')) return 'Sistemas';
       if (pLower.includes('auditor')) return 'Auditoría Interna';
-      if (pLower.includes('patrimonial')) return 'Control Patrimonial';
+      if (pLower.includes('seguridad patrimonial') || pLower.includes('segp')) return 'Seguridad Patrimonial';
+      if (pLower.includes('control patrimonial') || pLower.includes('patrimonial') || pLower.includes('cpt')) return 'Control Patrimonial';
       if (pLower.includes('corte')) return 'Corte';
       if (pLower.includes('tejed')) return 'Tejeduría';
       if (pLower.includes('tintor')) return 'Tintorería';
@@ -475,15 +477,48 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Limpieza preventiva de documentos mock residuales de localStorage
+    // Limpieza preventiva de documentos mock residuales de localStorage y estados obsoletos
     try {
       const mockCodes = ['pro-cos-001', 'ins-cos-002', 'for-cos-003', 'pro-imc-oym-003', 'ins-imc-oym-002', 'man-imc-oym-001', 'per-imc-oym-004', 'pro-sop-ctp-002', 'pln-aio-001'];
       const locCreatedRaw = localStorage.getItem('precotex_documentos_creados');
       if (locCreatedRaw) {
         const parsed = JSON.parse(locCreatedRaw);
         if (Array.isArray(parsed)) {
-          const cleaned = parsed.filter((d: any) => !mockCodes.includes((d.codigo || '').toLowerCase().trim()));
+          const cleaned = parsed.filter((d: any) => {
+            const proc = (d.proceso || '').toLowerCase();
+            if (proc.includes('desarrollo organizacional')) return false;
+            return !mockCodes.includes((d.codigo || '').toLowerCase().trim());
+          }).map((d: any) => {
+            if ((d.estado || '').toLowerCase() === 'obsoleto') d.estado = 'Vigente';
+            const cClean = (d.codigo || '').toLowerCase().trim();
+            if (cClean === 'per-imc-act-012' || this.extraerNumeroVersion(d.version) > 1) {
+              delete d.vistoBuenoInfo;
+            }
+            return d;
+          });
           localStorage.setItem('precotex_documentos_creados', JSON.stringify(cleaned));
+        }
+      }
+      const cachedDocs = localStorage.getItem('precotex:documentacion');
+      if (cachedDocs) {
+        const parsedDocs = JSON.parse(cachedDocs);
+        if (Array.isArray(parsedDocs)) {
+          parsedDocs.forEach((d: any) => {
+            if ((d.estado || '').toLowerCase() === 'obsoleto') d.estado = 'Vigente';
+            const cClean = (d.codigo || '').toLowerCase().trim();
+            if (cClean === 'per-imc-act-012' || this.extraerNumeroVersion(d.version) > 1) {
+              delete d.vistoBuenoInfo;
+            }
+          });
+          const vistosRaw = localStorage.getItem('precotex_vistos_buenos');
+          if (vistosRaw) {
+            let vistos = JSON.parse(vistosRaw);
+            if (Array.isArray(vistos)) {
+              vistos = vistos.filter((v: any) => (v.codigo || '').toLowerCase().trim() !== 'per-imc-act-012');
+              localStorage.setItem('precotex_vistos_buenos', JSON.stringify(vistos));
+            }
+          }
+          localStorage.setItem('precotex:documentacion', JSON.stringify(parsedDocs));
         }
       }
     } catch (e) { }
@@ -499,7 +534,9 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
             groups[k] = groups[k].filter((p: string) => {
               const lower = (p || '').toLowerCase();
               if (lower === 'hilanderia' || lower === 'hilandería' || lower === 'capacitaciones y desarrollo') return false;
+              if (lower.includes('desarrollo organizacional')) return false;
               if (k === 'Gerencia General (GG)' && lower.includes('comercial')) return false;
+              if (k === 'Soporte (SOP)' && (lower.includes('ingenier') || lower.includes('inge'))) return false;
               return true;
             });
           }
@@ -588,7 +625,8 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     if (cleanNoAccents.includes('sist')) return '005';
     if (cleanNoAccents.includes('ssoma')) return '008';
     if (cleanNoAccents.includes('audit')) return '009';
-    if (cleanNoAccents.includes('patrimon')) return '010';
+    if (cleanNoAccents.includes('seguridad patrimon') || cleanNoAccents.includes('segp')) return '007';
+    if (cleanNoAccents.includes('patrimon') || cleanNoAccents.includes('cpt')) return '010';
     return '011';
   }
 
@@ -622,7 +660,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       'ADMIN': 'Administración', 'ADM': 'Administración',
       'FIN': 'Finanzas', 'CONT': 'Contabilidad y Costos', 'TES': 'Tesorería',
       'AP': 'Administración de Personal', 'CAP': 'Capacitación',
-      'COMU': 'Comunicaciones', 'DO': 'Desarrollo Organizacional',
+      'COMU': 'Comunicaciones',
       'GH': 'Gestión Humana', 'BSO': 'Bienestar Social', 'SDP': 'Selección de Personal',
       'EST': 'Estampado', 'BORD': 'Bordado', 'BOR': 'Bordado',
       'CEB': 'Calidad Estampado y Bordado',
@@ -691,7 +729,8 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     if (s.startsWith('certifica') || s === 'cert') return 'certificaciones';
     if (s.startsWith('auditor') || s === 'aio') return 'auditoria interna';
     if (s === 'sistemas' || s === 'ti' || s === 'sist' || s.includes('tecnologia de la informacion') || s.includes('sistemas')) return 'sistemas';
-    if (s.includes('patrimonial') || s === 'cpt') return 'control patrimonial';
+    if (s === 'seguridad patrimonial' || s === 'segp' || s.includes('seguridad patrimonial')) return 'seguridad patrimonial';
+    if (s === 'control patrimonial' || s === 'cpt' || s.includes('control patrimonial') || s.includes('patrimonial')) return 'control patrimonial';
     if (s === 'costuras' || s === 'costura' || s === 'cos' || s === 'cost') return 'costura';
     if (s === 'inspeccion' || s === 'inspecciones' || s === 'insp') return 'inspeccion';
     if (s === 'acabados' || s === 'acabado' || s === 'acab') return 'acabados';
@@ -736,7 +775,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     if (s === 'administracion de personal' || s === 'ap') return 'administracion de personal';
     if (s === 'bienestar social' || s === 'bso') return 'bienestar social';
     if (s === 'seleccion de personal' || s === 'sdp') return 'seleccion de personal';
-    if (s === 'desarrollo organizacional' || s === 'do') return 'desarrollo organizacional';
+    if (s === 'desarrollo organizacional' || s === 'do') return 'gestion humana';
     if (s === 'comunicaciones' || s === 'comu') return 'comunicaciones';
     if (s === 'gestion humana' || s === 'gh' || s === 'gghh') return 'gestion humana';
 
@@ -778,7 +817,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       rawList = rawElements.map((d: any) => {
         const codDoc = (d.codigo_Documento || d.codigo_Documentos_Controlados || d.codigo || 'DOC-' + (d.id || '001')).toString().trim();
         const inferred = this.extraerProcesoDelCodigo(codDoc);
-        let procName = inferred || d.nombre_Proceso || d.proceso || (d.codigo_Proceso ? this.getProcessNameByCode(d.codigo_Proceso) : '');
+        let procName = d.nombre_Proceso || (d.codigo_Proceso ? this.getProcessNameByCode(d.codigo_Proceso) : '') || d.proceso || inferred || '';
         if (!procName) procName = 'Organización y Métodos';
 
         // Extraer etiquetas [PROCESOS:proc1|proc2] de la descripción
@@ -840,13 +879,22 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       if (localCreatedRaw) {
         const parsed = JSON.parse(localCreatedRaw);
         if (Array.isArray(parsed)) {
-          // Filtrar cualquier documento mock antiguo
+          // Filtrar cualquier documento mock antiguo o de Desarrollo Organizacional
           const mockCodes = ['pro-cos-001', 'ins-cos-002', 'for-cos-003', 'pro-imc-oym-003', 'ins-imc-oym-002', 'man-imc-oym-001', 'per-imc-oym-004', 'pro-sop-ctp-002', 'pln-aio-001'];
-          const cleanUserDocs = parsed.filter((ud: any) => !mockCodes.includes((ud.codigo || '').toLowerCase().trim()));
+          const cleanUserDocs = parsed.filter((ud: any) => {
+            const proc = (ud.proceso || '').toLowerCase();
+            if (proc.includes('desarrollo organizacional')) return false;
+            return !mockCodes.includes((ud.codigo || '').toLowerCase().trim());
+          });
           localCombined.push(...cleanUserDocs);
         }
       }
     } catch (e) { }
+
+    rawList = rawList.filter((d: any) => {
+      const p = (d.proceso || '').toLowerCase();
+      return !p.includes('desarrollo organizacional');
+    });
 
     // DOC-19: Asegurar que los perfiles de puesto estén siempre disponibles en el catálogo
     const hasPerfiles = rawList.some((d: any) => {
@@ -874,13 +922,21 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         const combinedProcs = (locDoc.procesos && Array.isArray(locDoc.procesos) && locDoc.procesos.length > 0)
           ? locDoc.procesos
           : rawList[matchIdx].procesos;
+        
+        // Priorizar la versión más alta (ej. v2 sobre v1)
+        const vLoc = this.extraerNumeroVersion(locDoc.version, locDoc.codigo);
+        const vRaw = this.extraerNumeroVersion(rawList[matchIdx].version, rawList[matchIdx].codigo);
+        const highestVer = vLoc >= vRaw ? (locDoc.version || rawList[matchIdx].version) : rawList[matchIdx].version;
+        const highestArch = vLoc >= vRaw ? (locDoc.archivo || rawList[matchIdx].archivo) : rawList[matchIdx].archivo;
+
         rawList[matchIdx] = {
           ...rawList[matchIdx],
           ...locDoc,
           procesos: combinedProcs,
           proceso: combinedProcs && combinedProcs.length > 0 ? combinedProcs[0] : (locDoc.proceso || rawList[matchIdx].proceso),
-          archivo: locDoc.archivo || rawList[matchIdx].archivo,
-          version: locDoc.version || rawList[matchIdx].version
+          archivo: highestArch,
+          version: highestVer,
+          historialVersiones: locDoc.historialVersiones || rawList[matchIdx].historialVersiones
         };
       } else {
         rawList.unshift(locDoc);
@@ -897,6 +953,10 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
 
     if (deletedItems.length > 0) {
       rawList = rawList.filter((d: any) => {
+        // Los registros activos provenientes de la base de datos nunca se deben ocultar por registros residuales en localStorage
+        if (d.raw && (d.raw.flg_Activo === true || d.raw.flg_Activo === 'True' || d.raw.flg_Activo === 1)) {
+          return true;
+        }
         const c = (d.codigo || d.codigo_Documentos_Controlados || '').toString().trim();
         const n = (d.nombre || d.denominacion || '').toString().trim();
         const cMatch = c !== '' && deletedItems.includes(c);
@@ -924,8 +984,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.docsList = this.deduplicarDocumentos(rawList);
-    this.aplicarReglaObsoletosPorVersion(this.docsList);
+    this.docsList = this.consolidarVersionesDocumentos(rawList);
     this.restaurarHistorialVersiones(this.docsList);
     this.restaurarVistosBuenos(this.docsList);
     this.restaurarAuditRevisiones(this.docsList);
@@ -957,8 +1016,20 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         const codeKey = (d.codigo || '').toLowerCase().trim();
         const baseKey = this.obtenerCodigoBase(d.codigo || '').toLowerCase().trim();
         const found = (codeKey && histMap[codeKey]) || (baseKey && histMap[baseKey]);
-        if (found && (!d.historialVersiones || d.historialVersiones.length <= 1)) {
+        if (found && Array.isArray(found) && found.length > 0) {
+          // Asegurar orden cronológico ascendente 1, 2, 3...
+          found.sort((a: any, b: any) => this.extraerNumeroVersion(a.version) - this.extraerNumeroVersion(b.version));
           d.historialVersiones = found;
+          // Asignar versión más reciente al documento en el listado principal
+          const highest = found[found.length - 1];
+          if (highest && highest.version) {
+            const vCurrent = this.extraerNumeroVersion(d.version, d.codigo);
+            const vHighest = this.extraerNumeroVersion(highest.version);
+            if (vHighest >= vCurrent) {
+              d.version = highest.version;
+              if (highest.archivo) d.archivo = highest.archivo;
+            }
+          }
         }
       });
     } catch (e) { }
@@ -1077,7 +1148,7 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   }
 
   getProcessCount(proc: string): number {
-    const isPerfilHolder = this.isPerfilPuestosFolder(proc, 'Descripción del Puesto');
+    const isPerfilHolder = this.isPerfilSubareasHolder(proc);
     return this.docsList.filter(d => {
       const procs = this.getDocProcesosList(d);
       const docP = d.proceso || '';
@@ -1201,14 +1272,20 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
 
     // DOC-19: Métodos de soporte para Segmentación de Perfiles de Puesto por Área en Gestión Humana
   isPerfilPuestosFolder(procName: string, folderType?: string): boolean {
-    const p = (procName || '').toLowerCase().trim();
-    const isGH = p.includes('gestion humana') || p.includes('gestión humana') || 
-                 p.includes('capacita') || p.includes('desarrollo') || 
-                 p === 'gh' || p === 'gghh' || 
-                 (this.getMacroGroupForProcess(procName) || '').toLowerCase().includes('gestion humana');
-    if (!folderType) return isGH;
+    if (!folderType) {
+      const p = (procName || '').toLowerCase().trim();
+      return p.includes('capacita') || p === 'cap' || p === 'c&d';
+    }
     const f = folderType.toLowerCase().trim();
-    return isGH && (f.includes('perfil') || f.includes('puesto') || f.includes('descripci'));
+    return f.includes('perfil') || f.includes('puesto') || f.includes('descripci');
+  }
+
+  isPerfilSubareasHolder(procName: string, folderType?: string): boolean {
+    const p = (procName || '').toLowerCase().trim();
+    const isCapacitacion = p.includes('capacita') || p === 'cap' || p === 'c&d';
+    if (!folderType) return isCapacitacion;
+    const f = folderType.toLowerCase().trim();
+    return isCapacitacion && (f.includes('perfil') || f.includes('puesto') || f.includes('descripci'));
   }
 
   isCurrentFolderPerfilPuestos(): boolean {
@@ -1304,19 +1381,17 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     if (!doc || !areaName) return false;
     const normArea = this.normalizarNombreProceso(areaName).toLowerCase().trim();
     const docProc = this.normalizarNombreProceso(doc.proceso || '').toLowerCase().trim();
-    if (docProc === normArea || this.matchesProcess(docProc, areaName)) return true;
+    if (docProc && (docProc === normArea || this.matchesProcess(docProc, areaName))) return true;
 
     const procs = this.getDocProcesosList(doc);
-    if (procs.some(p => this.matchesProcess(p, areaName) || this.normalizarNombreProceso(p).toLowerCase() === normArea)) {
-      return true;
+    if (procs && procs.length > 0) {
+      return procs.some(p => this.matchesProcess(p, areaName) || this.normalizarNombreProceso(p).toLowerCase() === normArea);
     }
 
+    // Solo si el documento no tiene ningún proceso definido, evaluar inferencia por código
     const inferredProc = this.extraerProcesoDelCodigo(doc.codigo);
     if (inferredProc) {
-      if (this.matchesProcess(inferredProc, areaName) || this.normalizarNombreProceso(inferredProc).toLowerCase() === normArea) {
-        return true;
-      }
-      return false;
+      return this.matchesProcess(inferredProc, areaName) || this.normalizarNombreProceso(inferredProc).toLowerCase() === normArea;
     }
 
     const docNom = (doc.nombre || '').toLowerCase();
@@ -1357,8 +1432,17 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   // Observación f: La carpeta de Otros de Capacitacion de desarrollo cambiar a Descripcion del Puesto
   getCarpetasPorProceso(procName: string): string[] {
     const p = (procName || '').toLowerCase().trim();
-    if (p.includes('capacitaci') || p.includes('desarrollo') || p === 'c&d') {
+    if (p.includes('capacitaci') || p === 'cap' || p === 'c&d') {
       return ['Procedimientos', 'Instructivos', 'Formatos', 'Politica', 'Manual', 'Descripción del Puesto'];
+    }
+    const hasPerfiles = this.docsList.some(d => {
+      const procs = this.getDocProcesosList(d);
+      const matchesProc = procs.some(pr => this.matchesProcess(pr, procName)) || this.matchesProcess(d.proceso || '', procName);
+      const t = (d.tipo || '').toLowerCase();
+      return matchesProc && (t.includes('perfil') || t.includes('puesto') || t.includes('descripci'));
+    });
+    if (hasPerfiles) {
+      return ['Procedimientos', 'Instructivos', 'Formatos', 'Politica', 'Manual', 'Descripción del Puesto', 'Otros'];
     }
     return ['Procedimientos', 'Instructivos', 'Formatos', 'Politica', 'Manual', 'Otros'];
   }
@@ -1367,10 +1451,16 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     const target = (tipoName || '').toLowerCase().trim();
 
     if (this.isPerfilPuestosFolder(procName, tipoName)) {
+      const isCapacitacion = procName.toLowerCase().includes('capacita') || procName.toLowerCase() === 'cap';
       return this.docsList.filter(d => {
         const t = (d.tipo || '').toLowerCase().trim();
-        return t.includes('perfil') || t.includes('puesto') || t.includes('descripci') ||
+        const isPerfil = t.includes('perfil') || t.includes('puesto') || t.includes('descripci') ||
           (!['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k)));
+        if (!isPerfil) return false;
+        if (isCapacitacion) return true;
+        const procs = this.getDocProcesosList(d);
+        const docP = d.proceso || '';
+        return procs.some(p => this.matchesProcess(p, procName)) || this.matchesProcess(docP, procName) || procs.includes('Todos los procesos');
       }).length;
     }
 
@@ -1386,7 +1476,12 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
 
       const t = (d.tipo || '').toLowerCase().trim();
       if (target === 'otros') {
-        return t === 'otros' || !['procedimiento', 'instructivo', 'formato', 'politica', 'manual', 'perfil', 'descripci'].some(k => t.includes(k));
+        const isCapacitacion = procName.toLowerCase().includes('capacita') || procName.toLowerCase() === 'cap';
+        if (isCapacitacion) {
+          return t === 'otros' || !['procedimiento', 'instructivo', 'formato', 'politica', 'manual', 'perfil', 'descripci'].some(k => t.includes(k));
+        } else {
+          return t === 'otros' || !['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k));
+        }
       }
       if (target.includes('descripci') || target.includes('puesto') || target.includes('perfil')) {
         return t.includes('perfil') || t.includes('puesto') || t.includes('descripci') || (!['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k)));
@@ -1469,12 +1564,22 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         const isPerfilFolder = this.isPerfilPuestosFolder(proc, folderType);
 
         if (isPerfilFolder) {
+          const isCapacitacion = proc.toLowerCase().includes('capacita') || proc.toLowerCase() === 'cap';
           list = list.filter(d => {
             const t = (d.tipo || '').toLowerCase().trim();
             const isDocPerfil = t.includes('perfil') || t.includes('puesto') || t.includes('descripci') ||
               (!['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k)));
 
             if (!isDocPerfil) return false;
+
+            if (!isCapacitacion) {
+              const procs = this.getDocProcesosList(d);
+              const docP = d.proceso || '';
+              const matchesProc = procs.some(p => this.matchesProcess(p, proc)) ||
+                this.matchesProcess(docP, proc) ||
+                procs.includes('Todos los procesos');
+              if (!matchesProc) return false;
+            }
 
             if (subArea) {
               return this.documentoCoincideConArea(d, subArea);
@@ -1496,7 +1601,12 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
             const target = folderType.toLowerCase().trim();
 
             if (target === 'otros') {
-              return t === 'otros' || !['procedimiento', 'instructivo', 'formato', 'politica', 'manual', 'perfil', 'descripci'].some(k => t.includes(k));
+              const isCapacitacion = proc.toLowerCase().includes('capacita') || proc.toLowerCase() === 'cap';
+              if (isCapacitacion) {
+                return t === 'otros' || !['procedimiento', 'instructivo', 'formato', 'politica', 'manual', 'perfil', 'descripci'].some(k => t.includes(k));
+              } else {
+                return t === 'otros' || !['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k));
+              }
             }
             if (target.includes('descripci') || target.includes('puesto') || target.includes('perfil')) {
               return t.includes('perfil') || t.includes('puesto') || t.includes('descripci') || (!['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k)));
@@ -1521,12 +1631,21 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         }
       } else {
         const filterP = this.activeFilter;
+        const isPerfilHolder = this.isPerfilSubareasHolder(filterP);
         list = list.filter(d => {
           const procs = this.getDocProcesosList(d);
           const docP = d.proceso || '';
-          return procs.some(p => this.matchesProcess(p, filterP)) ||
+          const matchesStandard = procs.some(p => this.matchesProcess(p, filterP)) ||
             this.matchesProcess(docP, filterP) ||
             procs.includes('Todos los procesos');
+          if (matchesStandard) return true;
+
+          if (isPerfilHolder) {
+            const t = (d.tipo || '').toLowerCase().trim();
+            return t.includes('perfil') || t.includes('puesto') || t.includes('descripci') ||
+              (!['procedimiento', 'instructivo', 'formato', 'politica', 'manual'].some(k => t.includes(k)));
+          }
+          return false;
         });
       }
     }
@@ -1548,59 +1667,181 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
   }
 
   calcularEstadoDinamico(fechaVencimientoStr: string, estadoActual: string): string {
-    if (!fechaVencimientoStr) return estadoActual || 'Vigente';
+    if (!fechaVencimientoStr) {
+      return (estadoActual && estadoActual.toLowerCase() === 'obsoleto') ? 'Vigente' : (estadoActual || 'Vigente');
+    }
     const hoy = new Date();
     const venc = new Date(fechaVencimientoStr);
     const diffDias = Math.ceil((venc.getTime() - hoy.getTime()) / (1000 * 3600 * 24));
 
-    if (diffDias < 0) return 'Obsoleto';
-    if (diffDias <= 60) return 'Por vencer'; // DOC-04: Automático si falta 60 días o menos para vencer
-    return estadoActual || 'Vigente';
+    // En módulo de Documentación ya no se muestra Obsoleto (sólo en histórico de versiones)
+    if (diffDias <= 60) return 'Por vencer';
+    return (estadoActual && estadoActual.toLowerCase() === 'obsoleto') ? 'Vigente' : (estadoActual || 'Vigente');
   }
 
-  // DOC-13: Regla de Negocio - Transición automática a 'Obsoleto' cuando se carga una nueva versión
-  aplicarReglaObsoletosPorVersion(list: any[]): void {
-    if (!list || list.length === 0) return;
+  // Consolidación de versiones: en el catálogo principal sólo se muestra la versión vigente activa
+  // Las versiones anteriores pasan a Obsoleto y quedan resguardadas en el Historial de Backup con su archivo original
+  consolidarVersionesDocumentos(list: any[]): any[] {
+    if (!list || list.length === 0) return [];
 
-    const grupos: { [baseCode: string]: any[] } = {};
+    const activeUser = localStorage.getItem('precotex:usuario:nombre') || GlobalVariable.vusu || this.sUsuario || 'Super Administrador';
+    const activePuesto = localStorage.getItem('precotex:usuario:puesto') || 'Responsable SIG';
+
+    let histMap: any = {};
+    try {
+      histMap = JSON.parse(localStorage.getItem('precotex:docs_version_history') || '{}');
+    } catch { histMap = {}; }
+
+    const grupos: { [baseKey: string]: any[] } = {};
 
     list.forEach(doc => {
-      const baseCode = this.obtenerCodigoBase(doc.codigo || doc.nombre);
-      if (baseCode) {
-        if (!grupos[baseCode]) grupos[baseCode] = [];
-        grupos[baseCode].push(doc);
-      }
+      const baseCode = (this.obtenerCodigoBase(doc.codigo || '')).toLowerCase().trim();
+      const normNom = (doc.nombre || doc.denominacion || '')
+        .toLowerCase()
+        .replace(/\[procesos:.*?\]/gi, '')
+        .replace(/firmado/gi, '')
+        .replace(/_firma/gi, '')
+        .replace(/[\s\-_.,]+/g, ' ')
+        .trim();
+      const baseKey = baseCode ? `${baseCode}::${normNom}` : normNom;
+      if (!grupos[baseKey]) grupos[baseKey] = [];
+      grupos[baseKey].push(doc);
     });
 
-    for (const baseCode in grupos) {
-      const items = grupos[baseCode];
-      if (items.length > 1) {
-        let maxVerNum = -1;
-        items.forEach(item => {
-          const vNum = this.extraerNumeroVersion(item.version || item.codigo);
-          if (vNum > maxVerNum) {
-            maxVerNum = vNum;
-          }
-        });
+    const resultado: any[] = [];
 
-        items.forEach(item => {
-          const vNum = this.extraerNumeroVersion(item.version || item.codigo);
-          if (vNum < maxVerNum) {
-            const eraObsoleto = (item.estado || '').toLowerCase() === 'obsoleto';
-            item.estado = 'Obsoleto';
-            if (item.raw) item.raw.flg_Estado = 'Obsoleto';
-            if (!eraObsoleto) {
-              this.registrarRevisionLectura(item, 'Cambio a Obsoleto por Nueva Versión');
-            }
-          }
+    for (const baseKey in grupos) {
+      const items = grupos[baseKey];
+
+      // Ordenar items por número de versión descendente
+      items.sort((a, b) => {
+        const vA = this.extraerNumeroVersion(a.version, a.codigo);
+        const vB = this.extraerNumeroVersion(b.version, b.codigo);
+        return vB - vA;
+      });
+
+      const activeDoc = { ...items[0] };
+      const codeKey = (activeDoc.codigo || '').toLowerCase().trim();
+
+      // Recuperar el historial previo conocido
+      const baseCode = (this.obtenerCodigoBase(activeDoc.codigo || '')).toLowerCase().trim();
+      let historyList: any[] = [];
+      if (histMap[codeKey] && Array.isArray(histMap[codeKey]) && histMap[codeKey].length > 0) {
+        historyList = [...histMap[codeKey]];
+      } else if (baseCode && histMap[baseCode] && Array.isArray(histMap[baseCode]) && histMap[baseCode].length > 0) {
+        historyList = [...histMap[baseCode]];
+      } else if (histMap[baseKey] && Array.isArray(histMap[baseKey]) && histMap[baseKey].length > 0) {
+        historyList = [...histMap[baseKey]];
+      } else if (activeDoc.historialVersiones && Array.isArray(activeDoc.historialVersiones) && activeDoc.historialVersiones.length > 0) {
+        historyList = [...activeDoc.historialVersiones];
+      }
+
+      // Incorporar cada ítem del grupo a historyList si no existe
+      items.forEach((itemDoc: any) => {
+        const itemVer = itemDoc.version || this.extraerVersionDelCodigo(itemDoc.codigo) || 'v1';
+        const found = historyList.find(h => h.version === itemVer);
+        if (!found) {
+          historyList.push({
+            version: itemVer,
+            usuarioSubio: itemDoc.usuarioSubio || `${activeUser} (${activePuesto})`,
+            fechaHora: itemDoc.fechaHoraSubida || (itemDoc.vig ? itemDoc.vig + ' 09:00:00' : '2026-10-07 09:00:00'),
+            tipoCarga: 'Obsoleto',
+            archivo: itemDoc.archivo || ''
+          });
+        } else if (!found.archivo && itemDoc.archivo) {
+          found.archivo = itemDoc.archivo;
+        }
+      });
+
+      // Si historyList sigue vacía, agregar la entrada inicial
+      if (historyList.length === 0) {
+        historyList.push({
+          version: activeDoc.version || 'v1',
+          usuarioSubio: activeDoc.usuarioSubio || `${activeUser} (${activePuesto})`,
+          fechaHora: activeDoc.fechaHoraSubida || (activeDoc.vig ? activeDoc.vig + ' 09:00:00' : '2026-10-07 09:00:00'),
+          tipoCarga: 'Versión Vigente',
+          archivo: activeDoc.archivo || ''
         });
       }
+
+      // ORDENAR HISTORIAL EN ORDEN CRONOLÓGICO ASCENDENTE: 1, 2, 3...
+      // "en historial de version has que sea de 1,2 que no sea 2,1 corrije eso"
+      historyList.sort((a, b) => this.extraerNumeroVersion(a.version) - this.extraerNumeroVersion(b.version));
+
+      // La versión más alta (última en orden 1, 2...) es la versión activa vigente
+      const highestEntry = historyList[historyList.length - 1];
+
+      // Marcar tipos de carga: versiones anteriores pasan a 'Obsoleto', la última es 'Versión Vigente'
+      historyList.forEach((h, idx) => {
+        if (idx === historyList.length - 1) {
+          h.tipoCarga = 'Versión Vigente';
+        } else {
+          h.tipoCarga = 'Obsoleto';
+        }
+      });
+
+      // Actualizar activeDoc para que en el listado principal se visualice la versión más reciente (ej. v2)
+      activeDoc.version = highestEntry.version;
+      if (highestEntry.archivo) {
+        activeDoc.archivo = highestEntry.archivo;
+      }
+      if (highestEntry.usuarioSubio) {
+        activeDoc.usuarioSubio = highestEntry.usuarioSubio;
+      }
+      if (highestEntry.fechaHora) {
+        activeDoc.fechaHoraSubida = highestEntry.fechaHora;
+      }
+      activeDoc.estado = 'Vigente'; // Siempre Vigente en la tabla principal
+      if (activeDoc.raw) {
+        activeDoc.raw.flg_Estado = 'Vigente';
+        activeDoc.raw.version_Documento = highestEntry.version;
+      }
+
+      activeDoc.historialVersiones = historyList;
+
+      // Persistir mapa ordenado 1, 2...
+      histMap[codeKey] = historyList;
+      if (baseCode) histMap[baseCode] = historyList;
+      histMap[baseKey] = historyList;
+
+      // La nueva versión (ej. v2, v3...) nace sin Visto Bueno hasta ser leída y confirmada
+      if (activeDoc.vistoBuenoInfo) {
+        const curVer = (activeDoc.version || '').toLowerCase().trim();
+        const vbVer = (activeDoc.vistoBuenoInfo.version || '').toLowerCase().trim();
+        if (vbVer && vbVer !== curVer) {
+          delete activeDoc.vistoBuenoInfo;
+        } else if (!vbVer && curVer && curVer !== 'v1' && curVer !== 'v1.0') {
+          delete activeDoc.vistoBuenoInfo;
+        }
+      }
+
+      resultado.push(activeDoc);
     }
+
+    try {
+      localStorage.setItem('precotex:docs_version_history', JSON.stringify(histMap));
+    } catch { }
+
+    return resultado;
+  }
+
+  aplicarReglaObsoletosPorVersion(list: any[]): void {
+    if (!list || list.length === 0) return;
+    list.forEach(d => {
+      if ((d.estado || '').toLowerCase() === 'obsoleto') {
+        d.estado = 'Vigente';
+        if (d.raw) d.raw.flg_Estado = 'Vigente';
+      }
+    });
   }
 
   obtenerCodigoBase(codigo: string): string {
     if (!codigo) return '';
     const clean = codigo.trim().toUpperCase();
+    const match = clean.match(/^(.*?)-(\d{2}|[V]\d+)$/);
+    if (match) {
+      return match[1];
+    }
     const parts = clean.split('-');
     if (parts.length >= 5) {
       return parts.slice(0, 4).join('-');
@@ -1608,25 +1849,32 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     return clean;
   }
 
-  extraerNumeroVersion(verStr: string): number {
-    if (!verStr) return 1;
-    const match = verStr.toString().match(/\d+/);
-    return match ? parseInt(match[0], 10) : 1;
+  extraerNumeroVersion(verStr: string, codigoStr?: string): number {
+    if (verStr) {
+      const match = verStr.toString().match(/\d+/);
+      if (match) return parseInt(match[0], 10);
+    }
+    if (codigoStr) {
+      const vFromCode = this.extraerVersionDelCodigo(codigoStr);
+      if (vFromCode) {
+        const match = vFromCode.match(/\d+/);
+        if (match) return parseInt(match[0], 10);
+      }
+    }
+    return 1;
   }
 
   marcarVersionesAnterioresObsoletasEnBD(nuevoDoc: any): void {
     if (!nuevoDoc || !nuevoDoc.codigo) return;
     const baseNuevo = this.obtenerCodigoBase(nuevoDoc.codigo);
-    const vNuevoNum = this.extraerNumeroVersion(nuevoDoc.version || nuevoDoc.codigo);
+    const vNuevoNum = this.extraerNumeroVersion(nuevoDoc.version, nuevoDoc.codigo);
 
     this.docsList.forEach((d: any) => {
-      if (d.codigo === nuevoDoc.codigo && d.version === nuevoDoc.version) return;
+      if (d === nuevoDoc) return;
       const baseExistente = this.obtenerCodigoBase(d.codigo);
       if (baseExistente === baseNuevo) {
-        const vExistenteNum = this.extraerNumeroVersion(d.version || d.codigo);
+        const vExistenteNum = this.extraerNumeroVersion(d.version, d.codigo);
         if (vExistenteNum < vNuevoNum) {
-          d.estado = 'Obsoleto';
-          this.registrarRevisionLectura(d, 'Cambio a Obsoleto por Nueva Versión');
           const procCode = this.getProcessCodeByName(d.proceso);
           const dProcs = this.getDocProcesosList(d);
           const procsTag = dProcs.length > 0 ? ` [PROCESOS:${dProcs.join('|')}]` : '';
@@ -1657,6 +1905,8 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         }
       }
     });
+
+    this.docsList = this.consolidarVersionesDocumentos(this.docsList);
     this.saveDocs();
   }
 
@@ -1664,6 +1914,15 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     const list = this.filteredDocs; // DOC-06: Indicadores dinámicos según el proceso seleccionado
     if (status === 'Total') {
       return list.length;
+    }
+    if (status === 'Obsoleto') {
+      let count = 0;
+      list.forEach(d => {
+        if (d.historialVersiones && d.historialVersiones.length > 1) {
+          count += (d.historialVersiones.length - 1);
+        }
+      });
+      return count;
     }
     return list.filter(d => d.estado === status).length;
   }
@@ -1778,11 +2037,17 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       registros = JSON.parse(localStorage.getItem(key) || '[]');
     } catch { registros = []; }
 
-    // Evitar duplicados del mismo usuario/doc en el mismo semestre
-    const yaExiste = registros.some((r: any) => r.codigo === doc.codigo && r.usuario === doc.vistoBuenoInfo.usuario);
+    const curVer = (doc.version || 'v1').toLowerCase().trim();
+    // Evitar duplicados del mismo usuario/doc/versión en el mismo semestre
+    const yaExiste = registros.some((r: any) =>
+      r.codigo === doc.codigo &&
+      r.usuario === doc.vistoBuenoInfo.usuario &&
+      (r.version ? (r.version || '').toLowerCase().trim() === curVer : true)
+    );
     if (!yaExiste) {
       registros.push({
         codigo: doc.codigo,
+        version: doc.version || 'v1',
         nombre: doc.nombre,
         proceso: doc.proceso,
         usuario: doc.vistoBuenoInfo.usuario,
@@ -1824,13 +2089,25 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       if (vistos && vistos.length > 0) {
         list.forEach(d => {
           const c = (d.codigo || '').toLowerCase().trim();
-          const v = vistos.find((r: any) => (r.codigo || '').toLowerCase().trim() === c);
+          const curVer = (d.version || '').toLowerCase().trim();
+          // El visto bueno es estrictamente por versión: la v2 no hereda el visto bueno de la v1
+          const v = vistos.find((r: any) => {
+            const rCod = (r.codigo || '').toLowerCase().trim();
+            if (rCod !== c) return false;
+            if (r.version) {
+              return (r.version || '').toLowerCase().trim() === curVer;
+            }
+            return curVer === 'v1' || curVer === 'v1.0' || curVer === '';
+          });
           if (v && !d.vistoBuenoInfo) {
             d.vistoBuenoInfo = {
               usuario: v.usuario,
               puesto: v.puesto,
-              fecha: v.fecha
+              fecha: v.fecha,
+              version: v.version || curVer
             };
+          } else if (!v && d.vistoBuenoInfo && d.vistoBuenoInfo.version && d.vistoBuenoInfo.version !== curVer) {
+            delete d.vistoBuenoInfo;
           }
         });
       }
@@ -2071,7 +2348,6 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       'administracion de personal': { puesto: 'Jefe de Administración de Personal', jefe: 'Lic. Mary Guevara', email: 'mguevara@precotexperu.com' },
       'seleccion de personal': { puesto: 'Jefe de Selección y Reclutamiento', jefe: 'Lic. Mary Guevara', email: 'mguevara@precotexperu.com' },
       'capacitacion': { puesto: 'Coordinador de Capacitación y Desarrollo', jefe: 'Gestión del Talento', email: 'capacitacion@precotexperu.com' },
-      'desarrollo organizacional': { puesto: 'Jefe de Desarrollo Organizacional', jefe: 'Lic. Mary Guevara', email: 'mguevara@precotexperu.com' },
       'gestion humana': { puesto: 'Gerente de Gestión Humana', jefe: 'Lic. Mary Guevara', email: 'mguevara@precotexperu.com' },
       'gestion humana (gghh)': { puesto: 'Gerente de Gestión Humana', jefe: 'Lic. Mary Guevara', email: 'mguevara@precotexperu.com' },
 
@@ -2488,43 +2764,19 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
 
   // DOC-09: Historial de versiones y auditoría real de usuarios que ingresaron a revisar
   onVerHistorial(doc: any): void {
-    // Si el documento está en estado Obsoleto y aún no cuenta con registro en historial de revisiones, asegurarlo
-    if ((doc.estado || '').toString().toLowerCase() === 'obsoleto') {
-      const tieneObsoleto = (doc.auditRevisiones || []).some((r: any) =>
-        (r.accion || '').toString().toLowerCase().includes('obsoleto')
-      );
-      if (!tieneObsoleto) {
-        const activeUser = localStorage.getItem('precotex:usuario:nombre') || GlobalVariable.vusu || 'admin';
-        const activePuesto = localStorage.getItem('precotex:usuario:puesto') || (activeUser.toLowerCase().includes('admin') ? 'Super Administrador' : 'Responsable SIG');
-        const ahora = new Date();
-        const fStr = ahora.getFullYear() + '-' +
-          String(ahora.getMonth() + 1).padStart(2, '0') + '-' +
-          String(ahora.getDate()).padStart(2, '0') + ' ' +
-          ahora.toLocaleTimeString('es-PE', { hour12: false });
-        const fechaDoc = doc.vig ? (doc.vig + ' 09:00:00') : fStr;
-        if (!doc.auditRevisiones) doc.auditRevisiones = [];
-        doc.auditRevisiones.unshift({
-          usuario: doc.usuarioSubio || activeUser,
-          puesto: doc.puestoSubio || activePuesto,
-          fechaHora: fechaDoc,
-          accion: 'Cambio a Obsoleto'
-        });
-        this.guardarAuditRevisionesLocal(doc);
-      }
-    }
     this.registrarRevisionLectura(doc, 'Consulta de Histórico');
 
-    // Observación a: Hooks globales para descargar o visualizar versiones pasadas desde el modal
+    // Hooks globales para descargar o visualizar versiones pasadas desde el modal
     (window as any).downloadVersionDoc = (archivo: string) => {
       if (!archivo) {
-        this.toastr.warning('Esta versión no tiene un archivo adjunto registrado.', 'Descarga');
+        this.toastr.warning('Esta versión no tiene un archivo adjunto registrado en backup.', 'Descarga');
         return;
       }
-      this.downloadFile({ archivo, codigo: doc.codigo });
+      this.downloadFile({ archivo, codigo: doc.codigo, nombre: doc.nombre });
     };
     (window as any).previewVersionDoc = (archivo: string) => {
       if (!archivo) {
-        this.toastr.warning('Esta versión no tiene un archivo adjunto registrado.', 'Vista Previa');
+        this.toastr.warning('Esta versión no tiene un archivo adjunto registrado en backup.', 'Vista Previa');
         return;
       }
       this.onVistaPrevia({ archivo, nombre: doc.nombre, formato: doc.formato });
@@ -2533,41 +2785,57 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
     const activeUser = localStorage.getItem('precotex:usuario:nombre') || GlobalVariable.vusu || 'admin';
     const activePuesto = localStorage.getItem('precotex:usuario:puesto') || (activeUser.toLowerCase().includes('admin') ? 'Super Administrador' : 'Responsable SIG');
 
-    // 1. Detección dinámica del usuario real que subió el documento
+    // 1. Detección dinámica de versiones resguardadas en backup
     if (!doc.historialVersiones || doc.historialVersiones.length === 0) {
       const uploaderNombre = doc.usuarioSubio || `${activeUser} (${activePuesto})`;
-      const uploaderFecha = doc.fechaHoraSubida || (doc.vig ? doc.vig + ' 09:00:00' : '2026-08-19 12:45:00');
+      const uploaderFecha = doc.fechaHoraSubida || (doc.vig ? doc.vig + ' 09:00:00' : '2026-10-07 09:00:00');
 
       doc.historialVersiones = [
         {
           version: doc.version || 'v1',
           usuarioSubio: uploaderNombre,
           fechaHora: uploaderFecha,
-          tipoCarga: 'Versión Cargada (Inicial)',
+          tipoCarga: 'Versión Vigente',
           archivo: doc.archivo || ''
         }
       ];
     }
 
-    const versionesRowsHtml = doc.historialVersiones.map((v: any, idx: number) => {
-      const archName = v.archivo || (idx === 0 ? doc.archivo : '');
+    // Asegurar que el historial esté ordenado cronológicamente ascendente: 1, 2, 3...
+    // "en historial de version has que sea de 1,2 que no sea 2,1 corrije eso"
+    const versionesOrdenadas = (doc.historialVersiones || []).slice().sort((a: any, b: any) =>
+      this.extraerNumeroVersion(a.version) - this.extraerNumeroVersion(b.version)
+    );
+
+    const totalV = versionesOrdenadas.length;
+    const versionesRowsHtml = versionesOrdenadas.map((v: any, idx: number) => {
+      // En orden 1, 2... la versión Actual / Vigente es la última
+      const isActual = idx === totalV - 1;
+      const archName = v.archivo || (isActual ? doc.archivo : '');
       const actionsHtml = archName ? `
         <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
-          <button type="button" onclick="window.previewVersionDoc('${archName}')" style="background: #6366f1; color: #ffffff; border: none; padding: 3px 7px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600;" title="Visualizar versión">
+          <button type="button" onclick="window.previewVersionDoc('${archName}')" style="background: #6366f1; color: #ffffff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 3px;" title="Visualizar versión de backup">
             👁️ Ver
           </button>
-          <button type="button" onclick="window.downloadVersionDoc('${archName}')" style="background: #2563eb; color: #ffffff; border: none; padding: 3px 7px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600;" title="Descargar versión de backup">
+          <button type="button" onclick="window.downloadVersionDoc('${archName}')" style="background: #2563eb; color: #ffffff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 3px;" title="Descargar versión de backup">
             📥 Descargar
           </button>
         </div>
-      ` : '<span style="color: #94a3b8; font-size: 11px;">(Sin archivo)</span>';
+      ` : '<span style="color: #94a3b8; font-size: 11px; font-style: italic;">(Sin archivo)</span>';
+
+      const badgeText = isActual ? 'Versión Vigente' : 'Obsoleto';
+      const badgeStyle = isActual
+        ? 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 11px; display: inline-flex; align-items: center; gap: 4px;'
+        : 'background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 11px; display: inline-flex; align-items: center; gap: 4px;';
 
       return `
-      <tr style="border-bottom: 1px solid #f1f5f9; background: ${idx === 0 ? '#ffffff' : '#f8fafc'};">
-        <td style="padding: 8px 10px; font-weight: 700; color: #0f172a;">${v.version} ${idx === 0 ? '<span style="font-size: 9px; color: #2563eb; background: #eff6ff; padding: 1px 5px; border-radius: 4px;">Actual</span>' : ''}</td>
+      <tr style="border-bottom: 1px solid #f1f5f9; background: ${isActual ? '#ffffff' : '#fef2f2'};">
+        <td style="padding: 8px 10px; font-weight: 700; color: #0f172a;">
+          ${v.version} ${isActual ? '<span style="font-size: 9px; color: #2563eb; background: #eff6ff; padding: 1px 5px; border-radius: 4px; font-weight: 700;">Actual</span>' : ''}
+        </td>
         <td style="padding: 8px 10px; font-weight: 600; color: #334155;">${v.usuarioSubio}</td>
         <td style="padding: 8px 10px; color: #475569; font-family: monospace;">${v.fechaHora}</td>
-        <td style="padding: 8px 10px;"><span style="background: ${idx === 0 ? '#dcfce7' : '#f1f5f9'}; color: ${idx === 0 ? '#15803d' : '#475569'}; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 11px;">${v.tipoCarga || 'Versión Vigente'}</span></td>
+        <td style="padding: 8px 10px;"><span style="${badgeStyle}">● ${badgeText}</span></td>
         <td style="padding: 8px 10px; text-align: center;">${actionsHtml}</td>
       </tr>
       `;
@@ -2630,10 +2898,10 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
             <strong style="color: #0f172a; font-size: 14px;">📄 ${doc.nombre}</strong>
             <span style="font-family: monospace; font-weight: 700; color: #2563eb; background: #dbeafe; padding: 2px 8px; border-radius: 4px;">${doc.codigo}</span>
           </div>
-          <div style="font-size: 12px; color: #64748b; display: flex; gap: 12px;">
+          <div style="font-size: 12px; color: #64748b; display: flex; gap: 12px; align-items: center;">
             <span>Proceso: <strong style="color: #334155;">${doc.proceso || 'General'}</strong></span>
             <span>Versión Actual: <strong style="color: #334155;">${doc.version || 'v1.0'}</strong></span>
-            <span>Estado: <strong style="color: #166534;">${doc.estado || 'Vigente'}</strong></span>
+            <span>Estado: <span style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 2px 8px; border-radius: 4px; font-weight: 700;">● Vigente</span></span>
           </div>
         </div>
 
@@ -3107,14 +3375,26 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
         }
         this.saveDocs();
 
+        // Limpiar cualquier búsqueda activa previa para asegurar visibilidad inmediata del nuevo registro
+        this.searchQuery = '';
+        if (this.activeFilter && this.activeFilter.startsWith('folder:')) {
+          const curParts = this.activeFilter.substring(7).split('|');
+          const curProc = curParts[0];
+          if (curProc && this.matchesProcess(curProc, finalProc)) {
+            this.activeFilter = curProc;
+          }
+        }
+
         this.documentosControladosService.postProcesoMnto(requestData).subscribe({
           next: () => {
             this.marcarVersionesAnterioresObsoletasEnBD(res);
             this.toastr.success('Documento guardado en la BD con éxito', 'Éxito');
+            this.loadDocs();
           },
           error: () => {
             this.marcarVersionesAnterioresObsoletasEnBD(res);
             this.toastr.success('Documento registrado con éxito', 'Éxito');
+            this.loadDocs();
           }
         });
       }
@@ -3434,38 +3714,63 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
 
     const procesarGuardado = (nombreArchivoFinal: string) => {
       // 1. Historial de Versiones Resguardadas en Backup (Sección 1)
-      if (!doc.historialVersiones || !Array.isArray(doc.historialVersiones) || doc.historialVersiones.length === 0) {
-        const uploaderNombre = doc.usuarioSubio || `${activeUser} (${activePuesto})`;
-        const uploaderFecha = doc.fechaHoraSubida || (doc.vig ? doc.vig + ' 09:00:00' : '2026-08-19 12:45:00');
-        doc.historialVersiones = [
-          {
-            version: versionAnterior,
-            usuarioSubio: uploaderNombre,
-            fechaHora: uploaderFecha,
-            tipoCarga: 'Versión Anterior (Obsoleta)',
-            archivo: archivoAnterior
-          }
-        ];
+      // La versión anterior pasa a Obsoleta y su archivo queda resguardado en el backup
+      if (!doc.historialVersiones || !Array.isArray(doc.historialVersiones)) {
+        doc.historialVersiones = [];
+      }
+
+      // Asegurar que la versión anterior esté presente
+      const existeVerAnt = doc.historialVersiones.some((h: any) => h.version === versionAnterior);
+      if (!existeVerAnt) {
+        doc.historialVersiones.push({
+          version: versionAnterior,
+          usuarioSubio: doc.usuarioSubio || `${activeUser} (${activePuesto})`,
+          fechaHora: doc.fechaHoraSubida || (doc.vig ? doc.vig + ' 09:00:00' : '2026-10-07 09:00:00'),
+          tipoCarga: 'Obsoleto',
+          archivo: archivoAnterior
+        });
       } else {
         doc.historialVersiones.forEach((h: any) => {
-          if (h.version === versionAnterior || h.tipoCarga?.includes('Vigente') || h.tipoCarga?.includes('Inicial')) {
-            h.tipoCarga = 'Versión Anterior (Obsoleta)';
+          if (h.version === versionAnterior) {
+            h.tipoCarga = 'Obsoleto';
             if (!h.archivo && archivoAnterior) h.archivo = archivoAnterior;
           }
         });
       }
 
-      // Nueva versión vigente en la cima (Actual)
-      const nuevaVersionEntry = {
-        version: nuevaVer,
-        usuarioSubio: `${activeUser} (${activePuesto})`,
-        fechaHora: fechaHoraStr,
-        tipoCarga: 'Versión Vigente',
-        archivo: nombreArchivoFinal
-      };
-      doc.historialVersiones.unshift(nuevaVersionEntry);
+      // Agregar o actualizar la nueva versión en el historial
+      const existeNueva = doc.historialVersiones.find((h: any) => h.version === nuevaVer);
+      if (existeNueva) {
+        existeNueva.usuarioSubio = `${activeUser} (${activePuesto})`;
+        existeNueva.fechaHora = fechaHoraStr;
+        existeNueva.tipoCarga = 'Versión Vigente';
+        existeNueva.archivo = nombreArchivoFinal;
+      } else {
+        doc.historialVersiones.push({
+          version: nuevaVer,
+          usuarioSubio: `${activeUser} (${activePuesto})`,
+          fechaHora: fechaHoraStr,
+          tipoCarga: 'Versión Vigente',
+          archivo: nombreArchivoFinal
+        });
+      }
 
-      // Persistir mapa histórico por código nuevo, anterior y base
+      // ORDENAR HISTORIAL EN ORDEN CRONOLÓGICO: 1, 2, 3...
+      // "en historial de version has que sea de 1,2 que no sea 2,1 corrije eso"
+      doc.historialVersiones.sort((a: any, b: any) =>
+        this.extraerNumeroVersion(a.version) - this.extraerNumeroVersion(b.version)
+      );
+
+      // Todas las versiones anteriores quedan como 'Obsoleto', la última es 'Versión Vigente'
+      doc.historialVersiones.forEach((h: any, idx: number) => {
+        if (idx === doc.historialVersiones.length - 1) {
+          h.tipoCarga = 'Versión Vigente';
+        } else {
+          h.tipoCarga = 'Obsoleto';
+        }
+      });
+
+      // Persistir mapa histórico ordenado por código nuevo, anterior y base
       try {
         const histMap = JSON.parse(localStorage.getItem('precotex:docs_version_history') || '{}');
         histMap[(nuevoCodigo || '').toLowerCase().trim()] = doc.historialVersiones;
@@ -3476,17 +3781,16 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       } catch (e) { }
 
       // 2. Sección 2: Historial de Usuarios que Ingresaron a Revisar el Documento
-      // "el documento anterior va quedar como obsoleto en 2. Historial de Usuarios que Ingresaron a Revisar el Documento"
       if (!doc.auditRevisiones) doc.auditRevisiones = [];
       doc.auditRevisiones.unshift({
         usuario: activeUser,
         puesto: activePuesto,
         fechaHora: fechaHoraStr,
-        accion: `Versión anterior ${versionAnterior} queda Obsoleta por actualización a ${nuevaVer}`
+        accion: `Versión anterior ${versionAnterior} pasa a Obsoleta por actualización a ${nuevaVer}`
       });
       this.guardarAuditRevisionesLocal(doc);
 
-      // 3. Actualizar campos del documento en memoria
+      // 3. Actualizar campos del documento en memoria (Vigente con nueva versión en el catálogo)
       doc.version = nuevaVer;
       doc.codigo = nuevoCodigo;
       doc.archivo = nombreArchivoFinal;
@@ -3494,6 +3798,41 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       doc.vig = nuevaVig;
       doc.usuarioSubio = `${activeUser} (${activePuesto})`;
       doc.fechaHoraSubida = fechaHoraStr;
+
+      // Actualizar la versión NO debe marcar visto bueno (la nueva versión nace pendiente de lectura)
+      delete doc.vistoBuenoInfo;
+
+      // Limpiar Visto Bueno previo de este documento en localStorage
+      try {
+        let vistos = JSON.parse(localStorage.getItem('precotex_vistos_buenos') || '[]');
+        vistos = vistos.filter((v: any) => {
+          const cod = (v.codigo || '').toLowerCase().trim();
+          const oldCod = (doc.codigo || '').toLowerCase().trim();
+          const newCod = (nuevoCodigo || '').toLowerCase().trim();
+          return cod !== oldCod && cod !== newCod;
+        });
+        localStorage.setItem('precotex_vistos_buenos', JSON.stringify(vistos));
+      } catch (e) { }
+
+      // Actualizar inmediatamente en docsList para que la nueva versión (ej. v2) se refleje en la tabla sin demora
+      const mainListMatchIdx = this.docsList.findIndex(d =>
+        (d.codigo && d.codigo.toString().trim().toLowerCase() === (doc.codigo || '').toString().trim().toLowerCase()) ||
+        (d.codigo && d.codigo.toString().trim().toLowerCase() === (nuevoCodigo || '').toString().trim().toLowerCase()) ||
+        (d.codigo_Documentos_Controlados && d.codigo_Documentos_Controlados === doc.codigo_Documentos_Controlados) ||
+        (this.obtenerCodigoBase(d.codigo).toLowerCase() === this.obtenerCodigoBase(nuevoCodigo).toLowerCase())
+      );
+      if (mainListMatchIdx >= 0) {
+        this.docsList[mainListMatchIdx] = {
+          ...this.docsList[mainListMatchIdx],
+          ...doc,
+          version: nuevaVer,
+          codigo: nuevoCodigo,
+          archivo: nombreArchivoFinal,
+          estado: 'Vigente',
+          historialVersiones: doc.historialVersiones
+        };
+        delete this.docsList[mainListMatchIdx].vistoBuenoInfo;
+      }
 
       const matchExt = (nombreArchivoFinal || '').match(/\.([a-zA-Z0-9]+)$/);
       if (matchExt) {
@@ -3510,11 +3849,25 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       const docProcs = this.getDocProcesosList(doc);
       const procsTag = docProcs.length > 0 ? ` [PROCESOS:${docProcs.join('|')}]` : '';
 
+      // Resolver ID numérico de la BD de forma robusta
+      let codDocControlados = doc.codigo_Documentos_Controlados;
+      if (!codDocControlados || !/^\d+$/.test(codDocControlados.toString().trim())) {
+        const found = this.docsList.find(d =>
+          (d.codigo || '').toLowerCase().trim() === (doc.codigo || '').toLowerCase().trim() ||
+          (d.codigo || '').toLowerCase().trim() === (nuevoCodigo || '').toLowerCase().trim()
+        );
+        if (found && found.codigo_Documentos_Controlados && /^\d+$/.test(found.codigo_Documentos_Controlados.toString().trim())) {
+          codDocControlados = found.codigo_Documentos_Controlados;
+        } else if (found && found.raw && found.raw.codigo_Documentos_Controlados) {
+          codDocControlados = found.raw.codigo_Documentos_Controlados;
+        }
+      }
+
       const requestData = {
         Accion: 'U',
         Codigo_Organizacion: '001',
         Codigo_Sede: '001',
-        Codigo_Documentos_Controlados: doc.codigo_Documentos_Controlados || doc.codigo || '001',
+        Codigo_Documentos_Controlados: codDocControlados || doc.codigo_Documentos_Controlados || doc.codigo || '001',
         Codigo_Proceso: procCode,
         Codigo_Carpeta_Control: '001',
         Codigo_Normas: doc.tipo || 'Procedimiento',
@@ -3549,14 +3902,17 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
           (d.codigo || '').toLowerCase() === (doc.codigo || '').toLowerCase() ||
           (d.codigo || '').toLowerCase() === (nuevoCodigo || '').toLowerCase()
         );
+        const toSave = { ...doc };
+        delete toSave.vistoBuenoInfo;
         if (idx >= 0) {
-          locCreated[idx] = { ...doc };
+          locCreated[idx] = toSave;
         } else {
-          locCreated.unshift({ ...doc });
+          locCreated.unshift(toSave);
         }
         localStorage.setItem('precotex_documentos_creados', JSON.stringify(locCreated));
       } catch (e) { }
 
+      this.docsList = this.consolidarVersionesDocumentos(this.docsList);
       this.saveDocs();
       if (this.actualizarVersionDialogRef) {
         this.actualizarVersionDialogRef.close();
@@ -4083,7 +4439,6 @@ export class DocumentosControladosComponent implements OnInit, OnDestroy {
       'capacitacion': 'CAP',
       'capacitaciones y desarrollo': 'CAP',
       'comunicaciones': 'COMU',
-      'desarrollo organizacional': 'DO',
       'gestión humana': 'GH',
       'gestion humana': 'GH',
       'bienestar social': 'BSO',

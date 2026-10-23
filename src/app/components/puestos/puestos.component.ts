@@ -277,8 +277,10 @@ export class PuestosComponent implements OnInit {
             (pCode ? localEditsMap.get('puesto:' + pCode) : null) ||
             (uNom ? localEditsMap.get('name:' + uNom) : null);
 
-          // Buscar datos reales y directos de SNPuesto
+          // Buscar datos reales y directos de SNPuesto (solo puestos activos)
           const dbPuesto = puestosDb.find((p: any) => {
+            const isAct = p.flg_Activo !== false && p.flg_Activo !== 0 && p.flg_Activo !== '0' && p.flg_Activo !== 'False';
+            if (!isAct) return false;
             const pUser = (p.cod_Usuario || '').toLowerCase().trim();
             const pCod = (p.codigo_Puesto || '').toString().replace(/\D/g, '').trim();
             const pFunc = (p.puesto_Funciones || '').toLowerCase().trim();
@@ -400,6 +402,9 @@ export class PuestosComponent implements OnInit {
         const pCode = (p.codigo_Puesto || p.id || '').toString().replace(/\D/g, '').trim();
         const pName = (p.puesto_Funciones || p.usuario || '').trim();
         const pPuesto = (p.denominacion || p.puesto || '').trim();
+
+        const isAct = p.flg_Activo !== false && p.flg_Activo !== 0 && p.flg_Activo !== '0' && p.flg_Activo !== 'False';
+        if (!isAct) return;
 
         if (isDeleted(pUser, pName, pCode)) return;
 
@@ -713,8 +718,6 @@ export class PuestosComponent implements OnInit {
       }
     };
 
-    // 1. Criterio de purga estricta para los registros de la segunda imagen:
-    // Francisco Huamani (19/08 11:49), Max Soria (10:58 / 10:54), Karem Flores (09:18 / 09:14), Luis Aldana (08:12)
     const isImage2Obsolete = (item: any): boolean => {
       const dtStr = (item.fechaHora || item.timestamp || '').toString();
       const uName = (item.usuario || item.nom_Usuario || item.nombre || item.n || '').toLowerCase();

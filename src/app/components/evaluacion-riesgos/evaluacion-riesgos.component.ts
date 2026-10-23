@@ -7,6 +7,7 @@ import { EvaluacionRiesgosRegeditComponent } from './evaluacion-riesgos-regedit/
 import { RiesgosService } from '../../services/riesgos.service';
 import { Router } from '@angular/router';
 import { PermisosService } from '../../services/permisos.service';
+import { GlobalVariable } from '../../VarGlobals';
 
 export interface RiesgoItem {
   id: number;
@@ -601,9 +602,11 @@ export class EvaluacionRiesgosComponent implements OnInit {
               try { localStorage.setItem('precotex:riesgos:archivos_map', JSON.stringify(archivosMap)); } catch(e) {}
             }
 
+            const nat = item.naturaleza || (item.tipo && item.tipo.toLowerCase().includes('oportunidad') ? 'O' : 'R');
             return {
               id: item.id_Riesgo,
               codigo: item.codigo,
+              naturaleza: nat,
               tipo: item.tipo,
               descbrief: item.descripcion_Breve,
               proceso: item.proceso,
@@ -612,15 +615,24 @@ export class EvaluacionRiesgosComponent implements OnInit {
               responsable: item.responsable,
               revision: item.fecha_Revision ? item.fecha_Revision.split('T')[0] : '',
               medidacontrol: rawMedida,
-              sede: item.sede || 'Santa Maria',
+              sede: item.sede || 'Santa María',
+              origen: item.origen || 'No conformidad previa',
               fcierre: item.fecha_Cierre ? item.fecha_Cierre.split('T')[0] : (item.estado === 'Controlado' ? '2025-12-15' : '--'),
               periodo: item.periodo || '2026',
-              clausula: item.clausula || '6.1.2 Identificación de peligros y evaluación de los riesgos (IPERC)',
-              causaprobable: item.causa_Probable || item.causaProbable || '',
-              consecuenciapotencial: item.consecuencia_Potencial || item.consecuenciaPotencial || '',
+              clausula: item.clausula || '6.1 Acciones para abordar riesgos y oportunidades',
+              causaprobable: item.causa || item.causa_Probable || item.causaProbable || '',
+              consecuenciapotencial: item.efecto || item.consecuencia_Potencial || item.consecuenciaPotencial || '',
+              probabilidad: item.probabilidad != null ? Number(item.probabilidad) : (nat === 'O' ? null : 1),
+              impacto: item.impacto != null ? Number(item.impacto) : (nat === 'O' ? null : 1),
+              deteccion: item.deteccion != null ? Number(item.deteccion) : (nat === 'O' ? null : 3),
+              npr: item.npr != null ? Number(item.npr) : (nat === 'O' ? null : 3),
+              sustentoProbabilidad: item.sustento_Probabilidad || item.sustentoProbabilidad || '',
+              controlActual: item.control_Actual || item.controlActual || '',
+              frecuenciaRevision: item.frecuencia_Revision || item.frecuenciaRevision || 'Semestral',
               archivoEvidencia: nomArchivo,
               serverFileName: sName,
-              archivoBase64: b64
+              archivoBase64: b64,
+              validacionSig: item.validacion_SIG || item.validacionSig || 'Pendiente'
             };
           });
           this.actualizarContadores();
@@ -802,37 +814,52 @@ export class EvaluacionRiesgosComponent implements OnInit {
           medidaControlFinal += '|||FILE:' + (result.serverFileName || '') + '|' + (result.archivoEvidencia || '');
         }
 
+        const isOportunidad = result.naturaleza === 'O' || (result.tipo && result.tipo.toLowerCase().includes('oportunidad'));
         const payload = {
           Accion: 'I',
           Codigo: result.codigo || nextCod,
+          Naturaleza: isOportunidad ? 'O' : 'R',
+          Tipo: result.tipo || (isOportunidad ? 'Oportunidad de proceso' : 'Riesgo de proceso'),
           Periodo: result.periodo || new Date().getFullYear().toString(),
-          Sede: result.sede || 'Santa Maria',
-          Tipo: result.tipo,
-          Clausula: result.clausula || '6.1.2 Identificación de peligros y evaluación de los riesgos (IPERC)',
-          Descripcion_Breve: result.descbrief,
+          Clausula: result.clausula || '6.1 Acciones para abordar riesgos y oportunidades',
+          Sede: result.sede || 'Santa María',
           Proceso: result.proceso,
-          Causa_Probable: result.causaprobable || '',
-          Consecuencia_Potencial: result.consecuenciapotencial || '',
-          Nivel: result.nivel,
-          Estado: result.estado,
+          Origen: result.origen || 'No conformidad previa',
+          Descripcion_Breve: result.descbrief,
+          Causa: result.causaprobable || result.causa || '',
+          Causa_Probable: result.causaprobable || result.causa || '',
+          Efecto: result.consecuenciapotencial || result.efecto || '',
+          Consecuencia_Potencial: result.consecuenciapotencial || result.efecto || '',
+          Probabilidad: isOportunidad ? 1 : (result.probabilidad != null ? Number(result.probabilidad) : 1),
+          Impacto: isOportunidad ? 1 : (result.impacto != null ? Number(result.impacto) : 1),
+          Deteccion: isOportunidad ? 3 : (result.deteccion != null ? Number(result.deteccion) : 3),
+          NPR: isOportunidad ? 3 : (result.npr != null ? Number(result.npr) : 3),
+          Nivel: isOportunidad ? 'Bajo' : (result.nivel || 'Bajo'),
+          Sustento_Probabilidad: result.sustentoProbabilidad || '',
+          Control_Actual: result.controlActual || '',
+          Estado: result.estado || 'Sin control',
           Responsable: result.responsable,
+          Frecuencia_Revision: result.frecuenciaRevision || 'Semestral',
           Fecha_Revision: result.revision,
           Medida_Control: medidaControlFinal,
-          Usuario_Registro: 'SISTEMAS'
+          Archivo_Sustento: result.serverFileName || result.archivoEvidencia || '',
+          Validacion_SIG: 'Pendiente',
+          Usuario_Registro: GlobalVariable.vusu || 'SISTEMAS'
         };
 
         this.riesgosService.postProcesoMntoRiesgo(payload).subscribe({
           next: (res: any) => {
             if (res && res.success) {
-              this.toastr.success(`Riesgo ${payload.Codigo} declarado y guardado en BD.`, 'Registrado');
+              const term = isOportunidad ? 'Oportunidad' : 'Riesgo';
+              this.toastr.success(`${term} ${payload.Codigo} declarado y guardado en BD.`, 'Registrado');
               this.cargarDatos();
             } else {
-              this.toastr.error(res?.message || `No se pudo registrar el riesgo ${payload.Codigo}.`, 'Error BD');
+              this.toastr.error(res?.message || `No se pudo registrar el registro ${payload.Codigo}.`, 'Error BD');
               this.cargarDatos();
             }
           },
           error: (err: any) => {
-            console.error('Error al registrar riesgo en backend:', err);
+            console.error('Error al registrar en backend:', err);
             this.toastr.error(err?.error?.message || err?.message || 'Error al conectar con el servidor', 'Error');
             this.cargarDatos();
           }
@@ -884,32 +911,47 @@ export class EvaluacionRiesgosComponent implements OnInit {
           medidaControlEditFinal += '|||FILE:' + srvFile + '|' + archFile;
         }
 
+        const isOportunidad = result.naturaleza === 'O' || (result.tipo && result.tipo.toLowerCase().includes('oportunidad'));
         const payload = {
           Accion: 'U',
           Codigo: item.codigo,
+          Naturaleza: isOportunidad ? 'O' : 'R',
+          Tipo: result.tipo || item.tipo,
           Periodo: result.periodo || item.periodo || new Date().getFullYear().toString(),
-          Sede: result.sede || item.sede || 'Santa Maria',
-          Tipo: result.tipo,
-          Clausula: result.clausula || item.clausula || '6.1.2 Identificación de peligros y evaluación de los riesgos (IPERC)',
-          Descripcion_Breve: result.descbrief,
+          Clausula: result.clausula || item.clausula || '6.1 Acciones para abordar riesgos y oportunidades',
+          Sede: result.sede || item.sede || 'Santa María',
           Proceso: result.proceso,
-          Causa_Probable: result.causaprobable || item.causaprobable || '',
-          Consecuencia_Potencial: result.consecuenciapotencial || item.consecuenciapotencial || '',
-          Nivel: result.nivel,
-          Estado: result.estado,
+          Origen: result.origen || item.origen || 'No conformidad previa',
+          Descripcion_Breve: result.descbrief,
+          Causa: result.causaprobable || result.causa || item.causaprobable || '',
+          Causa_Probable: result.causaprobable || result.causa || item.causaprobable || '',
+          Efecto: result.consecuenciapotencial || result.efecto || item.consecuenciapotencial || '',
+          Consecuencia_Potencial: result.consecuenciapotencial || result.efecto || item.consecuenciapotencial || '',
+          Probabilidad: isOportunidad ? 1 : (result.probabilidad != null ? Number(result.probabilidad) : (item.probabilidad || 1)),
+          Impacto: isOportunidad ? 1 : (result.impacto != null ? Number(result.impacto) : (item.impacto || 1)),
+          Deteccion: isOportunidad ? 3 : (result.deteccion != null ? Number(result.deteccion) : (item.deteccion || 3)),
+          NPR: isOportunidad ? 3 : (result.npr != null ? Number(result.npr) : (item.npr || 3)),
+          Nivel: isOportunidad ? 'Bajo' : (result.nivel || item.nivel || 'Bajo'),
+          Sustento_Probabilidad: result.sustentoProbabilidad || item.sustentoProbabilidad || '',
+          Control_Actual: result.controlActual || item.controlActual || '',
+          Estado: result.estado || item.estado || 'Sin control',
           Responsable: result.responsable,
+          Frecuencia_Revision: result.frecuenciaRevision || item.frecuenciaRevision || 'Semestral',
           Fecha_Revision: result.revision,
           Medida_Control: medidaControlEditFinal,
-          Usuario_Registro: 'SISTEMAS'
+          Archivo_Sustento: result.serverFileName || result.archivoEvidencia || item.serverFileName || '',
+          Validacion_SIG: item.validacionSig || 'Pendiente',
+          Usuario_Registro: GlobalVariable.vusu || 'SISTEMAS'
         };
 
         this.riesgosService.postProcesoMntoRiesgo(payload).subscribe({
           next: (res: any) => {
             if (res && res.success) {
-              this.toastr.success('Riesgo actualizado en BD.', 'Actualizado');
+              const term = isOportunidad ? 'Oportunidad' : 'Riesgo';
+              this.toastr.success(`${term} actualizado en BD.`, 'Actualizado');
               this.cargarDatos();
             } else {
-              this.toastr.error(res.message || 'Error al actualizar el riesgo.', 'Error BD');
+              this.toastr.error(res.message || 'Error al actualizar el registro.', 'Error BD');
             }
           },
           error: (err) => {

@@ -946,3 +946,138 @@
 .sn-animate-fade {
   animation: fadeIn 0.15s ease-out forwards;
 }
+
+
+/* ===================================================================
+   MODAL DE RECUPERACIÓN / CAMBIO DE CONTRASEÑA
+   =================================================================== */
+.recovery-accent {
+  background: linear-gradient(90deg, #4f46e5 0%, #06b6d4 100%) !important;
+}
+
+.recovery-shield {
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%) !important;
+  border-color: rgba(79, 70, 229, 0.3) !important;
+  color: #4f46e5 !important;
+}
+
+.recovery-tag {
+  color: #4f46e5 !important;
+  background: rgba(79, 70, 229, 0.08) !important;
+}
+
+.recovery-user-banner {
+  background: #f0fdf4 !important;
+  border-color: #bbf7d0 !important;
+}
+
+.recovery-avatar {
+  background: #059669 !important;
+}
+
+.user-meta-email {
+  font-size: 0.72rem;
+  color: #64748b;
+  margin-top: 1px;
+}
+
+.badge-verified-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badge-verified-tag mat-icon {
+  font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.recovery-error-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  color: #b91c1c;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.recovery-error-alert mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  color: #ef4444;
+  flex-shrink: 0;
+}
+
+.modal-help-text {
+  font-size: 0.73rem;
+  color: #64748b;
+  line-height: 1.35;
+  margin-top: 3px;
+}
+
+.clear-btn-modal {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.clear-btn-modal:hover {
+  color: #475569;
+  background: rgba(148, 163, 184, 0.15);
+}
+
+.clear-btn-modal mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.btn-back-modal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-right: auto;
+}
+
+.btn-back-modal:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.btn-back-modal mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+}

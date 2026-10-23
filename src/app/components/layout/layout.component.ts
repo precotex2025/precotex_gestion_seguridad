@@ -214,7 +214,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
     } else if (url.includes('/principal/documentosControlados') || url.includes('/principal/documentosNoControlados') || url.includes('/principal/registrosPendientes')) {
       this.currentModule = 'Documentación';
-      
+
       let title = 'Documentación';
       let breadcrumb = 'Documentación · Control Documental';
 
@@ -292,7 +292,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
       this.currentModule = 'Riesgos';
       this.activeModule = {
         title: 'Riesgos',
-        breadcrumb: 'Riesgos · IPERC / Matriz de Riesgos',
+        breadcrumb: 'Riesgos · Evaluación de Riesgos',
         activeTab: isSeguimiento ? 'seguimiento-controles' : 'identificacion-evaluacion',
         tabs: [
           { id: 'identificacion-evaluacion', label: 'Identificación y evaluación', route: '/principal/evaluacionRiesgos' },
@@ -456,11 +456,11 @@ export class LayoutComponent implements OnInit, OnDestroy {
                   const targets = isUserSpecific
                     ? [rawUid, matchedPuesto.cod_Usuario.trim().toLowerCase()]
                     : Array.from(new Set([
-                        rawUid,
-                        matchedPuesto?.puesto?.trim(),
-                        matchedPuesto?.codigo_Puesto?.trim(),
-                        matchedPuesto?.cod_Usuario?.trim().toLowerCase()
-                      ].filter(Boolean)));
+                      rawUid,
+                      matchedPuesto?.puesto?.trim(),
+                      matchedPuesto?.codigo_Puesto?.trim(),
+                      matchedPuesto?.cod_Usuario?.trim().toLowerCase()
+                    ].filter(Boolean)));
 
                   const key = (row.modulo || '').trim() + '||' + (row.contenido || '').trim() + '||' + (row.accion || '').trim();
                   const val = row.flg_Permitido ? 1 : 0;
@@ -796,7 +796,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
       }
 
       sessionStorage.setItem('precotex:session:logged_entry', 'true');
-    } catch (e) {}
+    } catch (e) { }
   }
 
   onLogout(): void {

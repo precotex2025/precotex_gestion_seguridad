@@ -1,6 +1,6 @@
 <div class="contenedor sn-animate-in">
 
-    <!-- GUÍA DE REGISTRO: ¿QUÉ SE REGISTRA EN ESTE MÓDULO? (ISO 9001 vs SSOMA) -->
+  <!-- GUÍA DE REGISTRO: ¿QUÉ SE REGISTRA EN ESTE MÓDULO? (ISO 9001 vs SSOMA) -->
   <div class="guide-box" *ngIf="activeSubTab === 'identificacion'">
     <h3 class="guide-header-title">📋 ¿Qué se registra en este módulo?</h3>
 
@@ -8,7 +8,8 @@
       <div class="guide-card-item">
         <span class="guide-card-tag tag-si">SÍ SE REGISTRA AQUÍ</span>
         <p class="guide-card-desc">
-          Riesgos y oportunidades que afectan el <b>producto</b>, la <b>entrega</b>, el <b>cliente</b> o la <b>operación</b> de tu proceso.
+          Riesgos y oportunidades que afectan el <b>producto</b>, la <b>entrega</b>, el <b>cliente</b> o la
+          <b>operación</b> de tu proceso.
         </p>
       </div>
 
@@ -28,7 +29,8 @@
     </div>
 
     <div class="guide-footer-note">
-      ✓ Registra riesgos <b>reales</b>: los que ya causaron una NC, incidente o reclamo. Mejor pocos reales que muchos inventados.
+      ✓ Registra riesgos <b>reales</b>: los que ya causaron una NC, incidente o reclamo. Mejor pocos reales que muchos
+      inventados.
     </div>
 
     <div class="guide-ssoma-actions">
@@ -49,7 +51,7 @@
       <div class="stat-card-content">
         <span class="stat-card-title">TOTAL RIESGOS</span>
         <span class="stat-card-number text-white">{{ cantTotal }}</span>
-        <span class="stat-card-sub">En matriz IPERC</span>
+        <span class="stat-card-sub">En matriz</span>
       </div>
     </div>
 
@@ -99,7 +101,7 @@
     <!-- BARRA DE HERRAMIENTAS INTEGRADA -->
     <div class="integrated-toolbar" style="flex-wrap: wrap; gap: 12px;">
       <div class="toolbar-title-section">
-        <h2 class="seccion-titulo">IDENTIFICACIÓN Y EVALUACIÓN DE RIESGOS (IPERC 5x5)</h2>
+        <h2 class="seccion-titulo">IDENTIFICACIÓN Y EVALUACIÓN DE RIESGOS</h2>
         <span class="results-badge">{{ riesgosFiltrados.length }} Registros</span>
       </div>
 
@@ -108,7 +110,7 @@
         <button type="button" class="btn-ghost-action" (click)="exportarExcelIPERC()"
           title="Exportar Matriz IPERC a Excel (RIE-05)">
           <mat-icon style="color: #10b981;">grid_on</mat-icon>
-          <span>Exportar IPERC</span>
+          <span>Exportar Riesgos</span>
         </button>
 
         <!-- Buscador Inline (RIE-04: Código, Peligro/Descripción, Responsable) -->
@@ -118,13 +120,14 @@
             placeholder="Buscar por código, descripción o responsable..." class="inline-search-input">
         </div>
 
-                <!-- BOTÓN CRITERIOS DE EVALUACIÓN (Image 1) -->
-        <button type="button" class="btn-criterios-action" (click)="onAbrirCriterios()" title="Criterios de evaluación del riesgo (Escalas P, I, D y Reglas)">
+        <!-- BOTÓN CRITERIOS DE EVALUACIÓN (Image 1) -->
+        <button type="button" class="btn-criterios-action" (click)="onAbrirCriterios()"
+          title="Criterios de evaluación del riesgo (Escalas P, I, D y Reglas)">
           <span class="icon-ruler-emoji">📏</span>
           <span>Criterios de evaluación</span>
         </button>
 
-<button *ngIf="canRegistrarRiesgo" type="button" class="btn-primary-glow" (click)="onAgregar()">
+        <button *ngIf="canRegistrarRiesgo" type="button" class="btn-primary-glow" (click)="onAgregar()">
           <mat-icon>add</mat-icon>
           <span>Declarar riesgo</span>
         </button>
@@ -209,10 +212,20 @@
 
               <!-- HEATMAP BADGE FOR NIVEL (RIE-01, RIE-02) -->
               <td style="text-align: center;">
-                <span class="heatmap-badge" [ngClass]="getNivelHeatmapClass(item.nivel)"
-                  title="Cálculo Matriz 5x5: Probabilidad x Impacto">
-                  {{ item.nivel }} (5x5)
-                </span>
+                <ng-container
+                  *ngIf="item.naturaleza === 'O' || (item.tipo && item.tipo.toLowerCase().includes('oportunidad'))">
+                  <span class="badge-oportunidad"
+                    style="background: rgba(99, 102, 241, 0.12); color: #6366f1; border: 1px solid rgba(99, 102, 241, 0.3); font-weight: 700; padding: 4px 10px; border-radius: 14px; font-size: 11px;">
+                    ✨ Oportunidad
+                  </span>
+                </ng-container>
+                <ng-container
+                  *ngIf="!(item.naturaleza === 'O' || (item.tipo && item.tipo.toLowerCase().includes('oportunidad')))">
+                  <span class="heatmap-badge" [ngClass]="getNivelHeatmapClass(item.nivel)"
+                    title="Cálculo Matriz 5x5: Probabilidad x Impacto">
+                    {{ item.nivel }} (5x5)
+                  </span>
+                </ng-container>
               </td>
 
               <!-- Soft Badge for State -->
@@ -234,13 +247,15 @@
                   <button class="action-btn btn-view" (click)="onVer(item)" title="Ver detalle del riesgo">
                     <mat-icon>visibility</mat-icon>
                   </button>
-                  <button type="button" class="action-btn btn-download" (click)="onDescargarEvidencia(item)" title="Descargar documento de sustento / Matriz IPERC">
+                  <button type="button" class="action-btn btn-download" (click)="onDescargarEvidencia(item)"
+                    title="Descargar documento de sustento / Matriz IPERC">
                     <mat-icon>file_download</mat-icon>
                   </button>
                   <button *ngIf="canEditarRiesgo" class="action-btn btn-edit" (click)="onEdit(item)" title="Editar">
                     <mat-icon>edit</mat-icon>
                   </button>
-                  <button *ngIf="canEditarRiesgo" class="action-btn btn-delete" (click)="onDelete(item)" title="Eliminar">
+                  <button *ngIf="canEditarRiesgo" class="action-btn btn-delete" (click)="onDelete(item)"
+                    title="Eliminar">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </div>
@@ -254,7 +269,9 @@
                   <div class="risk-detail-grid">
 
                     <div class="detail-box">
-                      <span class="detail-label">Plan de Acción & Medida de Control</span>
+                      <span class="detail-label">{{ (item.naturaleza === 'O' || (item.tipo &&
+                        item.tipo.toLowerCase().includes('oportunidad'))) ? 'Plan de Mejora / Acción Propuesta' : 'Plan
+                        de Acción & Medida de Control' }}</span>
                       <p class="detail-text">{{ item.medidacontrol || 'Inspección de barreras físicas, EPP obligatorio y
                         capacitación semestral.' }}</p>
                     </div>
@@ -268,18 +285,27 @@
                     </div>
 
                     <div class="detail-box">
-                      <span class="detail-label">Acción Inmediata Requerida</span>
-                      <p class="detail-text">Supervisión continua por el responsable de área y verificación de EPPs.</p>
+                      <span class="detail-label">{{ (item.naturaleza === 'O' || (item.tipo &&
+                        item.tipo.toLowerCase().includes('oportunidad'))) ? 'Potencial de Mejora / Beneficio Esperado' :
+                        'Acción Inmediata Requerida' }}</span>
+                      <p class="detail-text">{{ item.consecuenciapotencial || item.causaprobable || 'Supervisión
+                        continua por el responsable de área y verificación de EPPs.' }}</p>
                     </div>
                     <div class="detail-box" style="grid-column: 1 / -1;">
                       <span class="detail-label">Documento de Sustento / Matriz IPERC Adjunto</span>
-                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 14px;">
-                        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #1e293b;">
-                          <mat-icon style="font-size: 20px; width: 20px; height: 20px; color: #10b981;">description</mat-icon>
+                      <div
+                        style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 14px;">
+                        <div
+                          style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #1e293b;">
+                          <mat-icon
+                            style="font-size: 20px; width: 20px; height: 20px; color: #10b981;">description</mat-icon>
                           <span>{{ item.archivoEvidencia || item.evidencia || "Sin archivo adjunto" }}</span>
                         </div>
-                        <button type="button" class="action-btn btn-download" (click)="onDescargarEvidencia(item)" title="Descargar documento de sustento" style="width: auto; height: 32px; padding: 0 12px; gap: 6px;">
-                          <mat-icon style="font-size: 16px !important; width: 16px !important; height: 16px !important;">file_download</mat-icon>
+                        <button type="button" class="action-btn btn-download" (click)="onDescargarEvidencia(item)"
+                          title="Descargar documento de sustento"
+                          style="width: auto; height: 32px; padding: 0 12px; gap: 6px;">
+                          <mat-icon
+                            style="font-size: 16px !important; width: 16px !important; height: 16px !important;">file_download</mat-icon>
                           <span style="font-size: 12px; font-weight: 600;">Descargar</span>
                         </button>
                       </div>
@@ -457,11 +483,12 @@
             <!-- Action: Update control -->
             <td style="text-align: center;" (click)="$event.stopPropagation()">
               <div class="actions-wrapper">
-                <button type="button" class="action-btn btn-download" (click)="onDescargarEvidencia(item, $event)" title="Descargar documento de sustento / Matriz IPERC">
+                <button type="button" class="action-btn btn-download" (click)="onDescargarEvidencia(item, $event)"
+                  title="Descargar documento de sustento / Matriz IPERC">
                   <mat-icon>file_download</mat-icon>
                 </button>
-                <button *ngIf="canAprobarControl" class="action-btn btn-edit" (click)="onActualizarControl(item, $event)"
-                  title="Actualizar seguimiento de control">
+                <button *ngIf="canAprobarControl" class="action-btn btn-edit"
+                  (click)="onActualizarControl(item, $event)" title="Actualizar seguimiento de control">
                   <mat-icon>edit_note</mat-icon>
                 </button>
               </div>
@@ -500,7 +527,8 @@
         </div>
         <div class="header-text-group">
           <h2 class="header-title">Criterios de evaluación del riesgo</h2>
-          <p class="header-subtitle">Usa siempre estas escalas. El sistema calcula el NPR y el nivel; no se escriben a mano.</p>
+          <p class="header-subtitle">Usa siempre estas escalas. El sistema calcula el NPR y el nivel; no se escriben a
+            mano.</p>
         </div>
       </div>
 
@@ -513,7 +541,7 @@
 
     <!-- Body Scrollable -->
     <div class="dialog-body-scrollable">
-      
+
       <!-- SECCIÓN P: PROBABILIDAD (Imagen 3) -->
       <div class="criterios-section">
         <div class="criterio-header-row">
@@ -649,7 +677,8 @@
       <!-- SECCIÓN NIVEL FINAL: NPR (Imagen 4) -->
       <div class="criterios-section">
         <div class="criterio-header-row">
-          <span class="criterio-title-text" style="font-weight: 800; font-size: 13.5px;">Nivel final · NPR = P × I × D (1 a 125)</span>
+          <span class="criterio-title-text" style="font-weight: 800; font-size: 13.5px;">Nivel final · NPR = P × I × D
+            (1 a 125)</span>
         </div>
 
         <div class="npr-levels-grid">
@@ -672,7 +701,11 @@
         <!-- Reglas de evaluación (Imagen 4 footer) -->
         <div class="eval-rules-notice-box">
           <p>
-            <b>Reglas de evaluación:</b> (1) Si Impacto = 5, el nivel mínimo es Medio. (2) Detección 1 o 2 exige nombrar el control y su registro; sin evidencia, usar D = 4. (3) La probabilidad debe tener sustento (historial de NC, incidentes o reclamos). (4) Si ya ocurrió, no es un riesgo: se registra como incidencia o NC. (5) <b>Riesgo trivial:</b> Impacto 1 no se registra. (6) Peligros a personas y aspectos ambientales no van aquí: se gestionan en la IPERC y en la matriz de aspectos de SSOMA.
+            <b>Reglas de evaluación:</b> (1) Si Impacto = 5, el nivel mínimo es Medio. (2) Detección 1 o 2 exige nombrar
+            el control y su registro; sin evidencia, usar D = 4. (3) La probabilidad debe tener sustento (historial de
+            NC, incidentes o reclamos). (4) Si ya ocurrió, no es un riesgo: se registra como incidencia o NC. (5)
+            <b>Riesgo trivial:</b> Impacto 1 no se registra. (6) Peligros a personas y aspectos ambientales no van aquí:
+            se gestionan en la IPERC y en la matriz de aspectos de SSOMA.
           </p>
         </div>
       </div>
@@ -694,7 +727,8 @@
             <tr>
               <td class="col-val col-s-code">S1</td>
               <td class="col-nivel">Campos automáticos</td>
-              <td class="col-desc">Código, período y cláusula (ISO 9001 · 6.1) los asigna el sistema; se muestran como etiquetas, no como campos.</td>
+              <td class="col-desc">Código, período y cláusula (ISO 9001 · 6.1) los asigna el sistema; se muestran como
+                etiquetas, no como campos.</td>
             </tr>
             <tr>
               <td class="col-val col-s-code">S2</td>
@@ -704,7 +738,8 @@
             <tr>
               <td class="col-val col-s-code">S3</td>
               <td class="col-nivel">Cálculo</td>
-              <td class="col-desc">NPR = P × I × D; nivel y acción solo lectura. Regla de severidad (I = 5 → mínimo Medio).</td>
+              <td class="col-desc">NPR = P × I × D; nivel y acción solo lectura. Regla de severidad (I = 5 → mínimo
+                Medio).</td>
             </tr>
             <tr>
               <td class="col-val col-s-code">S4</td>
@@ -719,22 +754,26 @@
             <tr>
               <td class="col-val col-s-code">S6</td>
               <td class="col-nivel">Evidencia</td>
-              <td class="col-desc">Obligatoria si el estado no es «Controlado», excepto nivel Bajo (riesgo aceptado).</td>
+              <td class="col-desc">Obligatoria si el estado no es «Controlado», excepto nivel Bajo (riesgo aceptado).
+              </td>
             </tr>
             <tr>
               <td class="col-val col-s-code">S7</td>
               <td class="col-nivel">Validación SIG</td>
-              <td class="col-desc">Todo registro queda «Pendiente de validación SIG»; solo el perfil SIG aprueba u observa.</td>
+              <td class="col-desc">Todo registro queda «Pendiente de validación SIG»; solo el perfil SIG aprueba u
+                observa.</td>
             </tr>
             <tr>
               <td class="col-val col-s-code">S8</td>
               <td class="col-nivel">Oportunidad</td>
-              <td class="col-desc">Sin evaluación NPR ni control. Al aprobarse, se crea como iniciativa en el Portafolio de Mejora.</td>
+              <td class="col-desc">Sin evaluación NPR ni control. Al aprobarse, se crea como iniciativa en el Portafolio
+                de Mejora.</td>
             </tr>
             <tr>
               <td class="col-val col-s-code">S9</td>
               <td class="col-nivel">Consulta SSOMA</td>
-              <td class="col-desc">Botones de solo lectura a la IPERC y a la matriz de aspectos, filtradas por el área del usuario. No se editan desde aquí.</td>
+              <td class="col-desc">Botones de solo lectura a la IPERC y a la matriz de aspectos, filtradas por el área
+                del usuario. No se editan desde aquí.</td>
             </tr>
           </tbody>
         </table>

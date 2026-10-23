@@ -22,7 +22,7 @@ export class DocumentosControladosRegeditComponent implements OnInit {
     'Control Patrimonial (CPT)': ['Control Patrimonial'],
     'Ingeniería y Mejora Continua (IMC)': ['Ingeniería', 'Organización y Métodos', 'Investigación, Desarrollo e Innovación', 'Certificaciones'],
     'Administración y Finanzas (AFC)': ['Administración', 'Finanzas', 'Contabilidad y Costos', 'Tesorería'],
-    'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitación', 'Comunicaciones', 'Desarrollo Organizacional', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
+    'Gestión Humana (GGHH)': ['Administración de Personal', 'Capacitación', 'Comunicaciones', 'Gestión Humana', 'Bienestar Social', 'Selección de Personal'],
     'Servicio de Estampado y Bordado (SEB)': ['Estampado', 'Bordado', 'Calidad Estampado y Bordado', 'Planeamiento y Programación de la Producción E&B'],
     'Operaciones Manufactura (OPM)': ['Corte', 'Costura', 'Inspección', 'Acabados', 'Aseguramiento de la Calidad Manufactura', 'Manufactura', 'Consumos'],
     'Operaciones Textil (OPT)': ['Tejeduría', 'Tintorería', 'Producción Textil', 'Laboratorio de Color', 'Estampado Digital', 'Acabados Textil', 'Laboratorio de Calidad Textil', 'Aseguramiento de la Calidad Textil', 'Lavandería'],
@@ -234,7 +234,6 @@ export class DocumentosControladosRegeditComponent implements OnInit {
       'AP': 'Administración de Personal',
       'CAP': 'Capacitación',
       'COMU': 'Comunicaciones',
-      'DO': 'Desarrollo Organizacional',
       'GH': 'Gestión Humana',
       'BSO': 'Bienestar Social',
       'SDP': 'Selección de Personal',
@@ -408,8 +407,7 @@ export class DocumentosControladosRegeditComponent implements OnInit {
     
     const diffDias = Math.ceil((venc.getTime() - hoy.getTime()) / (1000 * 3600 * 24));
     
-    if (diffDias < 0) return 'Obsoleto';
-    if (diffDias <= 30) return 'Por vencer'; // DOC-04: Automático a 1 mes (30 días) o menos
+    if (diffDias <= 60) return 'Por vencer';
     return 'Vigente';
   }
 

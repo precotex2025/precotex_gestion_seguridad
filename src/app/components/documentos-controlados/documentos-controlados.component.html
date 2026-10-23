@@ -129,7 +129,7 @@
                     style="padding-left: 36px; font-size: 11px; height: 26px;">
                     <div class="node-left">
                       <!-- Flecha acordeón si es carpeta de Perfiles de Puesto en Gestión Humana -->
-                      <button type="button" class="mini-arrow-btn" *ngIf="isPerfilPuestosFolder(proc, fType)"
+                      <button type="button" class="mini-arrow-btn" *ngIf="isPerfilSubareasHolder(proc, fType)"
                         (click)="togglePerfilPuestosTree(proc, $event)" title="Desplegar subcarpetas de todas las áreas">
                         <mat-icon class="arrow-icon-mini" [class.rotated]="!isPerfilPuestosExpanded(proc)">keyboard_arrow_down</mat-icon>
                       </button>
@@ -146,7 +146,7 @@
 
                   <!-- DOC-19: Subcarpetas de todas las áreas dentro de Perfiles de Puesto de Gestión Humana -->
                   <div class="tree-perfil-subareas-container"
-                    *ngIf="isPerfilPuestosFolder(proc, fType) && isPerfilPuestosExpanded(proc)">
+                    *ngIf="isPerfilSubareasHolder(proc, fType) && isPerfilPuestosExpanded(proc)">
                     
                     <!-- Buscador rápido dentro del árbol -->
                     <div class="tree-area-search-wrap" (click)="$event.stopPropagation()">
@@ -452,9 +452,9 @@
               <!-- Soft Badge for Status -->
               <td style="min-width: 120px; width: 120px; text-align: center;">
                 <span class="soft-badge"
-                  [ngClass]="doc.estado === 'Vigente' ? 'soft-badge-vigente' : (doc.estado === 'Por vencer' ? 'soft-badge-revision' : 'soft-badge-porvencer')">
+                  [ngClass]="doc.estado === 'Por vencer' ? 'soft-badge-revision' : 'soft-badge-vigente'">
                   <span class="glowing-dot"></span>
-                  <span>{{ doc.estado }}</span>
+                  <span>{{ doc.estado === 'Obsoleto' ? 'Vigente' : doc.estado }}</span>
                 </span>
               </td>
 
@@ -583,9 +583,9 @@
         <div class="meta-card">
           <span class="meta-label">Estado del Registro</span>
           <span class="soft-badge"
-            [ngClass]="selectedDoc.estado === 'Vigente' ? 'soft-badge-vigente' : 'soft-badge-revision'">
+            [ngClass]="selectedDoc.estado === 'Por vencer' ? 'soft-badge-revision' : 'soft-badge-vigente'">
             <span class="glowing-dot"></span>
-            <span>{{ selectedDoc.estado }}</span>
+            <span>{{ selectedDoc.estado === 'Obsoleto' ? 'Vigente' : selectedDoc.estado }}</span>
           </span>
         </div>
 

@@ -55,6 +55,12 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
     'Controlado'
   ];
 
+  readonly estadosOportunidadOptions: string[] = [
+    'Por evaluar',
+    'En seguimiento',
+    'Implementada'
+  ];
+
   readonly frecuenciasOptions: string[] = [
     'Semestral',
     'Anual',
@@ -213,21 +219,21 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
       sede: [d.sede || 'Santa María', Validators.required],
       proceso: [d.proceso || 'Corte', Validators.required],
       origen: [d.origen || 'No conformidad previa', Validators.required],
-      descbrief: [d.descbrief || '', Validators.required],
-      causaprobable: [d.causaprobable || '', Validators.required],
-      consecuenciapotencial: [d.consecuenciapotencial || '', Validators.required],
+      descbrief: [d.descbrief || d.descripcion_Breve || '', Validators.required],
+      causaprobable: [d.causaprobable || d.causa || d.causa_Probable || '', Validators.required],
+      consecuenciapotencial: [d.consecuenciapotencial || d.efecto || d.consecuencia_Potencial || '', Validators.required],
       probabilidad: [initialProb, Validators.required],
       impacto: [initialImp, Validators.required],
       deteccion: [initialDet, Validators.required],
       npr: [d.npr || (initialProb * initialImp * initialDet)],
-      nivel: [d.nivel || 'Bajo', Validators.required],
-      sustentoProbabilidad: [d.sustentoProbabilidad || ''],
-      controlActual: [d.controlActual || ''],
+      nivel: [d.nivel || (initialNat === 'O' ? 'Bajo' : 'Bajo'), Validators.required],
+      sustentoProbabilidad: [d.sustentoProbabilidad || d.sustento_Probabilidad || ''],
+      controlActual: [d.controlActual || d.control_Actual || ''],
       responsable: [d.responsable || '', Validators.required],
-      estado: [d.estado || 'Sin control', Validators.required],
-      medidacontrol: [(d.medidacontrol || '').replace(/\|\|\|FILE:[^]*$/, '')],
-      frecuenciaRevision: [d.frecuenciaRevision || 'Semestral', Validators.required],
-      revision: [d.revision || this.calcularFechaRevisionDefecto('Semestral')],
+      estado: [d.estado || (initialNat === 'O' ? 'Por evaluar' : 'Sin control'), Validators.required],
+      medidacontrol: [(d.medidacontrol || d.medida_Control || '').replace(/\|\|\|FILE:[^]*$/, '')],
+      frecuenciaRevision: [d.frecuenciaRevision || d.frecuencia_Revision || 'Semestral', Validators.required],
+      revision: [d.revision || d.fecha_Revision ? (d.revision || d.fecha_Revision).split('T')[0] : this.calcularFechaRevisionDefecto('Semestral')],
       archivoEvidencia: ['']
     });
 
@@ -506,6 +512,8 @@ export class EvaluacionRiesgosRegeditComponent implements OnInit {
     }
 
     const val = this.formulario.getRawValue();
+    val.causa = val.causaprobable;
+    val.efecto = val.consecuenciapotencial;
     val.archivoBase64 = this.archivoBase64;
     val.archivoEvidencia = this.nombreArchivoEvidencia;
     val.serverFileName = serverName || this.nombreArchivoEvidencia;

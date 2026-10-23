@@ -304,8 +304,8 @@
       <div class="section-card">
         <div class="section-card-header">
           <div class="section-title-left">
-            <span class="section-number-badge badge-num-3">3</span>
-            <span class="section-title-text">Planificación y control</span>
+            <span class="section-number-badge badge-num-3">{{ formulario.get('naturaleza')?.value === 'O' ? '2' : '3' }}</span>
+            <span class="section-title-text">{{ formulario.get('naturaleza')?.value === 'O' ? 'Planificación y seguimiento' : 'Planificación y control' }}</span>
           </div>
         </div>
 
@@ -319,16 +319,20 @@
         <!-- Estado del control & Medida de control -->
         <div class="form-grid-2 mt-3">
           <div class="form-field-group">
-            <label class="field-label req">ESTADO DEL CONTROL *</label>
+            <label class="field-label req">
+              {{ formulario.get('naturaleza')?.value === 'O' ? 'ESTADO DE LA OPORTUNIDAD *' : 'ESTADO DEL CONTROL *' }}
+            </label>
             <mat-select formControlName="estado" class="custom-select-input">
-              <mat-option *ngFor="let est of estadosOptions" [value]="est">{{ est }}</mat-option>
+              <mat-option *ngFor="let est of (formulario.get('naturaleza')?.value === 'O' ? estadosOportunidadOptions : estadosOptions)" [value]="est">{{ est }}</mat-option>
             </mat-select>
           </div>
 
           <div class="form-field-group">
-            <label class="field-label">MEDIDA DE CONTROL PROPUESTA</label>
+            <label class="field-label">
+              {{ formulario.get('naturaleza')?.value === 'O' ? 'PLAN DE MEJORA / ACCIÓN PROPUESTA' : 'MEDIDA DE CONTROL PROPUESTA' }}
+            </label>
             <input type="text" formControlName="medidacontrol" class="custom-text-input"
-              placeholder="Ej. Inspección + control operacional" />
+              [placeholder]="formulario.get('naturaleza')?.value === 'O' ? 'Ej. Adquisición de lector de códigos de barras y capacitación operativa' : 'Ej. Inspección + control operacional'" />
           </div>
         </div>
 
@@ -354,7 +358,9 @@
         <!-- Subida de Archivo de Sustento -->
         <div class="upload-section-container mt-3">
           <label class="field-label" [class.req]="isArchivoObligatorio()">
-            {{ isArchivoObligatorio() ? 'DOCUMENTO DE SUSTENTO (OBLIGATORIO: RIESGO NO CONTROLADO) *' : 'DOCUMENTO DE SUSTENTO (OPCIONAL: RIESGO ACEPTADO)' }}
+            {{ formulario.get('naturaleza')?.value === 'O' 
+                ? 'DOCUMENTO DE SUSTENTO (OPCIONAL)' 
+                : (isArchivoObligatorio() ? 'DOCUMENTO DE SUSTENTO (OBLIGATORIO: RIESGO NO CONTROLADO) *' : 'DOCUMENTO DE SUSTENTO (OPCIONAL: RIESGO ACEPTADO)') }}
           </label>
 
           <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none;"
