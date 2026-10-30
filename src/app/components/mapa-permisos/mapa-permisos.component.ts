@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, HostListener } from '@angular/core';
+import * as ExcelJS from 'exceljs';
 import { ToastrService } from 'ngx-toastr';
 import { PermisosService } from '../../services/permisos.service';
 import { PuestosService } from '../../services/puestos.service';
@@ -627,11 +628,17 @@ export class MapaPermisosComponent implements OnInit {
             const rawCode = (row.codigo_Puesto_Usuario || '').trim();
             const mod = (row.modulo_Clave || '').trim();
             if (rawCode && mod) {
-              if (!this.accObj[rawCode]) {
-                this.accObj[rawCode] = {};
-              }
-              this.accObj[rawCode][mod] = row.nivel_Acceso;
-              this.accObj[rawCode][mod.toLowerCase()] = row.nivel_Acceso;
+              const cleanMod = mod.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+              const lowerCode = rawCode.toLowerCase();
+              const targets = Array.from(new Set([rawCode, lowerCode, 'usr-' + lowerCode].filter(Boolean)));
+              targets.forEach(t => {
+                if (!this.accObj[t]) {
+                  this.accObj[t] = {};
+                }
+                this.accObj[t][mod] = row.nivel_Acceso;
+                this.accObj[t][mod.toLowerCase()] = row.nivel_Acceso;
+                this.accObj[t][cleanMod] = row.nivel_Acceso;
+              });
             }
           });
           this.saveGeneralAcc();
@@ -677,6 +684,58 @@ export class MapaPermisosComponent implements OnInit {
     return this.opeDef[mk] || this.opeDef[cleanKey] || 'Ver';
   }
 
+  getFineLevelForModule(uid: string, mk: string, nivel: string): string | null {
+    if (!this.accFine) return null;
+    const item = (this.puestosList || []).find(p => p.id === uid || p.codigo_Puesto === uid || p.cod_Usuario === uid || p.puesto === uid) || this.drawerUser;
+    const puestoNombre = (item?.puesto || this.drawerUser?.puesto || this.getSelectedPuestoName(uid) || "").trim();
+    const puestoCode = (item?.codigo_Puesto || this.drawerUser?.codigo_Puesto || "").trim();
+    const userCode = (item?.cod_Usuario || this.drawerUser?.cod_Usuario || "").trim().toLowerCase();
+
+    const targets = Array.from(new Set([
+      userCode,
+      uid,
+      this.drawerUser?.cod_Usuario?.trim().toLowerCase(),
+      this.drawerUser?.id,
+      puestoCode,
+      puestoNombre
+    ].filter(Boolean)));
+
+    const cleanKey = mk.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    let hasActive = false;
+    let hasEdit = false;
+
+    for (const t of targets) {
+      const tStr = (t || '').toString().trim();
+      if (!tStr) continue;
+
+      let userObj = this.accFine[tStr];
+      if (!userObj) {
+        const matchedKey = Object.keys(this.accFine).find(fk => fk.trim().toLowerCase() === tStr.toLowerCase());
+        if (matchedKey) userObj = this.accFine[matchedKey];
+      }
+
+      if (userObj) {
+        for (const [subKey, subVal] of Object.entries(userObj)) {
+          const parts = subKey.split('||');
+          const modPart = (parts[0] || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+          if (modPart === cleanKey || modPart.includes(cleanKey) || cleanKey.includes(modPart)) {
+            if (subVal === 1 || subVal === true) {
+              hasActive = true;
+              const actionPart = (parts[2] || '').toLowerCase();
+              if (['crear', 'editar', 'eliminar', 'aprobar', 'restaurar'].some(a => actionPart.includes(a))) {
+                hasEdit = true;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (hasEdit) return 'Editar';
+    if (hasActive) return 'Ver';
+    return null;
+  }
+
   accGet(uid: string, nivel: string, mk: string): string {
     const item = (this.puestosList || []).find(p => p.id === uid || p.codigo_Puesto === uid || p.cod_Usuario === uid || p.puesto === uid);
     const puestoNombre = (item?.puesto || this.getSelectedPuestoName(uid) || '').trim();
@@ -701,12 +760,20 @@ export class MapaPermisosComponent implements OnInit {
                 checkObj(this.accObj[uid]) ||
                 (puestoCode ? checkObj(this.accObj[puestoCode]) : null) ||
                 (puestoNombre ? checkObj(this.accObj[puestoNombre]) : null);
+    // Si tiene permisos finos especificos activos en este modulo, mandar segun el nivel fino
+    const fineVal = this.getFineLevelForModule(userCode || uid, mk, nivel);
+    if (fineVal) {
+      if (val === 'Sin acceso' || !val) {
+        return fineVal;
+      }
+    }
+
     if (val) return val;
 
     return this.accDefault(nivel, mk);
   }
 
-  setAcceso(uid: string, mk: string, val: string) {
+  setAcceso(uid: string, mk: string, val: string, showToast: boolean = true) {
     const item = (this.puestosList || []).find(p => p.id === uid || p.codigo_Puesto === uid || p.cod_Usuario === uid || p.puesto === uid);
     const puestoNombre = (item?.puesto || this.getSelectedPuestoName(uid) || '').trim();
     const puestoCode = (item?.codigo_Puesto || '').trim();
@@ -735,8 +802,8 @@ export class MapaPermisosComponent implements OnInit {
     // Guardar en memoria local:
     // Si tenemos usuario específico, guardar ÚNICAMENTE para ese usuario y sus aliases individuales.
     const localTargets = userCode 
-      ? Array.from(new Set([userCode, uid, 'usr-' + userCode].filter(Boolean)))
-      : Array.from(new Set([uid, puestoCode, puestoNombre].filter(Boolean)));
+      ? Array.from(new Set([userCode, uid, 'usr-' + userCode, targetUserId, targetUserId.toLowerCase()].filter(Boolean)))
+      : Array.from(new Set([uid, puestoCode, puestoNombre, targetUserId, targetUserId.toLowerCase()].filter(Boolean)));
 
     localTargets.forEach(t => {
       if (!this.accObj[t]) {
@@ -758,7 +825,7 @@ export class MapaPermisosComponent implements OnInit {
       }).subscribe();
     });
 
-    this.toastr.success('Se guardó con éxito.', '', { timeOut: 1500 });
+    if (showToast) { this.toastr.success('Se guardó con éxito.', '', { timeOut: 1500 }); }
   }
 
   accColor(v: string): string {
@@ -1044,6 +1111,32 @@ export class MapaPermisosComponent implements OnInit {
 
     this.saveFineAcc();
 
+    // Sincronizar automáticamente con el módulo padre en la matriz general para CUALQUIER usuario
+    const cleanMod = this.normalizeFinoKey(mod);
+    const isEditAction = ['crear', 'editar', 'eliminar', 'aprobar', 'restaurar'].some(a => acc.toLowerCase().includes(a));
+
+    if (checked) {
+      const currentLevel = this.accGet(uid, item?.nivel || 'ope', cleanMod);
+      const newLevel = (isEditAction || currentLevel === 'Editar') ? 'Editar' : 'Ver';
+      if (currentLevel !== newLevel) {
+        this.setAcceso(uid, cleanMod, newLevel, false);
+      }
+    } else {
+      // Si se desmarcó, evaluar si al usuario aún le quedan permisos activos en este módulo
+      const remainingLevel = this.getFineLevelForModule(uid, cleanMod, item?.nivel || 'ope');
+      if (!remainingLevel) {
+        const currentLevel = this.accGet(uid, item?.nivel || 'ope', cleanMod);
+        if (currentLevel !== 'Sin acceso') {
+          this.setAcceso(uid, cleanMod, 'Sin acceso', false);
+        }
+      } else {
+        const currentLevel = this.accGet(uid, item?.nivel || 'ope', cleanMod);
+        if (currentLevel !== remainingLevel) {
+          this.setAcceso(uid, cleanMod, remainingLevel, false);
+        }
+      }
+    }
+
     // Guardar en la base de datos bajo el identificador individual
     this.permisosService.postGuardarUsuarioDetalle({
       Codigo_Puesto_Usuario: targetUserId,
@@ -1082,6 +1175,9 @@ export class MapaPermisosComponent implements OnInit {
     });
 
     this.saveFineAcc();
+    // Restablecer también el módulo general a su valor por defecto de rol
+    const defVal = this.accDefault(item?.nivel || 'ope', cleanMod);
+    this.setAcceso(uid, cleanMod, defVal, false);
     this.toastr.success("Acceso restablecido al nivel correspondiente.", "", { timeOut: 2000 });
   }
 
@@ -1119,6 +1215,550 @@ export class MapaPermisosComponent implements OnInit {
   getChipColor(a: string) {
     return this.actColors[a] || '#8b90a8';
   }
+
+    isExporting: boolean = false;
+  mostrarModalExportar: boolean = false;
+  exportOption: 'colaborador' | 'general' | 'auditoria' = 'colaborador';
+  exportTargetUserId: string = '';
+
+  
+  @HostListener('document:keydown.escape')
+  onDocumentKeydownEscape(): void {
+    if (this.mostrarModalExportar) {
+      this.cerrarModalExportar();
+    }
+  }
+
+  abrirModalExportar(targetUser?: any): void {
+    if (targetUser && targetUser.id) {
+      this.exportTargetUserId = targetUser.id;
+      this.exportOption = 'colaborador';
+    } else if (this.drawerUser && this.drawerUser.id) {
+      this.exportTargetUserId = this.drawerUser.id;
+      this.exportOption = 'colaborador';
+    } else if (this.selectedUserId) {
+      this.exportTargetUserId = this.selectedUserId;
+      this.exportOption = 'colaborador';
+    } else if (this.puestosList && this.puestosList.length > 0) {
+      this.exportTargetUserId = this.puestosList[0].id;
+      this.exportOption = 'colaborador';
+    }
+    this.mostrarModalExportar = true;
+  }
+
+  cerrarModalExportar(): void {
+    this.mostrarModalExportar = false;
+  }
+
+  async confirmarExportarExcel(): Promise<void> {
+    await this.exportarExcelPermisos(this.exportOption, this.exportTargetUserId);
+    this.cerrarModalExportar();
+  }
+
+  async exportarExcelPermisos(tipoExportacion: 'colaborador' | 'general' | 'auditoria' = 'colaborador', targetUserId?: string): Promise<void> {
+    if (this.isExporting) return;
+    this.isExporting = true;
+    try {
+      const wb = new ExcelJS.Workbook();
+      wb.creator = 'PRECOTEX S.A.C. - Sistema de Gestión de Seguridad';
+      wb.created = new Date();
+
+      const thinBorder: Partial<ExcelJS.Borders> = {
+        top: { style: 'thin', color: { argb: 'FF000000' } },
+        left: { style: 'thin', color: { argb: 'FF000000' } },
+        bottom: { style: 'thin', color: { argb: 'FF000000' } },
+        right: { style: 'thin', color: { argb: 'FF000000' } }
+      };
+
+      // =============================================================
+      // HOJA 1: POLÍTICA POR NIVEL (Imágenes 2 y 3)
+      // =============================================================
+      const ws1 = wb.addWorksheet('Política por nivel', { views: [{ showGridLines: true }] });
+      ws1.columns = [
+        { width: 26 }, // A: Módulo
+        { width: 22 }, // B: Acción
+        { width: 18 }, // C: Gerencial
+        { width: 18 }, // D: Jefatura
+        { width: 18 }  // E: Operativo
+      ];
+
+      // Fila 1: Título Principal
+      ws1.mergeCells('A1:E1');
+      const title1 = ws1.getCell('A1');
+      title1.value = 'POLÍTICA DE ACCESOS POR NIVEL — PORTAL SIG PRECOTEX (formato ejemplar de exportación)';
+      title1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF34459D' } };
+      title1.font = { name: 'Calibri', size: 13, bold: true, color: { argb: 'FFFFFFFF' } };
+      title1.alignment = { vertical: 'middle', horizontal: 'center' };
+      ws1.getRow(1).height = 30;
+
+      // Fila 2: Subtítulo Explicativo
+      ws1.mergeCells('A2:E2');
+      const sub1 = ws1.getCell('A2');
+      sub1.value = 'Sí = acción permitida para ese nivel · — = no permitida. Las acciones varían según el módulo (tal como en el sistema).';
+      sub1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4859AD' } };
+      sub1.font = { name: 'Calibri', size: 9.5, italic: true, color: { argb: 'FFFFFFFF' } };
+      sub1.alignment = { vertical: 'middle', horizontal: 'center' };
+      ws1.getRow(2).height = 22;
+
+      // Fila 3: Encabezados de Columna
+      const headers1 = [
+        { col: 'A', text: 'Módulo', fill: 'FF192150' },
+        { col: 'B', text: 'Acción', fill: 'FF192150' },
+        { col: 'C', text: 'Gerencial', fill: 'FF008B74' },
+        { col: 'D', text: 'Jefatura', fill: 'FF1E73BE' },
+        { col: 'E', text: 'Operativo', fill: 'FFB86200' }
+      ];
+      ws1.getRow(3).height = 26;
+      headers1.forEach(h => {
+        const c = ws1.getCell(`${h.col}3`);
+        c.value = h.text;
+        c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: h.fill } };
+        c.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: 'FFFFFFFF' } };
+        c.alignment = { vertical: 'middle', horizontal: 'center' };
+        c.border = thinBorder as ExcelJS.Borders;
+      });
+
+      // Filas de datos de la Hoja 1
+      let r1 = 4;
+      const modKeys1 = this.getModulesKeys();
+      modKeys1.forEach(mod => {
+        const actions = this.appl[mod] || [];
+        if (actions.length === 0) return;
+        const startRow = r1;
+        const endRow = r1 + actions.length - 1;
+
+        actions.forEach((act: string) => {
+          const row = ws1.getRow(r1);
+          row.height = 21;
+
+          // Columna B: Acción
+          const cellB = row.getCell(2);
+          cellB.value = act;
+          cellB.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+          cellB.font = { name: 'Calibri', size: 9.5, color: { argb: 'FF1E293B' } };
+          cellB.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+          cellB.border = thinBorder as ExcelJS.Borders;
+
+          // Columnas C, D, E: Gerencial, Jefatura, Operativo
+          (['ger', 'jef', 'ope'] as const).forEach((lvl, lIdx) => {
+            const colNum = 3 + lIdx;
+            const cell = row.getCell(colNum);
+            const isAllowed = this.isPolActive(mod, lvl, act);
+            cell.value = isAllowed ? 'Sí' : '—';
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            cell.border = thinBorder as ExcelJS.Borders;
+
+            if (isAllowed) {
+              cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF057A55' } };
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEBFBF2' } };
+            } else {
+              cell.font = { name: 'Calibri', size: 10, color: { argb: 'FF94A3B8' } };
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+            }
+          });
+
+          r1++;
+        });
+
+        // Combinar celdas verticales de la Columna A (Módulo)
+        if (endRow >= startRow) {
+          if (endRow > startRow) {
+            ws1.mergeCells(`A${startRow}:A${endRow}`);
+          }
+          const modCell = ws1.getCell(`A${startRow}`);
+          modCell.value = mod === 'Ayuda' ? 'Centro de ayuda' : mod;
+          modCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F6FA' } };
+          modCell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF1A237E' } };
+          modCell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+          for (let mr = startRow; mr <= endRow; mr++) {
+            ws1.getCell(`A${mr}`).border = thinBorder as ExcelJS.Borders;
+          }
+        }
+      });
+
+      // =============================================================
+      // HOJA 2: ACCESOS POR USUARIO (Imagen 4)
+      // =============================================================
+      const ws2 = wb.addWorksheet('Accesos por usuario', { views: [{ showGridLines: true }] });
+      ws2.columns = [
+        { width: 34 }, // A: Puesto
+        { width: 36 }, // B: Colaborador / Usuario
+        { width: 15 }, // C: Nivel
+        { width: 14 }, // D: Organizacion
+        { width: 14 }, // E: Documentacion
+        { width: 14 }, // F: Auditorias
+        { width: 12 }, // G: NC
+        { width: 14 }, // H: Indicadores
+        { width: 14 }, // I: Objetivos
+        { width: 14 }, // J: Riesgos
+        { width: 14 }, // K: Mejora
+        { width: 14 }, // L: Legal
+        { width: 14 }  // M: Proveedores
+      ];
+
+      // Fila 1: Título
+      ws2.mergeCells('A1:M1');
+      const title2 = ws2.getCell('A1');
+      title2.value = 'MATRIZ GENERAL DE ACCESOS POR USUARIO — PORTAL SIG PRECOTEX (formato ejemplar de exportación)';
+      title2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E40AF' } };
+      title2.font = { name: 'Calibri', size: 13, bold: true, color: { argb: 'FFFFFFFF' } };
+      title2.alignment = { vertical: 'middle', horizontal: 'center' };
+      ws2.getRow(1).height = 30;
+
+      // Fila 2: Subtítulo
+      ws2.mergeCells('A2:M2');
+      const sub2 = ws2.getCell('A2');
+      sub2.value = 'Nivel de acceso a cada módulo por colaborador: Ver = Lectura · Editar = Edición/Gestión · Sin acceso = Módulo bloqueado/oculto.';
+      sub2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2563EB' } };
+      sub2.font = { name: 'Calibri', size: 9.5, italic: true, color: { argb: 'FFFFFFFF' } };
+      sub2.alignment = { vertical: 'middle', horizontal: 'center' };
+      ws2.getRow(2).height = 22;
+
+      // Fila 3: Encabezados de Columna
+      const headers2 = [
+        'PUESTO', 'COLABORADOR / USUARIO', 'NIVEL',
+        'ORGANIZ.', 'DOCS', 'AUDITORÍAS', 'NC', 'INDICAD.', 'OBJET.', 'RIESGOS', 'MEJORA', 'LEGAL', 'PROVEED.'
+      ];
+      ws2.getRow(3).height = 26;
+      headers2.forEach((hText, hIdx) => {
+        const colLetter = String.fromCharCode(65 + hIdx);
+        const c = ws2.getCell(`${colLetter}3`);
+        c.value = hText;
+        c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF192150' } };
+        c.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: 'FFFFFFFF' } };
+        c.alignment = { vertical: 'middle', horizontal: hIdx <= 1 ? 'left' : 'center', indent: hIdx <= 1 ? 1 : 0 };
+        c.border = thinBorder as ExcelJS.Borders;
+      });
+
+      // Filas de datos de la Hoja 2
+      let r2 = 4;
+      const pList = this.puestosList && this.puestosList.length > 0 ? this.puestosList : [];
+      pList.forEach(u => {
+        const row = ws2.getRow(r2);
+        row.height = 21;
+
+        // Col A: Puesto
+        const cPuesto = row.getCell(1);
+        cPuesto.value = u.puesto || 'Puesto General';
+        cPuesto.font = { name: 'Calibri', size: 9, bold: true, color: { argb: 'FF0F172A' } };
+        cPuesto.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+        cPuesto.border = thinBorder as ExcelJS.Borders;
+
+        // Col B: Colaborador / Usuario
+        const cUser = row.getCell(2);
+        cUser.value = (u.usuario || '—') + (u.cod_Usuario ? ` (@${u.cod_Usuario})` : '');
+        cUser.font = { name: 'Calibri', size: 9, color: { argb: 'FF334155' } };
+        cUser.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+        cUser.border = thinBorder as ExcelJS.Borders;
+
+        // Col C: Nivel
+        const cNivel = row.getCell(3);
+        cNivel.value = u.nivel || 'Operativo';
+        let nivelColor = 'FFD97706';
+        if ((u.nivel || '').toLowerCase().includes('geren')) nivelColor = 'FF059669';
+        else if ((u.nivel || '').toLowerCase().includes('jef')) nivelColor = 'FF2563EB';
+        cNivel.font = { name: 'Calibri', size: 9, bold: true, color: { argb: nivelColor } };
+        cNivel.alignment = { vertical: 'middle', horizontal: 'center' };
+        cNivel.border = thinBorder as ExcelJS.Borders;
+
+        // Col D..M: 10 Módulos
+        this.pmodsList.forEach((pm, pmIdx) => {
+          const cell = row.getCell(4 + pmIdx);
+          const val = this.accGet(u.id, u.nivel, pm.k);
+          cell.value = val;
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          cell.border = thinBorder as ExcelJS.Borders;
+
+          if (val === 'Editar') {
+            cell.font = { name: 'Calibri', size: 9, bold: true, color: { argb: 'FF057A55' } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEBFBF2' } };
+          } else if (val === 'Ver') {
+            cell.font = { name: 'Calibri', size: 9, bold: true, color: { argb: 'FF1D4ED8' } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFF6FF' } };
+          } else {
+            cell.font = { name: 'Calibri', size: 9, color: { argb: 'FF94A3B8' } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+          }
+        });
+
+        r2++;
+      });
+
+      // =============================================================
+      // HOJA 3: SEGÚN LA OPCIÓN ELEGIDA (Imagen 5 / Auditoría)
+      // =============================================================
+      let nombreArchivo = 'Matriz_Permisos_Precotex';
+
+      if (tipoExportacion === 'colaborador') {
+        const ws3 = wb.addWorksheet('Ajuste fino por usuario', { views: [{ showGridLines: true }] });
+        ws3.columns = [
+          { width: 26 }, // A: Módulo
+          { width: 36 }, // B: Carpeta / sección
+          { width: 24 }, // C: Acción
+          { width: 30 }  // D: Operativo (ejemplo) / Estado
+        ];
+
+        // Determinar usuario objetivo para el detalle fino
+        const targetUser = (this.puestosList || []).find(p => p.id === targetUserId) ||
+                           this.drawerUser || 
+                           (this.selectedUserId ? this.puestosList.find(p => p.id === this.selectedUserId) : null) || 
+                           this.puestosList.find(p => (p.usuario || '').toLowerCase().includes('cueva')) || 
+                           this.puestosList[0] || { id: 'u-1', usuario: 'CUEVA TAMAYO, MICHAEL JOVER', nivel: 'Operativo', puesto: 'ASISTENTE DE COSTURA' };
+
+        // Fila 1: Título
+        ws3.mergeCells('A1:D1');
+        const title3 = ws3.getCell('A1');
+        title3.value = `AJUSTE FINO POR USUARIO — ${targetUser.usuario || targetUser.puesto} (${targetUser.nivel})`;
+        title3.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFB45309' } };
+        title3.font = { name: 'Calibri', size: 13, bold: true, color: { argb: 'FFFFFFFF' } };
+        title3.alignment = { vertical: 'middle', horizontal: 'center' };
+        ws3.getRow(1).height = 30;
+
+        // Fila 2: Subtítulo
+        ws3.mergeCells('A2:D2');
+        const sub3 = ws3.getCell('A2');
+        sub3.value = 'Detalle por módulo, carpeta y acción (Permitido / Sin acceso). Es el override individual sobre la política del nivel.';
+        sub3.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFC68D07' } };
+        sub3.font = { name: 'Calibri', size: 9.5, italic: true, color: { argb: 'FFFFFFFF' } };
+        sub3.alignment = { vertical: 'middle', horizontal: 'center' };
+        ws3.getRow(2).height = 22;
+
+        // Fila 3: Encabezados
+        const headers3 = [
+          { col: 'A', text: 'Módulo' },
+          { col: 'B', text: 'Carpeta / sección' },
+          { col: 'C', text: 'Acción' },
+          { col: 'D', text: `${targetUser.nivel} (${(targetUser.usuario || 'ejemplo').split(' ')[0]})` }
+        ];
+        ws3.getRow(3).height = 26;
+        headers3.forEach(h => {
+          const c = ws3.getCell(`${h.col}3`);
+          c.value = h.text;
+          c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF192150' } };
+          c.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: 'FFFFFFFF' } };
+          c.alignment = { vertical: 'middle', horizontal: 'center' };
+          c.border = thinBorder as ExcelJS.Borders;
+        });
+
+        // Filas de datos de la Hoja 3
+        let r3 = 4;
+        const treeKeys = Object.keys(this.permTree);
+        treeKeys.forEach(modName => {
+          const treeItems = this.permTree[modName] || [];
+          if (treeItems.length === 0) return;
+
+          const startModRow = r3;
+
+          // Agrupar por Carpeta / sección
+          const folderMap = new Map<string, Array<{ acc: string, g: number, j: number, o: number }>>();
+          treeItems.forEach((item: any) => {
+            const [folder, acc, g, j, o] = item;
+            if (!folderMap.has(folder)) folderMap.set(folder, []);
+            folderMap.get(folder)!.push({ acc, g, j, o });
+          });
+
+          folderMap.forEach((actions, folderName) => {
+            const startFolderRow = r3;
+
+            actions.forEach(item => {
+              const row = ws3.getRow(r3);
+              row.height = 21;
+
+              // Col C: Acción
+              const cellC = row.getCell(3);
+              cellC.value = item.acc;
+              cellC.font = { name: 'Calibri', size: 9.5, color: { argb: 'FF1E293B' } };
+              cellC.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+              cellC.border = thinBorder as ExcelJS.Borders;
+
+              // Col D: Estado para targetUser
+              const cellD = row.getCell(4);
+              const defVal = [item.g, item.j, item.o][this.nivelIdx(targetUser.nivel)];
+              const isAllowed = this.finoGet(targetUser.id, targetUser.nivel, modName, folderName, item.acc, defVal) === 1;
+
+              cellD.value = isAllowed ? 'Permitido' : 'Sin acceso';
+              cellD.alignment = { vertical: 'middle', horizontal: 'center' };
+              cellD.border = thinBorder as ExcelJS.Borders;
+
+              if (isAllowed) {
+                cellD.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF057A55' } };
+                cellD.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEBFBF2' } };
+              } else {
+                cellD.font = { name: 'Calibri', size: 9.5, color: { argb: 'FF94A3B8' } };
+                cellD.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+              }
+
+              r3++;
+            });
+
+            const endFolderRow = r3 - 1;
+            if (endFolderRow >= startFolderRow) {
+              if (endFolderRow > startFolderRow) {
+                ws3.mergeCells(`B${startFolderRow}:B${endFolderRow}`);
+              }
+              const folderCell = ws3.getCell(`B${startFolderRow}`);
+              folderCell.value = folderName;
+              folderCell.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: 'FF1E293B' } };
+              folderCell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1, wrapText: true };
+              for (let fr = startFolderRow; fr <= endFolderRow; fr++) {
+                ws3.getCell(`B${fr}`).border = thinBorder as ExcelJS.Borders;
+              }
+            }
+          });
+
+          const endModRow = r3 - 1;
+          if (endModRow >= startModRow) {
+            if (endModRow > startModRow) {
+              ws3.mergeCells(`A${startModRow}:A${endModRow}`);
+            }
+            const mCell = ws3.getCell(`A${startModRow}`);
+            mCell.value = modName;
+            mCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F6FA' } };
+            mCell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF1A237E' } };
+            mCell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+            for (let mr = startModRow; mr <= endModRow; mr++) {
+              ws3.getCell(`A${mr}`).border = thinBorder as ExcelJS.Borders;
+            }
+          }
+        });
+
+        const safeName = (targetUser.usuario || targetUser.puesto || 'Colaborador').replace(/[^a-zA-Z0-9]/g, '_');
+        nombreArchivo = `Ficha_Permisos_${safeName}_${new Date().toISOString().slice(0, 10)}`;
+      } 
+      else if (tipoExportacion === 'auditoria') {
+        const ws3 = wb.addWorksheet('Ajuste fino por usuario', { views: [{ showGridLines: true }] });
+        ws3.columns = [
+          { width: 34 }, // A: Colaborador
+          { width: 28 }, // B: Puesto
+          { width: 14 }, // C: Nivel
+          { width: 20 }, // D: Módulo
+          { width: 32 }, // E: Carpeta / Sección
+          { width: 20 }, // F: Acción
+          { width: 20 }, // G: Política Base
+          { width: 22 }  // H: Ajuste Especial
+        ];
+
+        // Fila 1: Título
+        ws3.mergeCells('A1:H1');
+        const title3 = ws3.getCell('A1');
+        title3.value = 'CONSOLIDADO DE EXCEPCIONES Y AJUSTES ESPECIALES — PORTAL SIG PRECOTEX';
+        title3.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF92400E' } };
+        title3.font = { name: 'Calibri', size: 13, bold: true, color: { argb: 'FFFFFFFF' } };
+        title3.alignment = { vertical: 'middle', horizontal: 'center' };
+        ws3.getRow(1).height = 30;
+
+        // Fila 2: Subtítulo
+        ws3.mergeCells('A2:H2');
+        const sub3 = ws3.getCell('A2');
+        sub3.value = 'Listado de usuarios con overrides y configuraciones personalizadas que difieren de la política estándar de su nivel.';
+        sub3.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFB45309' } };
+        sub3.font = { name: 'Calibri', size: 9.5, italic: true, color: { argb: 'FFFFFFFF' } };
+        sub3.alignment = { vertical: 'middle', horizontal: 'center' };
+        ws3.getRow(2).height = 22;
+
+        // Fila 3: Encabezados
+        const headers3 = [
+          'COLABORADOR / USUARIO', 'PUESTO', 'NIVEL', 'MÓDULO', 'CARPETA / SECCIÓN', 'ACCIÓN', 'POLÍTICA BASE', 'AJUSTE ESPECIAL'
+        ];
+        ws3.getRow(3).height = 26;
+        headers3.forEach((hText, hIdx) => {
+          const colLetter = String.fromCharCode(65 + hIdx);
+          const c = ws3.getCell(`${colLetter}3`);
+          c.value = hText;
+          c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF192150' } };
+          c.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: 'FFFFFFFF' } };
+          c.alignment = { vertical: 'middle', horizontal: 'center' };
+          c.border = thinBorder as ExcelJS.Borders;
+        });
+
+        // Buscar excepciones en todos los colaboradores
+        let r3 = 4;
+        let totalExcepciones = 0;
+        const treeKeys = Object.keys(this.permTree);
+
+        (this.puestosList || []).forEach(u => {
+          treeKeys.forEach(modName => {
+            const treeItems = this.permTree[modName] || [];
+            treeItems.forEach((item: any) => {
+              const [folder, acc, g, j, o] = item;
+              const defVal = [g, j, o][this.nivelIdx(u.nivel)];
+              const currentVal = this.finoGet(u.id, u.nivel, modName, folder, acc, defVal);
+
+              if (currentVal !== defVal) {
+                totalExcepciones++;
+                const row = ws3.getRow(r3);
+                row.height = 21;
+
+                row.getCell(1).value = u.usuario || u.puesto || 'Usuario';
+                row.getCell(2).value = u.puesto || '—';
+                row.getCell(3).value = u.nivel || 'Operativo';
+                row.getCell(4).value = modName;
+                row.getCell(5).value = folder;
+                row.getCell(6).value = acc;
+                row.getCell(7).value = defVal === 1 ? 'Permitido (Nivel)' : 'Sin acceso (Nivel)';
+                
+                const cAjuste = row.getCell(8);
+                cAjuste.value = currentVal === 1 ? 'Permitido (Especial)' : 'Bloqueado (Especial)';
+                cAjuste.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: currentVal === 1 ? 'FF057A55' : 'FFDC2626' } };
+                cAjuste.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: currentVal === 1 ? 'FFEBFBF2' : 'FFFEF2F2' } };
+
+                for (let cIdx = 1; cIdx <= 8; cIdx++) {
+                  const cell = row.getCell(cIdx);
+                  cell.border = thinBorder as ExcelJS.Borders;
+                  if (cIdx !== 8) {
+                    cell.font = { name: 'Calibri', size: 9, color: { argb: 'FF1E293B' } };
+                    cell.alignment = { vertical: 'middle', horizontal: cIdx <= 2 ? 'left' : 'center', indent: cIdx <= 2 ? 1 : 0 };
+                  } else {
+                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                  }
+                }
+
+                r3++;
+              }
+            });
+          });
+        });
+
+        if (totalExcepciones === 0) {
+          ws3.mergeCells(`A${r3}:H${r3}`);
+          const emptyCell = ws3.getCell(`A${r3}`);
+          emptyCell.value = '✓ No se registran excepciones individuales. Todos los colaboradores mantienen la política estándar configurada para su nivel.';
+          emptyCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEBFBF2' } };
+          emptyCell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF057A55' } };
+          emptyCell.alignment = { vertical: 'middle', horizontal: 'center' };
+          for (let c = 1; c <= 8; c++) ws3.getRow(r3).getCell(c).border = thinBorder as ExcelJS.Borders;
+          ws3.getRow(r3).height = 28;
+        }
+
+        nombreArchivo = `Reporte_Auditoria_Permisos_${new Date().toISOString().slice(0, 10)}`;
+      } else {
+        // Matriz General (2 Hojas)
+        nombreArchivo = `Matriz_General_Permisos_${new Date().toISOString().slice(0, 10)}`;
+      }
+
+      // =============================================================
+      // GENERAR BUFFER Y DESCARGAR ARCHIVO
+      // =============================================================
+      const buffer = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${nombreArchivo}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      const msjHojas = tipoExportacion === 'general' ? '2 hojas' : '3 hojas';
+      this.toastr.success(`Libro Excel de permisos (${msjHojas}) generado exitosamente.`, 'Descarga Exitosa');
+    } catch (error) {
+      console.error('Error al exportar matriz a Excel:', error);
+      this.toastr.error('Ocurrió un error al generar el archivo Excel de permisos.', 'Error Exportación');
+    } finally {
+      this.isExporting = false;
+    }
+  }
+
+
 }
-
-

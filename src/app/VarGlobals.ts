@@ -12,12 +12,33 @@ export const GlobalVariable = {
   get baseUrlBackEnd(): string {
     if (this._customBaseUrl) return this._customBaseUrl;
     if (typeof window !== 'undefined' && window.location) {
-      const host = window.location.hostname;
+      try {
+        const storedUrl = window.localStorage.getItem('API_URL') || window.localStorage.getItem('baseUrlBackEnd');
+        if (storedUrl) return storedUrl.endsWith('/') ? storedUrl : (storedUrl + '/');
+      } catch (e) {}
+
+      const host = (window.location.hostname || '').toLowerCase();
+      const port = window.location.port;
+
+      // Si se ejecuta en desarrollo Angular (puerto 4200) o en hosts locales
+      if (
+        port === '4200' ||
+        host === 'localhost' ||
+        host === '127.0.0.1' ||
+        host === '::1' ||
+        host === '[::1]' ||
+        host === 'prxwinl287' ||
+        host.startsWith('192.168.5.')
+      ) {
+        return 'https://localhost:7093/api/';
+      }
+
+      // Si se ejecuta en el servidor central o red externa
       if (host && host !== 'localhost' && host !== '127.0.0.1') {
-        return "http://192.168.1.36:5252/api/";
+        return 'http://192.168.1.36:5252/api/';
       }
     }
-    return "https://localhost:7093/api/";
+    return 'https://localhost:7093/api/';
   },
   set baseUrlBackEnd(val: string) {
     this._customBaseUrl = val;

@@ -179,10 +179,18 @@
             <label class="form-label">
               <mat-icon class="label-icon">mail_outline</mat-icon>
               Correo Electrónico (Email) <span class="req">*</span>
+              <span *ngIf="emailDuplicado" class="duplicate-badge">¡DUPLICADO!</span>
             </label>
             <div class="input-wrapper">
               <input type="email" formControlName="ctrol_email" class="form-input"
+                [class.input-duplicate-error]="emailDuplicado"
                 placeholder="usuario@precotexperu.com" autocomplete="off">
+            </div>
+            <div *ngIf="emailDuplicado" class="duplicate-alert-box" style="margin-top: 6px;">
+              <div class="dup-info-row">
+                <mat-icon class="dup-warning-icon">warning</mat-icon>
+                <span class="dup-text">En uso por: <b>{{ emailDuplicadoNombreColaborador }}</b></span>
+              </div>
             </div>
           </div>
 

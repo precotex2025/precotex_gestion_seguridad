@@ -1,10 +1,11 @@
-<div class="contenedor sn-animate-in">
+<div class="contenedor">
 
   <!-- BANNER NOTIFICACIÓN DISCRETO COLAPSABLE -->
   <div class="banner-aviso-collapsible" *ngIf="mostrarBanner">
     <div class="banner-info-left">
       <mat-icon class="banner-info-icon">security</mat-icon>
-      <span>Matriz de seguridad y políticas de acceso. Configura la política general por nivel o haz clic en cualquier colaborador para abrir el <strong>Panel Lateral Deslizante</strong> y ajustar sus permisos en vivo.</span>
+      <span>Matriz de seguridad y políticas de acceso. Configura la política general por nivel o haz clic en cualquier
+        colaborador para abrir el <strong>Panel Lateral Deslizante</strong> y ajustar sus permisos en vivo.</span>
     </div>
     <button type="button" class="btn-close-banner" (click)="cerrarBanner()" title="Cerrar aviso">
       <mat-icon>close</mat-icon>
@@ -28,7 +29,8 @@
         <span class="role-title">Jefatura</span>
         <span class="role-scope-pill scope-green">Su proceso / área</span>
       </div>
-      <p class="role-desc-compact">Registra, edita y cierra en sus módulos. Designa y gestiona usuarios operativos de su área.</p>
+      <p class="role-desc-compact">Registra, edita y cierra en sus módulos. Designa y gestiona usuarios operativos de su
+        área.</p>
     </div>
 
     <div class="role-card-landscape border-blue">
@@ -37,7 +39,8 @@
         <span class="role-title">Operativo</span>
         <span class="role-scope-pill scope-blue">Su área asignada</span>
       </div>
-      <p class="role-desc-compact">Ve y registra lo asignado (declara NC, sube formatos, mediciones). No aprueba ni elimina.</p>
+      <p class="role-desc-compact">Ve y registra lo asignado (declara NC, sube formatos, mediciones). No aprueba ni
+        elimina.</p>
     </div>
   </div>
 
@@ -46,12 +49,19 @@
     <div class="panel-section-header">
       <div>
         <h3 class="panel-section-title">Política por nivel (Matriz interactiva)</h3>
-        <p class="panel-section-subtitle">Pasa el ratón sobre cualquier casilla para ver el cruce por fila y columna. Haz clic en los micro-chips para cambiar la política general.</p>
+        <p class="panel-section-subtitle">Pasa el ratón sobre cualquier casilla para ver el cruce por fila y columna.
+          Haz clic en los micro-chips para cambiar la política general.</p>
       </div>
-      <button type="button" class="btn-ghost-danger" (click)="resetPolitica()">
-        <mat-icon style="font-size: 16px; width: 16px; height: 16px;">refresh</mat-icon>
-        Restablecer política
-      </button>
+      <div class="header-actions-row">
+        <button type="button" class="btn-export-excel" (click)="abrirModalExportar()" [disabled]="isExporting">
+          <mat-icon class="icon-export">file_download</mat-icon>
+          <span>{{ isExporting ? 'Exportando...' : 'Exportar Excel' }}</span>
+        </button>
+        <button type="button" class="btn-ghost-danger" (click)="resetPolitica()">
+          <mat-icon style="font-size: 16px; width: 16px; height: 16px;">refresh</mat-icon>
+          Restablecer política
+        </button>
+      </div>
     </div>
 
     <div class="table-container">
@@ -67,20 +77,17 @@
         <tbody>
           <tr *ngFor="let mod of getModulesKeys()" class="fila" [class.row-active]="hoveredRow === mod">
             <td class="module-cell font-bold text-white">{{ mod }}</td>
-            
+
             <!-- Gerencial Cell -->
             <td [class.cell-highlight]="hoveredRow === mod && hoveredCol === 'ger'"
-                (mouseenter)="setHoveredCell(mod, 'ger')"
-                (mouseleave)="clearHoveredCell()">
+              (mouseenter)="setHoveredCell(mod, 'ger')" (mouseleave)="clearHoveredCell()">
               <div class="micro-chips-wrapper">
-                <span *ngFor="let act of appl[mod]" 
-                      (click)="togglePol(mod, 'ger', act)" 
-                      [class.chip-active]="isPolActive(mod, 'ger', act)"
-                      [style.color]="isPolActive(mod, 'ger', act) ? getChipColor(act) : 'rgba(148, 163, 184, 0.4)'"
-                      [style.background]="isPolActive(mod, 'ger', act) ? getChipColor(act) + '18' : 'rgba(255, 255, 255, 0.02)'"
-                      [style.borderColor]="isPolActive(mod, 'ger', act) ? getChipColor(act) + '44' : 'rgba(255, 255, 255, 0.06)'"
-                      class="micro-chip" 
-                      [title]="'Gerencial - ' + act">
+                <span *ngFor="let act of appl[mod]" (click)="togglePol(mod, 'ger', act)"
+                  [class.chip-active]="isPolActive(mod, 'ger', act)"
+                  [style.color]="isPolActive(mod, 'ger', act) ? getChipColor(act) : 'rgba(148, 163, 184, 0.4)'"
+                  [style.background]="isPolActive(mod, 'ger', act) ? getChipColor(act) + '18' : 'rgba(255, 255, 255, 0.02)'"
+                  [style.borderColor]="isPolActive(mod, 'ger', act) ? getChipColor(act) + '44' : 'rgba(255, 255, 255, 0.06)'"
+                  class="micro-chip" [title]="'Gerencial - ' + act">
                   <i *ngIf="isPolActive(mod, 'ger', act)" class="pi pi-check micro-check"></i>
                   {{ act }}
                 </span>
@@ -89,17 +96,14 @@
 
             <!-- Jefatura Cell -->
             <td [class.cell-highlight]="hoveredRow === mod && hoveredCol === 'jef'"
-                (mouseenter)="setHoveredCell(mod, 'jef')"
-                (mouseleave)="clearHoveredCell()">
+              (mouseenter)="setHoveredCell(mod, 'jef')" (mouseleave)="clearHoveredCell()">
               <div class="micro-chips-wrapper">
-                <span *ngFor="let act of appl[mod]" 
-                      (click)="togglePol(mod, 'jef', act)" 
-                      [class.chip-active]="isPolActive(mod, 'jef', act)"
-                      [style.color]="isPolActive(mod, 'jef', act) ? getChipColor(act) : 'rgba(148, 163, 184, 0.4)'"
-                      [style.background]="isPolActive(mod, 'jef', act) ? getChipColor(act) + '18' : 'rgba(255, 255, 255, 0.02)'"
-                      [style.borderColor]="isPolActive(mod, 'jef', act) ? getChipColor(act) + '44' : 'rgba(255, 255, 255, 0.06)'"
-                      class="micro-chip" 
-                      [title]="'Jefatura - ' + act">
+                <span *ngFor="let act of appl[mod]" (click)="togglePol(mod, 'jef', act)"
+                  [class.chip-active]="isPolActive(mod, 'jef', act)"
+                  [style.color]="isPolActive(mod, 'jef', act) ? getChipColor(act) : 'rgba(148, 163, 184, 0.4)'"
+                  [style.background]="isPolActive(mod, 'jef', act) ? getChipColor(act) + '18' : 'rgba(255, 255, 255, 0.02)'"
+                  [style.borderColor]="isPolActive(mod, 'jef', act) ? getChipColor(act) + '44' : 'rgba(255, 255, 255, 0.06)'"
+                  class="micro-chip" [title]="'Jefatura - ' + act">
                   <i *ngIf="isPolActive(mod, 'jef', act)" class="pi pi-check micro-check"></i>
                   {{ act }}
                 </span>
@@ -108,17 +112,14 @@
 
             <!-- Operativo Cell -->
             <td [class.cell-highlight]="hoveredRow === mod && hoveredCol === 'ope'"
-                (mouseenter)="setHoveredCell(mod, 'ope')"
-                (mouseleave)="clearHoveredCell()">
+              (mouseenter)="setHoveredCell(mod, 'ope')" (mouseleave)="clearHoveredCell()">
               <div class="micro-chips-wrapper">
-                <span *ngFor="let act of appl[mod]" 
-                      (click)="togglePol(mod, 'ope', act)" 
-                      [class.chip-active]="isPolActive(mod, 'ope', act)"
-                      [style.color]="isPolActive(mod, 'ope', act) ? getChipColor(act) : 'rgba(148, 163, 184, 0.4)'"
-                      [style.background]="isPolActive(mod, 'ope', act) ? getChipColor(act) + '18' : 'rgba(255, 255, 255, 0.02)'"
-                      [style.borderColor]="isPolActive(mod, 'ope', act) ? getChipColor(act) + '44' : 'rgba(255, 255, 255, 0.06)'"
-                      class="micro-chip" 
-                      [title]="'Operativo - ' + act">
+                <span *ngFor="let act of appl[mod]" (click)="togglePol(mod, 'ope', act)"
+                  [class.chip-active]="isPolActive(mod, 'ope', act)"
+                  [style.color]="isPolActive(mod, 'ope', act) ? getChipColor(act) : 'rgba(148, 163, 184, 0.4)'"
+                  [style.background]="isPolActive(mod, 'ope', act) ? getChipColor(act) + '18' : 'rgba(255, 255, 255, 0.02)'"
+                  [style.borderColor]="isPolActive(mod, 'ope', act) ? getChipColor(act) + '44' : 'rgba(255, 255, 255, 0.06)'"
+                  class="micro-chip" [title]="'Operativo - ' + act">
                   <i *ngIf="isPolActive(mod, 'ope', act)" class="pi pi-check micro-check"></i>
                   {{ act }}
                 </span>
@@ -145,26 +146,28 @@
     <div class="panel-section-header flex-between">
       <div class="header-titles-col">
         <h3 class="panel-section-title">ACCESOS POR USUARIO (POR MÓDULO)</h3>
-        <p class="panel-section-subtitle">Cada usuario hereda los accesos de su nivel. Cambia el selector para ajustar el acceso general a un módulo — se guarda al instante.</p>
+        <p class="panel-section-subtitle">Cada usuario hereda los accesos de su nivel. Cambia el selector para ajustar
+          el acceso general a un módulo — se guarda al instante.</p>
       </div>
 
       <div class="header-tools-col">
         <!-- Buscador de personal -->
         <div class="inline-search-box">
           <mat-icon class="search-icon">search</mat-icon>
-          <input type="text"
-                 [value]="searchTerm"
-                 (input)="onSearchChange($any($event.target).value)"
-                 placeholder="Buscar colaborador, @usuario o puesto..."
-                 class="inline-search-input">
-          <button type="button" 
-                  class="btn-clear-inline-search" 
-                  *ngIf="searchTerm" 
-                  (click)="clearSearch()" 
-                  title="Limpiar búsqueda">
+          <input type="text" [value]="searchTerm" (input)="onSearchChange($any($event.target).value)"
+            placeholder="Buscar colaborador, @usuario o puesto..." class="inline-search-input">
+          <button type="button" class="btn-clear-inline-search" *ngIf="searchTerm" (click)="clearSearch()"
+            title="Limpiar búsqueda">
             <mat-icon>close</mat-icon>
           </button>
         </div>
+
+        <!-- Botón Exportar Excel -->
+        <button type="button" class="btn-export-excel-secondary" (click)="abrirModalExportar()" [disabled]="isExporting"
+          title="Exportar matriz completa a Excel (3 Hojas)">
+          <mat-icon style="font-size: 16px; width: 16px; height: 16px;">file_download</mat-icon>
+          <span>Exportar Excel</span>
+        </button>
 
         <div class="header-count-badge" *ngIf="puestosList.length > 0">
           <span *ngIf="!searchTerm">{{ puestosList.length }} Colaboradores</span>
@@ -178,7 +181,8 @@
         <thead>
           <tr>
             <th style="min-width: 240px; color: #94a3b8;">USUARIO</th>
-            <th *ngFor="let pm of pmodsList" style="text-align: center; color: #94a3b8; font-size: 0.74rem;">{{ pm.l }}</th>
+            <th *ngFor="let pm of pmodsList" style="text-align: center; color: #94a3b8; font-size: 0.74rem;">{{ pm.l }}
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -200,10 +204,8 @@
             </td>
             <!-- Celdas de módulos con selectores -->
             <td *ngFor="let pm of pmodsList" style="text-align: center; vertical-align: middle;">
-              <select [value]="accGet(u.id, u.nivel, pm.k)" 
-                      (change)="setAcceso(u.id, pm.k, $any($event.target).value)"
-                      [style.color]="accColor(accGet(u.id, u.nivel, pm.k))"
-                      class="grid-select">
+              <select [value]="accGet(u.id, u.nivel, pm.k)" (change)="setAcceso(u.id, pm.k, $any($event.target).value)"
+                [style.color]="accColor(accGet(u.id, u.nivel, pm.k))" class="grid-select">
                 <option value="Sin acceso">Sin acceso</option>
                 <option value="Ver">Ver</option>
                 <option value="Editar">Editar</option>
@@ -216,7 +218,8 @@
               <div class="empty-filter-state">
                 <mat-icon class="empty-icon-large">person_search</mat-icon>
                 <div class="empty-text-title">No se encontró ningún colaborador</div>
-                <div class="empty-text-desc">No hay coincidencias para <strong>{{ searchTerm }}</strong>. Prueba con otro término.</div>
+                <div class="empty-text-desc">No hay coincidencias para <strong>{{ searchTerm }}</strong>. Prueba con
+                  otro término.</div>
                 <button type="button" class="btn-clear-filter" (click)="clearSearch()">
                   <mat-icon>refresh</mat-icon> Restablecer búsqueda
                 </button>
@@ -238,29 +241,20 @@
       <div class="pagination-footer-right" *ngIf="totalPages > 1">
         <span class="pagination-info">{{ paginationInfo }}</span>
         <div class="pagination-controls-wrapper">
-          <button type="button" 
-                  class="btn-pagination-nav" 
-                  (click)="prevPage()" 
-                  [disabled]="currentPage === 1"
-                  title="Página anterior">
+          <button type="button" class="btn-pagination-nav" (click)="prevPage()" [disabled]="currentPage === 1"
+            title="Página anterior">
             <mat-icon>chevron_left</mat-icon>
           </button>
 
           <div class="pagination-pills-bar">
-            <button type="button" 
-                    *ngFor="let page of pagesArray" 
-                    class="pill-page-item" 
-                    [class.active]="currentPage === page"
-                    (click)="goToPage(page)">
+            <button type="button" *ngFor="let page of pagesArray" class="pill-page-item"
+              [class.active]="currentPage === page" (click)="goToPage(page)">
               {{ page }}
             </button>
           </div>
 
-          <button type="button" 
-                  class="btn-pagination-nav" 
-                  (click)="nextPage()" 
-                  [disabled]="currentPage === totalPages"
-                  title="Página siguiente">
+          <button type="button" class="btn-pagination-nav" (click)="nextPage()" [disabled]="currentPage === totalPages"
+            title="Página siguiente">
             <mat-icon>chevron_right</mat-icon>
           </button>
         </div>
@@ -273,21 +267,16 @@
     <div class="panel-section-header flex-between">
       <div class="header-titles-col">
         <h3 class="panel-section-title">ACCESOS POR COLABORADOR</h3>
-        <p class="panel-section-subtitle">Haz clic en cualquier colaborador para desplegar el <strong>Panel Lateral Slide-Over</strong> y ajustar permisos finos en tiempo real con toggles interactivos.</p>
+        <p class="panel-section-subtitle">Haz clic en cualquier colaborador para desplegar el <strong>Panel Lateral
+            Slide-Over</strong> y ajustar permisos finos en tiempo real con toggles interactivos.</p>
       </div>
 
       <div class="header-tools-col">
         <div class="inline-search-box">
           <mat-icon class="search-icon">search</mat-icon>
-          <input type="text"
-            [value]="searchTerm"
-            (input)="onSearchChange($any($event.target).value)"
-            placeholder="Buscar colaborador o puesto..."
-            class="inline-search-input">
-          <button type="button"
-            class="btn-clear-inline-search"
-            *ngIf="searchTerm"
-            (click)="clearSearch()"
+          <input type="text" [value]="searchTerm" (input)="onSearchChange($any($event.target).value)"
+            placeholder="Buscar colaborador o puesto..." class="inline-search-input">
+          <button type="button" class="btn-clear-inline-search" *ngIf="searchTerm" (click)="clearSearch()"
             title="Limpiar búsqueda">
             <mat-icon>close</mat-icon>
           </button>
@@ -363,29 +352,20 @@
     <div class="panel-bottom-bar flex-end" *ngIf="totalPagesColab > 1">
       <span class="pagination-info" style="margin-right: auto;">{{ paginationColabInfo }}</span>
       <div class="pagination-controls-wrapper">
-        <button type="button" 
-                class="btn-pagination-nav" 
-                (click)="prevPageColab()" 
-                [disabled]="currentPageColab === 1"
-                title="Página anterior">
+        <button type="button" class="btn-pagination-nav" (click)="prevPageColab()" [disabled]="currentPageColab === 1"
+          title="Página anterior">
           <mat-icon>chevron_left</mat-icon>
         </button>
 
         <div class="pagination-pills-bar">
-          <button type="button" 
-                  *ngFor="let page of pagesArrayColab" 
-                  class="pill-page-item" 
-                  [class.active]="currentPageColab === page"
-                  (click)="goToPageColab(page)">
+          <button type="button" *ngFor="let page of pagesArrayColab" class="pill-page-item"
+            [class.active]="currentPageColab === page" (click)="goToPageColab(page)">
             {{ page }}
           </button>
         </div>
 
-        <button type="button" 
-                class="btn-pagination-nav" 
-                (click)="nextPageColab()" 
-                [disabled]="currentPageColab === totalPagesColab"
-                title="Página siguiente">
+        <button type="button" class="btn-pagination-nav" (click)="nextPageColab()"
+          [disabled]="currentPageColab === totalPagesColab" title="Página siguiente">
           <mat-icon>chevron_right</mat-icon>
         </button>
       </div>
@@ -395,7 +375,8 @@
   <!-- ===================================================================
        PANEL INFERIOR DE AJUSTE DE PERMISOS (DIRECTO EN LA PARTE DE ABAJO)
        =================================================================== -->
-  <div id="panel-ajuste-abajo" class="panel-section shadow-premium panel-ajuste-inferior sn-animate-in" *ngIf="drawerOpen && drawerUser" style="margin-top: 28px;">
+  <div id="panel-ajuste-abajo" class="panel-section shadow-premium panel-ajuste-inferior sn-animate-in"
+    *ngIf="drawerOpen && drawerUser" style="margin-top: 28px;">
     <div class="panel-section-header flex-between">
       <div class="user-avatar-cell">
         <div class="user-avatar-drawer">
@@ -408,11 +389,17 @@
               <span class="glowing-dot"></span> {{ drawerUser?.nivel }}
             </span>
           </div>
-          <span class="panel-section-subtitle">Usuario: <strong>{{ drawerUser?.usuario || 'Sin usuario asignado' }}</strong> — Ajuste fino de permisos interactivos</span>
+          <span class="panel-section-subtitle">Usuario: <strong>{{ drawerUser?.usuario || 'Sin usuario asignado'
+              }}</strong> — Ajuste fino de permisos interactivos</span>
         </div>
       </div>
 
       <div class="drawer-header-actions">
+        <button type="button" class="btn-export-excel-small" (click)="abrirModalExportar()" [disabled]="isExporting"
+          title="Exportar permisos en Excel" (click)="abrirModalExportar(drawerUser)">
+          <mat-icon style="font-size: 16px; width: 16px; height: 16px;">file_download</mat-icon>
+          <span>Exportar</span>
+        </button>
         <button type="button" class="btn-reset-drawer" (click)="resetFino()">
           <mat-icon style="font-size: 16px; width: 16px; height: 16px;">refresh</mat-icon>
           <span>Restablecer a su nivel</span>
@@ -426,11 +413,8 @@
 
     <!-- SELECTOR DE MÓDULO HORIZONTAL -->
     <div class="module-tabs-horizontal">
-      <button type="button" 
-              *ngFor="let m of getModulesKeys()" 
-              class="module-tab-chip"
-              [class.active]="selectedModule === m"
-              (click)="selectedModule = m">
+      <button type="button" *ngFor="let m of getModulesKeys()" class="module-tab-chip"
+        [class.active]="selectedModule === m" (click)="selectedModule = m">
         {{ m }}
       </button>
     </div>
@@ -442,21 +426,23 @@
           <mat-icon class="icon-group">folder_open</mat-icon>
           <h4 class="toggle-group-title">{{ group.name }}</h4>
         </div>
-        
+
         <div class="toggle-items-list">
           <div *ngFor="let item of group.items" class="toggle-item-row">
             <div class="toggle-info-col">
               <span class="toggle-action-name">{{ item.acc }}</span>
-              <span class="toggle-inherited-desc" [class.inherited-active]="[item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)]">
-                Nivel {{ getSelectedUser()?.nivel }}: {{ [item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)] ? 'Permitido' : 'Sin acceso' }}
+              <span class="toggle-inherited-desc"
+                [class.inherited-active]="[item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)]">
+                Nivel {{ getSelectedUser()?.nivel }}: {{ [item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)] ?
+                'Permitido' : 'Sin acceso' }}
               </span>
             </div>
 
             <!-- iOS / Android Style Toggle Switch -->
             <label class="ios-switch">
               <input type="checkbox"
-                     [checked]="finoGet(selectedUserId, getSelectedUser()?.nivel, selectedModule, group.name, item.acc, [item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)])"
-                     (change)="toggleFinoCheckbox(selectedUserId, selectedModule, group.name, item.acc, $any($event.target).checked)">
+                [checked]="finoGet(selectedUserId, getSelectedUser()?.nivel, selectedModule, group.name, item.acc, [item.g, item.j, item.o][nivelIdx(getSelectedUser()?.nivel)])"
+                (change)="toggleFinoCheckbox(selectedUserId, selectedModule, group.name, item.acc, $any($event.target).checked)">
               <span class="switch-slider"></span>
             </label>
           </div>
@@ -464,5 +450,113 @@
       </div>
     </div>
   </div>
+</div>
 
+<!-- ================================================================= -->
+<!-- MODAL DE OPCIONES DE EXPORTACIÓN A EXCEL (OPCIÓN 3)               -->
+<!-- ================================================================= -->
+<div class="modal-export-backdrop" *ngIf="mostrarModalExportar" (click)="cerrarModalExportar()">
+  <div class="modal-export-card" (click)="$event.stopPropagation()">
+
+    <!-- Encabezado del Modal -->
+    <div class="modal-export-header">
+      <div class="modal-export-header-title">
+        <div class="modal-export-icon-badge">
+          <mat-icon>table_view</mat-icon>
+        </div>
+        <div>
+          <h4 class="modal-title-text">Exportar Matriz de Permisos a Excel</h4>
+          <p class="modal-subtitle-text">Selecciona el formato y alcance de exportación del libro de permisos.</p>
+        </div>
+      </div>
+      <button type="button" class="btn-modal-close" (click)="cerrarModalExportar()" title="Cerrar ventana">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <!-- Cuerpo del Modal: Tarjetas de opciones -->
+    <div class="modal-export-body">
+
+      <!-- Opción 1: Ficha de Colaborador (3 Hojas) -->
+      <div class="export-option-card" [class.option-selected]="exportOption === 'colaborador'"
+        (click)="exportOption = 'colaborador'">
+        <div class="option-radio-indicator">
+          <div class="radio-dot" *ngIf="exportOption === 'colaborador'"></div>
+        </div>
+        <div class="option-content">
+          <div class="option-title-row">
+            <span class="option-title">Ficha Completa de un Colaborador</span>
+            <span class="option-badge badge-green">3 Hojas · Detallado</span>
+          </div>
+          <p class="option-desc">
+            Exporta la <strong>Política por nivel</strong>, la <strong>Matriz general</strong> y el <strong>Ajuste
+              fino</strong> detallado del colaborador que elijas.
+          </p>
+
+          <!-- Selector de Colaborador -->
+          <div class="option-subcontrol" *ngIf="exportOption === 'colaborador'" (click)="$event.stopPropagation()">
+            <label class="subcontrol-label">
+              <mat-icon style="font-size: 15px; width: 15px; height: 15px;">person</mat-icon>
+              Colaborador para la 3ra hoja:
+            </label>
+            <select class="modal-select-user" [value]="exportTargetUserId"
+              (change)="exportTargetUserId = $any($event.target).value">
+              <option *ngFor="let p of puestosList" [value]="p.id">
+                {{ p.usuario || 'Sin usuario' }} — {{ p.puesto }} ({{ p.nivel }})
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Opción 2: Matriz General del Sistema (2 Hojas) -->
+      <div class="export-option-card" [class.option-selected]="exportOption === 'general'"
+        (click)="exportOption = 'general'">
+        <div class="option-radio-indicator">
+          <div class="radio-dot" *ngIf="exportOption === 'general'"></div>
+        </div>
+        <div class="option-content">
+          <div class="option-title-row">
+            <span class="option-title">Matriz General del Sistema</span>
+            <span class="option-badge badge-blue">2 Hojas · Resumen Global</span>
+          </div>
+          <p class="option-desc">
+            Exporta la <strong>Política por nivel</strong> y la <strong>Matriz completa de accesos</strong> de todos los
+            puestos y colaboradores del sistema.
+          </p>
+        </div>
+      </div>
+
+      <!-- Opción 3: Consolidado de Auditoría (3 Hojas) -->
+      <div class="export-option-card" [class.option-selected]="exportOption === 'auditoria'"
+        (click)="exportOption = 'auditoria'">
+        <div class="option-radio-indicator">
+          <div class="radio-dot" *ngIf="exportOption === 'auditoria'"></div>
+        </div>
+        <div class="option-content">
+          <div class="option-title-row">
+            <span class="option-title">Consolidado de Auditoría e Incidencias</span>
+            <span class="option-badge badge-amber">3 Hojas · Auditoría SIG/ISO</span>
+          </div>
+          <p class="option-desc">
+            Exporta la política general y consolida en la 3ra hoja todas las <strong>excepciones y permisos
+              especiales</strong> activos en el portal.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Pie del Modal -->
+    <div class="modal-export-footer">
+      <button type="button" class="btn-modal-cancel" (click)="cerrarModalExportar()">
+        Cancelar
+      </button>
+      <button type="button" class="btn-modal-download" (click)="confirmarExportarExcel()" [disabled]="isExporting">
+        <mat-icon style="font-size: 18px; width: 18px; height: 18px;">file_download</mat-icon>
+        <span>{{ isExporting ? 'Generando archivo Excel...' : 'Descargar Excel' }}</span>
+      </button>
+    </div>
+
+  </div>
 </div>

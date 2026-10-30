@@ -410,16 +410,17 @@ export class LayoutComponent implements OnInit, OnDestroy {
                   const nivelAcceso = (row.nivel_Acceso || '').trim();
 
                   if (puestoClave) {
-                    if (!accesosObj[puestoClave]) {
-                      accesosObj[puestoClave] = {};
-                    }
-                    if (moduloClave) {
-                      const cleanKey = moduloClave.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-
-                      // Guardar siempre el valor real y actualizado de la base de datos tanto en la clave exacta como en la normalizada
-                      accesosObj[puestoClave][moduloClave] = nivelAcceso;
-                      accesosObj[puestoClave][cleanKey] = nivelAcceso;
-                    }
+                    const targets = Array.from(new Set([puestoClave, puestoClave.toLowerCase(), 'usr-' + puestoClave.toLowerCase()]));
+                    targets.forEach(t => {
+                      if (!accesosObj[t]) {
+                        accesosObj[t] = {};
+                      }
+                      if (moduloClave) {
+                        const cleanKey = moduloClave.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                        accesosObj[t][moduloClave] = nivelAcceso;
+                        accesosObj[t][cleanKey] = nivelAcceso;
+                      }
+                    });
                   }
                 });
 
@@ -551,12 +552,30 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
       // 3. Fusionar: la base hereda del puesto/cÃ³digo, y los overrides especÃ­ficos del usuario mandan estrictamente
       this.permisosUsuario = { ...basePermsPuesto, ...basePermsCod, ...userSpecificPerms };
+
+      // Si el usuario tiene permisos finos especificos en este modulo, asegurar que este visible
+      ['organizacion', 'documentacion', 'auditorias', 'noconf', 'indicadores', 'objetivos', 'riesgos', 'mejora', 'legal', 'proveedores'].forEach(mk => {
+        if (this.hasFineAccess(mk)) {
+          const cur = (this.permisosUsuario[mk] || '').toLowerCase().trim();
+          if (!cur || cur === 'sin acceso' || cur === '0') {
+            this.permisosUsuario[mk] = 'Editar';
+          }
+        }
+      });
       console.log('[Permisos] Usuario:', userLogin, '| Puesto:', puestoName, '| Permisos Consolidados:', JSON.stringify(this.permisosUsuario));
     } else {
-      this.permisosUsuario = {};
-      this.puestoUsuario = '';
-      console.log('[Permisos] No se encontró puesto para el usuario:', userLogin);
-      console.log('[Permisos] Usuarios disponibles en puestos:', puestosList.map(p => ({ cod_Usuario: p.cod_Usuario, puesto: p.puesto })));
+      this.puestoUsuario = localStorage.getItem('precotex:usuario:puesto') || '';
+      let userSpecificPerms: any = {};
+      if (userLogin) {
+        const uKey = userLogin.toLowerCase().trim();
+        userSpecificPerms = accesosObj[uKey] || accesosObj[userLogin] || {};
+        if (!userSpecificPerms || Object.keys(userSpecificPerms).length === 0) {
+          const matchU = Object.keys(accesosObj).find(k => k.trim().toLowerCase() === uKey);
+          if (matchU) userSpecificPerms = accesosObj[matchU];
+        }
+      }
+      this.permisosUsuario = { ...userSpecificPerms };
+      console.log('[Permisos] Usuario sin puesto formal:', userLogin, '| Permisos asignados:', JSON.stringify(this.permisosUsuario));
     }
   }
 
@@ -616,14 +635,60 @@ export class LayoutComponent implements OnInit, OnDestroy {
     return cleanName.includes(cleanLogin);
   }
 
+  hasFineAccess(moduloKey: string): boolean {
+    if (!moduloKey) return false;
+    try {
+      const fineRaw = localStorage.getItem('precotex:puestos:accesos_fino');
+      if (!fineRaw) return false;
+      const accFine = JSON.parse(fineRaw);
+      const userLogin = (this.userName || GlobalVariable.vusu || '').trim().toLowerCase();
+      const puestoName = (this.puestoUsuario || localStorage.getItem('precotex:usuario:puesto') || '').trim();
+      const puestoCode = (localStorage.getItem('precotex:usuario:codigo_puesto') || '').trim();
+
+      const targets = Array.from(new Set([
+        userLogin,
+        'usr-' + userLogin,
+        puestoCode,
+        puestoName
+      ].filter(Boolean)));
+
+      const cleanTarget = moduloKey.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+      for (const t of targets) {
+        const tStr = (t || '').toString().trim();
+        if (!tStr) continue;
+        let uObj = accFine[tStr] || accFine[tStr.toLowerCase()];
+        if (!uObj) {
+          const matchK = Object.keys(accFine).find(k => k.trim().toLowerCase() === tStr.toLowerCase());
+          if (matchK) uObj = accFine[matchK];
+        }
+        if (uObj) {
+          for (const [k, v] of Object.entries(uObj)) {
+            const parts = k.split('||');
+            const modPart = (parts[0] || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+            const modPartNorm = this.permisosService.normalizeModulo(parts[0]);
+            const targetNorm = this.permisosService.normalizeModulo(moduloKey);
+            if (modPartNorm === targetNorm || modPart === cleanTarget || modPart.includes(cleanTarget) || cleanTarget.includes(modPart)) {
+              if (v === 1 || v === true) {
+                return true;
+              }
+            }
+          }
+        }
+      }
+    } catch (e) { }
+    return false;
+  }
+
   hasAccess(moduloKey: string): boolean {
     // Perfil Administrador: si el rol del usuario es 1 (admin), puede ver todo
     const codRol = GlobalVariable.vCod_Rol || (typeof localStorage !== 'undefined' ? parseInt(localStorage.getItem('vCod_Rol') || '0') : 0) || 0;
-    if (codRol === 1) {
+    if (this.isAdmin()) {
       return true;
     }
 
     if (!moduloKey) return true;
+    return this.permisosService.getModuloAccess(moduloKey) !== 'Sin acceso';
 
     // Si tiene permisos cargados
     if (this.permisosUsuario && Object.keys(this.permisosUsuario).length > 0) {
@@ -669,7 +734,9 @@ export class LayoutComponent implements OnInit, OnDestroy {
   }
 
   isAdmin(): boolean {
-    return GlobalVariable.vCod_Rol === 1;
+    const codRol = GlobalVariable.vCod_Rol || (typeof localStorage !== 'undefined' ? parseInt(localStorage.getItem('vCod_Rol') || '0') : 0) || 0;
+    const user = (this.userName || GlobalVariable.vusu || (typeof localStorage !== 'undefined' ? localStorage.getItem('vusu') : '') || '').toLowerCase().trim();
+    return codRol === 1 || user === 'admin' || user === 'super administrador';
   }
 
   getModuloKeyByUrl(url: string): string {
@@ -809,9 +876,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     localStorage.removeItem('vcodtra');
     localStorage.removeItem('vtiptra');
     localStorage.removeItem('vCod_Rol');
-    localStorage.removeItem('precotex:puestos:accesos');
-    localStorage.removeItem('precotex:puestos:listado');
-    // Preservar precotex:puestos:accesos_fino en logout
+    // Preservar precotex:puestos:accesos, precotex:puestos:listado y precotex:puestos:accesos_fino en logout
     localStorage.removeItem('precotex:usuario:proceso');
     sessionStorage.removeItem('precotex:session:logged_entry');
 

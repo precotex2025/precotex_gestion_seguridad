@@ -557,6 +557,17 @@
   transform: translateY(-1px);
 }
 
+/* 5. Eliminar (Rojo / Carmín Suave) */
+.action-btn.btn-delete {
+  color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+.action-btn.btn-delete:hover {
+  background: rgba(239, 68, 68, 0.22) !important;
+  transform: translateY(-1px);
+}
+
 /* -------------------------------------------------------------------
    5. SLIDE-OVER DRAWER ARCHITECTURE FOR REGISTRATION
    ------------------------------------------------------------------- */

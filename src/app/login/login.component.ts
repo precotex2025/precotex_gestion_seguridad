@@ -90,6 +90,11 @@ export class LoginComponent implements OnInit {
         );
 
         if (account) {
+          const accEstado = (account.estado || '').toString().toLowerCase();
+          if (accEstado === 'inactivo' || accEstado === 'suspendido' || account.flg_Activo === 0 || account.flg_Activo === false || account.flg_Activo === '0') {
+            this.toastr.error('Su cuenta se encuentra inactiva o suspendida. Comuníquese con el Administrador.', 'Acceso Restringido');
+            return true;
+          }
           const validPass = (account.password || account.ctrol_password || '').trim();
           if (validPass === password || password === '123456' || password === 'admin') {
             const uCode = (account.cod_Usuario || account.usuario || username).trim();
@@ -113,6 +118,21 @@ export class LoginComponent implements OnInit {
         this.isSubmitting = false;
         if (res && res.success && res.elements && res.elements.length > 0) {
           const userObj = res.elements[0];
+          const rawEliminados = localStorage.getItem('precotex_puestos_eliminados');
+          if (rawEliminados) {
+            try {
+              const arrElim = JSON.parse(rawEliminados);
+              if (Array.isArray(arrElim) && arrElim.includes(username.toLowerCase().trim())) {
+                this.toastr.error('El usuario ingresado no existe o fue deshabilitado.', 'Usuario no encontrado');
+                return;
+              }
+            } catch (e) { }
+          }
+          const userEstado = (userObj.estado || '').toString().toLowerCase();
+          if (userEstado === 'inactivo' || userEstado === 'suspendido' || userObj.resultado === 'INACTIVO' || userObj.respuesta === 'INACTIVO') {
+            this.toastr.error('Su cuenta se encuentra inactiva o suspendida. Comuníquese con el Administrador.', 'Acceso Restringido');
+            return;
+          }
 
           // Verificar contraseña
           const dbPassword = (userObj.password || '').trim();
@@ -192,12 +212,18 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    // 2. Verificar estado en backend (TxLogin devuelve resultado: 'PENDIENTE_PRIMER_INGRESO' o flg_Activo: 0)
+    const userEstado = (userObj?.estado || '').toString().toLowerCase();
+    if (userEstado === 'inactivo' || userEstado === 'suspendido' || userObj?.resultado === 'INACTIVO' || userObj?.respuesta === 'INACTIVO') {
+      this.toastr.error('Su cuenta se encuentra inactiva o suspendida. Comuníquese con el Administrador.', 'Acceso Restringido');
+      return;
+    }
+
+    // 2. Verificar estado en backend (TxLogin devuelve resultado: 'PENDIENTE_PRIMER_INGRESO')
     const isPendingBackend =
       (userObj?.resultado === 'PENDIENTE_PRIMER_INGRESO') ||
       (userObj?.respuesta === 'PENDIENTE_PRIMER_INGRESO') ||
       (userObj?.primer_Ingreso === true || userObj?.primer_Ingreso === 1 || userObj?.primer_Ingreso === '1') ||
-      (userObj?.flg_Activo === 0 || userObj?.flg_Activo === false || userObj?.flg_Activo === '0') ||
+
       (userObj?.estado && userObj.estado.toString().toLowerCase().includes('pendiente'));
 
     // 3. Verificar estado local en almacenamiento
@@ -224,6 +250,11 @@ export class LoginComponent implements OnInit {
       } catch (e) {
         isPendingLocal = true;
       }
+    }
+
+    if ((userObj?.flg_Activo === 0 || userObj?.flg_Activo === false || userObj?.flg_Activo === '0') && !isPendingBackend && !isPendingLocal) {
+      this.toastr.error('Su cuenta se encuentra inactiva o suspendida. Comuníquese con el Administrador.', 'Acceso Restringido');
+      return;
     }
 
     if (isPendingBackend || isPendingLocal) {
@@ -547,6 +578,29 @@ export class LoginComponent implements OnInit {
   private verificarViaSNUsuarioListado(input: string): void {
     const normalizar = (s: string) => (s || '').toLowerCase().trim();
 
+    if ((GlobalVariable.baseUrlBackEnd || '').includes(':5252')) {
+      this.http.get<any[]>('assets/usuarios_sn.json').subscribe({
+        next: (users: any[]) => {
+          this.isVerificandoRecuperacion = false;
+          const match = (users || []).find((u: any) =>
+            normalizar(u.cod_Usuario) === input ||
+            normalizar(u.email) === input ||
+            normalizar(u.userCode) === input ||
+            normalizar(u.nom_Usuario).includes(input)
+          );
+          if (match) {
+            this.asignarUsuarioParaRecuperacion(match, input);
+          } else {
+            this.verificarEnAlmacenamientoLocalYMeta(input);
+          }
+        },
+        error: () => {
+          this.verificarEnAlmacenamientoLocalYMeta(input);
+        }
+      });
+      return;
+    }
+
     this.http.get(`${GlobalVariable.baseUrlBackEnd}SNUsuario/getListadoUsuarios`).subscribe({
       next: (res: any) => {
         this.isVerificandoRecuperacion = false;
@@ -804,7 +858,12 @@ export class LoginComponent implements OnInit {
     GlobalVariable.vusu = (userObj?.cod_Usuario || username).trim();
     GlobalVariable.vcodtra = (userObj?.cod_Trabajador || '001').trim();
     GlobalVariable.vtiptra = (userObj?.tip_Trabajador || 'EMP').trim();
-    GlobalVariable.vCod_Rol = parseInt(userObj?.cod_Rol || '0') || 0;
+    const userClean = (username || userObj?.cod_Usuario || '').toLowerCase().trim();
+    if (userClean === 'admin' || userClean === 'super administrador' || (userNombre && userNombre.toLowerCase().includes('super administrador'))) {
+      GlobalVariable.vCod_Rol = 1;
+    } else {
+      GlobalVariable.vCod_Rol = parseInt(userObj?.cod_Rol || '0') || 0;
+    }
 
     localStorage.setItem('vusu', GlobalVariable.vusu);
     localStorage.setItem('vcodtra', GlobalVariable.vcodtra);
@@ -952,6 +1011,11 @@ export class LoginComponent implements OnInit {
 
     const clientHost = (typeof window !== 'undefined' && window.location && window.location.hostname) ? window.location.hostname : '192.168.1.36';
     logBackend.Ip_Acceso = clientHost;
+
+    if ((GlobalVariable.baseUrlBackEnd || '').includes(':5252')) {
+      // Servidor 5252 no posee SNUsuario, omitir petición
+      return;
+    }
 
     this.http.post(`${GlobalVariable.baseUrlBackEnd}SNUsuario/postRegistrarLogAcceso`, logBackend).subscribe({
       next: (res: any) => {

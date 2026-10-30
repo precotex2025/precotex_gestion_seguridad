@@ -1835,3 +1835,93 @@ div.actions-wrapper.hover-fade {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+
+/* ===================================================================
+   SWEETALERT2: MODAL DETALLE DE PORTAFOLIO DE MEJORA (EXECUTIVE LIGHT)
+   =================================================================== */
+.swal2-popup.custom-swal-portafolio-detalle {
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  padding: 0 !important;
+  box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.28), 0 0 0 1px #e2e8f0 !important;
+  overflow: hidden !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  color: #0f172a !important;
+  width: 680px !important;
+  max-width: 95vw !important;
+  position: relative !important;
+}
+
+.custom-swal-portafolio-detalle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #5b4bd6 0%, #7c6cf0 50%, #38bdf8 100%);
+  z-index: 10;
+}
+
+.custom-swal-portafolio-detalle .swal2-close {
+  top: 16px !important;
+  right: 18px !important;
+  width: 32px !important;
+  height: 32px !important;
+  font-size: 22px !important;
+  color: #94a3b8 !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+  outline: none !important;
+  box-shadow: none !important;
+  z-index: 20 !important;
+}
+
+.custom-swal-portafolio-detalle .swal2-close:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+.custom-swal-portafolio-detalle .swal2-html-container {
+  margin: 0 !important;
+  padding: 24px 28px 0 28px !important;
+  overflow-x: hidden !important;
+  text-align: left !important;
+}
+
+.custom-swal-portafolio-detalle .swal2-actions {
+  margin: 18px 0 0 0 !important;
+  padding: 14px 28px 20px 28px !important;
+  gap: 12px !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  border-top: 1px solid #f1f5f9 !important;
+  background: #ffffff !important;
+}
+
+.custom-swal-portafolio-detalle .swal-portafolio-btn-confirm {
+  background: linear-gradient(135deg, #5b4bd6 0%, #4a3bc4 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  font-size: 13.5px !important;
+  letter-spacing: 0.01em !important;
+  padding: 10px 24px !important;
+  box-shadow: 0 4px 14px rgba(91, 75, 214, 0.35) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.custom-swal-portafolio-detalle .swal-portafolio-btn-confirm:hover {
+  background: linear-gradient(135deg, #4a3bc4 0%, #3e30aa 100%) !important;
+  box-shadow: 0 6px 18px rgba(91, 75, 214, 0.45) !important;
+  transform: translateY(-1px) !important;
+}

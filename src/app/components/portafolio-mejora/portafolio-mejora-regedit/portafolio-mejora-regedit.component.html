@@ -176,56 +176,7 @@
         </div>
       </div>
 
-      <!-- TÍTULO DE VISTA PREVIA -->
-      <div class="excel-preview-title-bar">
-        <div class="title-left">
-          <span class="material-icons">visibility</span>
-          <span>Contenido Extraído del Documento Excel</span>
-        </div>
-        <span *ngIf="excelRows.length > 0" class="badge-row-count">
-          {{ excelRows.length }} filas leídas
-        </span>
-      </div>
 
-      <!-- VISTA PREVIA REAL DEL EXCEL -->
-      <div *ngIf="excelHeaders.length > 0" class="excel-table-scroll-container">
-        <table class="excel-preview-table">
-          <thead>
-            <tr>
-              <th class="col-index">#</th>
-              <th *ngFor="let h of excelHeaders" class="col-data-header">
-                {{ h || 'Columna' }}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let r of excelRows; let i = index">
-              <td class="cell-index">{{ i + 1 }}</td>
-              <td *ngFor="let cell of r" class="cell-data" [title]="cell">
-                {{ cell }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- MATRIZ RESUMEN SI NO HAY FILAS O PARA DETALLE ADICIONAL -->
-      <div *ngIf="excelHeaders.length === 0" class="excel-table-scroll-container">
-        <table class="excel-preview-table">
-          <thead>
-            <tr>
-              <th style="width: 160px;">Dimensión 5W-2H</th>
-              <th>Detalle Extraído del Archivo Excel</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let row of previewRows">
-              <td class="cell-dimension">{{ row.campo }}</td>
-              <td class="cell-data">{{ row.detalle }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
 
     </div>
 

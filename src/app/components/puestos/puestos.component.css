@@ -683,3 +683,83 @@
   font-style: italic;
   font-size: 0.78rem;
 }
+
+/* Activity Widgets Enhanced Header & Elements (PUE-01) */
+.activity-card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.activity-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.activity-card-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.btn-refresh-logs {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.76rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-refresh-logs:hover {
+  background: var(--panel);
+  color: var(--txt);
+  border-color: #6366f1;
+}
+
+.btn-refresh-logs .refresh-icon {
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+}
+
+.log-action-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  background: rgba(15, 23, 42, 0.04);
+  color: var(--txt);
+  border: 1px solid var(--line);
+}
+
+.empty-logs-msg {
+  text-align: center;
+  padding: 24px 16px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.empty-logs-msg .empty-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  color: #94a3b8;
+  display: block;
+  margin: 0 auto 8px;
+}
+

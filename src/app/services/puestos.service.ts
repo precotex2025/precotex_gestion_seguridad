@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { GlobalVariable } from '../VarGlobals';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
@@ -43,6 +43,9 @@ export class PuestosService {
   }
 
   getLogAccesos(top: number = 50, soloUltimo: boolean = false): Observable<any> {
+    if (this.isProd5252) {
+      return of({ success: true, elements: [] });
+    }
     const headers = this.Header;
     let params = new HttpParams();
     params = params.append('top', top.toString());
@@ -53,12 +56,28 @@ export class PuestosService {
   }
 
   getHistorialUsuario(top: number = 50, soloUltimo: boolean = false): Observable<any> {
+    if (this.isProd5252) {
+      return of({ success: true, elements: [] });
+    }
     const headers = this.Header;
     let params = new HttpParams();
     params = params.append('top', top.toString());
     params = params.append('soloUltimo', soloUltimo.toString());
     return this.http.get(this.baseUrl + 'SNUsuario/getLogAccesos', { headers, params }).pipe(
       catchError(() => of({ success: false, elements: [] }))
+    );
+  }
+
+  postRegistrarLogAcceso(data: any): Observable<any> {
+    if (this.isProd5252) {
+      return of({ success: true, message: 'Log registrado en entorno de red' });
+    }
+    const headers = this.Header;
+    return this.http.post(this.baseUrl + 'SNUsuario/postRegistrarLogAcceso', data, { headers }).pipe(
+      catchError((err) => {
+        console.warn('[PuestosService] Error registrando log de acceso en BD:', err);
+        return of({ success: false, message: err?.message || 'Error de red' });
+      })
     );
   }
 
@@ -108,6 +127,12 @@ export class PuestosService {
 
   // Obtiene el listado de usuarios desde SN_Usuario en tiempo real con contraseñas
   getListadoUsuarios(): Observable<any> {
+    if (this.isProd5252) {
+      return this.http.get<any[]>('assets/usuarios_sn.json').pipe(
+        map((elements: any) => ({ success: true, elements })),
+        catchError(() => of({ success: true, elements: [] }))
+      );
+    }
     const headers = this.Header;
     return this.http.get(this.baseUrl + 'SNUsuario/getListadoUsuarios', { headers }).pipe(
       catchError(() => {

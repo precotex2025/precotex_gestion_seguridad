@@ -78,6 +78,13 @@ export class PortafolioMejoraRegeditComponent implements OnInit {
             next: (procRes: any) => {
               const bdProcs = (procRes && procRes.success && procRes.elements) ? procRes.elements : [];
 
+              // 1. Maestro completo de todos los procesos activos de BD
+              this.todosLosProcesos = bdProcs
+                .map((pItem: any) => pItem.proceso || pItem.nombre_Proceso || pItem.denominacion || '')
+                .filter((n: string) => n.trim().length > 0);
+              this.todosLosProcesos = Array.from(new Set(this.todosLosProcesos));
+
+              // 2. Mapear sedes y vincular procesos por sede
               bdSedes.forEach((sItem: any) => {
                 const sName = (sItem.denominacion || '').trim();
                 const sCodeNorm = (sItem.codigo_Sede || '').toString().trim();
@@ -101,13 +108,17 @@ export class PortafolioMejoraRegeditComponent implements OnInit {
                   .filter((n: string) => n.trim().length > 0);
 
                 if (procNames.length > 0) {
-                  this.procesosPorSedeMap[sName] = procNames;
-                  // Agregar al listado maestro de procesos
-                  procNames.forEach((p: string) => {
-                    if (!this.todosLosProcesos.includes(p)) {
-                      this.todosLosProcesos.push(p);
-                    }
-                  });
+                  this.procesosPorSedeMap[sName] = Array.from(new Set(procNames));
+                } else {
+                  // Si no tiene asignación explícita por sede, hereda el catálogo maestro
+                  this.procesosPorSedeMap[sName] = [...this.todosLosProcesos];
+                }
+              });
+
+              // Asegurar que toda sede tenga procesos disponibles
+              this.sedes.forEach(s => {
+                if (!this.procesosPorSedeMap[s] || this.procesosPorSedeMap[s].length === 0) {
+                  this.procesosPorSedeMap[s] = [...this.todosLosProcesos];
                 }
               });
 
@@ -234,8 +245,7 @@ export class PortafolioMejoraRegeditComponent implements OnInit {
     if (procs && procs.length > 0) {
       this.procesosActuales = procs;
     } else {
-      // Sede sin procesos asignados en la BD → mostrar lista vacía
-      this.procesosActuales = [];
+      this.procesosActuales = [...this.todosLosProcesos];
     }
 
     const currentProc = this.formulario?.get('proceso')?.value;
@@ -723,7 +733,18 @@ export class PortafolioMejoraRegeditComponent implements OnInit {
       this.toastr.warning('Por favor llene todos los campos obligatorios (*).', 'Formulario Incompleto');
       return;
     }
-    this.dialogRef.close(this.formulario.getRawValue());
+    const val = this.formulario.getRawValue();
+    // Sanitizar fechas inválidas o por defecto (0001, 1900)
+    if (val.apertura && (val.apertura.startsWith('0001') || val.apertura.startsWith('1900') || val.apertura.startsWith('00/00'))) {
+      val.apertura = new Date().toISOString().slice(0, 10);
+    }
+    if (val.limite && (val.limite.startsWith('0001') || val.limite.startsWith('1900') || val.limite.startsWith('00/00'))) {
+      val.limite = '';
+    }
+    if (val.fechaFin && (val.fechaFin.startsWith('0001') || val.fechaFin.startsWith('1900') || val.fechaFin.startsWith('00/00'))) {
+      val.fechaFin = '';
+    }
+    this.dialogRef.close(val);
   }
 
   onCancelar(): void {

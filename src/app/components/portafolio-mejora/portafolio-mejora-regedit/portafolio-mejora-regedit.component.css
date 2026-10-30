@@ -272,9 +272,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 14px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
   flex-wrap: wrap;
 }
 

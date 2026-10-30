@@ -18,6 +18,8 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
         // Suprimir alertas intrusivas para errores 400 o endpoints auxiliares que manejan su propio flujo/fallback
         if (
           error.status === 400 ||
+          request.url.includes('postRegistrarLogAcceso') ||
+          request.url.includes('SNUsuario') ||
           request.url.includes('UP_MuestraHistorialUsuario') ||
           request.url.includes('getValidarPrimerIngreso') ||
           request.url.includes('postRegistrarUsuario') ||

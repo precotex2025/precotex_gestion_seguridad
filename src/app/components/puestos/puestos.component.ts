@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
@@ -126,7 +127,8 @@ export class PuestosComponent implements OnInit {
     private toastr: ToastrService,
     private puestosService: PuestosService,
     private http: HttpClient,
-    private permisosService: PermisosService
+    private permisosService: PermisosService,
+    private router: Router
   ) { }
 
   private get isLocal(): boolean {
@@ -134,13 +136,37 @@ export class PuestosComponent implements OnInit {
     return (url.includes('localhost') || url.includes('127.0.0.1')) && !url.includes(':5252');
   }
 
+  isAdmin(): boolean {
+    const rol = GlobalVariable.vCod_Rol || parseInt(localStorage.getItem('vCod_Rol') || '0', 10);
+    const usu = (GlobalVariable.vusu || localStorage.getItem('vusu') || '').toLowerCase().trim();
+    return rol === 1 || usu === 'admin' || usu === 'super administrador';
+  }
+
   ngOnInit(): void {
+    if (!this.isAdmin() && this.permisosService.getModuloAccess('puestos') === 'Sin acceso') {
+      this.toastr.error('No cuentas con permisos para acceder al módulo de Puestos.', 'Acceso Restringido');
+      this.router.navigate(['/principal']);
+      return;
+    }
     this.cargarPermisos();
     this.cargarTrabajadoresSpring();
     this.onListado();
   }
 
   cargarPermisos(): void {
+    if (this.isAdmin()) {
+      this.canCrearUsuario = true;
+      this.canEditarUsuario = true;
+      this.canEliminarUsuario = true;
+      return;
+    }
+    const accessMod = this.permisosService.getModuloAccess('puestos');
+    if (accessMod === 'Sin acceso' || accessMod === 'Ver') {
+      this.canCrearUsuario = false;
+      this.canEditarUsuario = false;
+      this.canEliminarUsuario = false;
+      return;
+    }
     const userLvl = this.permisosService.getUserLevelKey();
     const isJefaturaOGerencial = userLvl === 'ger' || userLvl === 'jef';
     this.canCrearUsuario = this.permisosService.hasFinePermission('Puestos', 'Puestos y usuarios', 'Crear usuario', isJefaturaOGerencial);
@@ -678,22 +704,69 @@ export class PuestosComponent implements OnInit {
     return palette[idx];
   }
 
-  updateDynamicWidgets() {
+  // ===================================================================
+  // HISTÃ“RICO DE INGRESOS Y ACCIONES A LA PLATAFORMA (PUE-01 / BD)
+  // ===================================================================
+  registrarAccionLog(accion: string, puestoCustom?: string): void {
+    const codUsuario = (GlobalVariable.vusu || localStorage.getItem('vusu') || '').trim();
+    if (!codUsuario) return;
+    const nomUsuario = (localStorage.getItem('precotex:usuario:nombre') || codUsuario).trim();
+    const userPuesto = puestoCustom || (localStorage.getItem('precotex:usuario:puesto') || '').trim() || 'Usuario SOMA';
+    const codRol = localStorage.getItem('vCod_Rol') || '2';
+    const clientIp = (typeof window !== 'undefined' && window.location?.hostname) ? window.location.hostname : '192.168.1.36';
+
+    const payload = {
+      Cod_Usuario: codUsuario,
+      Nom_Usuario: nomUsuario,
+      Puesto: userPuesto,
+      Cod_Rol: codRol,
+      Estado: accion,
+      Ip_Acceso: clientIp,
+      Flg_Activo: true
+    };
+
+    this.puestosService.postRegistrarLogAcceso(payload).subscribe({
+      next: () => {
+        this.updateDynamicWidgets();
+      },
+      error: (err: any) => {
+        console.warn('[Puestos] Aviso al registrar log en BD:', err);
+      }
+    });
+  }
+
+  updateDynamicWidgets(): void {
     const ahora = new Date();
 
-    interface LogItemInternal {
-      rawDate: Date;
-      n: string;
-      rol: string;
-      acc: string;
-      c: string;
-      t: string;
-      isReal: boolean;
-    }
-
-    const realLogs: LogItemInternal[] = [];
+    const parseLogDate = (raw: any): Date => {
+      if (!raw) return new Date();
+      if (raw instanceof Date) return isNaN(raw.getTime()) ? new Date() : raw;
+      if (typeof raw === 'number') return new Date(raw);
+      const str = String(raw).trim();
+      let d = new Date(str.replace(' ', 'T'));
+      if (!isNaN(d.getTime())) return d;
+      d = new Date(str);
+      if (!isNaN(d.getTime())) return d;
+      const match = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+      if (match) {
+        const p1 = parseInt(match[1], 10);
+        const p2 = parseInt(match[2], 10);
+        const yr = parseInt(match[3], 10);
+        const hr = parseInt(match[4] || '0', 10);
+        const mn = parseInt(match[5] || '0', 10);
+        const sc = parseInt(match[6] || '0', 10);
+        if (p1 > 12) {
+          d = new Date(yr, p2 - 1, p1, hr, mn, sc);
+        } else {
+          d = new Date(yr, p1 - 1, p2, hr, mn, sc);
+        }
+        if (!isNaN(d.getTime())) return d;
+      }
+      return new Date();
+    };
 
     const formatLogTime = (date: Date): string => {
+      if (!date || isNaN(date.getTime())) return 'Reciente';
       const isToday = date.getFullYear() === ahora.getFullYear() &&
         date.getMonth() === ahora.getMonth() &&
         date.getDate() === ahora.getDate();
@@ -708,397 +781,79 @@ export class PuestosComponent implements OnInit {
       const mm = String(date.getMinutes()).padStart(2, '0');
 
       if (isToday) {
-        return `hoy ${hh}:${mm}`;
+        return 'Hoy ' + hh + ':' + mm;
       } else if (isYesterday) {
-        return `ayer ${hh}:${mm}`;
+        return 'Ayer ' + hh + ':' + mm;
       } else {
         const dd = String(date.getDate()).padStart(2, '0');
         const mes = String(date.getMonth() + 1).padStart(2, '0');
-        return `${dd}/${mes} ${hh}:${mm}`;
+        return dd + '/' + mes + ' ' + hh + ':' + mm;
       }
     };
 
-    const isImage2Obsolete = (item: any): boolean => {
-      const dtStr = (item.fechaHora || item.timestamp || '').toString();
-      const uName = (item.usuario || item.nom_Usuario || item.nombre || item.n || '').toLowerCase();
-      if (dtStr.includes('19/08') || dtStr.includes('08-19') || (uName.includes('francisco') && dtStr.includes('11:49'))) return true;
-      if (uName.includes('max soria') && (dtStr.includes('10:58') || dtStr.includes('10:54'))) return true;
-      if (uName.includes('karem flores') && (dtStr.includes('09:18') || dtStr.includes('09:14'))) return true;
-      if (uName.includes('luis aldana') && dtStr.includes('08:12')) return true;
-      return false;
-    };
-
-    // Criterio de exclusión estricta para la cuenta del Administrador:
-    // El administrador general no debe registrarse ni figurar en el Histórico de ingresos
-    const isAdminRecord = (item: any): boolean => {
-      const uName = (item.usuario || item.nom_Usuario || item.nombre || item.n || item.cod_Usuario || '').toLowerCase().trim();
-      const rName = (item.puesto || item.rol || '').toLowerCase().trim();
-      return uName === 'admin' ||
-        uName === 'super administrador' ||
-        uName.includes('administrador') ||
-        rName === 'administrador general' ||
-        rName.includes('administrador general');
-    };
-
-    const rawKeys = ['precotex:log:accesos', 'precotex:logs:accesos'];
-    rawKeys.forEach(k => {
-      const raw = localStorage.getItem(k);
-      if (raw) {
-        try {
-          let arr = JSON.parse(raw);
-          if (Array.isArray(arr)) {
-            arr = arr.filter((item: any) => !isImage2Obsolete(item) && !isAdminRecord(item));
-            localStorage.setItem(k, JSON.stringify(arr));
-          }
-        } catch (e) { }
-      }
-    });
-
-    // 2. Registrar/garantizar ingreso de la sesión activa actual del usuario (SOLO usuarios regulares, NO administrador)
-    const currentCodeUser = (GlobalVariable.vusu || localStorage.getItem('vusu') || '').trim();
-    const storedNom = (localStorage.getItem('precotex:usuario:nombre') || currentCodeUser).trim();
-    const storedPuesto = (localStorage.getItem('precotex:usuario:puesto') || '').trim();
-    const isCurrentAdmin = currentCodeUser.toLowerCase() === 'admin' ||
-      storedNom.toLowerCase() === 'admin' ||
-      storedNom.toLowerCase().includes('administrador');
-
-    if (currentCodeUser && !isCurrentAdmin) {
-      const uInfo = this.resolveUserData(storedNom || currentCodeUser, storedPuesto || undefined);
-
-      // Registrar en almacenamiento local si no existe para la sesión actual
-      const rawStored = localStorage.getItem('precotex:log:accesos');
-      let currentStoredLogs: any[] = rawStored ? JSON.parse(rawStored) : [];
-      if (!Array.isArray(currentStoredLogs)) currentStoredLogs = [];
-
-      const diezMinutosAtras = new Date(ahora.getTime() - 10 * 60 * 1000);
-      const yaRegistrado = currentStoredLogs.some((l: any) => {
-        const sameUser = (l.usuario || '').toLowerCase() === uInfo.nombre.toLowerCase() ||
-          (l.cod_Usuario || '').toLowerCase() === currentCodeUser.toLowerCase();
-        if (!sameUser) return false;
-        const lDate = l.timestamp ? new Date(l.timestamp) : (l.fechaHora ? new Date(l.fechaHora.replace(' ', 'T')) : null);
-        return lDate && lDate >= diezMinutosAtras;
-      });
-
-      if (!yaRegistrado) {
-        const activeLogEntry = {
-          id: 'LOG-' + Date.now(),
-          fechaHora: ahora.getFullYear() + '-' +
-            String(ahora.getMonth() + 1).padStart(2, '0') + '-' +
-            String(ahora.getDate()).padStart(2, '0') + ' ' +
-            ahora.toLocaleTimeString('es-PE', { hour12: false }),
-          usuario: uInfo.nombre,
-          cod_Usuario: currentCodeUser,
-          puesto: uInfo.rol,
-          rol: localStorage.getItem('vCod_Rol') === '1' ? 'Administrador' : 'Usuario SOMA',
-          timestamp: ahora.toISOString(),
-          ip: '192.168.1.36',
-          estado: 'Inicio de sesión'
-        };
-        currentStoredLogs.unshift(activeLogEntry);
-        localStorage.setItem('precotex:log:accesos', JSON.stringify(currentStoredLogs.slice(0, 100)));
-        localStorage.setItem('precotex:logs:accesos', JSON.stringify(currentStoredLogs.slice(0, 100)));
-
-        try {
-          const actRaw = localStorage.getItem('precotex:user:actividad');
-          const actMap: { [key: string]: number } = actRaw ? JSON.parse(actRaw) : {};
-          actMap[uInfo.nombre] = (actMap[uInfo.nombre] || 0) + 1;
-          localStorage.setItem('precotex:user:actividad', JSON.stringify(actMap));
-        } catch (e) { }
-      }
-
-      // Añadir sesión activa al conjunto real
-      realLogs.push({
-        rawDate: ahora,
-        n: uInfo.nombre,
-        rol: uInfo.rol,
-        acc: 'Inicio de sesión',
-        c: this.getAvatarColor(uInfo.nombre),
-        t: formatLogTime(ahora),
-        isReal: true
-      });
-    }
-
-    // 3. Procesar logs reales guardados en localStorage (sin duplicados, sin registros obsoletos y sin admin)
-    const processedKeys = new Set<string>();
-    const rawSaved = localStorage.getItem('precotex:log:accesos');
-    if (rawSaved) {
-      try {
-        const arr = JSON.parse(rawSaved);
-        if (Array.isArray(arr)) {
-          arr.forEach((item: any) => {
-            const uRaw = (item.usuario || item.nombre || item.cod_Usuario || '').trim();
-            if (!uRaw) return;
-
-            // Ignorar registros obsoletos y administrador
-            if (isImage2Obsolete(item) || isAdminRecord(item)) return;
-
-            const uInfo = this.resolveUserData(uRaw, item.puesto || item.rol);
-            let itemDate = item.timestamp ? new Date(item.timestamp) : null;
-            if (!itemDate || isNaN(itemDate.getTime())) {
-              if (item.fechaHora) {
-                const parsedD = new Date(item.fechaHora.replace(' ', 'T'));
-                if (!isNaN(parsedD.getTime())) itemDate = parsedD;
-              }
-            }
-            if (!itemDate || isNaN(itemDate.getTime())) {
-              itemDate = new Date(ahora.getTime() - 1000 * 60 * 30);
-            }
-
-            const key = uInfo.nombre.toLowerCase() + '|' + formatLogTime(itemDate);
-            if (processedKeys.has(key)) return;
-            processedKeys.add(key);
-
-            realLogs.push({
-              rawDate: itemDate,
-              n: uInfo.nombre,
-              rol: uInfo.rol,
-              acc: item.estado || 'Inicio de sesión',
-              c: this.getAvatarColor(uInfo.nombre),
-              t: formatLogTime(itemDate),
-              isReal: true
-            });
-          });
-        }
-      } catch (e) { }
-    }
-
-    // 4. Ordenar logs reales por fecha más reciente primero y deduplicar por usuario
-    realLogs.sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime());
-
-    const seenUsers = new Set<string>();
-    const finalAccesos: any[] = [];
-    for (const item of realLogs) {
-      if (isAdminRecord(item)) continue;
-      const userKey = item.n.toLowerCase().trim();
-      if (!seenUsers.has(userKey)) {
-        seenUsers.add(userKey);
-        finalAccesos.push(item);
-      }
-      if (finalAccesos.length >= 5) break;
-    }
-
-    // Si los logs locales son escasos o antiguos, completar con los usuarios clave activos
-    if (finalAccesos.length < 5) {
-      const defaultRecents = [
-        { n: 'Luis Aldana', rol: 'Jefe de Seguridad y Salud Ocupacional', minsAgo: 25 },
-        { n: 'Cynthia Aldana', rol: 'Coordinador de SSOMA', minsAgo: 95 },
-        { n: 'Alfredo Toro', rol: 'Analista de Sistemas', minsAgo: 240 },
-        { n: 'Sayda Huaranga', rol: 'Supervisor de SST', minsAgo: 480 },
-        { n: 'Keith Vega', rol: 'Asistente de Auditoría Interna', minsAgo: 1440 },
-        { n: 'Elizabet Rivera', rol: 'Jefatura de Calidad', minsAgo: 1620 }
-      ];
-
-      defaultRecents.forEach(u => {
-        const uKey = u.n.toLowerCase().trim();
-        if (!seenUsers.has(uKey) && finalAccesos.length < 5) {
-          seenUsers.add(uKey);
-          const d = new Date(ahora.getTime() - u.minsAgo * 60 * 1000);
-          finalAccesos.push({
-            rawDate: d,
-            n: u.n,
-            rol: u.rol,
-            acc: 'Inicio de sesión',
-            c: this.getAvatarColor(u.n),
-            t: formatLogTime(d),
-            isReal: true
-          });
-        }
-      });
-      finalAccesos.sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime());
-    }
-
-    // Mostrar exactamente últimos 5 ingresos únicos
-    this.accesosList = finalAccesos.slice(0, 5);
-
-    // Calcular actividad inicial
-    this.calcularActividadUltimos7Dias();
-
-    // 4.1 Consumir logs reales en tiempo real desde la Base de Datos (dbo.SN_Log_Acceso)
-    this.puestosService.getLogAccesos(50, false).subscribe({
+    // Consultar directamente los logs de acceso y acciones desde la Base de Datos (dbo.SN_Log_Acceso)
+    this.puestosService.getLogAccesos(100, false).subscribe({
       next: (res: any) => {
-        if (res && res.success && res.elements && res.elements.length > 0) {
-          const dbLogs: LogItemInternal[] = [];
-          const seenDbUsers = new Set<string>();
+        const rawList = res?.elements || res?.data || (Array.isArray(res) ? res : []);
+        if (Array.isArray(rawList) && rawList.length > 0) {
+          const listMapeada: any[] = [];
+          const sieteDiasAtras = new Date(ahora.getTime() - 7 * 24 * 60 * 60 * 1000);
+          const activityCounts: { [user: string]: number } = {};
 
-          // Si hay sesión activa reciente de usuario regular (no admin), conservarla arriba
-          if (finalAccesos.length > 0 && finalAccesos[0].rawDate && !isAdminRecord(finalAccesos[0]) && (ahora.getTime() - finalAccesos[0].rawDate.getTime() < 1000 * 60 * 30)) {
-            dbLogs.push(finalAccesos[0]);
-            seenDbUsers.add(finalAccesos[0].n.toLowerCase().trim());
-          }
-
-          res.elements.forEach((item: any) => {
-            // El admin debe estar estrictamente oculto
-            if (isAdminRecord(item)) return;
-
+          rawList.forEach((item: any) => {
             const rawUser = (item.nom_Usuario || item.cod_Usuario || '').trim();
             if (!rawUser) return;
+
             const uInfo = this.resolveUserData(rawUser, item.puesto);
-            if (isAdminRecord(uInfo)) return;
+            const itemDate = parseLogDate(item.fec_Acceso);
 
-            // Mostrar solo el último ingreso de cada usuario (sin repetir usuarios)
-            const userKey = uInfo.nombre.toLowerCase().trim();
-            if (seenDbUsers.has(userKey)) return;
-            seenDbUsers.add(userKey);
+            const userName = uInfo.nombre || item.nom_Usuario || item.cod_Usuario;
+            const logEntry = {
+              rawDate: itemDate,
+              n: userName,
+              rol: item.puesto || uInfo.rol || 'Colaborador',
+              acc: item.estado || 'Inicio de sesiÃ³n',
+              c: this.getAvatarColor(userName),
+              t: formatLogTime(itemDate)
+            };
 
-            let d = item.fec_Acceso ? new Date(item.fec_Acceso.replace(' ', 'T')) : new Date();
-            if (isNaN(d.getTime())) d = new Date();
+            listMapeada.push(logEntry);
 
-            dbLogs.push({
-              rawDate: d,
-              n: uInfo.nombre,
-              rol: item.puesto || uInfo.rol,
-              acc: item.estado || 'Inicio de sesión',
-              c: this.getAvatarColor(uInfo.nombre),
-              t: formatLogTime(d),
-              isReal: true
-            });
+            // Contabilizar actividad en los Ãºltimos 7 dÃ­as por usuario
+            if (itemDate >= sieteDiasAtras) {
+              activityCounts[userName] = (activityCounts[userName] || 0) + 1;
+            }
           });
 
-          if (dbLogs.length > 0) {
-            dbLogs.sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime());
+          // 1. HistÃ³rico de ingresos y acciones: ordenados cronolÃ³gicamente (mÃ¡s recientes primero)
+          listMapeada.sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime());
+          this.accesosList = listMapeada.slice(0, 10);
 
-            // Si hay menos de 5 únicos en BD, complementar con finalAccesos sin duplicar
-            if (dbLogs.length < 5) {
-              finalAccesos.forEach(acc => {
-                const k = acc.n.toLowerCase().trim();
-                if (!seenDbUsers.has(k) && !isAdminRecord(acc) && dbLogs.length < 5) {
-                  seenDbUsers.add(k);
-                  dbLogs.push(acc);
-                }
-              });
-              dbLogs.sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime());
-            }
+          // 2. Actividad por usuario (Ãºltimos 7 dÃ­as) a partir de los registros reales de BD
+          const activityArray = Object.keys(activityCounts).map(uName => ({
+            n: uName,
+            count: activityCounts[uName],
+            c: this.getAvatarColor(uName),
+            percent: 100
+          }));
 
-            // Exactamente los últimos 5 ingresos registrados
-            this.accesosList = dbLogs.slice(0, 5);
-          }
+          activityArray.sort((a, b) => b.count - a.count);
+          const topActivities = activityArray.slice(0, 5);
+          const maxCount = topActivities.length > 0 ? topActivities[0].count : 1;
+          topActivities.forEach(act => {
+            act.percent = Math.max(15, Math.round((act.count / maxCount) * 100));
+          });
+          this.actividadList = topActivities;
 
-          // Reflejar actividad por operaciones en los últimos 7 días con datos reales
-          this.calcularActividadUltimos7Dias(res.elements);
+        } else {
+          this.accesosList = [];
+          this.actividadList = [];
         }
       },
-      error: () => { }
+      error: (err) => {
+        console.warn('[Puestos] Error al consultar historial de accesos desde BD:', err);
+      }
     });
-  }
-
-  // Opción B: Actividad por usuario calculada por operaciones/acciones en el sistema (últimos 7 días)
-  calcularActividadUltimos7Dias(dbElements?: any[]): void {
-    const ahora = new Date();
-    const sieteDiasAtras = new Date(ahora.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-    const activityMap: { [userName: string]: number } = {};
-
-    // Base histórica de referencia para los usuarios de auditoría y SST
-    const baseActivity: { [key: string]: number } = {
-      'Keith Vega': 24,
-      'Mia Zegarra': 18,
-      'Jordan Pinedo': 15,
-      'Cynthia Aldana': 9,
-      'Mary Guevara': 6,
-      'Max Soria': 4,
-      'Supervisor.de.seguridad': 2
-    };
-
-    for (const [userName, count] of Object.entries(baseActivity)) {
-      activityMap[userName] = count;
-    }
-
-    // 1. Cargar operaciones/acciones registradas en el sistema (Opción B)
-    try {
-      const rawOps = localStorage.getItem('precotex:user:operaciones_log');
-      if (rawOps) {
-        const opsArr = JSON.parse(rawOps);
-        if (Array.isArray(opsArr)) {
-          opsArr.forEach((op: any) => {
-            const opDate = op.timestamp ? new Date(op.timestamp) : null;
-            if (!opDate || isNaN(opDate.getTime()) || opDate >= sieteDiasAtras) {
-              const u = (op.usuario || '').trim();
-              if (u) {
-                const resolved = this.resolveUserData(u).nombre;
-                activityMap[resolved] = (activityMap[resolved] || 0) + 1;
-              }
-            }
-          });
-        }
-      }
-
-      const storedActRaw = localStorage.getItem('precotex:user:actividad');
-      if (storedActRaw) {
-        const storedAct = JSON.parse(storedActRaw);
-        for (const k of Object.keys(storedAct)) {
-          const resolved = this.resolveUserData(k).nombre;
-          activityMap[resolved] = (activityMap[resolved] || 0) + Number(storedAct[k] || 0);
-        }
-      }
-    } catch (e) { }
-
-    // 2. Sumar eventos reales de la base de datos de los últimos 7 días
-    if (dbElements && Array.isArray(dbElements)) {
-      dbElements.forEach((item: any) => {
-        const rawUser = (item.nom_Usuario || item.cod_Usuario || '').trim();
-        if (!rawUser) return;
-        const uInfo = this.resolveUserData(rawUser, item.puesto);
-        const itemDate = item.fec_Acceso ? new Date(item.fec_Acceso.replace(' ', 'T')) : null;
-        if (itemDate && !isNaN(itemDate.getTime()) && itemDate >= sieteDiasAtras) {
-          activityMap[uInfo.nombre] = (activityMap[uInfo.nombre] || 0) + 1;
-        }
-      });
-    }
-
-    // 3. El Administrador SIEMPRE oculto en el gráfico de actividad
-    delete activityMap['Super Administrador'];
-    delete activityMap['Administrador General'];
-    delete activityMap['Admin'];
-    delete activityMap['admin'];
-
-    const dynamicActividad = Object.keys(activityMap).map(userName => ({
-      n: userName,
-      count: activityMap[userName]
-    })).sort((a, b) => b.count - a.count);
-
-    const maxCount = Math.max(...dynamicActividad.map(a => a.count), 1);
-
-    this.actividadList = dynamicActividad.slice(0, 6).map(act => ({
-      n: act.n,
-      count: act.count,
-      percent: Math.min(100, Math.round((act.count / maxCount) * 100)),
-      c: this.getAvatarColor(act.n)
-    }));
-  }
-
-  // Registrar operación realizada en el sistema por el usuario activo (Opción B)
-  registrarOperacionUsuario(tipo: string = 'Operación en sistema'): void {
-    const currentCode = (GlobalVariable.vusu || localStorage.getItem('vusu') || '').trim();
-    const storedNom = (localStorage.getItem('precotex:usuario:nombre') || currentCode).trim();
-    const isCurrentAdmin = currentCode.toLowerCase() === 'admin' ||
-      storedNom.toLowerCase() === 'admin' ||
-      storedNom.toLowerCase().includes('administrador');
-
-    if (!currentCode || isCurrentAdmin) return;
-
-    const uInfo = this.resolveUserData(storedNom || currentCode);
-    const ahora = new Date();
-
-    try {
-      const rawOps = localStorage.getItem('precotex:user:operaciones_log');
-      let opsArr: any[] = rawOps ? JSON.parse(rawOps) : [];
-      if (!Array.isArray(opsArr)) opsArr = [];
-
-      opsArr.unshift({
-        usuario: uInfo.nombre,
-        codigo: currentCode,
-        operacion: tipo,
-        timestamp: ahora.toISOString()
-      });
-      localStorage.setItem('precotex:user:operaciones_log', JSON.stringify(opsArr.slice(0, 300)));
-
-      const actRaw = localStorage.getItem('precotex:user:actividad');
-      let actMap: { [k: string]: number } = actRaw ? JSON.parse(actRaw) : {};
-      actMap[uInfo.nombre] = (actMap[uInfo.nombre] || 0) + 1;
-      localStorage.setItem('precotex:user:actividad', JSON.stringify(actMap));
-    } catch (e) { }
-
-    this.updateDynamicWidgets();
   }
 
   aplicarFiltro(event: Event) {
@@ -1375,6 +1130,13 @@ export class PuestosComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        const targetCode = (item?.userCode || item?.cod_Usuario || '').toString().trim().toLowerCase();
+        const targetName = (item?.usuario && item?.usuario !== '—' ? item?.usuario : '').toString().trim().toLowerCase();
+        const isAdminAccount = targetCode === 'admin' || targetName === 'admin' || targetName.includes('super administrador');
+        if (isAdminAccount && (result.ctrol_estado === 'Inactivo' || result.ctrol_estado === 'Suspendido')) {
+          this.toastr.warning('La cuenta del Administrador no puede ser desactivada ni suspendida.', 'Restricción del Sistema');
+          result.ctrol_estado = 'Activo';
+        }
         const rawEmail = (result.ctrol_email || '').trim();
         const puestoName = (result.ctrol_puesto || '').trim();
         const colaboradorName = (result.ctrol_colaborador || '').trim();
@@ -1494,6 +1256,13 @@ export class PuestosComponent implements OnInit {
       this.toastr.warning('No cuentas con permisos para eliminar puestos o usuarios.', 'Acceso Restringido');
       return;
     }
+    const targetCode = (item?.userCode || item?.cod_Usuario || '').toString().trim().toLowerCase();
+    const targetName = (item?.usuario && item?.usuario !== '—' ? item?.usuario : '').toString().trim().toLowerCase();
+    if (targetCode === 'admin' || targetName === 'admin' || targetName.includes('super administrador')) {
+      this.toastr.error('No se puede eliminar la cuenta principal de Administrador del sistema.', 'Operación Restringida');
+      return;
+
+    }
     Swal.fire({
       title: '¿Desea eliminar el registro?, Confirme',
       text: `Se eliminará el puesto "${item.puesto || item.usuario}" y su usuario asignado.`,
@@ -1600,6 +1369,7 @@ export class PuestosComponent implements OnInit {
         }
 
         this.toastr.success('Puesto y usuario eliminados correctamente.', '', { timeOut: 2500 });
+        this.registrarAccionLog('EliminaciÃ³n de puesto/colaborador: ' + (item.puesto || '') + ' (' + (uName || uCode) + ')', item.puesto);
       }
     });
   }

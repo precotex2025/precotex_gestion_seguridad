@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import Swal from 'sweetalert2';
@@ -41,6 +41,7 @@ export class MedicionIndicadoresComponent implements OnInit {
 
   canRegistrarMedicion: boolean = true;
   canExportarMedicion: boolean = true;
+  canEliminarMedicion: boolean = true;
 
   constructor(
     private dialog: MatDialog,
@@ -60,6 +61,7 @@ export class MedicionIndicadoresComponent implements OnInit {
     const isJefaturaOGerencial = userLvl === 'ger' || userLvl === 'jef';
     this.canRegistrarMedicion = this.permisosService.hasFinePermission('Indicadores', 'Medición', 'Registrar medición', true);
     this.canExportarMedicion = this.permisosService.hasFinePermission('Indicadores', 'Medición', 'Exportar', isJefaturaOGerencial);
+    this.canEliminarMedicion = this.permisosService.hasFinePermission('Indicadores', 'Medición', 'Eliminar', true);
   }
 
   formatearMeta(meta: any, unidad?: string): string {
@@ -198,6 +200,13 @@ export class MedicionIndicadoresComponent implements OnInit {
       localSavedMediciones = [];
     }
 
+    let eliminadas: string[] = [];
+    try {
+      eliminadas = JSON.parse(localStorage.getItem('precotex_mediciones_eliminadas') || '[]');
+    } catch (e) {
+      eliminadas = [];
+    }
+
     // Priorizar SIEMPRE medicionesExistentes que provienen directamente de la Base de Datos
     let listFinal = [...medicionesExistentes];
 
@@ -215,6 +224,10 @@ export class MedicionIndicadoresComponent implements OnInit {
 
     // Para cada indicador en el catálogo, si no tiene medición registrada, crear fila inicial (IND-10)
     catalogo.forEach((ind: any) => {
+      if (eliminadas.includes('COD_' + ind.codigo) || eliminadas.includes(ind.codigo)) {
+        return;
+      }
+
       const exists = listFinal.some((m: any) =>
         (m.codigoIndicador && ind.codigo && m.codigoIndicador.toLowerCase() === ind.codigo.toLowerCase()) ||
         (m.indicador && ind.nombre && m.indicador.toLowerCase() === ind.nombre.toLowerCase())
@@ -244,15 +257,27 @@ export class MedicionIndicadoresComponent implements OnInit {
       }
     });
 
+    // Filtrar de listFinal aquellas mediciones o indicadores eliminados explícitamente
+    if (eliminadas.length > 0) {
+      listFinal = listFinal.filter((m: any) => {
+        const idStr = (m.idMedicion || m.id || '').toString();
+        const key = (m.codigoIndicador || m.indicador || '') + '_' + (m.periodo || '');
+        if (idStr && eliminadas.includes('ID_' + idStr)) return false;
+        if (key && eliminadas.includes(key)) return false;
+        if (m.codigoIndicador && eliminadas.includes('COD_' + m.codigoIndicador)) return false;
+        return true;
+      });
+    }
+
     // Si aún no hay mediciones, cargar indicadores de demostración predeterminados
-    if (listFinal.length === 0) {
+    if (listFinal.length === 0 && eliminadas.length === 0) {
       listFinal = this.cargarMedicionesFallback();
     }
 
     // Eliminar duplicados dando prioridad a los registros con Id_Medicion real de Base de Datos
     const map = new Map<string, any>();
     listFinal.forEach(item => {
-      const key = (item.codigoIndicador || item.indicador || '') + '_' + (item.periodo || '');
+      const key = (item.codigoIndicador || item.indicador || '') + '_' + (item.periodo || '') + '_' + (item.idMedicion || item.id || '');
       if (!map.has(key)) {
         map.set(key, item);
       } else {
@@ -710,46 +735,88 @@ export class MedicionIndicadoresComponent implements OnInit {
   }
 
   onEliminar(item: any): void {
+    const nombreInd = item.indicador || item.codigoIndicador || 'esta medición';
     Swal.fire({
-      title: '¿Desea eliminar la medición?, Confirme',
-      icon: 'question',
+      title: '¿Desea eliminar la medición?',
+      text: `Se eliminará el registro de "${nombreInd}" (${item.periodo || ''}). Confirme para proceder.`,
+      icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí',
-      cancelButtonText: 'No'
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
     }).then(result => {
       if (result.isConfirmed) {
-        const idToDelete = (item.idMedicion && item.idMedicion > 0 && item.idMedicion < 1000000000) ? item.idMedicion : ((item.id && item.id > 0 && item.id < 1000000000) ? item.id : null);
-        if (!idToDelete) {
-          this.toastr.info('Medición retirada del panel.');
-          this.allRawData = this.allRawData.filter(d => d !== item);
-          this.dataSource.data = this.allRawData;
-          this.calculateStats(this.allRawData);
-          return;
-        }
+        const idToDelete = (item.idMedicion && item.idMedicion > 0 && item.idMedicion < 1000000000) ? item.idMedicion : null;
+        const currentUser = (typeof localStorage !== 'undefined' ? localStorage.getItem('vusu') : null) || 'SISTEMAS';
 
-        const payload = {
-          Accion: 'D',
-          Id_Medicion: idToDelete,
-          Usuario_Registro: 'SISTEMAS'
-        };
+        if (idToDelete) {
+          const payload = {
+            Accion: 'D',
+            Id_Medicion: idToDelete,
+            Usuario_Registro: currentUser
+          };
 
-        this.indicadoresService.postProcesoMntoIndicadorMedicion(payload).subscribe({
-          next: (response: any) => {
-            if (response && response.success) {
-              this.toastr.success('Medición eliminada correctamente de la Base de Datos.', '', { timeOut: 2500 });
-              this.onListado();
-            } else {
-              this.toastr.error(response?.message || 'Error al eliminar', 'Error BD');
+          this.indicadoresService.postProcesoMntoIndicadorMedicion(payload).subscribe({
+            next: (response: any) => {
+              if (response && response.success) {
+                this.limpiarMedicionLocalmente(item, idToDelete);
+                this.toastr.success('Medición eliminada correctamente de la Base de Datos.', 'Operación Exitosa', { timeOut: 2500 });
+                this.onListado();
+              } else {
+                this.toastr.error(response?.message || 'Error al eliminar', 'Error BD');
+              }
+            },
+            error: (err: any) => {
+              this.limpiarMedicionLocalmente(item, idToDelete);
+              this.toastr.warning('Medición retirada del panel local.', 'Aviso');
             }
-          },
-          error: (err: any) => {
-            this.toastr.error(err?.error?.message || err?.message || 'Error al eliminar', 'Error Servidor');
-          }
-        });
+          });
+        } else {
+          this.limpiarMedicionLocalmente(item, null);
+          this.toastr.success('Medición retirada del panel correctamente.', 'Operación Exitosa', { timeOut: 2500 });
+        }
       }
     });
+  }
+
+  limpiarMedicionLocalmente(item: any, idToDelete: any): void {
+    // 1. Filtrar en memoria
+    this.allRawData = this.allRawData.filter(d => {
+      if (idToDelete && (d.idMedicion === idToDelete || d.id === idToDelete)) return false;
+      if (d === item) return false;
+      if (d.codigoIndicador === item.codigoIndicador && d.periodo === item.periodo && d.valor === item.valor) return false;
+      return true;
+    });
+    this.dataSource.data = [...this.allRawData];
+    this.calculateStats(this.allRawData);
+
+    // 2. Limpiar de precotex_mediciones en localStorage
+    try {
+      const localSaved: any[] = JSON.parse(localStorage.getItem('precotex_mediciones') || '[]');
+      const filtered = localSaved.filter((m: any) => {
+        if (idToDelete && (m.idMedicion === idToDelete || m.id === idToDelete)) return false;
+        if (m.codigoIndicador === item.codigoIndicador && m.periodo === item.periodo) return false;
+        return true;
+      });
+      localStorage.setItem('precotex_mediciones', JSON.stringify(filtered));
+    } catch (e) { }
+
+    // 3. Registrar en lista de eliminadas persistente para prevenir reaparición
+    try {
+      const eliminadas: string[] = JSON.parse(localStorage.getItem('precotex_mediciones_eliminadas') || '[]');
+      if (idToDelete && !eliminadas.includes('ID_' + idToDelete)) {
+        eliminadas.push('ID_' + idToDelete);
+      }
+      const key = (item.codigoIndicador || item.indicador || '') + '_' + (item.periodo || '');
+      if (key && !eliminadas.includes(key)) {
+        eliminadas.push(key);
+      }
+      if (!item.idMedicion && item.codigoIndicador && !eliminadas.includes('COD_' + item.codigoIndicador)) {
+        eliminadas.push('COD_' + item.codigoIndicador);
+      }
+      localStorage.setItem('precotex_mediciones_eliminadas', JSON.stringify(eliminadas));
+    } catch (e) { }
   }
 
   onDescargarEvidencia(row: any): void {

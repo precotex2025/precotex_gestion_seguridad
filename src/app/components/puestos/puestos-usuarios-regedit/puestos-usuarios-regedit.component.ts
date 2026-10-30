@@ -26,6 +26,9 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
   usuarioDuplicadoNombreColaborador: string = '';
   sugerenciaUsuarioUnico: string = '';
   ultimoTrabajadorSeleccionado: any = null;
+  emailsRegistradosMap: Map<string, string> = new Map<string, string>();
+  emailDuplicado: boolean = false;
+  emailDuplicadoNombreColaborador: string = '';
 
   procesosGroups: { [key: string]: string[] } = {
     'Gerencia General (GG)': [
@@ -162,7 +165,7 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
       ctrol_proceso: ['', Validators.required],
       ctrol_usuario: ['', Validators.required],
       ctrol_email: ['', [Validators.required, Validators.email]],
-      ctrol_password: ['', Validators.required],
+      ctrol_password: ['', [Validators.required, Validators.minLength(6)]],
       ctrol_nivel: ['Operativo', Validators.required],
       ctrol_permisos: ['Lectura + descarga + modificar', Validators.required],
       ctrol_estado: [this.data.Accion === 'I' ? 'Pendiente de activación' : 'Activo', Validators.required],
@@ -171,7 +174,17 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
 
     // Validación reactiva de duplicidad en tiempo real al escribir en ctrol_usuario
     this.formulario.get('ctrol_usuario')?.valueChanges.subscribe(val => {
+      if (val && /\s/.test(val)) {
+        const noSpaces = val.replace(/\s+/g, '').toLowerCase();
+        this.formulario.get('ctrol_usuario')?.setValue(noSpaces, { emitEvent: false });
+        this.validarUsuarioDuplicado(noSpaces);
+        return;
+      }
       this.validarUsuarioDuplicado(val);
+    });
+
+    this.formulario.get('ctrol_email')?.valueChanges.subscribe(email => {
+      this.validarEmailDuplicado(email);
     });
 
     // Sincronización reactiva del nivel jerárquico con permisos sugeridos
@@ -211,11 +224,20 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
 
   cargarUsuariosExistentes(): void {
     this.usuariosRegistradosMap.clear();
+    this.emailsRegistradosMap.clear();
 
     // 1. Cargar desde la lista de puestos existentes enviados al modal
     if (this.data.UsuariosExistentes && Array.isArray(this.data.UsuariosExistentes)) {
       this.data.UsuariosExistentes.forEach((p: any) => {
         const nom = p.usuario || p.nom_Usuario || p.puesto || 'Puesto existente';
+        if (p.userCode) this.usuariosRegistradosMap.set(p.userCode.toLowerCase().trim(), nom);
+        if (p.cod_Usuario) this.usuariosRegistradosMap.set(p.cod_Usuario.toLowerCase().trim(), nom);
+        if (p.email) {
+          const emClean = p.email.toLowerCase().trim();
+          this.emailsRegistradosMap.set(emClean, nom);
+          const emailPrefix = emClean.split('@')[0];
+          if (emailPrefix) this.usuariosRegistradosMap.set(emailPrefix, nom);
+        }
         const usr = (p.usuario && p.usuario !== '—' && !p.usuario.includes(' ')
           ? p.usuario
           : (p.email ? p.email.split('@')[0] : (p.usuario || ''))).toLowerCase().trim();
@@ -236,9 +258,23 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
           if (usr) {
             this.usuariosRegistradosMap.set(usr, nom);
           }
+          if (c.email) this.emailsRegistradosMap.set(c.email.toLowerCase().trim(), nom);
         });
       }
     } catch (e) { }
+  }
+
+  getEditingSelfIdentifiers(): Set<string> {
+    const set = new Set<string>();
+    if (this.data.Accion === 'U' && this.data.Datos) {
+      const d = this.data.Datos;
+      if (d.userCode) set.add(d.userCode.toLowerCase().trim());
+      if (d.cod_Usuario) set.add(d.cod_Usuario.toLowerCase().trim());
+      if (d.id_Usuario) set.add(d.id_Usuario.toString().toLowerCase().trim());
+      if (d.email) set.add(d.email.split('@')[0].toLowerCase().trim());
+      if (d.usuario && !d.usuario.includes(' ')) set.add(d.usuario.toLowerCase().trim());
+    }
+    return set;
   }
 
   validarUsuarioDuplicado(val: string): void {
@@ -250,14 +286,20 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
       return;
     }
 
-    // En edición, permitir el mismo usuario asignado previamente a este registro
-    const currentEditingUser = (this.data.Accion === 'U' && this.data.Datos)
-      ? (this.data.Datos.usuario && !this.data.Datos.usuario.includes(' ')
-        ? this.data.Datos.usuario
-        : (this.data.Datos.email ? this.data.Datos.email.split('@')[0] : (this.data.Datos.usuario || ''))).toLowerCase().trim()
-      : '';
+    const selfIds = this.getEditingSelfIdentifiers();
+    if (selfIds.has(clean)) {
+      this.usuarioDuplicado = false;
+      this.usuarioDuplicadoNombreColaborador = '';
+      this.sugerenciaUsuarioUnico = '';
+      return;
+    }
 
-    if (currentEditingUser && clean === currentEditingUser) {
+    /* checked via selfIds */
+
+
+
+
+    if (false) {
       this.usuarioDuplicado = false;
       this.usuarioDuplicadoNombreColaborador = '';
       this.sugerenciaUsuarioUnico = '';
@@ -283,6 +325,32 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
       this.usuarioDuplicado = false;
       this.usuarioDuplicadoNombreColaborador = '';
       this.sugerenciaUsuarioUnico = '';
+    }
+  }
+
+  validarEmailDuplicado(val: string): void {
+    const clean = (val || '').trim().toLowerCase();
+    if (!clean || !clean.includes('@')) {
+      this.emailDuplicado = false;
+      this.emailDuplicadoNombreColaborador = '';
+      return;
+    }
+
+    if (this.data.Accion === 'U' && this.data.Datos?.email) {
+      const currentEmail = (this.data.Datos.email || '').trim().toLowerCase();
+      if (clean === currentEmail) {
+        this.emailDuplicado = false;
+        this.emailDuplicadoNombreColaborador = '';
+        return;
+      }
+    }
+
+    if (this.emailsRegistradosMap.has(clean)) {
+      this.emailDuplicado = true;
+      this.emailDuplicadoNombreColaborador = this.emailsRegistradosMap.get(clean) || 'otro colaborador';
+    } else {
+      this.emailDuplicado = false;
+      this.emailDuplicadoNombreColaborador = '';
     }
   }
 
@@ -660,6 +728,18 @@ export class PuestosUsuariosRegeditComponent implements OnInit {
       this.toastr.error(
         `El usuario de acceso "${userVal}" ya está asignado a ${this.usuarioDuplicadoNombreColaborador}. Por favor use un usuario diferente o aplique la sugerencia.`,
         'Restricción: Usuario Duplicado',
+        { timeOut: 5000 }
+      );
+      return;
+    }
+
+    const emailVal = (this.formulario.get('ctrol_email')?.value || '').trim();
+    this.validarEmailDuplicado(emailVal);
+
+    if (this.emailDuplicado) {
+      this.toastr.error(
+        `El correo electrónico "${emailVal}" ya está asignado a ${this.emailDuplicadoNombreColaborador}. Por favor use un correo diferente.`,
+        'Restricción: Correo Duplicado',
         { timeOut: 5000 }
       );
       return;

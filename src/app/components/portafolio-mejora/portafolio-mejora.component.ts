@@ -1879,6 +1879,11 @@ export class PortafolioMejoraComponent implements OnInit {
     dialogRef.afterClosed().subscribe(res => {
       if (res) {
         const fFin = this.normalizarFecha(res.fechaFin);
+        const isoApertura = this.toSqlIsoDate(res.apertura) || new Date().toISOString().slice(0, 10);
+        const isoLimite = this.toSqlIsoDate(res.limite) || null;
+        const isoFin = this.toSqlIsoDate(fFin) || null;
+        const isoRegistro = this.toSqlIsoDate(res.registro) || new Date().toISOString().slice(0, 10);
+
         const payload = {
           Accion: 'I',
           Codigo: '',
@@ -1890,16 +1895,16 @@ export class PortafolioMejoraComponent implements OnInit {
           Responsable: 'Carlos Ríos',
           Sede: res.sede,
           Proveniente: res.proveniente,
-          Fecha_Inicio: res.apertura,
-          Fecha_Fin_Estimada: res.limite,
-          Fecha_Registro: res.registro || null,
-          FechaRegistro: res.registro || null,
-          Fecha_Fin: fFin || null,
-          FechaFin: fFin || null,
-          Fecha_Cierre: fFin || null,
-          FechaCierre: fFin || null,
-          Fecha_Termino: fFin || null,
-          Fecha_Fin_Real: fFin || null,
+          Fecha_Inicio: isoApertura,
+          Fecha_Fin_Estimada: isoLimite,
+          Fecha_Registro: isoRegistro,
+          FechaRegistro: isoRegistro,
+          Fecha_Fin: isoFin,
+          FechaFin: isoFin,
+          Fecha_Cierre: isoFin,
+          FechaCierre: isoFin,
+          Fecha_Termino: isoFin,
+          Fecha_Fin_Real: isoFin,
           Estado: res.estado,
           Archivo: res.archivo || '',
           Usuario_Registro: 'SISTEMAS'
@@ -1908,24 +1913,22 @@ export class PortafolioMejoraComponent implements OnInit {
         this.mejoraService.postMejoraMnto(payload).subscribe({
           next: (apiRes: any) => {
             if (apiRes && apiRes.success) {
-              if (apiRes.codigo) {
-                this.guardarFechaFinEnCache(apiRes.codigo, fFin);
+              const genCode = apiRes.codigo || apiRes.data?.codigo || apiRes.elements?.codigo;
+              if (genCode) {
+                this.guardarFechaFinEnCache(genCode, fFin);
               }
               if (res.titulo) {
                 this.guardarFechaFinEnCache(res.titulo.trim(), fFin);
               }
-              this.toastr.success('Iniciativa registrada y guardada en BD.', 'Registrado');
+              this.toastr.success(apiRes.message || 'Iniciativa registrada y guardada en BD.', 'Registrado');
               this.onListado();
             } else {
-              if (res.titulo) this.guardarFechaFinEnCache(res.titulo.trim(), fFin);
-              this.toastr.success('Iniciativa registrada correctamente.', 'Registrado');
-              this.onListado();
+              const rawErr = apiRes?.message || ''; const friendly = rawErr.includes('SqlDateTime') ? 'Las fechas ingresadas no son válidas. Verifique fecha de ocurrencia y límite.' : (rawErr || 'Error al registrar en base de datos.'); this.toastr.error(friendly, 'Error');
             }
           },
-          error: () => {
-            if (res.titulo) this.guardarFechaFinEnCache(res.titulo.trim(), fFin);
-            this.toastr.success('Iniciativa registrada localmente.', 'Registrado');
-            this.onListado();
+          error: (err) => {
+            console.error('Error al registrar iniciativa:', err);
+            this.toastr.error(err?.error?.message || err?.message || 'Error de conexión con la base de datos.', 'Error');
           }
         });
       }
@@ -1980,6 +1983,11 @@ export class PortafolioMejoraComponent implements OnInit {
           this.applyFilter();
         }
 
+        const isoApertura = this.toSqlIsoDate(res.apertura) || this.toSqlIsoDate(item.apertura) || new Date().toISOString().slice(0, 10);
+        const isoLimite = this.toSqlIsoDate(res.limite) || this.toSqlIsoDate(item.limite) || null;
+        const isoFin = this.toSqlIsoDate(fFin) || null;
+        const isoRegistro = this.toSqlIsoDate(res.registro) || this.toSqlIsoDate(item.registro) || new Date().toISOString().slice(0, 10);
+
         const payload = {
           Accion: 'U',
           Codigo: item.codigo,
@@ -1991,16 +1999,16 @@ export class PortafolioMejoraComponent implements OnInit {
           Responsable: item.responsable || 'Carlos Ríos',
           Sede: res.sede,
           Proveniente: res.proveniente,
-          Fecha_Inicio: res.apertura,
-          Fecha_Fin_Estimada: res.limite,
-          Fecha_Registro: res.registro || null,
-          FechaRegistro: res.registro || null,
-          Fecha_Fin: fFin || null,
-          FechaFin: fFin || null,
-          Fecha_Cierre: fFin || null,
-          FechaCierre: fFin || null,
-          Fecha_Termino: fFin || null,
-          Fecha_Fin_Real: fFin || null,
+          Fecha_Inicio: isoApertura,
+          Fecha_Fin_Estimada: isoLimite,
+          Fecha_Registro: isoRegistro,
+          FechaRegistro: isoRegistro,
+          Fecha_Fin: isoFin,
+          FechaFin: isoFin,
+          Fecha_Cierre: isoFin,
+          FechaCierre: isoFin,
+          Fecha_Termino: isoFin,
+          Fecha_Fin_Real: isoFin,
           Estado: res.estado,
           Archivo: res.archivo || item.archivo || '',
           Usuario_Registro: 'SISTEMAS'
@@ -2009,19 +2017,54 @@ export class PortafolioMejoraComponent implements OnInit {
         this.mejoraService.postMejoraMnto(payload).subscribe({
           next: (apiRes: any) => {
             if (apiRes && apiRes.success) {
-              this.toastr.success('Iniciativa actualizada en BD.', 'Actualizado');
+              this.toastr.success(apiRes.message || 'Iniciativa actualizada en BD.', 'Actualizado');
               this.onListado();
             } else {
-              this.toastr.success('Iniciativa actualizada.', 'Actualizado');
-              this.onListado();
+              const rawErr = apiRes?.message || ''; const friendly = rawErr.includes('SqlDateTime') ? 'Las fechas ingresadas no son válidas. Verifique fecha de ocurrencia y límite.' : (rawErr || 'Error al actualizar en base de datos.'); this.toastr.error(friendly, 'Error');
             }
           },
           error: (err) => {
-            this.toastr.warning('Iniciativa actualizada localmente.', 'Actualizado');
+            console.error('Error al actualizar iniciativa:', err);
+            const rawErr = err?.error?.message || err?.message || ''; const friendly = rawErr.includes('SqlDateTime') ? 'Las fechas ingresadas no son válidas. Verifique fecha de ocurrencia y límite.' : (rawErr || 'Error al actualizar en base de datos.'); this.toastr.error(friendly, 'Error');
           }
         });
       }
     });
+  }
+
+
+  toSqlIsoDate(val: any): string | null {
+    if (!val && val !== 0) return null;
+    const s = String(val).trim();
+    if (!s || s === '-' || s === 'null' || s === 'undefined' || s === '""' || s.startsWith('0001') || s.startsWith('1900') || s.startsWith('00/00') || s.startsWith('00-00')) return null;
+    
+    // YYYY-MM-DD
+    const mY = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+    if (mY) {
+      const year = parseInt(mY[1], 10);
+      if (year >= 1753 && year <= 9999) {
+        return `${year}-${mY[2].padStart(2, '0')}-${mY[3].padStart(2, '0')}`;
+      }
+      return null;
+    }
+    
+    // DD/MM/YYYY
+    const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (dmy) {
+      const year = parseInt(dmy[3], 10);
+      if (year >= 1753 && year <= 9999) {
+        return `${year}-${dmy[2].padStart(2, '0')}-${dmy[1].padStart(2, '0')}`;
+      }
+      return null;
+    }
+
+    try {
+      const d = new Date(s);
+      if (!isNaN(d.getTime()) && d.getFullYear() >= 1753 && d.getFullYear() <= 9999) {
+        return d.toISOString().slice(0, 10);
+      }
+    } catch {}
+    return null;
   }
 
   onEliminar(item: any) {
@@ -2072,29 +2115,282 @@ export class PortafolioMejoraComponent implements OnInit {
     window.open(downloadUrl, '_blank');
   }
 
-  // PDM-08: Ver detalle de la iniciativa / incidencia
+  // PDM-08: Ver detalle de la iniciativa / incidencia (Modal Ejecutivo Moderno)
   onVer(item: any): void {
+    if (!item) return;
+
+    const cod = item.codigo || (item.id ? `ID-${item.id}` : '—');
+    const titulo = item.titulo || item.descripcion || 'Sin título';
+    const tipo = item.tipo || item.tipoRegistro || 'Iniciativa';
+    const herramienta = item.herramienta || '5W-2H';
+    const sede = item.sede || '—';
+    const proceso = item.proceso || item.nombre_Proceso || '—';
+    const proveniente = item.proveniente && item.proveniente !== '—' ? item.proveniente : 'Registro Directo';
+    const estado = item.estado || 'Iniciado';
+    const estLower = estado.toLowerCase();
+
+    // Determinar colores y estilos dinámicos del estado
+    let stBadgeBg = '#fffbeb';
+    let stBadgeColor = '#d97706';
+    let stBadgeBorder = '#fde68a';
+    let stDotColor = '#f59e0b';
+
+    if (estLower.includes('finalizado') || estLower.includes('cerrado')) {
+      stBadgeBg = '#ecfdf5';
+      stBadgeColor = '#059669';
+      stBadgeBorder = '#a7f3d0';
+      stDotColor = '#10b981';
+    } else if (estLower.includes('ejecución') || estLower.includes('ejecucion') || estLower.includes('proceso')) {
+      stBadgeBg = '#eff6ff';
+      stBadgeColor = '#2563eb';
+      stBadgeBorder = '#bfdbfe';
+      stDotColor = '#3b82f6';
+    } else if (estLower.includes('análisis') || estLower.includes('analisis')) {
+      stBadgeBg = '#f5f3ff';
+      stBadgeColor = '#7c3aed';
+      stBadgeBorder = '#ddd6fe';
+      stDotColor = '#8b5cf6';
+    }
+
+    // Estilos de la herramienta metodológica
+    let herrBg = 'rgba(14, 165, 233, 0.1)';
+    let herrColor = '#0284c7';
+    let herrBorder = 'rgba(14, 165, 233, 0.25)';
+    if (herramienta.toUpperCase().includes('ACR')) {
+      herrBg = 'rgba(245, 158, 11, 0.1)';
+      herrColor = '#b45309';
+      herrBorder = 'rgba(245, 158, 11, 0.25)';
+    } else if (herramienta.toUpperCase().includes('INICIATIVA')) {
+      herrBg = 'rgba(91, 75, 214, 0.1)';
+      herrColor = '#5b4bd6';
+      herrBorder = 'rgba(91, 75, 214, 0.25)';
+    }
+
+    // Fechas formateadas
+    const fRegistro = this.formatearFechaTabla(item.registro);
+    const fApertura = this.formatearFechaTabla(item.apertura);
+    const fLimite = this.formatearFechaTabla(item.limite);
+    const fFin = this.formatearFechaTabla(item.fechaFin);
+    const hasFechaFin = fFin && fFin !== '—';
+
+    // Archivo adjunto
+    const tieneArchivo = !!item.archivo;
+    const cleanFileName = tieneArchivo ? item.archivo.replace(/^[a-f0-9]{8,}_/i, '') : '';
+
     Swal.fire({
-      title: `<span style="color: #6366f1; font-weight: 700;">Detalle de ${item.tipo || 'Incidencia / Iniciativa'}</span>`,
       html: `
-        <div style="text-align: left; font-size: 13px; color: #e2e8f0; display: flex; flex-direction: column; gap: 8px; padding: 6px 0;">
-          <div><strong style="color: #818cf8;">Código:</strong> ${item.codigo || item.id || '—'}</div>
-          <div><strong style="color: #818cf8;">Título:</strong> ${item.titulo || '—'}</div>
-          <div><strong style="color: #818cf8;">Herramienta:</strong> <span style="background: rgba(56,189,248,0.15); color: #38bdf8; padding: 2px 8px; border-radius: 4px; font-weight: 600;">${item.herramienta || '5W-2H'}</span></div>
-          <div><strong style="color: #818cf8;">Sede:</strong> ${item.sede || '—'}</div>
-          <div><strong style="color: #818cf8;">Proceso:</strong> ${item.proceso || '—'}</div>
-          <div><strong style="color: #818cf8;">Fecha Registro:</strong> ${item.registro || '—'}</div>
-          <div><strong style="color: #818cf8;">Fecha Apertura:</strong> ${item.apertura || '—'}</div>
-          <div><strong style="color: #818cf8;">Fecha Límite:</strong> ${item.limite || '—'}</div>
-          <div><strong style="color: #818cf8;">Fecha Fin:</strong> ${item.fechaFin || '—'}</div>
-          <div><strong style="color: #818cf8;">Estado:</strong> <span style="font-weight: 700; color: #34d399;">${item.estado || 'Iniciado'}</span></div>
-          <div><strong style="color: #818cf8;">Archivo Adjunto:</strong> ${item.archivo ? item.archivo : 'Sin archivo'}</div>
+        <div style="text-align: left; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1e2545;">
+          
+          <!-- CABECERA MODERNA CON ICONO, CÓDIGO Y ESTADO -->
+          <div style="background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%); border-bottom: 1px solid #e2e8f0; padding: 22px 28px 18px; margin: -24px -28px 20px -28px; display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #5b4bd6 0%, #7c6cf0 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(91, 75, 214, 0.28); flex-shrink: 0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+              </div>
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <h3 style="margin: 0; font-size: 17px; font-weight: 800; color: #1e2545; letter-spacing: -0.01em;">
+                    Detalle de ${tipo}
+                  </h3>
+                  <span style="font-family: monospace; font-size: 12px; font-weight: 700; background: #ffffff; color: #475569; padding: 2px 9px; border-radius: 6px; border: 1px solid #cbd5e1; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
+                    ${cod}
+                  </span>
+                </div>
+                <p style="margin: 3px 0 0; font-size: 12px; color: #64748b; font-weight: 500;">
+                  Portafolio de Mejora Continua &middot; Precotex SIG
+                </p>
+              </div>
+            </div>
+
+            <!-- BADGE ESTADO -->
+            <div style="flex-shrink: 0;">
+              <span style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; background: ${stBadgeBg}; color: ${stBadgeColor}; border: 1px solid ${stBadgeBorder}; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: ${stDotColor};"></span>
+                ${estado}
+              </span>
+            </div>
+          </div>
+
+          <!-- BLOQUE PRINCIPAL: TÍTULO / CASO -->
+          <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b;">
+                Título / Descripción del Caso
+              </span>
+              <span style="font-size: 11px; font-weight: 700; background: ${herrBg}; color: ${herrColor}; border: 1px solid ${herrBorder}; padding: 2px 8px; border-radius: 4px;">
+                Herramienta: ${herramienta}
+              </span>
+            </div>
+            <div style="font-size: 14px; font-weight: 700; color: #0f172a; line-height: 1.45;">
+              ${titulo}
+            </div>
+          </div>
+
+          <!-- DOS COLUMNAS DE DETALLES: UBICACIÓN Y METODOLOGÍA -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+            
+            <!-- TARJETA UBICACIÓN -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px;">
+              <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #475569; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b4bd6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                Ubicación Operativa
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #64748b; font-size: 12px;">Sede:</span>
+                  <span style="font-weight: 700; color: #1e2545;">${sede}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #64748b; font-size: 12px;">Proceso:</span>
+                  <span style="font-weight: 700; color: #1e2545;">${proceso}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #64748b; font-size: 12px;">Origen:</span>
+                  <span style="font-weight: 600; color: #475569;">${proveniente}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- TARJETA METODOLOGÍA & CONTROL -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px;">
+              <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #475569; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b4bd6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                Metodología & Calidad
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #64748b; font-size: 12px;">Tipo:</span>
+                  <span style="font-weight: 700; color: #1e2545;">${tipo}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #64748b; font-size: 12px;">Aprobación:</span>
+                  <span style="font-weight: 700; color: ${item.estadoAprobacion === 'Aprobado' ? '#059669' : '#d97706'}; background: ${item.estadoAprobacion === 'Aprobado' ? '#ecfdf5' : '#fffbeb'}; padding: 2px 8px; border-radius: 4px; font-size: 11.5px; border: 1px solid ${item.estadoAprobacion === 'Aprobado' ? '#a7f3d0' : '#fde68a'};">
+                    ${item.estadoAprobacion || 'Aprobado'}
+                  </span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #64748b; font-size: 12px;">Avance Estimado:</span>
+                  <span style="font-weight: 700; color: #5b4bd6;">${item.avancePct || 0}%</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- CRONOLOGÍA DE FECHAS (4 CAJAS) -->
+          <div style="margin-bottom: 16px;">
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 8px;">
+              Cronología de Fechas
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+              
+              <!-- REGISTRO -->
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 8px; text-align: center;">
+                <div style="font-size: 10.5px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 3px;">1. Registro</div>
+                <div style="font-size: 12px; font-weight: 700; color: #1e293b;">${fRegistro}</div>
+              </div>
+
+              <!-- APERTURA -->
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 8px; text-align: center;">
+                <div style="font-size: 10.5px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 3px;">2. Apertura</div>
+                <div style="font-size: 12px; font-weight: 700; color: #1e293b;">${fApertura}</div>
+              </div>
+
+              <!-- LÍMITE -->
+              <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 10px 8px; text-align: center;">
+                <div style="font-size: 10.5px; font-weight: 600; color: #991b1b; text-transform: uppercase; margin-bottom: 3px;">3. Límite</div>
+                <div style="font-size: 12px; font-weight: 700; color: #dc2626;">${fLimite}</div>
+              </div>
+
+              <!-- FECHA FIN -->
+              <div style="background: ${hasFechaFin ? '#ecfdf5' : '#f8fafc'}; border: 1px solid ${hasFechaFin ? '#a7f3d0' : '#e2e8f0'}; border-radius: 10px; padding: 10px 8px; text-align: center;">
+                <div style="font-size: 10.5px; font-weight: 600; color: ${hasFechaFin ? '#065f46' : '#64748b'}; text-transform: uppercase; margin-bottom: 3px;">4. Fecha Fin</div>
+                <div style="font-size: 12px; font-weight: 700; color: ${hasFechaFin ? '#059669' : '#94a3b8'};">${fFin}</div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ARCHIVO ADJUNTO INTERACTIVO -->
+          ${tieneArchivo ? `
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 14px;">
+              <div style="display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1;">
+                <div style="width: 38px; height: 38px; border-radius: 8px; background: #16a34a; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="8" y1="13" x2="16" y2="13"></line>
+                    <line x1="8" y1="17" x2="16" y2="17"></line>
+                  </svg>
+                </div>
+                <div style="min-width: 0; flex: 1;">
+                  <div style="font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #15803d; margin-bottom: 2px;">
+                    Archivo Adjunto Oficial
+                  </div>
+                  <div style="font-size: 13px; font-weight: 700; color: #14532d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.archivo}">
+                    ${cleanFileName}
+                  </div>
+                </div>
+              </div>
+
+              <button id="btn-swal-download-file" type="button" style="background: #16a34a; color: #ffffff; border: none; border-radius: 8px; padding: 8px 15px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(22, 163, 74, 0.35); transition: all 0.2s ease; flex-shrink: 0;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Descargar
+              </button>
+            </div>
+          ` : `
+            <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; color: #64748b; font-size: 12.5px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+              </svg>
+              <span>No se adjuntó ningún archivo de sustento a este registro.</span>
+            </div>
+          `}
+
         </div>
       `,
-      confirmButtonText: 'Cerrar',
-      confirmButtonColor: '#6366f1',
-      background: '#1e1e2d',
-      color: '#f8fafc'
+      showCloseButton: true,
+      focusConfirm: false,
+      confirmButtonText: 'Cerrar Detalle',
+      buttonsStyling: false,
+      customClass: {
+        popup: 'custom-swal-portafolio-detalle',
+        confirmButton: 'swal-portafolio-btn-confirm'
+      },
+      didOpen: () => {
+        const btnDownload = document.getElementById('btn-swal-download-file');
+        if (btnDownload) {
+          btnDownload.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            this.onDescargarArchivo(item);
+          });
+          btnDownload.addEventListener('mouseenter', () => {
+            btnDownload.style.transform = 'translateY(-1px)';
+            btnDownload.style.boxShadow = '0 4px 12px rgba(22, 163, 74, 0.45)';
+          });
+          btnDownload.addEventListener('mouseleave', () => {
+            btnDownload.style.transform = 'translateY(0)';
+            btnDownload.style.boxShadow = '0 2px 8px rgba(22, 163, 74, 0.35)';
+          });
+        }
+      }
     });
   }
 

@@ -1,4 +1,4 @@
-﻿import { PermisosService } from '../../services/permisos.service';
+import { PermisosService } from '../../services/permisos.service';
 import { Component, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
@@ -160,17 +160,20 @@ export class AnalyticsComponent implements OnInit {
       { codigo: 'IND-TIN-004', nombre: 'Rendimiento de Tintorería', tipo: 'Eficiencia', sede: 'Santa Cecilia', proceso: 'Tintorería', norma: 'ISO 14001:2015', frecuencia: 'Mensual', meta: '90', unidad: '%', estado: 'Activo', fuente: 'Sistema ERP', responsable: 'Jefe de Tintorería', respmed: 'Supervisor de Tintorería' }
     ];
 
+    const eliminados: string[] = JSON.parse(localStorage.getItem('precotex_indicadores_eliminados') || '[]');
+    const activeDefaults = defaultData.filter(d => !eliminados.includes(d.codigo));
+
     const localInds = JSON.parse(localStorage.getItem('precotex_indicadores') || '[]');
     if (localInds && localInds.length > 0) {
       const allCodes = new Set(localInds.map((i: any) => i.codigo));
-      const combined = [...localInds, ...defaultData.filter(d => !allCodes.has(d.codigo))];
+      const combined = [...localInds.filter((i: any) => !eliminados.includes(i.codigo)), ...activeDefaults.filter(d => !allCodes.has(d.codigo))];
       this.dataSource.data = combined;
       this.calculateStats(combined);
       return;
     }
 
-    this.dataSource.data = defaultData;
-    this.calculateStats(defaultData);
+    this.dataSource.data = activeDefaults;
+    this.calculateStats(activeDefaults);
   }
 
   getSemaforoColor(estado: string): string {
@@ -316,7 +319,7 @@ export class AnalyticsComponent implements OnInit {
           Fecha_Fin: res.fin ? `${res.fin}T00:00:00` : null,
           Areas_Acceso: sedeStr,
           Estado: res.estado || 'Activo',
-          Usuario_Registro: 'SISTEMAS'
+          Usuario_Registro: (typeof localStorage !== 'undefined' ? localStorage.getItem('vusu') : null) || 'SISTEMAS'
         };
 
         // Sincronizar inmediatamente en catálogo local (IND-10)
@@ -442,7 +445,7 @@ export class AnalyticsComponent implements OnInit {
           Fecha_Fin: res.fin ? `${res.fin}T00:00:00` : null,
           Areas_Acceso: sedeStr,
           Estado: res.estado || 'Activo',
-          Usuario_Registro: 'SISTEMAS'
+          Usuario_Registro: (typeof localStorage !== 'undefined' ? localStorage.getItem('vusu') : null) || 'SISTEMAS'
         };
 
         // Actualizar en catálogo local
@@ -493,34 +496,56 @@ export class AnalyticsComponent implements OnInit {
       this.toastr.warning('No cuentas con permisos para eliminar indicadores.', 'Acceso Restringido');
       return;
     }
+    const nombreInd = item.nombre || item.codigo || 'el indicador';
     Swal.fire({
-      title: '¿Desea eliminar el indicador?, Confirme',
-      icon: 'question',
+      title: '¿Desea eliminar el indicador?',
+      text: `Se eliminará "${nombreInd}". Confirme para proceder.`,
+      icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí',
-      cancelButtonText: 'No'
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
     }).then(result => {
       if (result.isConfirmed) {
+        const currentUser = (typeof localStorage !== 'undefined' ? localStorage.getItem('vusu') : null) || 'SISTEMAS';
         const payload = {
           Accion: 'D',
           Id_Indicador: item.idIndicador || item.id_Indicador || item.Id_Indicador || item.id || 0,
           Codigo: item.codigo,
-          Usuario_Registro: 'SISTEMAS'
+          Usuario_Registro: currentUser
+        };
+
+        const limpiarLocal = () => {
+          try {
+            const localInds = JSON.parse(localStorage.getItem('precotex_indicadores') || '[]');
+            const filtered = localInds.filter((i: any) => i.codigo !== item.codigo && i.idIndicador !== item.idIndicador);
+            localStorage.setItem('precotex_indicadores', JSON.stringify(filtered));
+
+            const eliminados: string[] = JSON.parse(localStorage.getItem('precotex_indicadores_eliminados') || '[]');
+            if (item.codigo && !eliminados.includes(item.codigo)) {
+              eliminados.push(item.codigo);
+              localStorage.setItem('precotex_indicadores_eliminados', JSON.stringify(eliminados));
+            }
+          } catch (e) { }
+          this.dataSource.data = this.dataSource.data.filter((d: any) => d.codigo !== item.codigo);
+          this.calculateStats(this.dataSource.data);
         };
 
         this.indicadoresService.postIndicadorMnto(payload).subscribe({
           next: (response: any) => {
-            if (response.success) {
-              this.toastr.success('Indicador eliminado correctamente.', '', { timeOut: 2500 });
+            if (response && response.success) {
+              limpiarLocal();
+              this.toastr.success('Indicador eliminado correctamente.', 'Operación Exitosa', { timeOut: 2500 });
               this.onListado();
             } else {
-              this.toastr.error(response.message || 'Error al eliminar', 'Error BD');
+              limpiarLocal();
+              this.toastr.warning(response?.message || 'Indicador retirado de la vista.', 'Aviso');
             }
           },
           error: (err) => {
-            this.toastr.error(err.error?.message || err.message, 'Error Servidor');
+            limpiarLocal();
+            this.toastr.warning('Indicador retirado de la vista local.', 'Aviso');
           }
         });
       }
